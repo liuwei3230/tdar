@@ -1,9 +1,5 @@
 package org.tdar.core.service.resource;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import junit.framework.Assert;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,6 +7,8 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.junit.Assert.*;
 
 /**
  * Test case for OntologyService.
@@ -45,11 +43,12 @@ public class OntologyServiceTest {
         for (String badMatch : badMatches) {
             assertFalse(badMatch + " should not be similar enough to " + target, ontologyService.isSimilarEnough(target, ontologyService.normalize(badMatch)));
         }
-        String[] goodMatches = { "eel", "peel", "wheel", "Happy meel", "electric eel", "unhappy meel", "even keeled", "well heeled", "eelectric light orchestra" };
-        for (String goodMatch: goodMatches) {
+        String[] goodMatches = { "eel", "peel", "wheel", "Happy meel", "electric eel", "unhappy meel", "even keeled", "well heeled",
+                "eelectric light orchestra" };
+        for (String goodMatch : goodMatches) {
             assertTrue(goodMatch + " should be similar enough to " + target, ontologyService.isSimilarEnough(target, ontologyService.normalize(goodMatch)));
         }
-        
+
         // added from TDAR-626 and TDAR-642
         assertFalse(ontologyService.isSimilarEnough(ontologyService.normalize("Ilium"), ontologyService.normalize("Distal")));
         assertFalse(ontologyService.isSimilarEnough(ontologyService.normalize("Ischium"), ontologyService.normalize("Shaft")));
@@ -60,9 +59,10 @@ public class OntologyServiceTest {
     @Test
     public void testInvalidCharactersRegex() {
         // FIXME: construct exhaustive list of invalid characters dynamically?
-        String[] hasInvalidCharacters = { "@!@#", "!!", "^^\t", "*", "&", "^", "$$" };
+        String[] hasInvalidCharacters = { "@!@#", "!!", "^^\t", "*", "&", "^", "$$", "(ab)", "this is a % test" };
         for (String invalidCharacterString : hasInvalidCharacters) {
-            Assert.assertTrue(invalidCharacterString + " has invalid characters", invalidCharacterString.matches(OntologyService.IRI_INVALID_CHARACTERS_REGEX));
+            Assert.assertNotSame(invalidCharacterString + " has invalid characters", invalidCharacterString,
+                    ontologyService.labelToFragmentId(invalidCharacterString));
         }
     }
 

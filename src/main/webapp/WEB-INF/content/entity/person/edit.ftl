@@ -8,14 +8,12 @@
         <title>Add a new user</title>
     </#if>
     
-    <script type='text/javascript' src='<@s.url value="/includes/jquery.FormNavigate.js"/>'></script> 
-    <script type='text/javascript' src='<@s.url value="/includes/jquery.watermark-3.1.3.min.js"/>'></script> 
     
     <script type="text/javascript">
         var $frmPerson;
         $(function() {
             $frmPerson = $('#frmPerson');
-            applyInstitutionAutoComplete('.institutionAutocomplete', true);
+            applyInstitutionAutocomplete($('.institutionAutocomplete'), true);
             initializeView();
             setupEditForm('#frmPerson');
             
@@ -37,9 +35,6 @@ textarea {width:32em}
 <body>
 <@nav.creatorToolbar "edit" />
 
-<div class="actionErrors">
-<@s.actionerror />
-</div>
 <@s.form name='personForm' id='frmPerson'  method='post' enctype='multipart/form-data' action='save'>
 
 <div class="glide">
@@ -52,18 +47,18 @@ textarea {width:32em}
         
         <#if privacyControlsEnabled>
         	<br /><@edit.boolfield label='Make email public?' name="person.emailPublic" id="email-public" value=person.emailPublic!false labelPosition='top' />
-			<p class="field"><em><b>NOTE:</b> Making your email address public will display it to anyone who visits tDAR, this includes search engines, spammers, and visitors who are not logged in.</em></p>
+			<p class="field"><em><b>NOTE:</b> Making your email address public will display it to anyone who visits ${siteAcronym}, this includes search engines, spammers, and visitors who are not logged in.</em></p>
 		</#if>
 		    
-        <br /><@s.textfield labelPosition="left" label="RPA Number" name="person.rpaNumber" />
+        <#if RPAEnabled><br /><@s.textfield labelPosition="left" label="RPA Number" name="person.rpaNumber" /></#if>
         <br /><@s.textfield labelPosition="left" label="Phone" cssClass="phoneUS" name="person.phone" />
         
         <#if privacyControlsEnabled>
         	<br /><@edit.boolfield label='Make phone public?' name="person.phonePublic" id="phone-public" value=person.phonePublic!false labelPosition="top"/>
-			<p class="field"><em><b>NOTE:</b> Making your phone # public will display it to anyone who visits tDAR, this includes search engines, and visitors who are not logged in.</em></p>
+			<p class="field"><em><b>NOTE:</b> Making your phone # public will display it to anyone who visits ${siteAcronym}, this includes search engines, and visitors who are not logged in.</em></p>
 		</#if>    
 		
-        <br /><@edit.boolfield label='tDAR Contributor?' name="person.contributor" id="contributor-id" value=person.contributor!false labelPosition="top" />
+        <br /><@edit.boolfield label='${siteAcronym} Contributor?' name="person.contributor" id="contributor-id" value=person.contributor!false labelPosition="top" />
         <br />
 <br/>
         <div>

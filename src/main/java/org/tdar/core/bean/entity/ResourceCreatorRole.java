@@ -47,7 +47,10 @@ public enum ResourceCreatorRole implements HasLabel {
     SUBMITTED_TO("Submitted To", ResourceCreatorRoleType.CREDIT, CreatorType.INSTITUTION),
     COPYRIGHT_HOLDER("Copyright Holder", ResourceCreatorRoleType.OTHER, null, ResourceType.CODING_SHEET, ResourceType.ONTOLOGY, ResourceType.IMAGE,
             ResourceType.DATASET,
-            ResourceType.SENSORY_DATA, ResourceType.DOCUMENT);
+            ResourceType.SENSORY_DATA, ResourceType.DOCUMENT),
+    SUBMITTER("Submitter", ResourceCreatorRoleType.OTHER, CreatorType.PERSON),
+    UPDATER("Updater", ResourceCreatorRoleType.OTHER, CreatorType.PERSON),
+    RESOURCE_PROVIDER("Resource Provider", ResourceCreatorRoleType.OTHER, CreatorType.INSTITUTION);
     /*
      * SUGGESTIONS FOR:
      * Crew Chief
@@ -126,7 +129,6 @@ public enum ResourceCreatorRole implements HasLabel {
     }
 
     public static List<ResourceCreatorRole> getAll() {
-
         List<ResourceCreatorRole> relevantRoles = new ArrayList<ResourceCreatorRole>();
         relevantRoles.addAll(getAuthorshipRoles());
         relevantRoles.addAll(getCreditRoles());
@@ -207,5 +209,5 @@ public enum ResourceCreatorRole implements HasLabel {
     public void setType(ResourceCreatorRoleType type) {
         this.type = type;
     }
-
+    
 }

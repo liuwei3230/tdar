@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Before;
@@ -20,17 +20,20 @@ import org.tdar.core.bean.PersonalFilestoreTicket;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
+import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFile.FileAction;
-import org.tdar.core.bean.resource.InformationResourceFileVersion.VersionType;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.VersionType;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.resource.ResourceService;
-import org.tdar.filestore.personalFilestore.PersonalFilestoreFile;
+import org.tdar.filestore.personal.PersonalFilestoreFile;
 import org.tdar.search.query.SortOption;
 import org.tdar.struts.action.resource.AbstractInformationResourceController;
 import org.tdar.struts.action.resource.CodingSheetController;
@@ -44,6 +47,9 @@ import org.tdar.utils.Pair;
 public abstract class AbstractControllerITCase extends AbstractIntegrationTestCase {
 
     private static final String PATH = TestConstants.TEST_ROOT_DIR;
+    public static final String TESTING_AUTH_INSTIUTION = "testing auth instiution";
+
+    public static final String REASON = "because";
 
     @Before
     public final void init() {
@@ -96,11 +102,19 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
     public ResourceCollection generateResourceCollection(String name, String description, CollectionType type, boolean visible, List<AuthorizedUser> users,
             List<? extends Resource> resources, Long parentId)
             throws Exception {
-        CollectionController controller = generateNewInitializedController(CollectionController.class);
+        return generateResourceCollection(name, description, type, visible, users, getUser(), resources, parentId);
+    }
+
+    public ResourceCollection generateResourceCollection(String name, String description, CollectionType type, boolean visible, List<AuthorizedUser> users,
+            Person owner,
+            List<? extends Resource> resources, Long parentId)
+            throws Exception {
+        CollectionController controller = generateNewInitializedController(CollectionController.class, owner);
+        controller.setServletRequest(getServletPostRequest());
         controller.prepare();
         // controller.setSessionData(getSessionData());
         logger.info("{}", getUser());
-        assertEquals(getUser(), controller.getAuthenticatedUser());
+        assertEquals(owner, controller.getAuthenticatedUser());
         ResourceCollection resourceCollection = controller.getResourceCollection();
         resourceCollection.setName(name);
         resourceCollection.setParent(genericService.find(ResourceCollection.class, parentId));
@@ -116,6 +130,7 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
             controller.setAuthorizedUsers(users);
         }
         resourceCollection.setSortBy(SortOption.RESOURCE_TYPE);
+        controller.setServletRequest(getServletPostRequest());
         String save = controller.save();
         assertTrue(save.equals(TdarActionSupport.SUCCESS));
         return resourceCollection;
@@ -137,6 +152,11 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public <C> C setupAndLoadResource(String filename, Class<C> cls) {
+        return setupAndLoadResource(filename, cls, null);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <C> C setupAndLoadResource(String filename, Class<C> cls, Long projectId) {
         AbstractInformationResourceController controller = null;
         Long ticketId = -1L;
         if (cls.equals(Ontology.class)) {
@@ -156,8 +176,14 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
             return null;
 
         controller.prepare();
-        controller.getResource().setTitle(filename);
-        controller.getResource().setDescription("This resource was created as a result of a test: " + getClass());
+        final Resource resource = controller.getResource();
+        resource.setTitle(filename);
+        resource.setDescription("This resource was created as a result of a test: " + getClass());
+        if ((resource instanceof InformationResource) && TdarConfiguration.getInstance().getCopyrightMandatory()) {
+            Creator copyrightHolder = genericService.find(Person.class, 1L);
+            ((InformationResource)resource).setCopyrightHolder(copyrightHolder );
+        }
+
         List<File> files = new ArrayList<File>();
         List<String> filenames = new ArrayList<String>();
         File file = new File(getTestFilePath(), filename);
@@ -172,11 +198,12 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
             controller.setUploadedFilesFileName(filenames);
         }
         try {
-        	controller.save();
-        }
-        catch (TdarActionException exception) {
-        	// what now?
-        	exception.printStackTrace();
+            controller.setServletRequest(getServletPostRequest());
+            controller.setProjectId(projectId);
+            controller.save();
+        } catch (TdarActionException exception) {
+            // what now?
+            exception.printStackTrace();
         }
         return (C) controller.getResource();
     }
@@ -185,7 +212,7 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
         return PATH;
     }
 
-    public Pair<PersonalFilestoreTicket, List<FileProxy>> uploadFilesAsync(List<File> uploadFiles) throws FileNotFoundException {
+    public Pair<PersonalFilestoreTicket, List<FileProxy>> uploadFilesAsync(Collection<File> uploadFiles) throws FileNotFoundException {
         UploadController uploadController = generateNewInitializedController(UploadController.class);
         assertEquals(TdarActionSupport.SUCCESS, uploadController.grabTicket());
         PersonalFilestoreTicket ticket = uploadController.getPersonalFilestoreTicket();
@@ -194,12 +221,12 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
         assertNull(uploadController.getTicketId());
 
         uploadController.setTicketId(ticket.getId());
-        uploadController.setUploadFile(uploadFiles);
+        uploadController.setUploadFile(new ArrayList<File>(uploadFiles));
         for (File uploadedFile : uploadFiles) {
             uploadController.getUploadFileFileName().add(uploadedFile.getName());
             FileProxy fileProxy = new FileProxy();
             fileProxy.setFilename(uploadedFile.getName());
-            fileProxy.setInputStream(new FileInputStream(uploadedFile));
+            fileProxy.setFile(uploadedFile);
             fileProxy.setAction(FileAction.ADD);
             toReturn.getSecond().add(fileProxy);
         }
@@ -229,5 +256,44 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
     @Override
     protected Long getUserId() {
         return TestConstants.USER_ID;
+    }
+
+    public String setupValidUserInController(AccountController controller) {
+        return setupValidUserInController(controller, "testuser@example.com");
+    }
+
+    public String setupValidUserInController(AccountController controller, String email) {
+        Person p = new Person();
+        p.setEmail(email);
+        p.setUsername(email);
+        p.setFirstName("Testing auth");
+        p.setLastName("User");
+        p.setPhone("212 000 0000");
+        p.setContributor(true);
+        p.setContributorReason(REASON);
+        p.setRpa(true);
+
+        return setupValidUserInController(controller, p);
+    }
+
+    public String setupValidUserInController(AccountController controller, Person p) {
+        return setupValidUserInController(controller, p, "password");
+    }
+
+    public String setupValidUserInController(AccountController controller, Person p, String password) {
+        // cleanup crowd if we need to...
+        authenticationAndAuthorizationService.getAuthenticationProvider().deleteUser(p);
+        controller.setRequestingContributorAccess(true);
+        controller.setInstitutionName(TESTING_AUTH_INSTIUTION);
+        controller.setPassword(password);
+        controller.setConfirmPassword(password);
+        controller.setConfirmEmail(p.getEmail());
+        controller.setPerson(p);
+        controller.setServletRequest(getServletPostRequest());
+        controller.setServletResponse(getServletResponse());
+        controller.validate();
+        String execute = controller.create();
+
+        return execute;
     }
 }

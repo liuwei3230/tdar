@@ -6,11 +6,16 @@ import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.entity.Person;
 
 public class ResourceTest {
 
+  protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+	
     @Test
     public void fromStringTest() {
         Status active = Status.fromString("ACTIVE");
@@ -29,6 +34,18 @@ public class ResourceTest {
         assertEquals(Status.ACTIVE, active);
         assertEquals(Status.DRAFT, draft);
         assertEquals(Status.DELETED, deleted);
+    }
+    
+    @Test
+    public void testTitleRegex() {
+        String title = "The is a test";
+        Document d = new Document();
+        d.setTitle(title);
+        assertEquals("is a test",d.getTitleSort());
+
+        title = "This is a test";
+        d.setTitle(title);
+        assertEquals(title.toLowerCase(),d.getTitleSort());
     }
 
     @Test

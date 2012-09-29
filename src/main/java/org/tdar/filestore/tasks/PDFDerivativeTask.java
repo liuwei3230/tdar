@@ -9,14 +9,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.pdfbox.exceptions.CryptographyException;
 import org.apache.pdfbox.exceptions.InvalidPasswordException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFImageWriter;
-import org.apache.pdfbox.util.PDFTextStripper;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
-import org.tdar.core.bean.resource.InformationResourceFileVersion.VersionType;
+import org.tdar.core.bean.resource.VersionType;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.filestore.WorkflowContext;
 
@@ -25,6 +23,8 @@ import org.tdar.filestore.WorkflowContext;
  */
 
 public class PDFDerivativeTask extends ImageThumbnailTask {
+
+    private static final long serialVersionUID = -1138753863662695849L;
 
     public static void main(String[] args) {
         PDFDerivativeTask task = new PDFDerivativeTask();
@@ -46,8 +46,6 @@ public class PDFDerivativeTask extends ImageThumbnailTask {
             e.printStackTrace();
             throw new TdarRecoverableRuntimeException("processing error");
         }
-        String outXML = task.getWorkflowContext().toXML();
-        System.out.println(outXML);
     }
 
     @Override
@@ -61,7 +59,7 @@ public class PDFDerivativeTask extends ImageThumbnailTask {
         try {
             PDDocument document = openPDF("", originalFile);
             File imageFile = new File(extractPage(1, originalFile, document));
-            extractText(originalFile, document);
+            // extractText(originalFile, document);
             closePDF(document);
             processImage(imageFile);
         } catch (Throwable t) {
@@ -69,25 +67,6 @@ public class PDFDerivativeTask extends ImageThumbnailTask {
         }
     }
 
-    /**
-     * @param document
-     */
-    private void extractText(File name, PDDocument document) {
-        try {
-            getLogger().debug("beginning PDF text extraction");
-            PDFTextStripper stripper = new PDFTextStripper();
-            File f = new File(getWorkflowContext().getWorkingDirectory(), name.getName() + ".txt");
-            getLogger().info("Writing contents to PDF: " + f);
-            mkParentDirs(f);
-            f.createNewFile();
-            FileUtils.writeStringToFile(f, stripper.getText(document));
-            InformationResourceFileVersion version = generateInformationResourceFileVersion(f, VersionType.INDEXABLE_TEXT);
-            getWorkflowContext().addVersion(version);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     protected String extractPage(int pageNum, File pdfFile, PDDocument document) {
         // File pdfFile = new File(sourceFile);

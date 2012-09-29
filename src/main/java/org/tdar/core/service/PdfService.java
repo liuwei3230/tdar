@@ -50,8 +50,8 @@ public class PdfService implements Serializable {
     enum FontHelper {
         // confirm correct encoding http://stackoverflow.com/questions/1713751/using-java-pdfbox-library-to-write-russian-pdf
         HELVETICA_EIGHT_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 8, 100),
-        HELVETICA_TEN_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 10, 100),
-        HELVETICA_TWELVE_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 12, 100),
+        HELVETICA_TEN_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 10, 90),
+        HELVETICA_TWELVE_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 12, 80),
         HELVETICA_SIXTEEN_POINT(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, new PdfDocEncoding(), 16, 55);
 
         private int fontSize;
@@ -222,7 +222,7 @@ public class PdfService implements Serializable {
 
         cursorPositionFromBottom = writeOnPage(content, document.getTitle(), FontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN, cursorPositionFromBottom);
         cursorPositionFromBottom = writeOnPage(content, "", FontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN, cursorPositionFromBottom);
-        cursorPositionFromBottom = writeLabelPairOnPage(content, "Author(s): ", document.getFormattedAuthorList(), FontHelper.HELVETICA_TWELVE_POINT,
+        cursorPositionFromBottom = writeLabelPairOnPage(content, "Author(s) / Editor(s): ", document.getFormattedAuthorList(), FontHelper.HELVETICA_TWELVE_POINT,
                 LEFT_MARGIN,
                 cursorPositionFromBottom);
         cursorPositionFromBottom = writeLabelPairOnPage(content, "Published: ", document.getFormattedSourceInformation(), FontHelper.HELVETICA_TWELVE_POINT,
@@ -282,7 +282,7 @@ public class PdfService implements Serializable {
         text = text.trim();
 
         for (String line : text.split("([\r|\n]+)")) {
-            logger.debug(line);
+            logger.trace(line);
             content.drawString(line);
             yFromBottom -= fontHelper.getLineHeight();
             content.endText();
@@ -323,7 +323,7 @@ public class PdfService implements Serializable {
         text = text.trim();
 
         for (String line : text.split("([\r|\n]+)")) {
-            logger.debug(line);
+            logger.trace(line);
             content.drawString(line);
             yFromBottom -= fontHelper.getLineHeight();
             content.endText();

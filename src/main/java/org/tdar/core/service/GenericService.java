@@ -2,24 +2,36 @@ package org.tdar.core.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.hibernate.ScrollableResults;
 import org.hibernate.stat.Statistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
+import org.tdar.core.bean.DeHydratable;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Persistable;
+import org.tdar.core.bean.Validatable;
+import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.resource.CodingSheet;
+import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.dao.GenericDao.FindOptions;
+import org.tdar.core.exception.TdarRecoverableRuntimeException;
 
 /**
  * $Id$
@@ -35,11 +47,12 @@ import org.tdar.core.dao.GenericDao.FindOptions;
 @Service
 public class GenericService {
 
-    @Autowired @Qualifier("genericDao")
+    @Autowired
+    @Qualifier("genericDao")
     private GenericDao genericDao;
 
     public static final int MINIMUM_VALID_ID = 0;
-    protected Logger logger = Logger.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Transactional
     public <T> List<T> findRandom(Class<T> persistentClass, int maxResults) {
@@ -55,24 +68,9 @@ public class GenericService {
     }
 
     public <T extends Persistable> List<Long> extractIds(Collection<T> persistables) {
-        List<Long> ids = new ArrayList<Long>();
-        for (T persistable : persistables) {
-            ids.add(persistable.getId());
-        }
-        return ids;
+        return Persistable.Base.extractIds(persistables);
     }
 
-    public <T extends Persistable> List<Long> extractIds(Collection<T> persistables, int max) {
-        List<Long> ids = new ArrayList<Long>();
-        int count = 0;
-        for (T persistable : persistables) {
-            ids.add(persistable.getId());
-            count++;
-            if (count == max)
-                break;
-        }
-        return ids;
-    }
 
     @Transactional(readOnly = false)
     public <T> List<T> findByExample(Class<T> persistentClass, T entity, FindOptions options) {
@@ -81,53 +79,64 @@ public class GenericService {
 
     @Transactional(readOnly = false)
     public <T> List<T> findByExample(Class<T> persistentClass, T entity, List<String> ignoredProperties, FindOptions options) {
-        List<T> found = genericDao.findByExample(persistentClass, entity, ignoredProperties, options);
-        return found;
+        return genericDao.findByExample(persistentClass, entity, ignoredProperties, options);
     }
 
     @Transactional(readOnly = false)
     public <T> Set<T> findByExamples(Class<T> classToCreate, Collection<T> incomingCollection, List<String> ignoreProperties, FindOptions options) {
-        Set<T> toReturn = new HashSet<T>();
-        if (CollectionUtils.isEmpty(incomingCollection)) {
-            return toReturn;
-        }
+        return genericDao.findByExamples(classToCreate, incomingCollection, ignoreProperties, options);
+    }
 
-        for (T incomingElement : incomingCollection) {
-            if (incomingElement == null) {
-                logger.debug("Skipping null example");
-                continue;
-            }
+    /**
+     * Returns a list of full hibernate proxies given a list of sparsely (only id field is required) persistable items.
+     * 
+     * @param incoming
+     * @param cls
+     * @return a list of full hibernate proxies given a list of sparsely (only id field is required) persistable items.
+     */
+    @Transactional(readOnly = true)
+    public <P extends Persistable> List<P> loadFromSparseEntities(Collection<P> incoming, Class<P> cls) {
+        return genericDao.loadFromSparseEntities(incoming, cls);
+    }
 
-            toReturn.addAll(findByExample(classToCreate, incomingElement, ignoreProperties, options));
-        }
-
-        return toReturn;
+    /**
+     * Returns a full hibernate proxy given a sparse (only id field is required) persistable POJO.
+     * 
+     * @param item
+     * @param cls
+     * @return a full hibernate proxy given a sparse (only id field is required) persistable POJO.
+     */
+    @Transactional(readOnly = true)
+    public <P extends Persistable> P loadFromSparseEntity(P item, Class<P> cls) {
+        return genericDao.loadFromSparseEntity(item, cls);
     }
 
     /*
-     * Takes a list of persistable items in and tries to get them back by looking up the id
+     * FIXME: I don't like the generics on this, but I'm not sure what else to do
      */
-    @Transactional
-    public <P extends Persistable> List<P> rehydrateSparseIdBeans(List<P> incoming, Class<P> cls) {
+    @Transactional(readOnly = true)
+    public <P extends Persistable> List<P> populateSparseObjectsById(List<P> sparseObjects, Class<?> cls) {
+        if (!DeHydratable.class.isAssignableFrom(cls)) {
+            throw new TdarRecoverableRuntimeException("not implemented");
+        }
+        // get a unique set of Ids
+        Map<Long, P> ids = Persistable.Base.createIdMap(sparseObjects);
+        logger.info("{}", ids);
+        // populate and put into a unique map
+        Map<Long, P> skeletons = Persistable.Base.createIdMap((List<P>) genericDao.populateSparseObjectsById(ids.keySet(), cls));
+
         List<P> toReturn = new ArrayList<P>();
-        for (P item : incoming) {
-            P tmp = rehydrateSparseIdBean(item, cls);
-            if (tmp != null) {
-                toReturn.add(tmp);
+
+        // iterate over original list and return in order with nulls
+        for (P sparseObject : sparseObjects) {
+            if (sparseObject == null) {
+                toReturn.add(null);
+            } else {
+                toReturn.add(skeletons.get(sparseObject.getId()));
             }
         }
-        return toReturn;
-    }
 
-    /*
-     * takes a persistable in and tries to get it back by looking up the id
-     */
-    @Transactional
-    public <P extends Persistable> P rehydrateSparseIdBean(P item, Class<P> cls) {
-        if (item != null && item.getId() != null && item.getId() > 0) {
-            return find(cls, item.getId());
-        }
-        return null;
+        return toReturn;
     }
 
     @Transactional
@@ -140,12 +149,22 @@ public class GenericService {
         return genericDao.findAll(persistentClass);
     }
 
+    private Map<Class<?>, List<?>> cache = new ConcurrentHashMap<Class<?>, List<?>>();
+
+    @Transactional(readOnly = true)
+    public <T> List<T> findAllWithCache(Class<T> persistentClass) {
+        if (!cache.containsKey(persistentClass)) {
+            cache.put(persistentClass, findAll(persistentClass));
+        }
+        return (List<T>) cache.get(persistentClass);
+    }
+
     @Transactional(readOnly = true)
     public <T> List<T> findAll(Class<T> persistentClass, int start, int numberOfRecords) {
         return genericDao.findAll(persistentClass, start, numberOfRecords);
     }
-    
-    @Transactional(readOnly=true)
+
+    @Transactional(readOnly = true)
     public <T> List<T> findAllSorted(Class<T> persistentClass) {
         return genericDao.findAllSorted(persistentClass);
     }
@@ -190,6 +209,7 @@ public class GenericService {
 
     @Transactional
     public void save(Object obj) {
+        enforceValidation(obj);
         genericDao.save(obj);
     }
 
@@ -200,11 +220,13 @@ public class GenericService {
 
     @Transactional
     public void persist(Object entity) {
+        enforceValidation(entity);
         genericDao.persist(entity);
     }
 
     @Transactional
     public void save(Collection<?> persistentCollection) {
+        enforceValidation(persistentCollection);
         genericDao.save(persistentCollection);
     }
 
@@ -215,12 +237,39 @@ public class GenericService {
 
     @Transactional
     public void saveOrUpdate(Object obj) {
+        enforceValidation(obj);
         genericDao.saveOrUpdate(obj);
+    }
+    
+    @Transactional
+    public void saveOrUpdate(Collection<?> persistentCollection) {
+        enforceValidation(persistentCollection);
+        genericDao.saveOrUpdate(persistentCollection);
+    }
+
+
+    private void enforceValidation(Object obj) {
+        if (obj instanceof Collection) {
+            for (Object item : (Collection) obj) {
+                enforceValidation(item);
+            }
+        } else {
+            Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+            Set<ConstraintViolation<Object>> violations = validator.validate(obj);
+            if (violations.size() > 0) {
+                logger.debug(String.format("violations: %s", violations));
+                throw new TdarRecoverableRuntimeException(String.format("This object %s is not valid %s", obj, violations));
+            }
+            if (obj instanceof Validatable && !((Validatable) obj).isValid()) {
+                throw new TdarRecoverableRuntimeException(String.format("This object %s is not valid", obj));
+            }
+        }
     }
 
     @Transactional
     public void saveOrUpdate(Object... obj) {
         for (Object _obj : obj) {
+            enforceValidation(obj);
             saveOrUpdate(_obj);
         }
     }
@@ -301,4 +350,25 @@ public class GenericService {
         Statistics stats = genericDao.getSessionStatistics();
         return stats.getSessionOpenCount() - stats.getSessionCloseCount();
     }
+
+
+    /**
+     * Deletes all entities from the given persistent class. Use with caution!
+     * 
+     * @param persistentClass
+     * @return the number of deleted entities
+     * @see org.tdar.core.dao.GenericDao#deleteAll(java.lang.Class)
+     */
+    public <E extends Persistable> int deleteAll(Class<E> persistentClass) {
+        return genericDao.deleteAll(persistentClass);
+    }
+
+    protected GenericDao getDao() {
+        return genericDao;
+    }
+
+    public void forceDelete(Object entity) {
+        genericDao.forceDelete(entity);
+    }
+
 }

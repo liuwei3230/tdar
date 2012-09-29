@@ -46,6 +46,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
+import org.tdar.core.configuration.TdarConfiguration;
 /**
  * @author Adam Brin
  * 
@@ -64,7 +65,7 @@ public class CommandLineAPITool {
 
     Logger logger = Logger.getLogger(getClass());
     DefaultHttpClient httpclient = new DefaultHttpClient();
-    private String hostname = CORE_TDAR_ORG;
+    private String hostname = ALPHA_TDAR_ORG; // DEFAULT SHOULD NOT BE CORE
     private String username = "";
     private String password = "";
     private Long projectId;
@@ -81,25 +82,26 @@ public class CommandLineAPITool {
     @SuppressWarnings("static-access")
     public static void main(String[] args) {
         CommandLineAPITool importer = new CommandLineAPITool();
-
+        
+        String siteAcronym = TdarConfiguration.getInstance().getSiteAcroynm();
         Options options = new Options();
-        options.addOption(OptionBuilder.withArgName(OPTION_USERNAME).hasArg().withDescription("tDAR username")
+        options.addOption(OptionBuilder.withArgName(OPTION_USERNAME).hasArg().withDescription(siteAcronym + " username")
                 .create(OPTION_USERNAME));
-        options.addOption(OptionBuilder.withArgName(OPTION_PASSWORD).hasArg().withDescription("tDAR password")
+        options.addOption(OptionBuilder.withArgName(OPTION_PASSWORD).hasArg().withDescription(siteAcronym + " password")
                 .create(OPTION_PASSWORD));
-        options.addOption(OptionBuilder.withArgName(OPTION_HOST).hasArg().withDescription("override hostname (default core.tdar.org)")
+        options.addOption(OptionBuilder.withArgName(OPTION_HOST).hasArg().withDescription("override hostname (default alpha.tdar.org)")
                 .create(OPTION_HOST));
         options.addOption(OptionBuilder.withArgName(OPTION_FILE).hasArg().withDescription("the file(s) or directories to process")
                 .create(OPTION_FILE));
         options.addOption(OptionBuilder.withArgName(OPTION_CONFIG).hasArg().withDescription("optional configuration file")
                 .create(OPTION_CONFIG));
-        options.addOption(OptionBuilder.withArgName(OPTION_PROJECT_ID).hasArg().withDescription("tDAR Project ID to associate w/ resource")
+        options.addOption(OptionBuilder.withArgName(OPTION_PROJECT_ID).hasArg().withDescription(siteAcronym + " Project ID to associate w/ resource")
                 .create(OPTION_PROJECT_ID));
         CommandLineParser parser = new GnuParser();
 
         // TODO: lies! all lies!!!
         System.out.println("visit http://dev.tdar.org/confluence/");
-        System.out.println("for documentation on how to use the tDAR");
+        System.out.println("for documentation on how to use the " + siteAcronym);
         System.out.println("commandline API Tool");
         System.out.println("-------------------------------------------");
         String[] filenames = new String[0];
@@ -156,7 +158,7 @@ public class CommandLineAPITool {
             exp.printStackTrace();
             System.err.println("ParseException:" + exp);
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("tDAR cli api tool", options);
+            formatter.printHelp(siteAcronym + " cli api tool", options);
             System.exit(1);
         }
 
@@ -207,7 +209,7 @@ public class CommandLineAPITool {
             // make tdar authentication call
             HttpPost tdarAuth = new HttpPost("http://" + getHostname() + "/login/process");
             List<NameValuePair> postNameValuePairs = new ArrayList<NameValuePair>();
-            postNameValuePairs.add(new BasicNameValuePair("loginEmail", getUsername()));
+            postNameValuePairs.add(new BasicNameValuePair("loginUsername", getUsername()));
             postNameValuePairs.add(new BasicNameValuePair("loginPassword", getPassword()));
 
             tdarAuth.setEntity(new UrlEncodedFormEntity(postNameValuePairs, HTTP.UTF_8));
@@ -304,13 +306,13 @@ public class CommandLineAPITool {
             logger.debug("setting projectId:" + projectId);
             reqEntity.addPart("projectId", new StringBody(projectId.toString()));
         }
-
         if (!CollectionUtils.isEmpty(attachments)) {
             for (int i = 0; i < attachments.size(); i++) {
                 reqEntity.addPart("uploadFile", new FileBody(attachments.get(i)));
             }
         }
         apicall.setEntity(reqEntity);
+        logger.debug("      files: " + StringUtils.join(attachments, ", "));
 
         HttpResponse response = httpclient.execute(apicall);
         int statusCode = response.getStatusLine().getStatusCode();

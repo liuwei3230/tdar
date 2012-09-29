@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 import org.tdar.TestConstants;
+import org.tdar.core.configuration.TdarConfiguration;
 
 public class ThumbnailITCase extends AbstractAdminAuthenticatedWebTestCase {
 
@@ -47,6 +48,10 @@ public class ThumbnailITCase extends AbstractAdminAuthenticatedWebTestCase {
         setInput(IMAGE_TITLE_FIELDNAME, IMAGE_TITLE);
         setInput(DESCRIPTION_FIELDNAME, DESCRIPTION);
         setInput("image.date", "1984");
+        if (TdarConfiguration.getInstance().getCopyrightMandatory()) {
+            setInput(TestConstants.COPYRIGHT_HOLDER_TYPE, "Institution");
+            setInput(TestConstants.COPYRIGHT_HOLDER_PROXY_INSTITUTION_NAME, "Elsevier");
+        }
         // FIXME: need to create input
         addFileProxyFields(0, true, TEST_IMAGE_NAME);
         setInput("resourceAvailability", "Public");
@@ -60,7 +65,8 @@ public class ThumbnailITCase extends AbstractAdminAuthenticatedWebTestCase {
         logger.debug("view:" + viewPage);
         logger.debug("edit:" + editPage);
         logger.info(getPageText());
-        assertTextPresent("/thumbnail");
+        // we're dealing with a confidential file, should not be there
+        assertTextNotPresent("/thumbnail");
         String pageCode = getPageCode();
         Pattern p = Pattern.compile("/filestore/(\\d+)(/?)");
         Matcher m = p.matcher(pageCode);

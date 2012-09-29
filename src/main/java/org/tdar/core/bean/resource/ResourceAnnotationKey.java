@@ -17,6 +17,8 @@ import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Norms;
+import org.hibernate.search.annotations.Store;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.search.index.analyzer.AutocompleteAnalyzer;
@@ -56,7 +58,7 @@ public class ResourceAnnotationKey extends Persistable.Base implements Indexable
     private ResourceAnnotationDataType annotationDataType;
 
     @Column(length = 128, unique = true)
-    @Fields({ @Field(name = "annotationkey_auto", analyzer = @Analyzer(impl = AutocompleteAnalyzer.class)), @Field })
+    @Fields({ @Field(name = "annotationkey_auto", norms = Norms.NO, store = Store.YES, analyzer = @Analyzer(impl = AutocompleteAnalyzer.class)) })
     private String key;
 
     @Column(length = 128, name = "format_string")
@@ -71,7 +73,6 @@ public class ResourceAnnotationKey extends Persistable.Base implements Indexable
         return resourceAnnotationType;
     }
 
-    
     public void setResourceAnnotationType(ResourceAnnotationType resourceAnnotationType) {
         this.resourceAnnotationType = resourceAnnotationType;
     }
@@ -135,7 +136,6 @@ public class ResourceAnnotationKey extends Persistable.Base implements Indexable
     public Explanation getExplanation() {
         return explanation;
     }
-
 
     public void setExplanation(Explanation explanation) {
         this.explanation = explanation;

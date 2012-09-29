@@ -17,7 +17,8 @@ import org.apache.struts2.interceptor.ServletResponseAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.entity.AuthenticationToken;
@@ -60,7 +61,8 @@ import com.opensymphony.xwork2.ActionSupport;
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Revision$
  */
-@Configuration
+@Scope("prototype")
+@Controller
 public abstract class TdarActionSupport extends ActionSupport implements ServletRequestAware, ServletResponseAware {
 
     private static final long serialVersionUID = 7084489869489013998L;
@@ -188,63 +190,115 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
     }
 
     public String getThemeDir() {
-        return TdarConfiguration.getInstance().getThemeDir();
+        return getTdarConfiguration().getThemeDir();
     }
 
-   public String getGoogleMapsApiKey() {
-        return TdarConfiguration.getInstance().getGoogleMapsApiKey();	
-   }
+    public String getCulturalTermsHelpUrl() {
+        return getTdarConfiguration().getCulturalTermsHelpURL();
+    }
+
+    public String getInvestigationTypesHelpUrl() {
+        return getTdarConfiguration().getInvestigationTypesHelpURL();
+    }
+
+    public String getMaterialTypesHelpUrl() {
+        return getTdarConfiguration().getMaterialTypesHelpURL();
+    }
+
+    public String getSiteTypesHelpUrl() {
+        return getTdarConfiguration().getSiteTypesHelpURL();
+    }
+
+    public String getGoogleMapsApiKey() {
+        return getTdarConfiguration().getGoogleMapsApiKey();
+    }
 
     public String getGoogleAnalyticsId() {
-        return TdarConfiguration.getInstance().getGoogleAnalyticsId();
+        return getTdarConfiguration().getGoogleAnalyticsId();
     }
 
     public boolean getPrivacyControlsEnabled() {
-        return TdarConfiguration.getInstance().getPrivacyControlsEnabled();
+        return getTdarConfiguration().getPrivacyControlsEnabled();
     }
-    
+
     public boolean isCopyrightMandatory() {
-        return TdarConfiguration.getInstance().getCopyrightMandatory();
-    }
-
-    public boolean isCopyrightEnabled() {
-        return TdarConfiguration.getInstance().getCopyrightEnabled();
+        return getTdarConfiguration().getCopyrightMandatory();
     }
     
-    public boolean getLicensesEnabled() {
-        return TdarConfiguration.getInstance().getLicensesEnabled();
+    public boolean isLicensesEnabled() {
+    	return getTdarConfiguration().getLicenseEnabled();
+    }
+    
+    public String getServerEnvironmentStatus() {
+        return getTdarConfiguration().getServerEnvironmentStatus();
     }
 
-    public String getServerEnvironmentStatus() {
-        return TdarConfiguration.getInstance().getServerEnvironmentStatus();
+    public String getHostName() {
+    	return getTdarConfiguration().getHostName();
+    }
+   
+    public String getSiteAcronym() {
+        return getTdarConfiguration().getSiteAcroynm();
+    }
+
+    public String getSiteName() {
+        return getTdarConfiguration().getSiteName();
+    }
+
+    public String getCommentUrl() {
+        return getTdarConfiguration().getCommentUrl();
+    }
+    
+    public String getCommentUrlEscaped() {
+    	String input = 	getTdarConfiguration().getCommentUrl();
+    	int length = input.length();
+    	StringBuffer output = new StringBuffer(length * 6);
+    	for(int i = 0; i < input.length(); i++){
+    		output.append("&#");
+    		output.append((int)input.charAt(i));
+    		output.append(";");
+    	}
+    	return output.toString();
+    }
+    
+    public String getBugReportUrl() {
+        return getTdarConfiguration().getBugReportUrl();
+    }
+    
+    public String getDocumentationUrl() {
+        return getTdarConfiguration().getDocumentationUrl();
     }
 
     public boolean isProduction() {
-        return TdarConfiguration.getInstance().getServerEnvironmentStatus().equalsIgnoreCase(TdarConfiguration.PRODUCTION);
+        return getTdarConfiguration().getServerEnvironmentStatus().equalsIgnoreCase(TdarConfiguration.PRODUCTION);
     }
 
     public String getHelpUrl() {
-        return TdarConfiguration.getInstance().getHelpUrl();
+        return getTdarConfiguration().getHelpUrl();
     }
 
     public String getAboutUrl() {
-        return TdarConfiguration.getInstance().getAboutUrl();
+        return getTdarConfiguration().getAboutUrl();
     }
 
     public String getCommentsUrl() {
-        return TdarConfiguration.getInstance().getAboutUrl();
+        return getTdarConfiguration().getAboutUrl();
+    }
+
+    public Boolean isRPAEnabled() {
+    	return getTdarConfiguration().isRPAEnabled();
     }
 
     public String getGMapDefaultLat() {
         DecimalFormat latlong = new DecimalFormat("0.00");
         latlong.setGroupingUsed(false);
-        return latlong.format(TdarConfiguration.getInstance().getGmapDefaultLat());
+        return latlong.format(getTdarConfiguration().getGmapDefaultLat());
     }
 
     public String getGMapDefaultLng() {
         DecimalFormat latlong = new DecimalFormat("0.00");
         latlong.setGroupingUsed(false);
-        return latlong.format(TdarConfiguration.getInstance().getGmapDefaultLng());
+        return latlong.format(getTdarConfiguration().getGmapDefaultLng());
     }
 
     protected void clearAuthenticationToken() {
@@ -309,7 +363,8 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
     public SearchIndexService getSearchIndexService() {
         return searchIndexService;
     }
-
+    
+ 
     /**
      * Returns a list of Strings resulting from applying toString to each
      * element of the incoming Collection.
@@ -405,5 +460,5 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
         coverageTypes.add(CoverageType.RADIOCARBON_DATE);
         return coverageTypes;
     }
-
+    
 }

@@ -31,6 +31,7 @@ import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.SensoryData;
+import org.tdar.core.bean.resource.Video;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 
 import edu.asu.lib.dc.DublinCoreDocument;
@@ -280,6 +281,9 @@ public abstract class DcTransformer<R extends Resource> implements Transformer<R
     public static class SensoryDataTransformer extends InformationResourceTransformer<SensoryData> {
     }
 
+    public static class VideoTransformer extends InformationResourceTransformer<Video> {
+    }
+
     public static class CodingSheetTransformer extends InformationResourceTransformer<CodingSheet> {
     }
 
@@ -312,6 +316,8 @@ public abstract class DcTransformer<R extends Resource> implements Transformer<R
                 return new ProjectTransformer().transform((Project) resource);
             case SENSORY_DATA:
                 return new SensoryDataTransformer().transform((SensoryData) resource);
+            case VIDEO:
+                return new VideoTransformer().transform((Video)resource);
             default:
                 break;
         }

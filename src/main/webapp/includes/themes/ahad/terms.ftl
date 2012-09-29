@@ -3,8 +3,11 @@
 <h3>Preamble</h3>
 <p>The Australian Historical Archaeological Database (‘<i>AHAD</i>’) provides the platform to share unpublished catalogues, datasets, documents, manuscripts, images and published works (‘<i>resources</i>’), or parts thereof, for the purposes of conducting research, and creating new archaeological knowledge.  Individuals and/or the Institutions they may represent (‘<i>Users</i>’) are expected to use these resources respectfully, to observe the copyright and other conditions stated on this website, and where appropriate share the results of their resulting research by publishing it on AHAD or other sustainable public archive for archaeological data.</p>
 <p>The majority of AHAD resources represent years of research by numerous archaeologists, historians and other specialists, and some describe material culture of high significance to some communities.  Depositors are expected to make every effort to identify the creators and copyright holders of these works, and other parties with vested interest in the resources, prior to publication.</p>
-<p>Unless otherwise stated, all works published on this site are subject to the <i><a href="http://creativecommons.org/licenses/by-nc-sa/3.0/au/">Creative Commons Attribution License</a></i> (CC BY-NC-SA 3.0).
+<p>Unless otherwise stated, all works published on this site are subject to the <i><a href="http://creativecommons.org/licenses/by-nc-sa/3.0/au/" target="_blank">Creative Commons Attribution License</a></i> (CC BY-NC-SA 3.0).
 This User Agreement is subject to change.</p>
+<a href="#" onclick="$('#fullLicenseText').toggle();">View full text of agreement</a>
+
+<div id="fullLicenseText" style="display: none;">
 <h3>Conditions of Use</h3>
 <p>Users may copy or distribute AHAD resources of parts thereof and/or use them in derivative works provided the following conditions are met:
 <ol>
@@ -55,3 +58,4 @@ The AHAD Site Administrator and AHAD Editor has/have the technical ability to ac
 <li>the user will be notified of the changes. </li>
 </ul>
 <p>If more complex changes are required, e.g. to Site Name keywords, the AHAD editor will liaise with the User prior to making changes.</p>
+</div>

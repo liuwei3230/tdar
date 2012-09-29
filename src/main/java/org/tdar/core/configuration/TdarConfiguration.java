@@ -10,7 +10,8 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdar.filestore.Filestore;
 import org.tdar.filestore.PairtreeFilestore;
 
@@ -28,21 +29,18 @@ public class TdarConfiguration {
 
     public static final int DEFAULT_SCHEDULED_PROCESS_START_ID = 0;
     public static final int DEFAULT_SCHEDULED_PROCESS_END_ID = 400000;
-    
 
     public static final String DEFAULT_HOSTNAME = "core.tdar.org";
-    public static final String DEFAULT_HOST_URL = "http://core.tdar.org";
     public static final int DEFAULT_PORT = 80; // we use this in test
-    public final static String DEFAULT_SMTP_HOST = "localhost";
-    
+    public static final String DEFAULT_SMTP_HOST = "localhost";
     private static final String SYSTEM_ADMIN_EMAIL = "tdar-svn@lists.asu.edu";
 
     public static final int DEFAULT_AUTHORITY_MANAGEMENT_DUPE_LIST_MAX_SIZE = 10;
     public static final int DEFAULT_AUTHORITY_MANAGEMENT_MAX_AFFECTED_RECORDS = 100;
 
     public static final int DEFAULT_SEARCH_EXCEL_EXPORT_RECORD_MAX = 1000;
-    
-    private final transient static Logger logger = Logger.getLogger(TdarConfiguration.class);
+
+    private final transient static Logger logger = LoggerFactory.getLogger(TdarConfiguration.class);
 
     private ConfigurationAssistant assistant;
 
@@ -52,21 +50,26 @@ public class TdarConfiguration {
 
     private final static TdarConfiguration INSTANCE = new TdarConfiguration();
     public static final String PRODUCTION = "production";
+    private static final int USE_DEFAULT_EXCEL_ROWS = -1;
 
     private TdarConfiguration() {
         this("/tdar.properties");
     }
 
-    private TdarConfiguration(String configurationFile) {
+    public void setConfigurationFile(String configurationFile) {
         assistant = new ConfigurationAssistant();
         assistant.loadProperties(configurationFile);
         filestore = loadFilestore();
         initPersonalFilestorePath();
         testQueue();
-        System.setProperty("java.awt.headless", "true");
         initializeStopWords();
     }
     
+    private TdarConfiguration(String configurationFile) {
+        System.setProperty("java.awt.headless", "true");
+        setConfigurationFile(configurationFile);
+    }
+
     private void initializeStopWords() {
         try {
             stopWords.addAll(IOUtils.readLines(new FileInputStream(assistant.getStringProperty("lucene.stop.words.file"))));
@@ -102,7 +105,7 @@ public class TdarConfiguration {
             logger.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
-        logger.info("instantiating filestore: " + filestore.getClass().getCanonicalName());
+        logger.info("instantiating filestore: {}", filestore.getClass().getCanonicalName());
         return filestore;
     }
 
@@ -112,7 +115,7 @@ public class TdarConfiguration {
         String msg = null;
         boolean pathExists = true;
         try {
-            logger.info("initializing personal filestore at " + getPersonalFileStoreLocation());
+            logger.info("initializing personal filestore at {}", getPersonalFileStoreLocation());
             if (!personalFilestoreHome.exists()) {
                 pathExists = personalFilestoreHome.mkdirs();
                 if (!pathExists) {
@@ -135,8 +138,8 @@ public class TdarConfiguration {
     }
 
     public String getBaseUrl() {
-		String base = "http://" + getHostName();
-	    if (getPort() != 80) {
+        String base = "http://" + getHostName();
+        if (getPort() != 80) {
             base += ":" + getPort();
         }
         return base;
@@ -146,9 +149,9 @@ public class TdarConfiguration {
         return assistant.getStringProperty("app.hostname", DEFAULT_HOSTNAME);
     }
 
-	public String getEmailHostName() {
-	    return assistant.getStringProperty("app.email.hostname", getHostName());
-	}
+    public String getEmailHostName() {
+        return assistant.getStringProperty("app.email.hostname", getHostName());
+    }
 
     public int getPort() {
         return assistant.getIntProperty("app.port", DEFAULT_PORT);
@@ -197,15 +200,11 @@ public class TdarConfiguration {
 
     }
     
-    public boolean getLicensesEnabled() {
-        return assistant.getBooleanProperty("licenses.enabled", false);
-    }
-    
-    public boolean getCopyrightMandatory() {
-        return assistant.getBooleanProperty("copyright.fields.mandatory", false);
+    public boolean getLicenseEnabled() {
+    	return assistant.getBooleanProperty("licenses.enabled", false);    	
     }
 
-    public boolean getCopyrightEnabled() {
+    public boolean getCopyrightMandatory() {
         return assistant.getBooleanProperty("copyright.fields.enabled", false);
     }
 
@@ -309,10 +308,14 @@ public class TdarConfiguration {
     }
 
     /**
-     * @return the theme
+     * @return the theme directory
      */
     public String getThemeDir() {
-        return assistant.getStringProperty("app.theme.dir", "/includes/themes/tdar/");
+        String dir = assistant.getStringProperty("app.theme.dir", "includes/themes/tdar/");
+        if (dir.startsWith("/")) {
+            dir = dir.substring(1);
+        }
+        return dir;
     }
 
     /**
@@ -327,9 +330,8 @@ public class TdarConfiguration {
     }
 
     public String getGoogleMapsApiKey() {
-        return assistant.getStringProperty("googlemaps.apikey","ABQIAAAA9NaKjBJpcVyUYJMRSYQl8xS0DQCUA87cCG9n-o92VKwf-4ptwhSBrQY9Wnb4P_utINrjb3QZf1KuBw");
+        return assistant.getStringProperty("googlemaps.apikey", "ABQIAAAA9NaKjBJpcVyUYJMRSYQl8xS0DQCUA87cCG9n-o92VKwf-4ptwhSBrQY9Wnb4P_utINrjb3QZf1KuBw");
     }
-
 
     public String getRecaptchaPrivateKey() {
         return assistant.getStringProperty("recaptcha.privateKey");
@@ -340,7 +342,7 @@ public class TdarConfiguration {
     }
 
     public String getRepositoryName() {
-        return assistant.getStringProperty("oai.repository.name", "tDAR - the Digital Archaeological Record");
+        return assistant.getStringProperty("oai.repository.name", "the Digital Archaeological Record");
     }
 
     public boolean enableTdarFormatInOAI() {
@@ -395,4 +397,58 @@ public class TdarConfiguration {
         return PRODUCTION.equals(getServerEnvironmentStatus());
     }
 
+    public int getMaxSpreadSheetRows() {
+        return assistant.getIntProperty("excel.export.rowMax", USE_DEFAULT_EXCEL_ROWS);
+    }
+
+    public String getCulturalTermsHelpURL() {
+        return assistant.getStringProperty("help.url.cultural", "http://dev.tdar.org/confluence/display/TDAR/Cultural+Terms");
+    }
+
+    public String getInvestigationTypesHelpURL() {
+        return assistant.getStringProperty("help.url.investigation", "http://dev.tdar.org/confluence/display/TDAR/Investigation+Types");
+    }
+
+    public String getMaterialTypesHelpURL() {
+        return assistant.getStringProperty("help.url.material", "http://dev.tdar.org/confluence/display/TDAR/Material+Types");
+    }
+
+    public String getSiteTypesHelpURL() {
+        return assistant.getStringProperty("help.url.site", "http://dev.tdar.org/confluence/display/TDAR/Site+Types");
+    }
+
+    /*
+     * Returns the collectionId to use for finding featured resources within
+     * 
+     * @default -1 -- used to say any colleciton
+     */
+    public Long getFeaturedCollectionId() {
+        return assistant.getLongProperty("featured.collection.id", -1);
+    }
+
+    
+    public String getDocumentationUrl() {
+        return assistant.getStringProperty("help.baseurl", "http://dev.tdar.org/confluence/display/TDAR/User+Documentation");
+    }
+
+    public String getBugReportUrl() {
+        return assistant.getStringProperty("bugreport.url", "http://dev.tdar.org/jira");
+    }
+
+    public String getCommentUrl() {
+        return assistant.getStringProperty("comment.url", "mailto:comments@tdar.org");
+    }
+
+    public String getSiteAcroynm() {
+        return assistant.getStringProperty("site.acronym", "tDAR");
+    }
+
+    public String getSiteName() {
+        return assistant.getStringProperty("site.name", "the Digital Archaeological Record");
+    }
+
+    public Boolean isRPAEnabled() {
+    	return assistant.getBooleanProperty("rpa.enabled", true);
+    }
+    
 }

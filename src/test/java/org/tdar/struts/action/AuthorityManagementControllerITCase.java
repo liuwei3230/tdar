@@ -6,21 +6,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.DedupeableType;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
-import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.service.GenericService;
+import org.tdar.core.service.external.EmailService;
 
 public class AuthorityManagementControllerITCase extends AbstractAdminControllerITCase{
     
@@ -29,6 +31,10 @@ public class AuthorityManagementControllerITCase extends AbstractAdminController
     
     @Autowired
     private GenericService genericService;
+    
+    @Autowired 
+    EmailService emailService;
+    
     
     @Before 
     public void setup() {
@@ -39,6 +45,8 @@ public class AuthorityManagementControllerITCase extends AbstractAdminController
     protected TdarActionSupport getController() {
         return controller;
     }
+    
+   
     
     @Test
     public void testIndex() {

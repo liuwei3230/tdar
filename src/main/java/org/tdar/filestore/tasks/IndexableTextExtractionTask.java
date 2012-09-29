@@ -3,10 +3,15 @@
  */
 package org.tdar.filestore.tasks;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.metadata.Metadata;
@@ -14,10 +19,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.tdar.core.bean.resource.InformationResourceFileVersion;
-import org.tdar.core.bean.resource.InformationResourceFileVersion.VersionType;
-import org.tdar.core.exception.TdarRecoverableRuntimeException;
-import org.tdar.filestore.WorkflowContext;
+import org.tdar.core.bean.resource.VersionType;
 import org.tdar.filestore.tasks.Task.AbstractTask;
 
 /**
@@ -27,25 +29,7 @@ import org.tdar.filestore.tasks.Task.AbstractTask;
  */
 public class IndexableTextExtractionTask extends AbstractTask {
 
-    public static void main(String[] args) {
-        IndexableTextExtractionTask task = new IndexableTextExtractionTask();
-        String baseDir = "C:\\Users\\Adam Brin\\Downloads\\";
-        String orig = "4759782488_ab3452a4eb_b.jpg";
-        WorkflowContext ctx = new WorkflowContext();
-        File origFile = new File(baseDir, orig);
-
-        task.setWorkflowContext(ctx);
-
-        InformationResourceFileVersion vers = task.generateInformationResourceFileVersion(new File(baseDir, orig), VersionType.UPLOADED);
-        ctx.setOriginalFile(vers);
-        try {
-            task.run(origFile);
-        } catch (Exception e) {
-            throw new TdarRecoverableRuntimeException("processing error", e);
-        }
-        String outXML = task.getWorkflowContext().toXML();
-        System.out.println(outXML);
-    }
+    private static final long serialVersionUID = -5207578211297342261L;
 
     @Override
     public void run() throws Exception {
@@ -56,23 +40,25 @@ public class IndexableTextExtractionTask extends AbstractTask {
         InputStream input = new FileInputStream(file);
         Tika tika = new Tika();
         Metadata metadata = new Metadata();
-        Exception exception = null;
         String mimeType = tika.detect(input);
         metadata.set(Metadata.CONTENT_TYPE, mimeType);
 
         Parser parser = new AutoDetectParser();
         ParseContext parseContext = new ParseContext();
 
-        BodyContentHandler handler = new BodyContentHandler(-1);
-        parser.parse(new FileInputStream(file), handler, metadata, parseContext);
+        File indexFile = new File(getWorkflowContext().getWorkingDirectory(), file.getName() + ".index.txt");
+        File metadataFile = new File(getWorkflowContext().getWorkingDirectory(), file.getName() + ".metadata");
+        FileOutputStream indexOutputStream = new FileOutputStream(indexFile);
+        BufferedOutputStream indexedFileOutputStream = new BufferedOutputStream(indexOutputStream);
+        FileOutputStream metadataOutputStream = new FileOutputStream(metadataFile);
+        BodyContentHandler handler = new BodyContentHandler(indexedFileOutputStream);
+        FileInputStream stream = new FileInputStream(file);
+        parser.parse(stream, handler, metadata, parseContext);
+        IOUtils.closeQuietly(indexedFileOutputStream);
+        addDerivativeFile(indexFile, VersionType.INDEXABLE_TEXT);
 
-        try {
-            addDerivativeFile(file, "txt", handler.toString(), VersionType.INDEXABLE_TEXT);
-        } catch (Exception e) {
-            exception = e;
-        }
-        StringBuilder sw = new StringBuilder();
         for (String name : metadata.names()) {
+            StringWriter sw = new StringWriter();
             if (StringUtils.isNotBlank(metadata.get(name))) {
                 sw.append(name).append(":");
                 if (metadata.isMultiValued(name)) {
@@ -81,12 +67,12 @@ public class IndexableTextExtractionTask extends AbstractTask {
                     sw.append(metadata.get(name));
                 }
                 sw.append("\r\n");
+                IOUtils.write(sw.toString(), metadataOutputStream);
             }
         }
-        addDerivativeFile(file, "metadata", sw.toString(), VersionType.METADATA);
-        if (exception != null) {
-            throw exception;
-        }
+        IOUtils.closeQuietly(stream);
+        IOUtils.closeQuietly(metadataOutputStream);
+        addDerivativeFile(metadataFile, VersionType.METADATA);
     }
 
     @Override

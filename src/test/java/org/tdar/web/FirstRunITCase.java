@@ -10,8 +10,10 @@ import static org.tdar.TestConstants.TEST_DOCUMENT_NAME;
 import java.net.URL;
 
 import org.junit.Test;
+import org.tdar.TestConstants;
 import org.tdar.URLConstants;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.configuration.TdarConfiguration;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
@@ -32,12 +34,17 @@ public class FirstRunITCase extends AbstractAuthenticatedWebTestCase {
         gotoPage(originalLocation);
         // assume that you're at /project/list
         clickLinkWithText("New Document");
-        assertTextPresentInPage("Create a Document");
+        assertTextPresentInPage("Create a new Document");
         setInput("document.title", TEST_TITLE);
-        setInput("resource.description", TEST_ABSTRACT);
-        setInput("resource.date", "1934");
+        setInput("document.description", TEST_ABSTRACT);
+        setInput("document.date", "1934");
         setInput("ticketId", ticketId);
         setInput("projectId", Long.toString(ADMIN_PROJECT_ID));
+        if (TdarConfiguration.getInstance().getCopyrightMandatory()) {
+            setInput(TestConstants.COPYRIGHT_HOLDER_TYPE, "Institution");
+            setInput(TestConstants.COPYRIGHT_HOLDER_PROXY_INSTITUTION_NAME, "Elsevier");
+        }
+        
         addFileProxyFields(0, false, TEST_DOCUMENT_NAME);
         submitForm();
         HtmlPage page = (HtmlPage) internalPage;
@@ -72,12 +79,17 @@ public class FirstRunITCase extends AbstractAuthenticatedWebTestCase {
         String codingSheetRules = "1,test,test description\r\n";
         codingSheetRules += "2,test2,\"another description\"";
 
-        assertTextPresentInPage("Register a New Coding Sheet");
+        assertTextPresentInPage("Create a new Coding Sheet");
         setInput("codingSheet.title", TEST_TITLE);
         setInput("codingSheet.date", "1934");
         setInput("codingSheet.description", TEST_ABSTRACT);
         setInput("fileTextInput", codingSheetRules);
         setInput("projectId", Long.toString(ADMIN_PROJECT_ID));
+        if (TdarConfiguration.getInstance().getCopyrightMandatory()) {
+            setInput(TestConstants.COPYRIGHT_HOLDER_TYPE, "Institution");
+            setInput(TestConstants.COPYRIGHT_HOLDER_PROXY_INSTITUTION_NAME, "Elsevier");
+        }
+        
         submitForm();
         assertPageTitleEquals(TEST_TITLE);
         assertTextPresentInPage(TEST_ABSTRACT);

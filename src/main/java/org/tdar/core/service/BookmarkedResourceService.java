@@ -3,13 +3,14 @@ package org.tdar.core.service;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.resource.BookmarkedResource;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.resource.BookmarkedResourceDao;
+import org.tdar.core.configuration.TdarConfiguration;
 
 /**
  * $Id$
@@ -20,11 +21,6 @@ import org.tdar.core.dao.resource.BookmarkedResourceDao;
 @Transactional
 @Service
 public class BookmarkedResourceService extends ServiceInterface.TypedDaoBase<BookmarkedResource, BookmarkedResourceDao> {
-
-    @Autowired
-    public void setDao(BookmarkedResourceDao dao) {
-        super.setDao(dao);
-    }
 
     @Transactional(readOnly=true)
     public boolean isAlreadyBookmarked(Resource resource, Person person) {
@@ -48,7 +44,7 @@ public class BookmarkedResourceService extends ServiceInterface.TypedDaoBase<Boo
         bookmark.setResource(resource);
         // FIXME: names should be editable by the user, and have a better default.
         // not sure why names are constructed this way, was in previous bookmarking code.
-        bookmark.setName("Bookmark for tDAR resource:" + resource.getId());
+        bookmark.setName("Bookmark for " + TdarConfiguration.getInstance().getSiteAcroynm() + " resource:" + resource.getId());
         bookmark.setTimestamp(new Date());
         bookmark.setPerson(person);
         resource.getBookmarks().add(bookmark);
@@ -70,7 +66,7 @@ public class BookmarkedResourceService extends ServiceInterface.TypedDaoBase<Boo
     }
     
     @Transactional(readOnly=true)
-    public List<Resource> findResourcesByPerson(Person person) {
-        return getDao().findResourcesByPerson(person);
+    public List<Resource> findResourcesByPerson(Person person,List<Status> statuses) {
+        return getDao().findResourcesByPerson(person, statuses);
     }
 }

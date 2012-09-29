@@ -1,6 +1,6 @@
 <#import "/WEB-INF/macros/resource/navigation-macros.ftl" as nav>
 <head>
-<title>Register with the Digital Archaeological Record</title>
+<title>Register with ${siteName}</title>
 <meta name="lastModifiedDate" content="$Date$"/>
 <style type="text/css">
 label.error {display:block;}
@@ -15,6 +15,10 @@ textarea {width:32em}
 </style>
 <script type='text/javascript'>
 $(function() {
+  setTimeout(function() {
+    alert("Your session has timed out, click ok to refresh the page.");
+    location.reload(true);
+  }, ${registrationTimeout?c});
   $('#contributor-id').click(function() {
     switchContributorReasonDisplay($(this).is(':checked'));
   });
@@ -29,6 +33,9 @@ $(function() {
       },
       password: {
         minlength: 3
+      },
+      username: {
+        minlength: 5
       },
       confirmPassword: {
         minlength: 3,
@@ -54,13 +61,16 @@ $(function() {
       },
     },
   });
+
+  $('#firstName').focus();
+  
 });
 function switchContributorReasonDisplay(shouldDisplay) {
   $('#contributorReasonTextArea').toggle(shouldDisplay);
   $('#contributorReasonId').attr("disabled", ! shouldDisplay);
-  if (shouldDisplay) {
-    $('#contributorReasonId').focus();
-  }
+//  if (shouldDisplay) {
+//    $('#contributorReasonId').focus();
+//  }
 }
 </script>
 </head>
@@ -71,19 +81,18 @@ function switchContributorReasonDisplay(shouldDisplay) {
 <hr/>
 <@s.form id="accountForm" method="post" action="register">
 
-<@nav.showControllerErrors/>
-
 <div class="glide">
     <@s.hidden name='personId' value='${person.id!-1}'/>
     
     <@s.textfield spellcheck="false" required='true' labelposition='left' label='First name' id='firstName' name='person.firstName' cssClass="required" size='25'/><br/>
     <@s.textfield spellcheck="false" required='true' labelposition='left' id='lastName' label='Last name' name='person.lastName' cssClass="required" size='25'/><br/>
+    <@s.textfield spellcheck="false" required='true' labelposition='left' id='username' label="Username" name="person.username" cssClass="required username" size='25'/><br/>
     <@s.textfield spellcheck="false" required='true' labelposition='left' id='emailAddress' label="Email address" name="person.email" cssClass="required email" size='25'/><br/>
     <@s.textfield spellcheck="false" required='true' labelposition='left' id='confirmEmail' label="Confirm email address" name="confirmEmail" cssClass="required email" size='25'/><br/> 
 
 	<#if privacyControlsEnabled>   
 		<@s.checkbox labelposition='left' label='Make email public?' name="isEmailPublic" id="isEmailPublic" value="false" cssStyle='margin-left: 16em;'/><br/>
-		<p class="field"><em><b>NOTE: </b> Making your email address public will display it to anyone who visits tDAR, this includes search engines, spammers, and visitors who are not logged in.</em></p>
+		<p class="field"><em><b>NOTE: </b> Making your email address public will display it to anyone who visits ${siteAcronym}, this includes search engines, spammers, and visitors who are not logged in.</em></p>
 	</#if>
 	
     <@s.password required='true' label='Password' name='password' id='password' size='25' cssClass="required" autocomplete="off" /><br/>
@@ -93,7 +102,7 @@ function switchContributorReasonDisplay(shouldDisplay) {
 
  	<#if privacyControlsEnabled>
     	<@s.checkbox labelposition='left' label='Make phone public?' name="isPhonePublic" id="isPhonePublic" value="false" cssStyle='margin-left: 16em;'/><br/>
-		<p class="field"><em><b>NOTE:</b> Making your phone # public will display it to anyone who visits tDAR, this includes search engines, and visitors who are not logged in.</em></p>
+		<p class="field"><em><b>NOTE:</b> Making your phone # public will display it to anyone who visits ${siteAcronym}, this includes search engines, and visitors who are not logged in.</em></p>
 	</#if>    
 
  	<#if privacyControlsEnabled>
@@ -115,10 +124,12 @@ function switchContributorReasonDisplay(shouldDisplay) {
     </label>
     <@s.textarea rows=6 cols='50' name='person.contributorReason' id='contributorReasonId' />
     <br/>
+    <#if RPAEnabled>
     <p> 
     Are you a <a target='_blank' href='http://www.rpanet.org/'>Registered Professional Archaeologist?</a>
     </p>
     <@s.textfield labelposition='left' label='RPA Number' name='person.rpaNumber' id='rpaNumber' size='25'/>
+	</#if>
 
     </div>
     <br/>

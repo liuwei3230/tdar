@@ -1,5 +1,6 @@
 package org.tdar.core.bean.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,6 +17,7 @@ import org.tdar.core.bean.HasResource;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.exception.TdarRecoverableRuntimeException;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
@@ -38,7 +40,7 @@ public class ResourceCreator extends Persistable.Sequence<ResourceCreator> imple
     @ManyToOne(optional = false)
     private Resource resource;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade={CascadeType.DETACH, CascadeType.MERGE})
     @IndexedEmbedded
     @BulkImportField(implementedSubclasses = { Person.class, Institution.class }, label = "Resource Creator", order = 1)
     private Creator creator;
@@ -96,6 +98,9 @@ public class ResourceCreator extends Persistable.Sequence<ResourceCreator> imple
         return String.format("%s (%s)", creator, role);
     }
 
+    /* (non-Javadoc)
+     * @see org.tdar.core.bean.Validatable#isValid()
+     */
     public boolean isValid() {
         if (role == null || creator == null || resource == null) {
             logger.trace(String.format("role:%s creator:%s resource:%s", role, creator, resource));
@@ -105,7 +110,7 @@ public class ResourceCreator extends Persistable.Sequence<ResourceCreator> imple
             boolean relevant = getRole().isRelevantFor(getCreatorType(), getResource().getResourceType());
             if (!relevant) {
                 Object[] tmp = { getRole(), getResource(), getResource().getResourceType() };
-                logger.debug(String.format("role {} is not relevant for resourceType {} for {}", tmp));
+                logger.debug("role {} is not relevant for resourceType {} for {}", tmp);
             }
             return relevant;
         } catch (Exception e) {
@@ -116,5 +121,27 @@ public class ResourceCreator extends Persistable.Sequence<ResourceCreator> imple
 
     public boolean isValidForController() {
         return true;
+    }
+
+    @Transient
+    public final String getCreatorRoleIdentifier() {
+        return getCreatorRoleIdentifier(this.getCreator(), this.getRole());
+    }
+
+    @Transient
+    public static final String getCreatorRoleIdentifier(Creator creatorToFormat, ResourceCreatorRole creatorRole) {
+        String toReturn = "";
+        if (creatorToFormat != null && creatorToFormat.getCreatorType() != null) {
+            String code = creatorToFormat.getCreatorType().getCode();
+            String role = "";
+            if (creatorRole != null) {
+                role = creatorRole.name();
+            }
+            if (isNullOrTransient(creatorToFormat)) {
+                throw new TdarRecoverableRuntimeException("creator id should never be -1 in search query");
+            }
+            toReturn = String.format("%s_%s_%s", code, creatorToFormat.getId(), role).toLowerCase();
+        }
+        return toReturn;
     }
 }

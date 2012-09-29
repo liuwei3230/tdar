@@ -11,7 +11,6 @@
 <meta name="lastModifiedDate" content="$Date$"/>
 
 <@edit.resourceJavascript formId="#MetadataForm" />
-<script type='text/javascript' src='<@s.url value="/includes/datatable-support.js"/>'></script>
 <@edit.resourceDataTableJavascript false true />
 <script type="text/javascript">
 
@@ -110,7 +109,6 @@ function removeResourceClicked(id, elem) {
 
 <div>
 <@s.form name='MetadataForm' id='MetadataForm'  method='post' enctype='multipart/form-data' action='save'>
-<@edit.showControllerErrors/>
 
 <div class="glide" tiplabel="Basic Information"  tooltipcontent="Enter a name and description for this collection.  You may also choose a &quot;parent 
     collection&quot; which allows you to inherit all of the access permissions defined by the parent.">
@@ -133,9 +131,9 @@ function removeResourceClicked(id, elem) {
 </div>
 
 <div id="divBrowseOptionsTips" style="display:none">
-    <p>Choose whether this collection will be public or private, and how tDAR will sort the resources when displaying this collection to other users.</p>
+    <p>Choose whether this collection will be public or private, and how ${siteAcronym} will sort the resources when displaying this collection to other users.</p>
     <ul>
-        <li>Public collections are viewable to all tDAR users and accessible from the &quot;Browse Collections&quot page.</li>
+        <li>Public collections are viewable to all ${siteAcronym} users and accessible from the &quot;Browse Collections&quot page.</li>
         <li>Private collections are only viewable to the users specified in the <a href="#accessRights">Access Rights</a> section.</li>
     </ul>
 </div>
@@ -155,7 +153,7 @@ function removeResourceClicked(id, elem) {
 
 <div id="divCollectionAccessRightsTips" style="display:none">
 <p>Determines who can edit a document or related metadata. Enter the first few letters of the person's last name. 
-The form will check for matches in the tDAR database and populate the related fields.</p>
+The form will check for matches in the ${siteAcronym} database and populate the related fields.</p>
 <em>Types of Permissions</em>
 <dl>
     <dt>View All</dt>

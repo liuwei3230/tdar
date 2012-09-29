@@ -38,6 +38,8 @@ public interface ServiceInterface<T, S extends Dao<T>> {
     public List<T> findAll();
 
     public List<T> findAll(int start, int numberOfRecords);
+    
+    public List<T> findAll(List<Long> ids);
 
     public List<T> findAllSorted();
 
@@ -77,6 +79,11 @@ public interface ServiceInterface<T, S extends Dao<T>> {
         @Transactional(readOnly = true)
         public List<E> findAll() {
             return dao.findAll();
+        }
+        
+        @Transactional(readOnly = true)
+        public List<E> findAll(List<Long> ids) {
+            return dao.findAll(ids);
         }
 
         @Transactional(readOnly = true)
