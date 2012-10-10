@@ -82,6 +82,7 @@ google.map.defaultLongitude=-97.00
 #
 copyright.fields.enabled=false
 privacy.controls.enabled=false
+licenses.enabled=false
 #
 #   Recaptcha
 #

@@ -998,6 +998,9 @@ var resource = {};
     <@resourceCreators sectionTitle proxies prefix inline showInherited />
     <style>
     </style>
+    <#if resource.resourceType.label?lower_case != 'project' && copyrightMandatory>
+    	<@copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
+	</#if>
 </#macro>
 
 <#macro resourceCreators sectionTitle proxies prefix inline=false showInherited=false>
@@ -1266,9 +1269,6 @@ jquery validation hooks?)
 		<@abstractSection "${prefix}" />
     </#if>
 
-    <#if resource.resourceType.label?lower_case != 'project' && copyrightMandatory>
-		<@copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
-    </#if>
 </#macro>
 
 <#macro sharedFormComponents showInherited=true fileReminder=true prefix="${resource.resourceType.label?lower_case}">
