@@ -127,7 +127,7 @@ public class CodingSheetMappingITCase extends AbstractDataIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testDegenerateCodingSheetWithTabs() throws IOException {
+    public void testDegenerateCodingSheetWithTabs() {
         getControllers().clear();
         CodingSheet codingSheet = setupAndLoadResource("tab_as_csv.csv", CodingSheet.class);
         assertEquals(FileStatus.PROCESSING_ERROR, codingSheet.getFirstInformationResourceFile().getStatus());

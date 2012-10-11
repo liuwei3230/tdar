@@ -454,9 +454,8 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
     public void testCloneImageWithNoLicenceEnabled() {
         TdarConfiguration.getInstance().setConfigurationFile("properties/noLicenceEnabled.properties");
         Image expected = new Image();
-        expected.setLicenseType(LicenseType.OTHER);
-        expected.setLicenseText(OTHER_LICENCE_TYPE_BOILERPLATE);
         Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        // the assumption is that both of these will default to null
         assertTrue(image.getLicenseType() == null);
         assertTrue(image.getLicenseText() == null);
     }
@@ -501,9 +500,8 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
     public void testCloneImageWithNoCopyrightEnabled() {
         TdarConfiguration.getInstance().setConfigurationFile("properties/noCopyrightEnabled.properties");
         Image expected = new Image();
-        Creator copyrightHolder = new Person();
-        expected.setCopyrightHolder(copyrightHolder );
         Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        // the assumption is that this will default to null
         assertTrue(image.getCopyrightHolder()==null);
     }
     @Test

@@ -2,7 +2,6 @@ package org.tdar.struts.action.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,8 +11,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Assert;
@@ -48,7 +47,7 @@ public class LuceneExcelExportControllerITCase extends AbstractSearchControllerI
 
     @Test
     @Rollback(true)
-    public void testExcelExport() throws InstantiationException, IllegalAccessException, ParseException, FileNotFoundException, IOException, InvalidFormatException {
+    public void testExcelExport() throws ParseException, FileNotFoundException, IOException, InvalidFormatException {
         searchIndexService.indexAll(Resource.class);
         currentUser = getBasicUser();
         controller.setSessionData(new SessionData()); // create unauthenticated session
@@ -61,7 +60,7 @@ public class LuceneExcelExportControllerITCase extends AbstractSearchControllerI
         assertFalse(controller.getSearchPhrase() + " should not have bold tag", controller.getSearchPhrase().toLowerCase().contains("<b>"));
         File tempFile = File.createTempFile("report", ".xls");
         FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
-        long copyLarge = IOUtils.copyLarge(controller.getInputStream(), fileOutputStream);
+        IOUtils.copyLarge(controller.getInputStream(), fileOutputStream);
         
         fileOutputStream.close();
         logger.debug("tempFile: {}", tempFile);
@@ -73,7 +72,7 @@ public class LuceneExcelExportControllerITCase extends AbstractSearchControllerI
 
     @Test
     @Rollback(true)
-    public void testExcelFailUnauthenticatedExport() throws InstantiationException, IllegalAccessException, ParseException, FileNotFoundException, IOException {
+    public void testExcelFailUnauthenticatedExport() throws ParseException {
         searchIndexService.indexAll(Resource.class);
         currentUser = null;
         controller.setSessionData(new SessionData()); // create unauthenticated session

@@ -139,15 +139,9 @@ public class InformationResourceService extends AbstractInformationResourceServi
                 ires.setInheritingIdentifierInformation(proxy.isInheritingIdentifierInformation());
                 ires.setInheritingNoteInformation(proxy.isInheritingNoteInformation());
                 ires.setInheritingCollectionInformation(proxy.isInheritingCollectionInformation());
-                if (TdarConfiguration.getInstance().getLicenseEnabled()) {
-                    ires.setLicenseType(proxy.getLicenseType());
-                    if (LicenseType.OTHER.equals(ires.getLicenseType())) {
-                        ires.setLicenseText(proxy.getLicenseText());
-                    }
-                }
-                if (TdarConfiguration.getInstance().getCopyrightMandatory()) {
-                    ires.setCopyrightHolder(proxy.getCopyrightHolder());
-                }
+                ires.setLicenseType(proxy.getLicenseType());
+                ires.setLicenseText(proxy.getLicenseText());
+                ires.setCopyrightHolder(proxy.getCopyrightHolder());
             }
             
             // NOTE: THIS SHOULD BE THE LAST THING DONE AS IT BRINGS EVERYTHING BACK ONTO THE SESSION PROPERLY
