@@ -11,10 +11,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.tdar.core.configuration.TdarConfiguration;
-
 /**
- * Annotation for tracking bulk import fields and provinding a central location for all of the long descriptions.
+ * Annotation for tracking bulk import fields and providing a central location for all of the long descriptions.
  * 
  * @author Adam Brin
  * 

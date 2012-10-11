@@ -16,12 +16,13 @@ import org.tdar.core.bean.cache.BrowseYearCountCache;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
-import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFile;
+import org.tdar.core.bean.resource.LicenseType;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.exception.TdarRuntimeException;
@@ -138,6 +139,15 @@ public class InformationResourceService extends AbstractInformationResourceServi
                 ires.setInheritingIdentifierInformation(proxy.isInheritingIdentifierInformation());
                 ires.setInheritingNoteInformation(proxy.isInheritingNoteInformation());
                 ires.setInheritingCollectionInformation(proxy.isInheritingCollectionInformation());
+                if (TdarConfiguration.getInstance().getLicenseEnabled()) {
+                    ires.setLicenseType(proxy.getLicenseType());
+                    if (LicenseType.OTHER.equals(ires.getLicenseType())) {
+                        ires.setLicenseText(proxy.getLicenseText());
+                    }
+                }
+                if (TdarConfiguration.getInstance().getCopyrightMandatory()) {
+                    ires.setCopyrightHolder(proxy.getCopyrightHolder());
+                }
             }
             
             // NOTE: THIS SHOULD BE THE LAST THING DONE AS IT BRINGS EVERYTHING BACK ONTO THE SESSION PROPERLY

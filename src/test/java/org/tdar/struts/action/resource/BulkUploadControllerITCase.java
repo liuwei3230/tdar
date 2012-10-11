@@ -36,6 +36,8 @@ import org.tdar.core.bean.citation.SourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
+import org.tdar.core.bean.entity.Creator;
+import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -45,11 +47,13 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
+import org.tdar.core.bean.resource.LicenseType;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.ResourceNoteType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.BulkUploadService;
 import org.tdar.struts.action.AbstractAdminControllerITCase;
@@ -66,6 +70,8 @@ import org.tdar.utils.Pair;
  */
 public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
 
+    private static final String OTHER_LICENCE_TYPE_BOILERPLATE = "A long and boring piece of waffle";
+    
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
 
@@ -203,6 +209,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         Set<String> scs = new HashSet<String>();
 
         Transformer t = new Transformer() {
+            @Override
             public Object transform(Object input) {
                 Citation c = (Citation) input;
                 return c.getText();
@@ -444,6 +451,63 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
 
     @Test
     @Rollback
+    public void testCloneImageWithNoLicenceEnabled() {
+        TdarConfiguration.getInstance().setConfigurationFile("properties/noLicenceEnabled.properties");
+        Image expected = new Image();
+        expected.setLicenseType(LicenseType.OTHER);
+        expected.setLicenseText(OTHER_LICENCE_TYPE_BOILERPLATE);
+        Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        assertTrue(image.getLicenseType() == null);
+        assertTrue(image.getLicenseText() == null);
+    }
+
+    @Test
+    @Rollback
+    public void testCloneImageWithLicencesEnabled() {
+        TdarConfiguration.getInstance().setConfigurationFile("properties/licenceEnabled.properties");
+        Image expected = new Image();
+        expected.setLicenseType(LicenseType.CREATIVE_COMMONS_ATTRIBUTION);
+        expected.setLicenseText("This should be ignored");
+        Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        assertTrue(LicenseType.CREATIVE_COMMONS_ATTRIBUTION.equals(image.getLicenseType()));
+        assertTrue(image.getLicenseText() == null);
+    }
+
+    @Test
+    @Rollback
+    public void testCloneImageWithLicencesEnabledOtherLicenceType() {
+        TdarConfiguration.getInstance().setConfigurationFile("properties/licenceEnabled.properties");
+        Image expected = new Image();
+        expected.setLicenseType(LicenseType.OTHER);
+        expected.setLicenseText(OTHER_LICENCE_TYPE_BOILERPLATE);
+        Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        assertTrue(LicenseType.OTHER.equals(image.getLicenseType()));
+        assertTrue(OTHER_LICENCE_TYPE_BOILERPLATE.equals(image.getLicenseText()));
+    }
+    
+    @Test
+    @Rollback
+    public void testCloneImageWithCopyrightEnabled() {
+        TdarConfiguration.getInstance().setConfigurationFile("properties/copyrightEnabled.properties");
+        Image expected = new Image();
+        Creator copyrightHolder = new Person();
+        expected.setCopyrightHolder(copyrightHolder );
+        Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        assertTrue(copyrightHolder.equals(image.getCopyrightHolder()));
+    }
+
+    @Test
+    @Rollback
+    public void testCloneImageWithNoCopyrightEnabled() {
+        TdarConfiguration.getInstance().setConfigurationFile("properties/noCopyrightEnabled.properties");
+        Image expected = new Image();
+        Creator copyrightHolder = new Person();
+        expected.setCopyrightHolder(copyrightHolder );
+        Image image = informationResourceService.createResourceFrom(expected, expected.getClass());
+        assertTrue(image.getCopyrightHolder()==null);
+    }
+    @Test
+    @Rollback
     /*
      * When loading N many resources and creating an adhoc collection, ensure:
      * -the controller only creates one shared collection
@@ -452,7 +516,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
      */
     public void testAddingAdHocCollectionToBulkUpload() throws Exception {
         // start by getting the original count of public/private collections
-        int origInternalCount = getCollectionCount(CollectionType.INTERNAL);
+        //int origInternalCount = getCollectionCount(CollectionType.INTERNAL);
         int origSharedCount = getCollectionCount(CollectionType.SHARED);
         int origImageCount = genericService.findAll(Image.class).size();
 
@@ -490,7 +554,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         bulkUploadController.checkStatus();
         assertEquals(new Float(100), bulkUploadController.getPercentDone());
 
-        int newInternalCount = getCollectionCount(CollectionType.INTERNAL);
+        //int newInternalCount = getCollectionCount(CollectionType.INTERNAL);
         int newSharedCount = getCollectionCount(CollectionType.SHARED);
         int newImageCount = genericService.findAll(Image.class).size();
         Assert.assertNotSame(origImageCount, newImageCount);
@@ -513,7 +577,6 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         // String msg = String.format("We should have %s new internal collections.  newcount:%s oldcount:%s", uploadFiles.size(),
         // newInternalCount, origInternalCount);
         // assertEquals(msg, uploadFiles.size(), newInternalCount - origInternalCount );
-
     }
 
     private int getCollectionCount(CollectionType type) {
