@@ -274,7 +274,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
 
     @Transient
     // Ultimately, this may need to be converted into a URI, or something that can be converted directly
-    // into a reader due to the indexing requirment.
+    // into a reader due to the indexing requirement.
     // FIXME: consider injecting this as a transient variable when loaded
     // instead of doing a lookup using the TdarConfiguration singleton's Filestore. Otherwise
     // we will have difficulty converting TdarConfiguration + Filestore into spring managed beans

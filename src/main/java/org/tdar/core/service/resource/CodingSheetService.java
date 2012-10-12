@@ -45,8 +45,7 @@ public class CodingSheetService extends AbstractInformationResourceService<Codin
         return getDao().findSparseResourceBySubmitterType(null, ResourceType.CODING_SHEET);
     }
 
-    public void parseUpload(CodingSheet codingSheet, InformationResourceFileVersion version)
-            throws IOException, CodingSheetParserException {
+    public void parseUpload(CodingSheet codingSheet, InformationResourceFileVersion version) throws CodingSheetParserException {
         // FIXME: ensure that this is all in one transaction boundary so if an exception occurs
         // this delete will get rolled back. Also, parse cannot swallow exceptions if the
         // new coding rules are not inputed.
@@ -66,9 +65,10 @@ public class CodingSheetService extends AbstractInformationResourceService<Codin
                 }
             }
         } catch (Exception e) {
+            logger.error("Unexpected exception", e);
             version.getInformationResourceFile().setStatus(FileStatus.PROCESSING_ERROR);
             getDao().saveOrUpdate(version.getInformationResourceFile());
-            throw new TdarRecoverableRuntimeException("something happened");
+            throw new TdarRecoverableRuntimeException("Something unexpected happened: " + e.getMessage(), e);
         } finally {
             if (stream != null)
                 IOUtils.closeQuietly(stream);
