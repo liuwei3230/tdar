@@ -25,6 +25,7 @@ import org.apache.commons.collections.Transformer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.common.util.StringUtils;
+import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
@@ -75,6 +76,11 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
 
+    @After 
+    public void resetConfig() {
+        TdarConfiguration.getInstance().setConfigurationFile("/tdar.properties");
+    }
+    
     @Test
     @Rollback
     public void testExcelTemplate() throws FileNotFoundException, IOException {
@@ -504,6 +510,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         // the assumption is that this will default to null
         assertTrue(image.getCopyrightHolder()==null);
     }
+
     @Test
     @Rollback
     /*
