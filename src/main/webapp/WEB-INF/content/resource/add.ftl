@@ -38,11 +38,6 @@
 
                 <dt><@link "dataset" "Dataset" /></dt>
                 <dd>A collection of data, usually in tabular form with columns representing variables and rows representing cases. A database usually refers to a set of linked or related datasets. Examples from archaeology include small spreadsheets documenting measurements and/or analysis of artifacts, as well as large databases cataloging all artifacts from a site. </dd>
-
-		         <#if editor!false>
-		                <dt><@link "video" "Video" /></dt>
-		                <dd>A video</dd>
-				</#if>
 				            
                 <dt><@link "ontology" "Ontology"/></dt>
                 <dd>In ${siteAcronym}, an ontology is a small file used with a dataset column (and/or coding sheet) to hierarchically organize values in the data in order to facilitate integrating datasets from different sources. (Please see the tutorials on data integration for a complete explanation).</dd>

@@ -998,9 +998,6 @@ var resource = {};
     <@resourceCreators sectionTitle proxies prefix inline showInherited />
     <style>
     </style>
-    <#if resource.resourceType.label?lower_case != 'project' && copyrightMandatory>
-    	<@copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
-	</#if>
 </#macro>
 
 <#macro resourceCreators sectionTitle proxies prefix inline=false showInherited=false>
@@ -1277,6 +1274,9 @@ jquery validation hooks?)
 
     <#if resource.resourceType.label?lower_case != 'project'>
       <@resourceProvider showInherited />
+      <#if copyrightMandatory>
+    	<@copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
+	  </#if>
       <#if licensesEnabled>
       	<@edit.license />
       </#if>
