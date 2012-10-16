@@ -53,6 +53,10 @@
 </div>
 <@edit.manualTextInput typeLabel="Coding Sheet" type="coding" />
 
+<#if copyrightMandatory>
+	<@edit.copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
+</#if>
+
 <@edit.allCreators 'Coding Sheet Creators' authorshipProxies 'authorship' />
 
 <@edit.resourceNoteSection />

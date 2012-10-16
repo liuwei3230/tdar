@@ -28,6 +28,10 @@
 </div>
 <@edit.manualTextInput typeLabel="Ontology" type="ontology" />
 
+<#if copyrightMandatory>
+	<@edit.copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
+</#if>
+
 <@edit.allCreators 'Ontology Creators' authorshipProxies 'authorship' />
 
 <@edit.resourceNoteSection />
