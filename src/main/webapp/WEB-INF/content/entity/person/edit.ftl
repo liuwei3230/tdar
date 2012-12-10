@@ -79,8 +79,7 @@ textarea {width:32em}
 </div>
 
 
-<#--
-<#if editingSelf>
+<#--<#if editingSelf>
 <div class="glide" id="divChangePassword">
     <h3>Change Your Password</h3>
     <@s.password name="password" id="txtPassword" label="New password" labelPosition="left" autocomplete="off" />
@@ -95,9 +94,7 @@ textarea {width:32em}
 </div>
 </#if>
 -->
-
-
-<@edit.submit "Save" false />    
+<@edit.submit "Save" false />
 
 </@s.form>
 <div id="error"></div>
