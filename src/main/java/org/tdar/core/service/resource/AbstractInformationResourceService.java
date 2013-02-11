@@ -114,6 +114,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
                 // always set the download/version info and persist the relationships between the InformationResource and its IRFile.
                 incrementVersionNumber(irFile);
                 addInformationResourceFile(informationResource, irFile);
+                setInformationResourceFileMetadata(irFile, proxy);
                 createVersion(irFile, proxy);
                 for (FileProxy additionalVersion : proxy.getAdditionalVersions()) {
                     logger.debug("Creating new version {}", additionalVersion);
@@ -195,7 +196,6 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
     private void createVersion(InformationResourceFile irFile, FileProxy fileProxy) throws IOException {
         String filename = sanitizeFilename(fileProxy.getFilename());
         InformationResourceFileVersion version = new InformationResourceFileVersion(fileProxy.getVersionType(), filename, irFile);
-        setInformationResourceFileMetadata(irFile, fileProxy);
         irFile.addFileVersion(version);
         filestore.store(fileProxy.getFile(), version);
         genericDao.save(version);
