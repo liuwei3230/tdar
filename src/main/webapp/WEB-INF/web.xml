@@ -66,6 +66,11 @@ vim:sts=2:sw=2
     <filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsExecuteFilter</filter-class>
 		
   </filter>
+  
+  <filter>
+        <filter-name>responseCacheFilter</filter-name>
+        <filter-class>com.googlecode.webutilities.filters.ResponseCacheFilter</filter-class>
+ </filter>
   <!-- END FILTERS -->
 
   <filter-mapping>
@@ -110,6 +115,13 @@ vim:sts=2:sw=2
     <dispatcher>REQUEST</dispatcher>
     <dispatcher>FORWARD</dispatcher>
   </filter-mapping>
+  
+  <filter-mapping>
+   <filter-name>responseCacheFilter</filter-name>
+   <url-pattern>*.js</url-pattern>
+   <url-pattern>*.json</url-pattern>
+   <url-pattern>*.css</url-pattern>
+ </filter-mapping>
   
   <error-page>
     <error-code>404</error-code>
