@@ -37,6 +37,7 @@ public enum ResourceCreatorRole implements HasLabel {
     PRINCIPAL_INVESTIGATOR("Principal Investigator", ResourceCreatorRoleType.CREDIT, CreatorType.PERSON),
     PROJECT_DIRECTOR("Project Director", ResourceCreatorRoleType.CREDIT, CreatorType.PERSON),
     COLLABORATOR("Collaborator", ResourceCreatorRoleType.CREDIT, CreatorType.INSTITUTION),
+    PUBLISHER("Publisher", ResourceCreatorRoleType.CREDIT, CreatorType.INSTITUTION),
     LANDOWNER("Landowner", ResourceCreatorRoleType.CREDIT),
     SPONSOR("Sponsor", ResourceCreatorRoleType.CREDIT),
     PERMITTER("Permitting Agency", ResourceCreatorRoleType.CREDIT, CreatorType.INSTITUTION),

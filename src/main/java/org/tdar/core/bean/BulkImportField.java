@@ -36,6 +36,9 @@ public @interface BulkImportField {
     public static final String CREATOR_FNAME_DESCRIPTION = "The first name of the person that created/authored/  contributed/ sponsored the resource. NOTE:  if there are multiple individuals and/ or institutions that should be credited, you will need to add them individually to each metadata record by editing each applicable resource created by this batch upload. NOTE: This does field  does not refer to the submitter/creator of the metadata record - which  is an automatically populated field. ";
     public static final String CREATOR_LNAME_DESCRIPTION = "The name of the person that created/authored/  contributed/ sponsored the resource. NOTE:  if there are multiple individuals and/ or institutions that should be credited, you will need to add them individually to each metadata record by editing each applicable resource created by this batch upload. NOTE: This does field  does not refer to the submitter/creator of the metadata record - which  is an automatically populated field. ";
 
+    public static final String LICENSE_TEXT = "License Text";
+    public static final String LICENSE_TYPE = "License Type";
+    
     // a way to tell the parser about subclasses (Creator -> Person/Institution)
     public Class<?>[] implementedSubclasses() default {};
 

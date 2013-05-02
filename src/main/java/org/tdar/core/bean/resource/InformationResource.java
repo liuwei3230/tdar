@@ -166,10 +166,12 @@ public abstract class InformationResource extends Resource {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "license_type")
+    @BulkImportField(label = BulkImportField.LICENSE_TYPE, required = true)
     private LicenseType licenseType;
 
     @Column(name = "license_text")
     @Type(type = "org.hibernate.type.StringClobType")
+    @BulkImportField(label = BulkImportField.LICENSE_TEXT)
     private String licenseText;
 
     @Column(name = "available_to_public")

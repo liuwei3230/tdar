@@ -1277,7 +1277,7 @@ jquery validation hooks?)
       <#if copyrightMandatory>
     	<@copyrightHolders 'Primary Copyright Holder *' copyrightHolderProxy />
 	  </#if>
-      <#if licensesEnabled>
+      <#if licensesEnabled && prefix != 'bulk'>
       	<@edit.license />
       </#if>
     </#if>

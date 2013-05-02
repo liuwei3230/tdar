@@ -44,7 +44,7 @@ For all of the fields below, you can select values that will apply to all of the
 </div>
 <@edit.allCreators 'Creators' authorshipProxies 'authorship' />
 
-<@edit.sharedFormComponents  fileReminder=false/>
+<@edit.sharedFormComponents  fileReminder=false prefix='bulk'/>
 
 </@s.form>
 <div id="sidebar" parse="true">

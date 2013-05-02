@@ -74,8 +74,10 @@ import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.bean.resource.LicenseType;
 import org.tdar.core.bean.util.BulkManifestProxy;
 import org.tdar.core.bean.util.CellMetadata;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
@@ -495,6 +497,22 @@ public class BulkUploadService {
         LinkedHashSet<CellMetadata> nameSet = new LinkedHashSet<CellMetadata>();
         for (ResourceType type : ResourceType.values()) {
             nameSet.addAll(getImportFieldNamesForType(type));
+        }
+        
+        // Remove potentially invalid entries from the set 
+        
+        Iterator<CellMetadata> fields = nameSet.iterator();
+        
+        while(fields.hasNext()){
+        	CellMetadata field = fields.next();
+        	if(!TdarConfiguration.getInstance().getLicenseEnabled()) {
+        		if(StringUtils.isNotBlank(field.getDisplayName()) 
+        				&& (field.getDisplayName().equals(BulkImportField.LICENSE_TEXT) 
+        						|| field.getDisplayName().equals(BulkImportField.LICENSE_TYPE))) {
+        			fields.remove();
+        		}	
+        	}
+        	
         }
 
         return nameSet;
@@ -932,6 +950,12 @@ public class BulkUploadService {
                         DocumentType.values());
             }
 
+            if (field.equals("licenseType")) {
+                excelService.addColumnValidation(sheet, i, validationHelper,
+                        LicenseType.values());            	
+            	
+            }
+            
             row.createCell(i).setCellValue(field.getOutputName());
             if (field.getMappedClass() != null
                     && field.getMappedClass().equals(Document.class)) {
