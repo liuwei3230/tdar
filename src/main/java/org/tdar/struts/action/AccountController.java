@@ -10,6 +10,7 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.interceptor.validation.SkipValidation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.URLConstants;
@@ -17,7 +18,9 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.request.ContributorRequest;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AuthenticationResult;
 import org.tdar.core.service.external.auth.InternalTdarRights;
 
@@ -58,6 +61,9 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
     public static final String ERROR_MAXLENGTH = "The '%s' field accepts a maximum of %s characters.";
     private static final int MAXLENGTH_CONTRIBUTOR = 512;
 
+    public static final String USERNAME_VALID_REGEX = "^[a-zA-Z0-9+@.]{5,40}$";
+    public static final String USERNAME_INVALID = "Username invalid, usernames must be at least 5 characters and can only have letters and numbers";
+
     public static final long ONE_HOUR_IN_MS = 3600000;
     public static final long FIVE_SECONDS_IN_MS = 5000;
 
@@ -76,12 +82,12 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
     private String passwordResetURL;
     private ContributorRequest contributorRequest;
 
-    // private String recaptcha_challenge_field;
-    // private String recaptcha_response_field;
-    // private String recaptcha_public_key;
-    //
-    // @Autowired
-    // private ObfuscationService obfuscationService;
+    private String recaptcha_challenge_field;
+    private String recaptcha_response_field;
+    private String recaptcha_public_key;
+
+    @Autowired
+    private RecaptchaService recapchaService;
 
     @Action(value = "new", interceptorRefs = @InterceptorRef("basicStack"),
             results = {
@@ -184,7 +190,7 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
             if (success) {
                 getLogger().info("Added user to auth service successfully.");
             } else {
-                //we assume that the add operation failed because user was already in crowd. Common scenario for dev/alpha, but not prod.
+                // we assume that the add operation failed because user was already in crowd. Common scenario for dev/alpha, but not prod.
                 getLogger().error("user {} already existed in auth service.  Not unusual unless it happens in prod context ", person);
             }
             // log person in.
@@ -238,10 +244,10 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
     @Override
     public void validate() {
         logger.trace("calling validate");
-        
-        if(person != null && person.getUsername() != null) {
-            String normalizedUsername =  getAuthenticationAndAuthorizationService().normalizeUsername(person.getUsername());
-            if(!normalizedUsername.equals(person.getUsername())) {
+
+        if (person != null && person.getUsername() != null) {
+            String normalizedUsername = getAuthenticationAndAuthorizationService().normalizeUsername(person.getUsername());
+            if (!normalizedUsername.equals(person.getUsername())) {
                 logger.info("normalizing username; was:{} \t now:{}", person.getUsername(), normalizedUsername);
                 person.setUsername(normalizedUsername);
             }
@@ -259,6 +265,15 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
         if (StringUtils.isBlank(person.getLastName())) {
             addActionError("Please enter your last name");
         }
+
+        if (!person.getUsername().matches(USERNAME_VALID_REGEX)) {
+            addActionError(USERNAME_INVALID);
+        }
+
+        if (!person.getEmail().matches(USERNAME_VALID_REGEX)) {
+            addActionError(USERNAME_INVALID);
+        }
+
         // validate email + confirmation
         if (isUsernameRegistered(person.getUsername())) {
             logger.debug("username was already registered: ", person.getUsername());
@@ -276,10 +291,10 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
         } else if (!new EqualsBuilder().append(password, confirmPassword).isEquals()) {
             addActionError(ERROR_PASSWORDS_DONT_MATCH);
         }
-        
+
         checkForSpammers();
     }
-    
+
     /**
      * 
      */
@@ -357,7 +372,7 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
     }
 
     public void prepare() {
-        if (Persistable.Base.isNullOrTransient(personId)){
+        if (Persistable.Base.isNullOrTransient(personId)) {
             getLogger().debug("prepare: creating new person");
             person = new Person();
         } else {
@@ -441,29 +456,29 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
         this.contributorRequest = contributorRequest;
     }
 
-    // public void setRecaptcha_challenge_field(String recaptcha_challenge_field) {
-    // this.recaptcha_challenge_field = recaptcha_challenge_field;
-    // }
-    //
-    // public String getRecaptcha_challenge_field() {
-    // return recaptcha_challenge_field;
-    // }
-    //
-    // public void setRecaptcha_response_field(String recaptcha_response_field) {
-    // this.recaptcha_response_field = recaptcha_response_field;
-    // }
-    //
-    // public String getRecaptcha_response_field() {
-    // return recaptcha_response_field;
-    // }
-    //
-    // public void setRecaptcha_public_key(String recaptcha_public_key) {
-    // this.recaptcha_public_key = recaptcha_public_key;
-    // }
-    //
-    // public String getRecaptcha_public_key() {
-    // return TdarConfiguration.getInstance().getRecaptchaPublicKey();
-    // }
+    public void setRecaptcha_challenge_field(String recaptcha_challenge_field) {
+        this.recaptcha_challenge_field = recaptcha_challenge_field;
+    }
+
+    public String getRecaptcha_challenge_field() {
+        return recaptcha_challenge_field;
+    }
+
+    public void setRecaptcha_response_field(String recaptcha_response_field) {
+        this.recaptcha_response_field = recaptcha_response_field;
+    }
+
+    public String getRecaptcha_response_field() {
+        return recaptcha_response_field;
+    }
+
+    public void setRecaptcha_public_key(String recaptcha_public_key) {
+        this.recaptcha_public_key = recaptcha_public_key;
+    }
+
+    public String getRecaptcha_public_key() {
+        return TdarConfiguration.getInstance().getRecaptchaPublicKey();
+    }
 
     public boolean isEditable() {
         return getAuthenticatedUser().equals(person)
