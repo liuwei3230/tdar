@@ -266,11 +266,11 @@ public class AccountController extends AuthenticationAware.Base implements Prepa
             addActionError("Please enter your last name");
         }
 
-        if (!person.getUsername().matches(USERNAME_VALID_REGEX)) {
+        if (StringUtils.isBlank(person.getUsername()) || !person.getUsername().matches(USERNAME_VALID_REGEX)) {
             addActionError(USERNAME_INVALID);
         }
 
-        if (!person.getEmail().matches(USERNAME_VALID_REGEX)) {
+        if (StringUtils.isBlank(person.getEmail()) || !person.getEmail().matches(USERNAME_VALID_REGEX)) {
             addActionError(USERNAME_INVALID);
         }
 
