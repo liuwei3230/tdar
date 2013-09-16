@@ -471,6 +471,12 @@ $.validator.addMethod('number', function(value, element) {
             || /^-?(?:\d+|\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test(value);
 }, $.validator.messages.number);
 
+$.validator.addMethod('username', function(value, element) {
+    return !/^http:/.test(value);
+}, "Invalid username");
+
+
+
 // $.validator.addClassRules("radiocarbonDate", {range:[0,100000]});
 // $.validator.addClassRules("julianYear", {range:[-99900, 2100]});
 
