@@ -2,6 +2,7 @@ package org.tdar.web;
 
 import org.junit.Test;
 import org.tdar.TestConstants;
+import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
 
 public class ProjectWebITCase extends AbstractAdminAuthenticatedWebTestCase{
@@ -12,6 +13,14 @@ public class ProjectWebITCase extends AbstractAdminAuthenticatedWebTestCase{
     public void testAddingInformationResourceToProject() {
         String resourceName = "newresource";
         
+        setupDocumentWithProject(resourceName);
+        
+        gotoPage("/project/" + TestConstants.PARENT_PROJECT_ID);
+        assertTextPresent(resourceName);
+    }
+
+
+    private void setupDocumentWithProject(String resourceName) {
         gotoPage("/project/" + TestConstants.PARENT_PROJECT_ID);
         
         gotoPage("/document/add");
@@ -25,8 +34,27 @@ public class ProjectWebITCase extends AbstractAdminAuthenticatedWebTestCase{
         }
         submitForm();
         //get the id of the new resource
+    }
+
+
+    @Test
+    public void testChangingProject() {
+        String resourceName = "changing project resource";
+        Long projectId = createResourceFromType(ResourceType.PROJECT,"changing project test");
+        setupDocumentWithProject(resourceName);
+        String url = getCurrentUrlPath();
+        //get the id of the new resource
         
         gotoPage("/project/" + TestConstants.PARENT_PROJECT_ID);
         assertTextPresent(resourceName);
+        gotoPage(url);
+        clickLinkWithText("edit");
+        setInput("projectId", projectId.toString());
+        submitForm();
+        gotoPage("/project/" + TestConstants.PARENT_PROJECT_ID);
+        assertTextNotPresent(resourceName);
+        gotoPage("/project/" + projectId.toString());
+        assertTextPresent(resourceName);
+        
     }
 }

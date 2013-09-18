@@ -210,6 +210,30 @@ public abstract class AbstractWebTestCase extends AbstractIntegrationTestCase {
         return statusCode;
     }
 
+    public Long createResourceFromType(ResourceType rt, String title) {
+        final String path = "/" + rt.getUrlNamespace() + "/add";
+        gotoPage(path);
+        setInput(String.format("%s.%s", rt.getFieldName(), "title"), title);
+        setInput(String.format("%s.%s", rt.getFieldName(), "description"), title + "::description");
+        if (!rt.isProject()) {
+            if (TdarConfiguration.getInstance().getCopyrightMandatory() ) {
+                // setInput(TestConstants.COPYRIGHT_HOLDER_TYPE, "Institution");
+                setInput(TestConstants.COPYRIGHT_HOLDER_PROXY_INSTITUTION_NAME, "Elsevier");
+            }
+            setInput(String.format("%s.%s", rt.getFieldName(), "date"), "2134");
+        }
+        if (rt.isSupporting()) {
+            setInput("fileInputMethod", "text");
+            if (rt == ResourceType.ONTOLOGY) {
+                setInput("fileTextInput", "text\ttext\r\n");
+            } else {
+                setInput("fileTextInput", "text,text\r\n");
+            }
+        }
+        submitForm();
+        return extractTdarIdFromCurrentURL();
+    }
+
     protected void assertPageValidHtml() {
         if (internalPage.getWebResponse().getContentType().contains("json")) {
             try {
