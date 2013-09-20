@@ -472,7 +472,7 @@ $.validator.addMethod('number', function(value, element) {
 }, $.validator.messages.number);
 
 $.validator.addMethod('username', function(value, element) {
-    return !/^http:/.test(value);
+	return !(/^http:/.test(value) || /[\s\u00A0]/.test(value));
 }, "Invalid username");
 
 
