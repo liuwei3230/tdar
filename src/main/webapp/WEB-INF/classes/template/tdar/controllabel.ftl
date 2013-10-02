@@ -8,7 +8,7 @@
 class="<#t/>
 <#if hasFieldErrors>errorLabel </#if><#t/>
 <#if parameters.labelposition?exists && parameters.labelposition.equalsIgnoreCase('top')>toplabel</#if>"><#t/>
-<#if parameters.required?default(false) && parameters.requiredposition?default("right") != 'right'>
+<#if parameters.required?exists && parameters.requiredposition?default("right") != 'right'>
         <span class="required">*</span><#t/>
 </#if>
 <#if parameters.label?exists>
@@ -17,7 +17,7 @@ class="<#t/>
 <#if parameters.groupLabel?exists>
 ${parameters.groupLabel?html}<#t/>
 </#if>
-<#if parameters.required?default(false) && parameters.requiredposition?default("right") == 'right'>
+<#if parameters.required?exists && parameters.requiredposition?default("right") == 'right'>
  <span class="required">*</span><#t/>
 </#if>
 ${parameters.labelseparator?default("")?html}<#t/>
