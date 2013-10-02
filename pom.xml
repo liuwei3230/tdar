@@ -571,7 +571,7 @@
 		<!-- OWL API access -->
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
-			<artifactId>owlapi-binding</artifactId>
+			<artifactId>owlapi-apibinding</artifactId>
 			<version>3.4.5</version>
 		</dependency>
 		<dependency>
@@ -581,7 +581,6 @@
 		</dependency>
 		<!-- CXF for web-services endpoint -->
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${apache.cxf.version}</version>
 		</dependency>
