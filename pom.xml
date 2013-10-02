@@ -581,6 +581,7 @@
 		</dependency>
 		<!-- CXF for web-services endpoint -->
 		<dependency>
+			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${apache.cxf.version}</version>
 		</dependency>
