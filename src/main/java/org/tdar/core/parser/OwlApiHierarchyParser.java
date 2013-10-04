@@ -1,6 +1,5 @@
 package org.tdar.core.parser;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,17 +13,13 @@ import java.util.TreeSet;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
@@ -53,8 +48,6 @@ public class OwlApiHierarchyParser implements OntologyParser {
     private final HashMap<OWLClass, Set<OWLClass>> owlHierarchyMap = new HashMap<OWLClass, Set<OWLClass>>();
     private final HashMap<OWLClass, OntologyNode> classNodeMap = new HashMap<OWLClass, OntologyNode>();
     private Set<String> allSynonymLabels = new HashSet<String>();
-    OWLOntologyManager man = OWLManager.createOWLOntologyManager();
-    OWLDataFactory df = null;
     
     private Ontology ontology;
 
@@ -147,11 +140,17 @@ public class OwlApiHierarchyParser implements OntologyParser {
     	//FIXME: the OWL API does not appear to support IRIs that start with numbers... 
     	// https://github.com/owlcs/owlapi/wiki/Documentation
     	// this is a workaround
-    	if(iri.toString().contains("www.tdar.org/ontologies/")) {
-    		node.setIri(StringUtils.substring(uri_string, uri_string.indexOf("#")+1));
-    	}
-        // FIXME: skipping synonym relationships until we have an infrastructure
-        // to suport them
+        // this is a backup for parsing older ontologies that have degenerate IRIs eg. those with  () in them
+        if (StringUtils.isBlank(node.getIri()) && StringUtils.indexOf(uri_string, "#")> 0){
+        //            logger.info(iri);
+        //            logger.info(owlClass);
+        node.setIri(StringUtils.substring(uri_string, uri_string.indexOf("#")+1));
+        logger.info(uri_string);
+   }
+
+
+        
+        
         String displayName = extractNodeLabel(owlClass);
         if (allSynonymLabels.contains(displayName))
             return index;
@@ -206,7 +205,6 @@ public class OwlApiHierarchyParser implements OntologyParser {
     private String extractNodeLabel(OWLClass owlClass) {
         String txt = "";
         for (OWLAnnotation ann : owlClass.getAnnotations(owlOntology)) {
-//          if (StringUtils.equalsIgnoreCase("rdfs:label", ann.getProperty().toString())) {
             if (ann.getProperty().isLabel()) {
                 String annTxt = ann.getValue().toString();
                 annTxt = annTxt.replaceAll("^\"", "");

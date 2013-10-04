@@ -6,11 +6,7 @@
  */
 package org.tdar.struts.action.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +16,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
@@ -35,6 +34,7 @@ import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.InformationResourceFile.FileStatus;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.Ontology;
+import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
@@ -608,4 +608,92 @@ public class CodingSheetMappingITCase extends AbstractDataIntegrationTestCase {
         return PATH;
     }
 
+    
+
+    @Test
+    @Rollback
+    public void testOntologyNodeDuplicationOnReplace() throws TdarActionException, Exception {
+        // 1. Load things...
+        Ontology ontology = setupAndLoadResource("fauna-element-ontology.txt", Ontology.class);
+        Long ontology_id = ontology.getId();
+        genericService.refresh(ontology);
+        logger.info("nodes;{}", ontology.getOntologyNodes());
+        assertNotEmpty(ontology.getOntologyNodes());
+        genericService.detachFromSession(ontology);
+        Dataset dataset = setupAndLoadResource("src/test/resources/data_integration_tests/periods-modified-sm-01182011.xlsx", Dataset.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
+        controller.setId(dataset.getId());
+        dataset = null;
+        controller.prepare();
+        controller.editColumnMetadata();
+
+        // 2. update mappings and set ontology on one column
+        List<DataTableColumn> columns = new ArrayList<DataTableColumn>();
+        for (DataTableColumn dtc : controller.getDataTableColumns()) {
+            DataTableColumn clone = (DataTableColumn) BeanUtils.cloneBean(dtc);
+            columns.add(clone);
+            if (clone.getName().equals("a")) {
+                clone.setDefaultOntology(ontology);
+            }
+        }
+        controller.setDataTableColumns(columns);
+        controller.saveColumnMetadata();
+        controller.getDataTableColumns();
+        DataTableColumn myColumn = null;
+        for (DataTableColumn dtc : controller.getDataTableColumns()) {
+            if (dtc.getName().equals("a")) {
+                myColumn = dtc;
+            }
+        }
+
+        // 3. update coding sheet mappings to point to ontology
+        CodingSheetController csc = generateNewInitializedController(CodingSheetController.class);
+        csc.setId(myColumn.getDefaultCodingSheet().getId());
+        csc.prepare();
+        csc.loadOntologyMappedColumns();
+        List<CodingRule> rules = new ArrayList<CodingRule>();
+        Map<String, Long> iriMap = new HashMap<String,Long>();
+        for (CodingRule rule_ : csc.getCodingRules()) {
+            CodingRule rule = (CodingRule) BeanUtils.cloneBean(rule_);
+            rules.add(rule);
+            String iri = null;
+//            switch (rule.getCode()) {
+//                case "b":
+//                    iri = "I2";
+//                    break;
+//                case "c":
+//                    iri = "Upper_M3";
+//                    break;
+//                case "d":
+//                    iri = "Molar";
+//                    break;
+//                default:
+//                    break;
+//			  }
+            String mapCode = rule.getCode();
+            if(mapCode == "b") {iri = "I2"; }
+            else if(mapCode == "c" ) {iri = "Upper_M3"; }
+            else if(mapCode == "d") {iri = "Molar"; }
+            
+            if (iri != null) {
+                OntologyNode nodeByIri = ontology.getNodeByIri(iri);
+                rule.setOntologyNode(nodeByIri);
+                logger.info(iri);
+                iriMap.put(iri, nodeByIri.getId());
+            }
+            logger.info("coding rule: {} ", rule);
+        }
+        csc.setCodingRules(rules);
+        csc.saveValueOntologyNodeMapping();
+        ontology = setupAndLoadResource("fauna-element-ontology-v2.txt", Ontology.class, ontology_id);
+        genericService.synchronize();
+        genericService.refresh(ontology);
+        Set<OntologyNode> nodes = new HashSet<OntologyNode>(ontology.getOntologyNodes());
+        logger.info("what's the difference: {}", CollectionUtils.disjunction(nodes, ontology.getOntologyNodes()));
+        assertEquals(nodes.size(), ontology.getOntologyNodes().size());
+        for (String iri : iriMap.keySet()) {
+            assertEquals(iriMap.get(iri), ontology.getNodeByIri(iri).getId());
+        }
+        logger.trace("nodes: {}", StringUtils.join(ontology.getOntologyNodes(), ",\r\n\t"));
+    }
 }

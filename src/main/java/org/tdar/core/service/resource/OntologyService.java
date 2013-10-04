@@ -43,6 +43,7 @@ import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.OntologyDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
@@ -76,8 +77,8 @@ public class OntologyService extends AbstractInformationResourceService<Ontology
     public final static String ONTOLOGY_START_STRING_FORMAT = "<?xml version=\"1.0\"?>\n" + "<rdf:RDF\n"
             + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" + "xmlns:xsd=\"http://www.w3.org/2001/XMLSchema#\"\n"
             + "xmlns:rdfs=\"http://www.w3.org/2000/01/rdf-schema#\"\n" + "xmlns:owl=\"http://www.w3.org/2002/07/owl#\"\n"
-            + "xmlns=\"http://www.tdar.org/ontologies/%d#\"\n" + "xmlns:tdar=\"http://www.tdar.org/ontologies#\"\n"
-            + "xml:base=\"http://www.tdar.org/ontologies/%d\">\n" + "<owl:Ontology rdf:about=\"\"/>\n";
+            + "xmlns=\"%s/ontologies/%d#\"\n" + "xmlns:tdar=\"%s/ontologies#\"\n"
+            + "xml:base=\"%s/ontologies/%d\">\n" + "<owl:Ontology rdf:about=\"\"/>\n";
 
     private final static String OWL_CLASS_FORMAT = " <owl:Class rdf:ID=\"%s\">\n\t<rdfs:label><![CDATA[%s]]></rdfs:label>\n%s%s\n</owl:Class>\n";
 
@@ -308,10 +309,16 @@ public class OntologyService extends AbstractInformationResourceService<Ontology
 
     }
 
-    public String labelToFragmentId(String label) {
-        if (StringUtils.isBlank(label))
+    public String labelToFragmentId(String label_) {
+        if (StringUtils.isBlank(label_))
             return "";
-        return label.trim().replaceAll(IRI_INVALID_CHARACTERS_REGEX, "_");
+        String label = label_.trim().replaceAll(IRI_INVALID_CHARACTERS_REGEX, "_");
+        if (label.matches("^(\\d).*")) {
+        label = "_" + label;
+        }
+
+    return label;
+        
     }
 
     /**
@@ -341,7 +348,10 @@ public class OntologyService extends AbstractInformationResourceService<Ontology
         if (StringUtils.isBlank(inputString))
             return "";
         
-        String startStr = String.format(ONTOLOGY_START_STRING_FORMAT, ontologyId, ontologyId);
+        String baseUrl = TdarConfiguration.getInstance().getBaseUrl();
+        String startStr = String.format(ONTOLOGY_START_STRING_FORMAT, baseUrl, ontologyId, baseUrl, baseUrl, ontologyId);
+
+
 
         // XXX: rough guesstimate that XML verbosity will increase input string
         // length by a factor of 3.
@@ -588,4 +598,5 @@ public class OntologyService extends AbstractInformationResourceService<Ontology
         return getDao().getNumberOfMappedDataValues(dataTableColumn) > 0;
     }
 
+    
 }

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +18,11 @@ import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.custommonkey.xmlunit.exceptions.ConfigurationException;
 import org.custommonkey.xmlunit.jaxp13.Validator;
@@ -169,11 +172,13 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     public final void announceTestOver() {
 
         int errorCount = 0;
+        List<String> errors = new ArrayList<String>();
         if (!isIgnoreActionErrors()) {
             for (ActionSupport controller : getControllers()) {
                 if (controller != null && !controller.getActionErrors().isEmpty()) {
                     logger.error("action errors {}", controller.getActionErrors());
                     errorCount += controller.getActionErrors().size();
+                    errors.addAll(controller.getActionErrors());
                 }
             }
         }
@@ -181,7 +186,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         logger.info(fmt, getClass().getCanonicalName(), testName.getMethodName());
 
         if (errorCount > 0) {
-            Assert.fail(String.format("There were %d action errors", errorCount));
+        	Assert.fail(String.format("There were %d action errors: \n {} ", errorCount,StringUtils.join(errors.toArray(new String[0]))));
         }
     }
 
@@ -743,4 +748,20 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return dataIntegrationService;
     }
 
+    public static void assertNotEquals(Object obj1, Object obj2) {
+        assertNotEquals("", obj1, obj2);
+    }
+
+    public static void assertNotEquals(String msg, Object obj1, Object obj2) {
+        if (StringUtils.isNotBlank(msg)) {
+            assertTrue(msg, ObjectUtils.notEqual(obj1, obj2));
+        } else {
+            assertTrue(String.format("'%s' == '%s'", obj1, obj2), ObjectUtils.notEqual(obj1, obj2));
+        }
+    }
+
+    public static void assertNotEmpty(Collection<?> results) {
+        assertTrue(CollectionUtils.isNotEmpty(results));
+    }
+    
 }
