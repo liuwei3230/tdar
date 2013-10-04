@@ -9,16 +9,25 @@ package org.tdar.core.service.resource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
 import org.junit.Test;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.struts.action.AbstractControllerITCase;
+import org.tdar.core.parser.OwlApiHierarchyParser;
 import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.struts.action.resource.AbstractInformationResourceController;
 import org.tdar.struts.action.resource.OntologyController;
@@ -55,6 +64,24 @@ public class OntologyServiceITCase extends AbstractControllerITCase {
         assertTrue(e.getMessage().contains("unique"));
         setIgnoreActionErrors(true);
     }
+    
+    @Test
+    @Rollback
+    public void testProperParsing() throws Exception {
+        String inputString = FileUtils.readFileToString(new File(TestConstants.TEST_CODING_SHEET_DIR,"fauna-element-ontology.txt"));
+        String owlXml = ontologyService.toOwlXml(1234l, inputString);
+//        ontologyService.
+        logger.info(owlXml);
+        OWLOntologyManager owlOntologyManager = OWLManager.createOWLOntologyManager();
+        
+//        OWLOntology ontology = owlOntologyManager.loadOntologyFromOntologyDocument(new StringInputStream(owlXml));
+        OWLOntology ontology = owlOntologyManager.loadOntologyFromOntologyDocument(new ByteArrayInputStream(owlXml.getBytes()));
+        logger.info("{}", ontology);
+        OwlApiHierarchyParser parser = new OwlApiHierarchyParser(ontology);
+        parser.generate();
+    }
+
+
 
     /*
      * (non-Javadoc)
