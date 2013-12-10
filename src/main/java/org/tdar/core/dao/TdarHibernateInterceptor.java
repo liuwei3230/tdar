@@ -9,39 +9,34 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 
 /**
- * Created with IntelliJ IDEA.
  * User: jimdevos
  * Date: 12/4/13
  * Time: 4:06 PM
- * To change this template use File | Settings | File Templates.
  */
-public class TdarHibernateInterceptor extends EmptyInterceptor{
+public class TdarHibernateInterceptor extends EmptyInterceptor {
+
+    private static final long serialVersionUID = 7011287186638725852L;
 
     Logger logger = LoggerFactory.getLogger(TdarHibernateInterceptor.class);
 
     @Override
-    public boolean onSave(Object entity,
-                          Serializable id,
-                          Object[] state,
-                          String[] propertyNames,
-                          Type[] types) {
+    public boolean onSave(Object entity, Serializable id, Object[] state, String[] propertyNames, Type[] types) {
         int len = state.length;
 
         logger.trace("hibernate interceptor, reporting for duty");
         for(int i = 0; i < len; i++) {
 
-            logger.trace("entclass:{} id:{} property:{} type:{} val:{}",
-                    entity.getClass().getSimpleName(),
-                    id,
-                    propertyNames[i],
-                    types[i],
-                    state[i]
-            );
-
+            String className = entity.getClass().getSimpleName();
+            if (logger.isTraceEnabled()) {
+                logger.trace("entclass:{} id:{} property:{} type:{} val:{}", className, id, propertyNames[i], types[i], state[i] );
+            }
+            
             Type type = types[i];
             if(StringType.INSTANCE.equals(type)) {
                 if("".equals(state[i])) {
-                    logger.trace("setting empty string to null:{}.{}", entity.getClass().getSimpleName(), propertyNames[i]);
+                    if (logger.isTraceEnabled()) {
+                      logger.trace("setting empty string to null:{}.{}", className, propertyNames[i]);
+                    }
                     state[i] = null;
                 }
             }
