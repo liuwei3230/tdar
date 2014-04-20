@@ -32,10 +32,10 @@ import org.tdar.core.dao.external.pid.ExternalIDProvider;
 import org.tdar.web.SessionData;
 
 @Configuration
+//see for how to configure profiles: http://spring.io/blog/2011/02/14/spring-3-1-m1-introducing-profile/ and  -Dspring.profiles.active=postgresql 
 @ComponentScan(basePackages = {"org.tdar"})
 @EnableTransactionManagement
 @EnableAspectJAutoProxy(proxyTargetClass=true)
-//@PropertySource(value = {  "classpath:/tdar.properties" }, ignoreResourceNotFound = true)
 @ImportResource(value = { "classpath:/spring-local-settings.xml" })
 public class TdarAppConfiguration implements Serializable {
 
@@ -81,7 +81,7 @@ public class TdarAppConfiguration implements Serializable {
     }
 
     @Bean(name="sessionData")
-    @Scope(value = "session", proxyMode = ScopedProxyMode.DEFAULT)
+    @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
     public SessionData getSessionData() {
         return new SessionData();
     }
@@ -101,8 +101,5 @@ public class TdarAppConfiguration implements Serializable {
     public ExternalIDProvider getIdProvider() throws IOException {
         return new EZIDDao();
     }
-
-    
-
 
 }
