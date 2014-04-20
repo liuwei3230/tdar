@@ -81,7 +81,7 @@ public class TdarAppConfiguration implements Serializable {
     }
 
     @Bean(name="sessionData")
-    @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @Scope(value = "session", proxyMode = ScopedProxyMode.DEFAULT)
     public SessionData getSessionData() {
         return new SessionData();
     }

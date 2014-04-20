@@ -46,6 +46,7 @@ import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.Invoice.TransactionStatus;
+import org.tdar.core.bean.entity.AuthenticationToken;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.InformationResourceFile.FileAccessRestriction;
@@ -897,6 +898,7 @@ public abstract class AbstractWebTestCase extends AbstractIntegrationTestCase {
     @After
     public void cleanup() {
         webClient.closeAllWindows();
+//        genericService.delete(genericService.findAll(AuthenticationToken.class));
     }
 
     public Long extractTdarIdFromCurrentURL() {
