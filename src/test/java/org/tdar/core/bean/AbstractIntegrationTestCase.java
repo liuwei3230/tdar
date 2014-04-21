@@ -206,7 +206,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     public void announceTestStarting() {
         String fmt = " ***   RUNNING TEST: {}.{}() ***";
         logger.info(fmt, getClass().getSimpleName(), testName.getMethodName());
-
+        sessionData = null;
         emailService.setMailSender(mockMailSender);
         String base = "src/test/resources/xml/schemaCache";
         schemaMap.put("http://www.loc.gov/standards/mods/v3/mods-3-3.xsd", new File(base, "mods3.3.xsd"));
