@@ -33,7 +33,7 @@
         <jetty.stop.port>12919</jetty.stop.port>
         <use.test.classpath>false</use.test.classpath>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <geotools.version>10.5</geotools.version>
+        <geotools.version>11.0</geotools.version>
         <tika.version>1.5</tika.version>
         <batik.version>1.7</batik.version>
         <odata4j.version>0.7.0</odata4j.version>
@@ -222,7 +222,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>52.1</version>
+            <version>53.1</version>
             <!-- LICENSE: MIT (variant?) -->
         </dependency>
         <dependency>
@@ -832,13 +832,13 @@
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-apibinding</artifactId>
-            <version>3.4.10</version>
+            <version>3.5.0</version>
             <!-- LICENSE: APACHE 2.0 / LGPL -->
         </dependency>
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-api</artifactId>
-            <version>3.4.10</version>
+            <version>3.5.0</version>
             <!-- LICENSE: APACHE 2.0 / LGPL -->
         </dependency>
         <!-- CXF for web-services endpoint -->
