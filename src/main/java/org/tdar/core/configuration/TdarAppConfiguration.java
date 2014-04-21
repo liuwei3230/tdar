@@ -7,11 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.persistence.Transient;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +29,7 @@ import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBuilder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 import org.tdar.core.dao.external.auth.AuthenticationProvider;
 import org.tdar.core.dao.external.auth.CrowdRestDao;
 import org.tdar.core.dao.external.pid.EZIDDao;
@@ -40,9 +45,11 @@ import org.tdar.web.SessionData;
 public class TdarAppConfiguration implements Serializable {
 
     private static final long serialVersionUID = 6038273491995542363L;
+    @Transient
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     public TdarAppConfiguration() {
-        System.err.println("HI");
+        logger.debug("HI");
     }
     
     @Bean(name="sessionFactory")
@@ -81,8 +88,9 @@ public class TdarAppConfiguration implements Serializable {
     }
 
     @Bean(name="sessionData")
-    @Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
     public SessionData getSessionData() {
+        logger.debug("new session");
         return new SessionData();
     }
 
