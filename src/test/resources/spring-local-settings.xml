@@ -26,9 +26,9 @@
     <import resource="spring-tag.xml" />
     <!-- <import resource="spring-tag-ahad.xml" /> -->
 
-    <bean id='sessionData' class='org.tdar.web.SessionData' scope='session'>
+<!--     <bean id='sessionData' class='org.tdar.web.SessionData' scope='session'>
         <aop:scoped-proxy />
     </bean>
-    
+ -->    
 
 </beans>

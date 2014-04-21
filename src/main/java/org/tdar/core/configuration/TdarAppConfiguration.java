@@ -87,12 +87,12 @@ public class TdarAppConfiguration implements Serializable {
         return freemarkerConfig;
     }
 
-//    @Bean(name="sessionData")
-//    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
-//    public SessionData getSessionData() {
-//        logger.debug("new session");
-//        return new SessionData();
-//    }
+    @Bean(name="sessionData")
+    @Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public SessionData getSessionData() {
+        logger.debug("new session");
+        return new SessionData();
+    }
 
     @Bean
     public HibernateTransactionManager transactionManager(@Qualifier("tdarMetadataDataSource") DataSource dataSource) throws PropertyVetoException {
