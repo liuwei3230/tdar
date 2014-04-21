@@ -900,9 +900,6 @@ public abstract class AbstractWebTestCase extends AbstractIntegrationTestCase {
         webClient.closeAllWindows();
         webClient.getCookieManager().clearCookies();
         webClient.getCache().clear();
-        logger.debug("cleaning session data");
-        genericService.delete(genericService.findAll(AuthenticationToken.class));
-        logger.debug("done cleaning session data");
     }
 
     public Long extractTdarIdFromCurrentURL() {
