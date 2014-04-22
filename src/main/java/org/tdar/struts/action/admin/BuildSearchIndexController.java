@@ -113,15 +113,18 @@ public class BuildSearchIndexController extends AuthenticationAware.Base impleme
         }
 
         getLogger().info("to reindex: {}", toReindex);
-        Person person = null;
+        String username = "Unknown User";
         if (Persistable.Base.isNotNullOrTransient(getUserId())) {
-            person = getEntityService().find(getUserId());
+            Person person = getEntityService().find(getUserId());
+            if (person != null) {
+                username = person.getUsername();
+            }
         }
 
         if (CollectionUtils.isEmpty(toReindex)) {
-            searchIndexService.indexAll(this, person.getUsername());
+            searchIndexService.indexAll(this, username);
         } else {
-            searchIndexService.indexAll(this, toReindex, person.getUsername());
+            searchIndexService.indexAll(this, toReindex, username);
         }
         if (isProduction()) {
             getEmailService().send(String.format(INDEXING_STARTED, toReindex, getHostName(), date, new Date()), "indexing completed");
