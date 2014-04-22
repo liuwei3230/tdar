@@ -1148,7 +1148,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
     protected void reindex() {
         evictCache();
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), Resource.class, Person.class, Institution.class, ResourceCollection.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class, Person.class, Institution.class, ResourceCollection.class);
     }
 
     protected void doSearch() {

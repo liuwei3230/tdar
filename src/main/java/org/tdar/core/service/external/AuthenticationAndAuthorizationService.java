@@ -68,7 +68,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * we use a weak hashMap of the group permissions to prevent tDAR from constantly hammering the auth system with the group permissions. The hashMap will
      * track these permissions for short periods of time. Logging out and logging in should reset this
      */
-    private final WeakHashMap<Person, TdarGroup> groupMembershipCache = new WeakHashMap<>();
+    private final WeakHashMap<Long, TdarGroup> groupMembershipCache = new WeakHashMap<>();
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private TdarConfiguration tdarConfiguration = TdarConfiguration.getInstance();
@@ -168,10 +168,13 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * and then updates the cache (HashMap)
      */
     private synchronized boolean checkAndUpdateCache(Person person, TdarGroup requestedPermissionsGroup) {
-        TdarGroup greatestPermissionGroup = groupMembershipCache.get(person);
+        if (Persistable.Base.isNullOrTransient(person)) {
+            return false;
+        }
+        TdarGroup greatestPermissionGroup = groupMembershipCache.get(person.getId());
         if (greatestPermissionGroup == null) {
             greatestPermissionGroup = findGroupWithGreatestPermissions(person);
-            groupMembershipCache.put(person, greatestPermissionGroup);
+            groupMembershipCache.put(person.getId(), greatestPermissionGroup);
         }
         return greatestPermissionGroup.hasGreaterPermissions(requestedPermissionsGroup);
     }
@@ -181,7 +184,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * helpful for
      * a shutdown hook, as well as, for knowing when it's safe to deploy.
      */
-    public synchronized List<Person> getCurrentlyActiveUsers() {
+    public synchronized List<Long> getCurrentlyActiveUsers() {
         return new ArrayList<>(groupMembershipCache.keySet());
     }
 
@@ -281,7 +284,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      */
     public synchronized void clearPermissionsCache(Person person) {
         logger.debug("Clearing group membership cache of entry for : " + person);
-        groupMembershipCache.remove(person);
+        groupMembershipCache.remove(person.getId());
     }
 
     /**

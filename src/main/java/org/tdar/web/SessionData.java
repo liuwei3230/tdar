@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.tdar.core.bean.entity.AuthenticationToken;
 import org.tdar.core.bean.entity.Person;
 
@@ -18,6 +20,7 @@ import org.tdar.core.bean.entity.Person;
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Rev$
  */
+@Scope(proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class SessionData implements Serializable {
 
     private static final long serialVersionUID = 2786144717909265676L;

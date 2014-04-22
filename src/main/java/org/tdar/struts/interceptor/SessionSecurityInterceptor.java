@@ -69,9 +69,9 @@ public class SessionSecurityInterceptor implements SessionDataAware, Interceptor
 
         Activity activity = null;
         if (!ReflectionService.methodOrActionContainsAnnotation(invocation, IgnoreActivity.class)) {
-            activity = new Activity(ServletActionContext.getRequest());
+            activity = new Activity(ServletActionContext.getRequest(), null);
             if ((getSessionData() != null) && getSessionData().isAuthenticated()) {
-                activity.setUser(sessionData.getPerson());
+                activity.setUser(sessionData.getPerson().getUsername());
             }
             ActivityManager.getInstance().addActivityToQueue(activity);
         }

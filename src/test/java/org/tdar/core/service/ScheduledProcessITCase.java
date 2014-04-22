@@ -182,7 +182,7 @@ public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
     @Rollback(true)
     public void testPersonAnalytics() throws InstantiationException, IllegalAccessException {
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), Resource.class, Person.class, Institution.class, ResourceCollection.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class, Person.class, Institution.class, ResourceCollection.class);
         pap.setDaysToRun(3000);
         pap.execute();
         pap.cleanup();

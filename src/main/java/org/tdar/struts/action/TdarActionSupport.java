@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.struts2.ServletActionContext;
@@ -284,6 +285,7 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
             getLogger().error("Session data was null, should be managed by Spring.");
             throw new IllegalStateException(getText("tdarActionSupport.no_sesion_data"));
         }
+//        logger.debug("{} : sessionData TAS: {} ({})", genericService.sessionContains(sessionData.getPerson()), ObjectUtils.identityToString(sessionData), sessionData.getAuthenticationToken());
         return sessionData;
     }
 
@@ -429,6 +431,9 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
     protected void clearAuthenticationToken() {
         AuthenticationToken token = getSessionData().getAuthenticationToken();
+        if (token == null) {
+            return;
+        }
         token.setSessionEnd(new Date());
         getGenericService().update(token);
         getSessionData().clearAuthenticationToken();

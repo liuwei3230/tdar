@@ -38,7 +38,7 @@ public class TagGatewayITCase extends AbstractWithIndexIntegrationTestCase {
 
     @Before
     public void setupServiceClient() throws MalformedURLException {
-        getSearchIndexService().indexAll(getAdminUser(), Resource.class);
+        getSearchIndexService().indexAll(getAdminUser().getUsername(), Resource.class);
         // use this to run the TAG Gateway with a direct connection, not a socket connection
         boolean runLocal = false;
         if (!runLocal) {

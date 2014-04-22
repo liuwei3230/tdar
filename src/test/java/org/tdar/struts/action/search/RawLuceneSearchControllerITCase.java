@@ -47,7 +47,7 @@ public class RawLuceneSearchControllerITCase extends AbstractSearchControllerITC
     @Ignore("Not currently implemented")
     public void testSearchPhraseWithQuote() {
         setIgnoreActionErrors(true);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("\"test");
         assertHasErrors();
     }
@@ -55,14 +55,14 @@ public class RawLuceneSearchControllerITCase extends AbstractSearchControllerITC
     @Test
     @Ignore("Not currently implemented")
     public void testSearchPhraseWithColon() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("test : abc ");
     }
 
     @Test
     @Ignore("Not currently implemented")
     public void testSearchPhraseWithLuceneSyntax() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("title:abc");
     }
 
@@ -70,21 +70,21 @@ public class RawLuceneSearchControllerITCase extends AbstractSearchControllerITC
     @Ignore("Not currently implemented")
     public void testSearchPhraseWithUnbalancedParenthesis() {
         setIgnoreActionErrors(true);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("\"test ( abc ");
     }
 
     @Test
     @Ignore("Not currently implemented")
     public void testAndInSearchPhrase() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("Moon AND River");
     }
 
     @Test
     @Ignore("Not currently implemented")
     public void testOrInSearchPhrase() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("Moon OR River");
     }
 

@@ -180,7 +180,7 @@ public class SearchServiceITCase extends AbstractSearchControllerITCase {
     public void testAllSortFields() throws ParseException {
 
         for (SortTestStruct sortTestInfo : sortTests) {
-            searchIndexService.indexAll(getAdminUser(), sortTestInfo.type);
+            searchIndexService.indexAll(getAdminUser().getUsername(), sortTestInfo.type);
             for (Map.Entry<SortOption, Comparator<?>> entry : sortTestInfo.comparators.entrySet()) {
                 // assumption: an empty queryBuilder returns alldocs
                 SortOption sortOption = entry.getKey();

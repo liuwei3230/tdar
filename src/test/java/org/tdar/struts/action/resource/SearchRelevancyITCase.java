@@ -76,7 +76,7 @@ public class SearchRelevancyITCase extends AbstractResourceControllerITCase {
     }
 
     private void runIndex() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
     }
 
     @Before

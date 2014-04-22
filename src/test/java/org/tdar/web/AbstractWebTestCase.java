@@ -859,7 +859,7 @@ public abstract class AbstractWebTestCase extends AbstractIntegrationTestCase {
 
     public void testProjectView() {
         // this should probably be done @before every test but it would slow things down even more
-        searchIndexService.indexAll(getAdminUser());
+        searchIndexService.indexAll(getAdminUser().getUsername());
 
         gotoPage("/project/3805");
         logger.trace(getPageText());

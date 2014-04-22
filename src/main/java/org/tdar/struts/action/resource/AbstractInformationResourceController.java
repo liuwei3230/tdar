@@ -712,6 +712,9 @@ public abstract class AbstractInformationResourceController<R extends Informatio
 
     public List<Pair<InformationResourceFile, ExceptionWrapper>> getHistoricalFileErrors() {
         List<Pair<InformationResourceFile, ExceptionWrapper>> toReturn = new ArrayList<>();
+        if (Persistable.Base.isNullOrTransient(getPersistable())) {
+            return toReturn;
+        }
         try {
             if (isHasFileProxyChanges()) {
                 return toReturn;

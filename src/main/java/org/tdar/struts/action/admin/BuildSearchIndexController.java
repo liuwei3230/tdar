@@ -119,9 +119,9 @@ public class BuildSearchIndexController extends AuthenticationAware.Base impleme
         }
 
         if (CollectionUtils.isEmpty(toReindex)) {
-            searchIndexService.indexAll(this, person);
+            searchIndexService.indexAll(this, person.getUsername());
         } else {
-            searchIndexService.indexAll(this, toReindex, person);
+            searchIndexService.indexAll(this, toReindex, person.getUsername());
         }
         if (isProduction()) {
             getEmailService().send(String.format(INDEXING_STARTED, toReindex, getHostName(), date, new Date()), "indexing completed");
