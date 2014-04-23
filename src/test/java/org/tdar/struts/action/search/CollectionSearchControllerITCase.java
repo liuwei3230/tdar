@@ -91,7 +91,7 @@ public class CollectionSearchControllerITCase extends AbstractSearchControllerIT
     @Override
     protected void reindex() {
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), ResourceCollection.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), ResourceCollection.class);
     }
 
     @Override

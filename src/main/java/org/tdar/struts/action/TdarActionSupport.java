@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.struts2.ServletActionContext;
@@ -63,6 +64,7 @@ import org.tdar.core.service.resource.ProjectService;
 import org.tdar.core.service.resource.ResourceRelationshipService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.workflow.ActionMessageErrorSupport;
+import org.tdar.struts.ErrorListener;
 import org.tdar.struts.action.resource.AbstractInformationResourceController;
 import org.tdar.utils.ExceptionWrapper;
 import org.tdar.utils.activity.Activity;
@@ -221,6 +223,8 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
     private Map<String, String> clientValidationInfo = new LinkedHashMap<>();
 
+    private ErrorListener errorListener;
+
     public ProjectService getProjectService() {
         return projectService;
     }
@@ -281,6 +285,7 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
             getLogger().error("Session data was null, should be managed by Spring.");
             throw new IllegalStateException(getText("tdarActionSupport.no_sesion_data"));
         }
+//        logger.debug("{} : sessionData TAS: {} ({})", genericService.sessionContains(sessionData.getPerson()), ObjectUtils.identityToString(sessionData), sessionData.getAuthenticationToken());
         return sessionData;
     }
 
@@ -426,6 +431,9 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
     protected void clearAuthenticationToken() {
         AuthenticationToken token = getSessionData().getAuthenticationToken();
+        if (token == null) {
+            return;
+        }
         token.setSessionEnd(new Date());
         getGenericService().update(token);
         getSessionData().clearAuthenticationToken();
@@ -545,16 +553,27 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
                 maxDepth--;
             }
 
-            super.addActionError(sb.toString());
+            addActionError(sb.toString());
         } else if (StringUtils.isNotBlank(message)) {
-            super.addActionError(message);
+            addActionError(message);
         }
         stackTraces.add(ExceptionWrapper.convertExceptionToCode(exception));
     }
 
     @Override
+    public void addFieldError(String fieldName, String errorMessage) {
+        if (errorListener != null) {
+            errorListener.addError(String.format("%s:%s", fieldName, errorMessage));
+        }
+        super.addFieldError(fieldName, errorMessage);
+    }
+    
+    @Override
     public void addActionError(String message) {
         getLogger().debug("ACTIONERROR:: {}", message);
+        if (errorListener != null) {
+            errorListener.addError(message);
+        }
         super.addActionError(message);
     }
 
@@ -742,10 +761,6 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
         return javascriptErrorLog;
     }
 
-    public boolean isJSCSSMergeServletEnabled() {
-        return getTdarConfiguration().isJSCSSMergeServletEnabled();
-    }
-
     /**
      * @see TdarConfiguration#isSwitchableMapObfuscation()
      * @return whatever value the tdar configuration isSwitchableMapObfuscation returns.
@@ -818,5 +833,10 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
     public String getWroTempDirName() {
         return filesystemResourceService.getWroDir();
+    }
+
+    @Override
+    public void registerErrorListener(ErrorListener e) {
+        this.errorListener = e;
     }
 }

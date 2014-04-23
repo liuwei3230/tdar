@@ -9,8 +9,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.entity.Person;
-import org.tdar.web.SessionData;
 
 public class Activity implements Serializable {
 
@@ -27,7 +27,7 @@ public class Activity implements Serializable {
     private Class<?> manipulationClass;
 
     private Long id;
-    private Person user;
+    private String user;
 
     private String message;
 
@@ -45,7 +45,7 @@ public class Activity implements Serializable {
                 request.getQueryString() == null ? "" : StringUtils.left(request.getQueryString(), 10));
     }
 
-    public Activity(HttpServletRequest httpServletRequest) {
+    public Activity(HttpServletRequest httpServletRequest,Person user) {
         this();
         HttpServletRequest request = ServletActionContext.getRequest();
         this.name = String.format("%s:%s?%s [%s]", request.getMethod(), request.getServletPath(),
@@ -53,9 +53,8 @@ public class Activity implements Serializable {
 
         this.setBrowser(request.getHeader("User-Agent"));
         this.setHost(request.getRemoteHost());
-        SessionData sessionData = (SessionData) request.getSession().getAttribute("scopedTarget.sessionData");
-        if (sessionData != null) {
-            setUser(sessionData.getPerson());
+        if (Persistable.Base.isNotNullOrTransient(user)) {
+            setUser(user.getUsername());
         }
     }
 
@@ -116,11 +115,11 @@ public class Activity implements Serializable {
         this.id = id;
     }
 
-    public Person getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(Person user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

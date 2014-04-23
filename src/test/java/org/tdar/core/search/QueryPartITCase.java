@@ -17,7 +17,7 @@ public class QueryPartITCase extends AbstractIntegrationTestCase {
     @Before
     public void before() {
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
     }
 
     @Test
