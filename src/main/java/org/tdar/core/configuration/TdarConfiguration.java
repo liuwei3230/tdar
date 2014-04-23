@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.resources.image.ImageUtilities;
@@ -387,10 +389,16 @@ public class TdarConfiguration {
     }
 
     public Set<String> getStopWords() {
+        if (CollectionUtils.isEmpty(stopWords)) {
+            initializeStopWords();
+        }
         return stopWords;
     }
 
     public List<String> getCouponCodes() {
+        if (CollectionUtils.isEmpty(couponCodes)) {
+            intializeCouponCodes();
+        }
         return couponCodes;
     }
 
