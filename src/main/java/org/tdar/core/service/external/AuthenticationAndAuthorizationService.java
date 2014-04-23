@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.AuthNotice;
@@ -48,8 +49,6 @@ import org.tdar.core.dao.external.auth.AuthenticationResult;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.external.auth.TdarGroup;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
-import org.tdar.core.service.AbstractConfigurableService;
-import org.tdar.core.service.ConfigurableService;
 import org.tdar.struts.action.search.ReservedSearchParameters;
 import org.tdar.utils.MessageHelper;
 import org.tdar.web.SessionData;
@@ -69,7 +68,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * we use a weak hashMap of the group permissions to prevent tDAR from constantly hammering the auth system with the group permissions. The hashMap will
      * track these permissions for short periods of time. Logging out and logging in should reset this
      */
-    private final WeakHashMap<Person, TdarGroup> groupMembershipCache = new WeakHashMap<>();
+    private final WeakHashMap<Long, TdarGroup> groupMembershipCache = new WeakHashMap<>();
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private TdarConfiguration tdarConfiguration = TdarConfiguration.getInstance();
@@ -86,6 +85,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
     @Autowired
     private InstitutionDao institutionDao;
 
+    private AuthenticationProvider provider;
     // @Override
     // public boolean isServiceRequired() {
     // return true;
@@ -168,10 +168,13 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * and then updates the cache (HashMap)
      */
     private synchronized boolean checkAndUpdateCache(Person person, TdarGroup requestedPermissionsGroup) {
-        TdarGroup greatestPermissionGroup = groupMembershipCache.get(person);
+        if (Persistable.Base.isNullOrTransient(person)) {
+            return false;
+        }
+        TdarGroup greatestPermissionGroup = groupMembershipCache.get(person.getId());
         if (greatestPermissionGroup == null) {
             greatestPermissionGroup = findGroupWithGreatestPermissions(person);
-            groupMembershipCache.put(person, greatestPermissionGroup);
+            groupMembershipCache.put(person.getId(), greatestPermissionGroup);
         }
         return greatestPermissionGroup.hasGreaterPermissions(requestedPermissionsGroup);
     }
@@ -181,7 +184,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      * helpful for
      * a shutdown hook, as well as, for knowing when it's safe to deploy.
      */
-    public synchronized List<Person> getCurrentlyActiveUsers() {
+    public synchronized List<Long> getCurrentlyActiveUsers() {
         return new ArrayList<>(groupMembershipCache.keySet());
     }
 
@@ -281,7 +284,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
      */
     public synchronized void clearPermissionsCache(Person person) {
         logger.debug("Clearing group membership cache of entry for : " + person);
-        groupMembershipCache.remove(person);
+        groupMembershipCache.remove(person.getId());
     }
 
     /**
@@ -950,29 +953,19 @@ public class AuthenticationAndAuthorizationService implements Accessible {
         return person;
     }
 
-    private ConfigurableService<AuthenticationProvider> providers = new AbstractConfigurableService<AuthenticationProvider>() {
-        @Override
-        public boolean isServiceRequired() {
-            return true;
-        }
-    };
-
-    /**
-     * Used in testing
-     * 
-     * @return the providers
-     */
-    protected ConfigurableService<AuthenticationProvider> getProviders() {
-        return providers;
-    }
-
     @Autowired
-    private void setAllServices(List<AuthenticationProvider> providers) {
-        ((AbstractConfigurableService<AuthenticationProvider>) this.providers).setAllServices(providers);
+    @Qualifier("AuthenticationProvider")
+    public void setProvider(AuthenticationProvider provider) {
+        this.provider = provider;
+        if (provider != null) {
+            logger.debug("Authentication Provider: {}", provider.getClass().getSimpleName());
+        } else {
+            logger.debug("Authentication Provider: NOT CONFIGURED");
+        }
     }
 
     public AuthenticationProvider getProvider() {
-        return providers.getProvider();
+        return provider;
     }
 
 }

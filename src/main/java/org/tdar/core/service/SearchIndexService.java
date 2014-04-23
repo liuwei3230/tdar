@@ -66,7 +66,7 @@ public class SearchIndexService {
 
     public static final String BUILD_LUCENE_INDEX_ACTIVITY_NAME = "Build Lucene Search Index";
 
-    public void indexAll(AsyncUpdateReceiver updateReceiver, Person person) {
+    public void indexAll(AsyncUpdateReceiver updateReceiver, String person) {
         indexAll(updateReceiver, getDefaultClassesToIndex(), person);
     }
 
@@ -96,7 +96,7 @@ public class SearchIndexService {
      * @param person
      */
     @SuppressWarnings("deprecation")
-    public void indexAll(AsyncUpdateReceiver updateReceiver, List<Class<? extends Indexable>> classesToIndex, Person person) {
+    public void indexAll(AsyncUpdateReceiver updateReceiver, List<Class<? extends Indexable>> classesToIndex, String person) {
         if (updateReceiver == null) {
             updateReceiver = getDefaultUpdateReceiver();
         }
@@ -309,7 +309,7 @@ public class SearchIndexService {
      * 
      * @param person
      */
-    public void indexAll(Person person) {
+    public void indexAll(String person) {
         indexAll(getDefaultUpdateReceiver(), getDefaultClassesToIndex(), person);
     }
 
@@ -320,7 +320,7 @@ public class SearchIndexService {
      * @param classes
      */
     @SuppressWarnings("unchecked")
-    public void indexAll(Person person, Class<? extends Indexable>... classes) {
+    public void indexAll(String person, Class<? extends Indexable>... classes) {
         indexAll(getDefaultUpdateReceiver(), Arrays.asList(classes), person);
     }
 

@@ -313,7 +313,7 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
     @Test
     @Rollback(true)
     public void testForInheritedCulturalInformationFromProject() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         setResourceTypes(getInheritingTypes());
         controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         doSearch("Archaic");
@@ -329,7 +329,7 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
         Long codingSheetId = setupCodingSheet();
 
         logger.info("imgId:" + imgId + " datasetId:" + datasetId + " codingSheetId:" + codingSheetId);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         setResourceTypes(allResourceTypes);
         controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         doSearch("precambrian");
@@ -345,7 +345,7 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
         CodingSheet sheet = genericService.find(CodingSheet.class, codingSheetId);
         sheet.setGenerated(true);
         genericService.save(sheet);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         setResourceTypes(ResourceType.CODING_SHEET);
         controller.setRecordsPerPage(10000);
         assertFalse(resultsContainId(codingSheetId));
@@ -386,7 +386,7 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
     public void testDatedSearch() {
         Long docId = setupDatedDocument();
         logger.info("Created new document: " + docId);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         setResourceTypes(allResourceTypes);
 
@@ -533,26 +533,26 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
     @Test
     public void testSearchPhraseWithQuote() {
         setIgnoreActionErrors(true);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("\"test");
     }
 
     @Test
     public void testSearchPhraseWithColon() {
         setIgnoreActionErrors(true);
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("\"test : abc ");
     }
 
     @Test
     public void testSearchPhraseWithLuceneSyntax() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("title:abc");
     }
 
     @Test
     public void testSearchPhraseWithUnbalancedParenthesis() {
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         doSearch("\"test ( abc ");
     }
 

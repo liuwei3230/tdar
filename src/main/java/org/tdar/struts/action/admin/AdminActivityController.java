@@ -108,7 +108,7 @@ public class AdminActivityController extends AuthenticationAware.Base {
             getCounters().put(activity.getSimpleBrowserName(), num);
         }
 
-        setActivePeople(getAuthenticationAndAuthorizationService().getCurrentlyActiveUsers());
+        setActivePeople(getEntityService().findAll(getAuthenticationAndAuthorizationService().getCurrentlyActiveUsers()));
 
         initSystemStats();
         return SUCCESS;

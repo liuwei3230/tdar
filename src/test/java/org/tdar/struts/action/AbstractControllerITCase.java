@@ -404,6 +404,6 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
     @SuppressWarnings("unchecked")
     protected void reindex() {
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), Resource.class, ResourceCollection.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class, ResourceCollection.class);
     }
 }

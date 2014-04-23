@@ -76,6 +76,6 @@ public class AdvancedEntitySearchControllerITCase extends AbstractSearchControll
     @Override
     protected void reindex() {
         searchIndexService.purgeAll();
-        searchIndexService.indexAll(getAdminUser(), Institution.class, Person.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Institution.class, Person.class);
     }
 }

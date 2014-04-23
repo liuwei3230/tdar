@@ -612,7 +612,7 @@ public class ResourceCollectionITCase extends AbstractResourceControllerITCase {
         BrowseController controller_ = generateNewInitializedController(BrowseController.class);
         Long fileId = testFile.getId();
         searchIndexService.flushToIndexes();
-        searchIndexService.indexAll(getAdminUser(), Resource.class);
+        searchIndexService.indexAll(getAdminUser().getUsername(), Resource.class);
         testFile = null;
         evictCache();
         // WHY DOES THE SYNCHRONIZE ON THE INDEX CALL DO ANYTHING HERE VS THE
