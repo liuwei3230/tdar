@@ -46,15 +46,8 @@ public class DocumentFileITCase extends AbstractIntegrationTestCase {
         File f = new File(TestConstants.TEST_DOCUMENT_DIR + "/sample_pdf_formats/", filename);
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
 
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(Document.class, filename, f, store);
-        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
-        assertEquals(FileType.DOCUMENT, fileType);
-        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
-        assertEquals(PDFWorkflow.class, workflow.getClass());
-        boolean result = messageService.sendFileProcessingRequest(workflow, originalVersion);
-        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
+        InformationResourceFile informationResourceFile = generateAndSend(Document.class, store, FileType.DOCUMENT, filename, f, false);
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
-        assertFalse(result);
         assertEquals(FileStatus.PROCESSING_ERROR, informationResourceFile.getStatus());
     }
 
@@ -63,17 +56,8 @@ public class DocumentFileITCase extends AbstractIntegrationTestCase {
         String filename = "test-file.rtf";
         File f = new File(TestConstants.TEST_DOCUMENT_DIR, filename);
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(Document.class, filename, f, store);
-        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
-        assertEquals(FileType.DOCUMENT, fileType);
-        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
-        assertEquals(GenericDocumentWorkflow.class, workflow.getClass());
-        logger.info("{}", originalVersion);
-        boolean result = messageService.sendFileProcessingRequest(workflow, originalVersion);
-        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
+        InformationResourceFile informationResourceFile = generateAndSend(Document.class, store, FileType.DOCUMENT, filename, f, true);
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
-        assertTrue(result);
         assertEquals(FileStatus.PROCESSED, informationResourceFile.getStatus());
         InformationResourceFileVersion indexableVersion = informationResourceFile.getIndexableVersion();
         logger.info("version: {}", indexableVersion);

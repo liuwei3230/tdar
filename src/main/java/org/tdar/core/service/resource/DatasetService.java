@@ -14,7 +14,6 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -209,7 +208,8 @@ public class DatasetService extends AbstractInformationResourceService<Dataset, 
             FileProxy fileProxy = new FileProxy(filename, tempFile, VersionType.TRANSLATED, FileAction.ADD_DERIVATIVE);
             fileProxy.setRestriction(file.getRestriction());
             fileProxy.setFileId(file.getId());
-            processMetadataForFileProxies(dataset, fileProxy);
+            ProcessingProxy proxy = new ProcessingProxy(dataset);
+            processMetadataForFileProxies(proxy, fileProxy);
             irFile = fileProxy.getInformationResourceFile();
         } catch (IOException exception) {
             getLogger().error("Unable to create translated file for Dataset: " + dataset, exception);
@@ -238,7 +238,7 @@ public class DatasetService extends AbstractInformationResourceService<Dataset, 
                 latestUploadedVersion.setTransientFile(transientFile);
             }
 
-            getAnalyzer().processFile(dataset.getActiveInformationResourceFiles().toArray(new InformationResourceFile[0]));
+            getAnalyzer().processFile(new ProcessingProxy(dataset), dataset.getActiveInformationResourceFiles().toArray(new InformationResourceFile[0]));
         } catch (Exception e) {
             throw new TdarRecoverableRuntimeException(e);
         }
@@ -331,7 +331,7 @@ public class DatasetService extends AbstractInformationResourceService<Dataset, 
             }
         }
         datasetFile.setStatus(FileStatus.PROCESSED);
-        datasetFile.setInformationResource(dataset);
+//        datasetFile.setInformationResource(dataset);
         logger.debug("{} === {} ", ObjectUtils.identityToString(transientDatasetToPersist), ObjectUtils.identityToString(dataset));
         transientDatasetToPersist = null;
         dataset = getDao().merge(dataset);

@@ -405,7 +405,7 @@ public class AccountService extends ServiceInterface.TypedDaoBase<Account, Accou
         boolean hasUpdates = false;
 
         // try this without the merge
-        getDao().merge(account);
+//        getDao().laccount);
 
         for (Resource resource : resourcesToEvaluate) {
             if (resource == null) {

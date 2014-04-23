@@ -31,6 +31,7 @@ import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.FileProxyService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.data.FileProxy;
@@ -182,7 +183,8 @@ public abstract class AbstractInformationResourceController<R extends Informatio
         // abstractInformationResourceController.didnt_override=%s didn't override properly
 
         try {
-            getInformationResourceService().importFileProxiesAndProcessThroughWorkflow(getPersistable(), getAuthenticatedUser(), ticketId, this, proxies);
+            
+            getInformationResourceService().importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy(getPersistable()), getAuthenticatedUser(), ticketId, this, proxies);
         } catch (Exception e) {
             addActionErrorWithException(getText("abstractResourceController.we_were_unable_to_process_the_uploaded_content"), e);
         }

@@ -68,13 +68,12 @@ public class PdfService {
      * @throws IOException
      * @throws URISyntaxException
      */
-    public File mergeCoverPage(TextProvider provider, Person submitter, InformationResourceFileVersion version) throws COSVisitorException, IOException,
+    public File mergeCoverPage(TextProvider provider, Person submitter, InformationResource informationResource, InformationResourceFileVersion version) throws COSVisitorException, IOException,
             URISyntaxException {
         try {
-            InformationResource informationResource = version.getInformationResourceFile().getInformationResource();
             if (version.getExtension().equalsIgnoreCase("PDF") && (informationResource instanceof Document)) {
                 // get the tDAR document and get the path to the template
-                Document document = (Document) version.getInformationResourceFile().getInformationResource();
+                Document document = (Document)informationResource;
                 String path = String.format("%s/%s%s", TdarConfiguration.getInstance().getThemeDir(), COVER_PAGE, DOT_PDF);
 
                 // get the template

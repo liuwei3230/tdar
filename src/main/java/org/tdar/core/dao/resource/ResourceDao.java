@@ -28,6 +28,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.keyword.GeographicKeyword.Level;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
@@ -381,9 +382,17 @@ public abstract class ResourceDao<E extends Resource> extends Dao.HibernateBase<
         for (Object obj_ : query.list()) {
             Object[] obj = (Object[]) obj_;
             InformationResourceFile irf = find(InformationResourceFile.class, (Long) obj[2]);
-            toReturn.add(new AggregateDownloadStatistic((Date) obj[0], (Number) obj[1], irf.getFilename(), irf.getId(), irf.getInformationResource().getId()));
+            InformationResource informationResource = findResourceForFile(irf);
+
+            toReturn.add(new AggregateDownloadStatistic((Date) obj[0], (Number) obj[1], irf.getFilename(), irf.getId(), informationResource.getId()));
         }
         return toReturn;
+    }
+
+    private InformationResource findResourceForFile(InformationResourceFile irf) {
+        Query query = getCurrentSession().getNamedQuery(TdarNamedQueries.QUERY_INFORMATION_RESOURCE_FROM_IRF);
+        query.setParameter("id", irf.getId());
+        return (InformationResource) query.uniqueResult();
     }
 
     public ResourceSpaceUsageStatistic getResourceSpaceUsageStatistics(List<Long> personId, List<Long> resourceId, List<Long> collectionId,

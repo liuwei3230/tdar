@@ -17,6 +17,7 @@ import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.XmlService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.filestore.WorkflowContext;
 
@@ -110,22 +111,17 @@ public class MessageService {
      * @param workflow2
      * @return Martin: given that at some future date this might be pushing stuff onto a queue, it shouldn't return anything?
      */
-    public <W extends Workflow> boolean sendFileProcessingRequest(Workflow workflow, InformationResourceFileVersion... informationResourceFileVersions) {
-        WorkflowContext ctx = workflowContextService.initializeWorkflowContext(workflow, informationResourceFileVersions);
+    public <W extends Workflow> boolean sendFileProcessingRequest(Workflow workflow, ProcessingProxy proxy, InformationResourceFileVersion... informationResourceFileVersions) {
+        WorkflowContext ctx = workflowContextService.initializeWorkflowContext(workflow, proxy, informationResourceFileVersions);
         List<Long> irfIds = new ArrayList<>();
-        Set<InformationResource> resources = new HashSet<>();
         for (InformationResourceFileVersion version : informationResourceFileVersions) {
             InformationResourceFile irf = version.getInformationResourceFile();
             if (!irfIds.contains(irf.getId())) {
                 irf.setStatus(FileStatus.QUEUED);
                 genericDao.saveOrUpdate(irf);
-                // FIXME: when we reimplement the message queue, this will need to be adjusted to do a flush here, otherwise, we cannot guarantee that the save
-                // will happen before the evict
-                resources.add(irf.getInformationResource());
             }
         }
-//        genericDao.detachFromSession(resources);
-        resources = null;
+
         try {
             Workflow workflow_ = ctx.getWorkflowClass().newInstance();
             ctx.setXmlService(xmlService);

@@ -50,6 +50,7 @@ import org.tdar.core.service.bulk.BulkManifestProxy;
 import org.tdar.core.service.bulk.BulkUploadTemplate;
 import org.tdar.core.service.bulk.CellMetadata;
 import org.tdar.core.service.resource.InformationResourceService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.workflow.ActionMessageErrorListener;
 import org.tdar.filestore.FileAnalyzer;
@@ -290,9 +291,11 @@ public class BulkUploadService {
                 // createInternalResourceCollectionWithResource
                 manifestProxy.getResourcesCreated().put(fileName, null);
                 importService.reconcilePersistableChildBeans(manifestProxy.getSubmitter(), informationResource);
-
+                genericDao.saveOrUpdate(informationResource);
+                genericDao.synchronize();
+                logger.debug("id: {} ", informationResource.getId());
                 manifestProxy.setSubmitter(null);
-                informationResourceService.importFileProxiesAndProcessThroughWorkflow(informationResource, manifestProxy.getSubmitter(), null, listener,
+                informationResourceService.importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy(informationResource), manifestProxy.getSubmitter(), null, listener,
                         Arrays.asList(fileProxy));
                 genericDao.saveOrUpdate(informationResource);
                 manifestProxy.getResourcesCreated().put(fileName, informationResource);

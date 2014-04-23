@@ -85,7 +85,8 @@ public class DownloadController extends AuthenticationAware.Base implements Down
             getLogger().debug("no informationResourceFiles associated with this id [" + informationResourceFileId + "]");
             return ERROR;
         }
-        if (!getAuthenticationAndAuthorizationService().canDownload(irFileVersion, getSessionData().getPerson())) {
+        InformationResource informationResource = getInformationResourceFileService().findResourceForFile(irFileVersion.getInformationResourceFile());
+        if (!getAuthenticationAndAuthorizationService().canDownload(informationResource, irFileVersion, getSessionData().getPerson())) {
             String msg = String.format("user %s does not have permissions to download %s", getSessionData().getPerson(), irFileVersion);
             getLogger().warn(msg);
             return FORBIDDEN;
@@ -116,8 +117,9 @@ public class DownloadController extends AuthenticationAware.Base implements Down
             getLogger().warn("thumbail request: requested informationResourceFileVersion exists but is not a thumbnail:" + informationResourceFileId);
             return ERROR;
         }
+        InformationResource informationResource = getInformationResourceFileService().findResourceForFile(irFileVersion.getInformationResourceFile());
 
-        if (!getAuthenticationAndAuthorizationService().canDownload(irFileVersion, getSessionData().getPerson())) {
+        if (!getAuthenticationAndAuthorizationService().canDownload(informationResource, irFileVersion, getSessionData().getPerson())) {
             getLogger().warn("thumbail request: resource is confidential/embargoed:" + informationResourceFileId);
             return FORBIDDEN;
         }
@@ -138,7 +140,7 @@ public class DownloadController extends AuthenticationAware.Base implements Down
             if (irf.isDeleted()) {
                 continue;
             }
-            if (!getAuthenticationAndAuthorizationService().canDownload(irf, getSessionData().getPerson())) {
+            if (!getAuthenticationAndAuthorizationService().canDownload(ir, irf, getSessionData().getPerson())) {
                 getLogger().warn("thumbail request: resource is confidential/embargoed:" + informationResourceFileId);
                 return FORBIDDEN;
             }

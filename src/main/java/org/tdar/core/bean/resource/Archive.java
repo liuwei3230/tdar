@@ -49,16 +49,6 @@ public class Archive extends InformationResource {
     }
 
     @Override
-    public Archive getTransientCopyForWorkflow() {
-        final Archive result = new Archive();
-        result.setId(this.getId());
-        result.setProject(this.getProject());
-        result.setImportDone(this.importdone);
-        result.setDoImportContent(this.doImportContent);
-        return result;
-    }
-
-    @Override
     public void updateFromTransientResource(InformationResource transientResource) {
         if (transientResource == null) {
             // Should never be here, so perhaps we should do more than return?

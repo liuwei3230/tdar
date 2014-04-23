@@ -41,6 +41,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.VersionType;
 import org.tdar.core.dao.external.payment.PaymentMethod;
 import org.tdar.core.service.AccountService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.struts.data.FileProxy;
 
 public class AccountITCase extends AbstractIntegrationTestCase {
@@ -303,7 +304,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         FileProxy proxy = new FileProxy("test.pdf", new File(TestConstants.TEST_DOCUMENT_DIR, "/t2/test.pdf"), VersionType.UPLOADED_ARCHIVAL);
         proxy.setAction(FileAction.REPLACE);
         proxy.setFileId(file.getId());
-        informationResourceService.processMetadataForFileProxies(doc, proxy);
+        informationResourceService.processMetadataForFileProxies(new ProcessingProxy(doc), proxy);
         ResourceEvaluator re4 = new ResourceEvaluator(model);
         logger.info("files {} ", doc.getInformationResourceFiles());
         re4.evaluateResources(doc);

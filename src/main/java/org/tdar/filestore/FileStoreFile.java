@@ -3,6 +3,11 @@ package org.tdar.filestore;
 import java.io.File;
 import java.io.Serializable;
 
+import javax.persistence.Transient;
+
+import org.tdar.core.bean.resource.InformationResourceFileVersion;
+import org.tdar.core.bean.resource.VersionType;
+
 public class FileStoreFile implements Serializable, FileStoreFileProxy {
 
     private static final long serialVersionUID = -3168636719632062521L;
@@ -13,6 +18,11 @@ public class FileStoreFile implements Serializable, FileStoreFileProxy {
     private File transientFile;
     private Long persistableId;
     private DirectoryType type;
+    private Long informationResourceFileId;
+    private Long informationResourceFileVersionId;
+    private Integer version;
+
+    private VersionType versionType;
 
     public FileStoreFile() {
 
@@ -27,6 +37,15 @@ public class FileStoreFile implements Serializable, FileStoreFileProxy {
         this.persistableId = id;
         this.filename = filename;
         this.type = type;
+    }
+
+    public FileStoreFile(Long id, InformationResourceFileVersion v) {
+        this.filename = v.getFilename();
+        this.checksum = v.getChecksum();
+        this.checksumType = v.getChecksumType();
+        this.persistableId = id;
+        this.informationResourceFileId = v.getInformationResourceFileId();
+        this.informationResourceFileVersionId = v.getId();
     }
 
     /*
@@ -134,6 +153,57 @@ public class FileStoreFile implements Serializable, FileStoreFileProxy {
 
     public void setType(DirectoryType type) {
         this.type = type;
+    }
+
+    @Override
+    public Long getInformationResourceFileId() {
+        return informationResourceFileId;
+    }
+
+    public void setInformationResourceFileId(Long informationResourceFileId) {
+        this.informationResourceFileId = informationResourceFileId;
+    }
+
+    @Override
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
+    @Override
+    public boolean isUploaded() {
+        return versionType.isUploaded();
+    }
+
+    @Override
+    public boolean isArchival() {
+        return versionType.isArchival();
+    }
+
+    @Transient
+    @Override
+    public boolean isTranslated() {
+        return (versionType == VersionType.TRANSLATED);
+    }
+
+    @Override
+    public boolean isDerivative() {
+        return versionType.isDerivative();
+    }
+
+    public Long getInformationResourceFileVersionId() {
+        return informationResourceFileVersionId;
+    }
+
+    public void setInformationResourceFileVersionId(Long informationResourceFileVersionId) {
+        this.informationResourceFileVersionId = informationResourceFileVersionId;
+    }
+
+    public void setFileVersionType(VersionType uploadedArchival) {
+        this.versionType = uploadedArchival;
     }
 
 }

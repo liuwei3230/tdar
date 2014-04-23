@@ -1,5 +1,6 @@
 package org.tdar.core.bean;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -79,10 +80,12 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.InformationResourceFile.FileAccessRestriction;
 import org.tdar.core.bean.resource.InformationResourceFile.FileAction;
+import org.tdar.core.bean.resource.InformationResourceFile.FileType;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.VersionType;
 import org.tdar.core.configuration.TdarAppConfiguration;
@@ -106,10 +109,16 @@ import org.tdar.core.service.external.EmailService;
 import org.tdar.core.service.resource.DataTableService;
 import org.tdar.core.service.resource.DatasetService;
 import org.tdar.core.service.resource.InformationResourceService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.ProjectService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.workflow.ActionMessageErrorListener;
+import org.tdar.core.service.workflow.MessageService;
+import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
+import org.tdar.core.service.workflow.workflows.Workflow;
+import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.Filestore;
+import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.filestore.Filestore.ObjectType;
 import org.tdar.struts.ErrorListener;
 import org.tdar.struts.action.AuthenticationAware;
@@ -129,7 +138,7 @@ import com.opensymphony.xwork2.ognl.OgnlValueStackFactory;
 import com.opensymphony.xwork2.util.LocalizedTextUtil;
 import com.opensymphony.xwork2.util.ValueStack;
 
-@ContextConfiguration(classes=TdarAppConfiguration.class)
+@ContextConfiguration(classes = TdarAppConfiguration.class)
 @SuppressWarnings("rawtypes")
 public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJUnit4SpringContextTests implements ErrorListener {
 
@@ -142,6 +151,11 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     protected PlatformTransactionManager transactionManager;
     private TransactionCallback verifyTransactionCallback;
     private TransactionTemplate transactionTemplate;
+
+    @Autowired
+    private FileAnalyzer fileAnalyzer;
+    @Autowired
+    private MessageService messageService;
 
     @Autowired
     protected SessionFactory sessionFactory;
@@ -224,11 +238,11 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
 
     @After
     public void announceTestOver() {
-        
+
         int errorCount = 0;
         if (!isIgnoreActionErrors() && CollectionUtils.isNotEmpty(getActionErrors())) {
-                logger.error("action errors {}", getActionErrors());
-                errorCount = getActionErrors().size();
+            logger.error("action errors {}", getActionErrors());
+            errorCount = getActionErrors().size();
         }
         String fmt = " *** COMPLETED TEST: {}.{}() ***";
         logger.info(fmt, getClass().getCanonicalName(), testName.getMethodName());
@@ -276,12 +290,30 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return ir;
     }
 
-    public <R extends InformationResource> InformationResourceFileVersion generateAndStoreVersion(Class<R> type, String name, File f, Filestore filestore)
+    public <R extends InformationResource> InformationResourceFile generateAndSend(Class<R> rType, Filestore store, FileType type, String filename, File f, boolean expecting) throws InstantiationException,
+            IllegalAccessException,
+            IOException {
+        FileContainer container = generateAndStoreVersion(rType, filename, f, store);
+        InformationResourceFileVersion originalVersion = container.getInformationResourceFileVersion();
+        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
+        if (type != null) {
+            assertEquals(type, fileType);
+        }
+        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
+        assertEquals(FileArchiveWorkflow.class, workflow.getClass());
+        boolean result = messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
+        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
+        assertEquals(expecting, result);
+        informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
+        return informationResourceFile;
+    }
+
+    public <R extends InformationResource> FileContainer generateAndStoreVersion(Class<R> type, String name, File f, Filestore filestore)
             throws InstantiationException,
             IllegalAccessException, IOException {
         InformationResource ir = createAndSaveNewInformationResource(type, false);
         InformationResourceFile irFile = new InformationResourceFile();
-        irFile.setInformationResource(ir);
+        // irFile.setInformationResource(ir);
         irFile.setLatestVersion(1);
         @SuppressWarnings("deprecation")
         InformationResourceFileVersion version = new InformationResourceFileVersion();
@@ -295,7 +327,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         genericService.save(irFile);
         genericService.save(version);
         filestore.store(ObjectType.RESOURCE, f, version);
-        return version;
+        return new FileContainer(ir, irFile, version);
     }
 
     public Document generateDocumentWithFileAndUseDefaultUser() throws InstantiationException, IllegalAccessException {
@@ -332,7 +364,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             proxy.setRestriction(restriction);
             // PersonalFilestore filestore, T resource, List<FileProxy> fileProxiesToProcess, Long ticketId
             ActionMessageErrorListener listener = new ActionMessageErrorListener();
-            informationResourceService.importFileProxiesAndProcessThroughWorkflow(ir, null, null, listener, Arrays.asList(proxy));
+            informationResourceService.importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy(ir), null, null, listener, Arrays.asList(proxy));
             if (listener.hasActionErrors()) {
                 throw new TdarRecoverableRuntimeException(String.format("errors ocurred while processing file: %s", listener));
             }

@@ -22,4 +22,16 @@ public interface FileStoreFileProxy {
 
     Long getPersistableId();
 
+    Long getInformationResourceFileId();
+
+    Integer getVersion();
+
+    boolean isArchival();
+
+    boolean isUploaded();
+
+    boolean isTranslated();
+
+    boolean isDerivative();
+
 }

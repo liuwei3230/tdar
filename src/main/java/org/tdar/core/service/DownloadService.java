@@ -31,6 +31,7 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.PdfCoverPageGenerationException;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.service.resource.InformationResourceFileService;
 import org.tdar.filestore.Filestore.ObjectType;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.data.DownloadHandler;
@@ -56,10 +57,8 @@ public class DownloadService {
     @Autowired
     private GenericService genericService;
 
-    // TODO
-    private String slugify(InformationResource resource) {
-        return "ir-archive";
-    }
+    @Autowired
+    InformationResourceFileService informationResourceFileService;
 
     public void generateZipArchive(Map<File, String> files, File destinationFile) throws IOException {
         FileOutputStream fout = new FileOutputStream(destinationFile);
@@ -93,14 +92,15 @@ public class DownloadService {
             if (irFileVersion.getInformationResourceFile().isDeleted()) {
                 continue;
             }
-            addFileToDownload(dh, files, authenticatedUser, irFileVersion, dh.isCoverPageIncluded());
+            InformationResource informationResource = informationResourceFileService.findResourceForFile(irFileVersion.getInformationResourceFile());
+            addFileToDownload(dh, files, authenticatedUser, informationResource, irFileVersion, dh.isCoverPageIncluded());
             fileName = irFileVersion.getFilename();
             if (!irFileVersion.isDerivative()) {
                 logger.debug("User {} is trying to DOWNLOAD: {} ({}: {})", authenticatedUser, irFileVersion, TdarConfiguration.getInstance().getSiteAcronym(),
-                        irFileVersion.getInformationResourceFile().getInformationResource().getId());
+                        informationResource.getId());
                 InformationResourceFile irFile = irFileVersion.getInformationResourceFile();
                 // don't count download stats if you're downloading your own stuff
-                if (!Persistable.Base.isEqual(irFile.getInformationResource().getSubmitter(), authenticatedUser) && !dh.isEditor()) {
+                if (!Persistable.Base.isEqual(informationResource.getSubmitter(), authenticatedUser) && !dh.isEditor()) {
                     FileDownloadStatistic stat = new FileDownloadStatistic(new Date(), irFile);
                     genericService.save(stat);
                 }
@@ -144,7 +144,7 @@ public class DownloadService {
         }
     }
 
-    private void addFileToDownload(TextProvider provider, Map<File, String> downloadMap, Person authenticatedUser,
+    private void addFileToDownload(TextProvider provider, Map<File, String> downloadMap, Person authenticatedUser, InformationResource informationResource, 
             InformationResourceFileVersion irFileVersion, boolean includeCoverPage)
             throws TdarActionException {
         File resourceFile = null;
@@ -161,7 +161,7 @@ public class DownloadService {
         if (irFileVersion.getExtension().equalsIgnoreCase("PDF") && includeCoverPage) {
             try {
                 // this will be in the temp directory, so it will be scavenged at some stage.
-                resourceFile = pdfService.mergeCoverPage(provider, authenticatedUser, irFileVersion);
+                resourceFile = pdfService.mergeCoverPage(provider, authenticatedUser, informationResource,  irFileVersion);
             } catch (PdfCoverPageGenerationException cpge) {
                 logger.trace("Error occurred while merging cover page onto " + irFileVersion, cpge);
             } catch (Exception e) {

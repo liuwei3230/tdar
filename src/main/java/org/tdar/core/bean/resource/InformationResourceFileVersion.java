@@ -143,7 +143,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
         setVersion(irFile.getLatestVersion());
         setInformationResourceFile(irFile);
         setInformationResourceFileId(irFile.getId());
-        setInformationResourceId(irFile.getInformationResource().getId());
+//        setInformationResourceId(irFile.getInformationResource().getId());
         setDateCreated(new Date());
     }
 
@@ -166,6 +166,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
         this.filename = filename;
     }
 
+    @Override
     @XmlAttribute(name = "version")
     public Integer getVersion() {
         return version;
@@ -304,13 +305,15 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     }
 
     @Transient
+    @Override
     public boolean isTranslated() {
         return (getFileVersionType() == VersionType.TRANSLATED);
     }
 
     @Transient
+    @Override
     public boolean isUploaded() {
-        return ((getFileVersionType() == VersionType.UPLOADED) || (getFileVersionType() == VersionType.UPLOADED_ARCHIVAL));
+        return getFileVersionType().isUploaded();
     }
 
     @Transient
@@ -319,9 +322,9 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     }
 
     @Transient
+    @Override
     public boolean isArchival() {
-        // FIXME: change back later and update test
-        return ((getFileVersionType() == VersionType.ARCHIVAL) || (getFileVersionType() == VersionType.UPLOADED_ARCHIVAL));
+        return getFileVersionType().isArchival();
     }
 
     @Transient
@@ -332,22 +335,9 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     /**
      * @return
      */
+    @Override
     public boolean isDerivative() {
         return getFileVersionType().isDerivative();
-        // switch (getFileVersionType()) {
-        // case INDEXABLE_TEXT:
-        // case WEB_SMALL:
-        // case WEB_MEDIUM:
-        // case WEB_LARGE:
-        // case METADATA:
-        // case TRANSLATED:
-        // return true;
-        // default:
-        // return false;
-        // }
-        // // return (getFileVersionType() == VersionType.INDEXABLE_TEXT
-        // // || getFileVersionType() == VersionType.WEB_SMALL
-        // // || getFileVersionType() == VersionType.WEB_MEDIUM || getFileVersionType() == VersionType.WEB_LARGE);
     }
 
     /**
@@ -372,6 +362,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
      * 
      * @return the informationResourceFileId
      */
+    @Override
     @XmlAttribute(name = "informationResourceFileId")
     public Long getInformationResourceFileId() {
         if (informationResourceFile != null) {
@@ -398,9 +389,6 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     @XmlAttribute(name = "informationResourceId")
     @Transient
     public Long getInformationResourceId() {
-        if ((informationResourceFile != null) && (informationResourceFile.getInformationResource() != null)) {
-            return informationResourceFile.getInformationResource().getId();
-        }
         return informationResourceId;
     }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -30,10 +31,10 @@ public class PdfServiceITCase extends AbstractIntegrationTestCase {
         File f = new File(TestConstants.TEST_DOCUMENT_DIR, "1-01.PDF");
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
 
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
-
+       FileContainer container = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
+       InformationResourceFileVersion originalVersion = container.getInformationResourceFileVersion();
         // setup document
-        Document document = (Document) originalVersion.getInformationResourceFile().getInformationResource();
+        Document document = (Document) container.getInformationResource();
         DocumentCitationFormatTestCase.setupDocumentWithAllFields(document, DocumentType.BOOK);
         for (ResourceCreator c : document.getResourceCreators()) {
             genericService.saveOrUpdate(c.getCreator());
@@ -48,7 +49,7 @@ public class PdfServiceITCase extends AbstractIntegrationTestCase {
         // aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa
         // aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa a aa aa aa aa aa aa
         // aa aa aa aa aa aa a aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa a");
-        File merged = pdfService.mergeCoverPage(MessageHelper.getInstance(), getBasicUser(), originalVersion);
+        File merged = pdfService.mergeCoverPage(MessageHelper.getInstance(), getBasicUser(), document, originalVersion);
         logger.debug("{}", merged);
     }
 }

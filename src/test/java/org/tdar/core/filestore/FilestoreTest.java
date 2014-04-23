@@ -29,6 +29,7 @@ import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
 import org.tdar.filestore.Filestore.BaseFilestore;
 import org.tdar.filestore.Filestore.ObjectType;
 import org.tdar.filestore.Filestore.StorageMethod;
+import org.tdar.filestore.FileStoreFile;
 import org.tdar.filestore.PairtreeFilestore;
 
 import com.opensymphony.xwork2.interceptor.annotations.Before;
@@ -92,7 +93,7 @@ public class FilestoreTest {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
         String name = "abc.txt";
-        InformationResourceFileVersion version = generateVersion(name);
+        InformationResourceFileVersion version = generateActualVersion(name);
         String baseAssert = store.getFilestoreLocation() + baseIrPath + INFORMATION_RESOURCE_FILE_ID + File.separator + "v1" + File.separator;
         assertEquals(baseAssert + "archival" + File.separator + name, store.getAbsoluteFilePath(ObjectType.RESOURCE, version));
         version.setFileVersionType(VersionType.WEB_LARGE);
@@ -105,7 +106,7 @@ public class FilestoreTest {
     public void filestorePopulateVersionTest() throws IOException {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion version = generateVersion(TEST_DOCUMENT_NAME);
+        InformationResourceFileVersion version = generateActualVersion(TEST_DOCUMENT_NAME);
         File f = new File(TEST_DOCUMENT);
         store.store(ObjectType.RESOURCE, f, version);
         assertNotNull(version.getChecksum());
@@ -135,7 +136,7 @@ public class FilestoreTest {
     public void filestoreRotateTest() throws IOException {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion version = generateVersion(TEST_DOCUMENT_NAME);
+        InformationResourceFileVersion version = generateActualVersion(TEST_DOCUMENT_NAME);
         version.setFileVersionType(VersionType.LOG);
         File f = new File(TEST_DOCUMENT);
         StorageMethod rotate = StorageMethod.ROTATE;
@@ -167,19 +168,32 @@ public class FilestoreTest {
     // FilenameUtils.getExtension(tmpFile.getName())));
     // assertTrue(rotated.exists());
     // }
-
-    private InformationResourceFileVersion generateVersion(String name) {
+    
+    private InformationResourceFileVersion generateActualVersion(String name) {
         Document ir = new Document();
         ir.setId(INFORMATION_RESOURCE_ID);
         InformationResourceFile irFile = new InformationResourceFile();
         irFile.setId(INFORMATION_RESOURCE_FILE_ID);
-        irFile.setInformationResource(ir);
+        
         @SuppressWarnings("deprecation")
         InformationResourceFileVersion version = new InformationResourceFileVersion();
         version.setVersion(VERSION);
         version.setId(INFORMATION_RESOURCE_FILE_VERSION_ID);
         version.setFilename(name);
         version.setInformationResourceFile(irFile);
+        version.setInformationResourceId(INFORMATION_RESOURCE_ID);
+        version.setFileVersionType(VersionType.UPLOADED_ARCHIVAL);
+        return version;
+    }
+
+    private FileStoreFile generateVersion(String name) {
+//        Document ir = new Document();
+        FileStoreFile version = new FileStoreFile();
+        version.setPersistableId(INFORMATION_RESOURCE_ID);
+        version.setInformationResourceFileId(INFORMATION_RESOURCE_FILE_ID);
+        version.setVersion(VERSION);
+        version.setInformationResourceFileVersionId(INFORMATION_RESOURCE_FILE_VERSION_ID);
+        version.setFilename(name);
         version.setFileVersionType(VersionType.UPLOADED_ARCHIVAL);
         return version;
     }
@@ -189,7 +203,7 @@ public class FilestoreTest {
     public void testStorageAndRetrieval() throws IOException {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion version = generateVersion(TEST_DOCUMENT_NAME);
+        InformationResourceFileVersion version = generateActualVersion(TEST_DOCUMENT_NAME);
         store.store(ObjectType.RESOURCE, new File(TEST_DOCUMENT), version);
         File f = new File(store.getAbsoluteFilePath(ObjectType.RESOURCE, version));
         assertTrue("file exists: " + f.getCanonicalPath(), f.exists());
@@ -220,7 +234,7 @@ public class FilestoreTest {
     public void testStorageAndRetrievalDeleted() throws IOException {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion version = generateVersion(TEST_IMAGE_NAME);
+        InformationResourceFileVersion version = generateActualVersion(TEST_IMAGE_NAME);
         version.getInformationResourceFile().setLatestVersion(2);
         version.setVersion(2);
         version.setFileVersionType(VersionType.UPLOADED);

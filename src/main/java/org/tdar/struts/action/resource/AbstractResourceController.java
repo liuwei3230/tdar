@@ -61,6 +61,7 @@ import org.tdar.core.dao.GenericDao.FindOptions;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.service.GenericKeywordService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.ResourceService.ErrorHandling;
 import org.tdar.struts.action.AbstractPersistableController;
 import org.tdar.struts.action.TdarActionException;
@@ -1098,7 +1099,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         if (getResource() instanceof InformationResource) {
             InformationResource ir = (InformationResource) getResource();
             try {
-                getInformationResourceService().reprocessInformationResourceFiles(ir, this);
+                getInformationResourceService().reprocessInformationResourceFiles(new ProcessingProxy(ir), this);
             } catch (Exception e) {
                 // consider removing the "sorry we were unable to ... just showing error message"
                 // addActionErrorWithException(null, e);

@@ -526,24 +526,24 @@ public class AuthenticationAndAuthorizationService implements Accessible {
     /*
      * Checks whether a @link Person has rights to download a given @link InformationResourceFileVersion
      */
-    public boolean canDownload(InformationResourceFileVersion irFileVersion, Person person) {
+    public boolean canDownload(InformationResource informationResource, InformationResourceFileVersion irFileVersion, Person person) {
         if (irFileVersion == null) {
             return false;
         }
-        return canDownload(irFileVersion.getInformationResourceFile(), person);
+        return canDownload(informationResource, irFileVersion.getInformationResourceFile(), person);
     }
 
     /*
      * Checks whether a @link Person has rights to download a given @link InformationResourceFile
      */
-    public boolean canDownload(InformationResourceFile irFile, Person person) {
+    public boolean canDownload(InformationResource informationResource, InformationResourceFile irFile, Person person) {
         if (irFile == null) {
             return false;
         }
         if (irFile.isDeleted() && Persistable.Base.isNullOrTransient(person)) {
             return false;
         }
-        if (!irFile.isPublic() && !canViewConfidentialInformation(person, irFile.getInformationResource())) {
+        if (!irFile.isPublic() && !canViewConfidentialInformation(person, informationResource)) {
             return false;
         }
         return true;
@@ -632,7 +632,7 @@ public class AuthenticationAndAuthorizationService implements Accessible {
         Boolean viewable = null;
         for (InformationResourceFile irf : ir.getInformationResourceFiles()) {
             // if (viewable == null) {
-            viewable = canDownload(irf, p);
+            viewable = canDownload(ir, irf, p);
             // }
 
             irf.setViewable(viewable);

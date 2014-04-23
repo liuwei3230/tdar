@@ -17,11 +17,13 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.GenericService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.utils.AsynchTester;
@@ -47,8 +49,8 @@ public class WorkflowITCase extends AbstractIntegrationTestCase {
         versions.add(new File(TestConstants.TEST_IMAGE_DIR, "/sample_image_formats/grandcanyon_mac.tif"));
 
         AsynchTester[] testers = new AsynchTester[versions.size()];
-        final FileAnalyzer analyzer = fileAnalyzer;
         final GenericService gs = genericService;
+        final FileAnalyzer analyzer_ = fileAnalyzer;
         for (int i = 0; i < versions.size(); i++) {
             final File version = versions.get(i);
             testers[i] = new AsynchTester(new Runnable() {
@@ -60,13 +62,13 @@ public class WorkflowITCase extends AbstractIntegrationTestCase {
                         public Object doInTransaction(TransactionStatus status) {
 
                             try {
-                                InformationResourceFileVersion irfv = generateAndStoreVersion(Image.class, version.getName(), version, store);
+                                FileContainer container = generateAndStoreVersion(Image.class, version.getName(), version, store);
                                 // irversions.add(irfv);
-                                genericService.saveOrUpdate(irfv.getInformationResourceFile());
+                                genericService.saveOrUpdate(container.getInformationResourceFile());
 
-                                InformationResource ir = irfv.getInformationResourceFile().getInformationResource();
+                                InformationResource ir = container.getInformationResource();
                                 ir = gs.merge(ir);
-                                boolean result = analyzer.processFile(irfv);
+                                boolean result = analyzer_.processFile(new ProcessingProxy(container.getInformationResource()), container.getInformationResourceFileVersion());
                                 if (!result) {
                                     throw new TdarRecoverableRuntimeException("should not see this, file processing error");
                                 }

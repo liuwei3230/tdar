@@ -47,6 +47,7 @@ import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.external.AuthenticationAndAuthorizationService;
 import org.tdar.core.service.resource.InformationResourceService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.ResourceService.ErrorHandling;
 import org.tdar.core.service.workflow.ActionMessageErrorListener;
 import org.tdar.filestore.FileAnalyzer;
@@ -162,7 +163,9 @@ public class ImportService {
             }
 
             ActionMessageErrorListener listener = new ActionMessageErrorListener();
-            informationResourceService.importFileProxiesAndProcessThroughWorkflow((InformationResource) incomingResource, authorizedUser, null, listener,
+            genericService.saveOrUpdate(incomingResource);
+            genericService.synchronize();
+            informationResourceService.importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy((InformationResource) incomingResource), authorizedUser, null, listener,
                     new ArrayList<FileProxy>(proxies));
 
             if (listener.hasActionErrors()) {

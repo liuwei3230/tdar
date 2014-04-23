@@ -94,4 +94,8 @@ public class InformationResourceFileService extends ServiceInterface.TypedDaoBas
         return getDao().findInformationResourcesWithFileStatus(authenticatedUser, resourceStatus, fileStatus);
     }
 
+    public InformationResource findResourceForFile(InformationResourceFile irf) {
+        return getDao().findResourceForFile(irf);
+    }
+
 }

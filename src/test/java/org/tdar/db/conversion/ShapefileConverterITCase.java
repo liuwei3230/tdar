@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
@@ -42,11 +43,12 @@ public class ShapefileConverterITCase extends AbstractDataIntegrationTestCase {
         wc.setTargetDatabase(tdarDataImportDatabase);
         String name = "Occ_3l";
         String string = TestConstants.TEST_SHAPEFILE_DIR + name;
-        InformationResourceFileVersion originalFile = generateAndStoreVersion(Geospatial.class, name + ".shp", new File(string + ".shp"), store);
-        wc.getOriginalFiles().add(originalFile);
+        FileContainer originalFile = generateAndStoreVersion(Geospatial.class, name + ".shp", new File(string + ".shp"), store);
+        wc.getOriginalFiles().add(originalFile.getInformationResourceFileVersion());
 
         for (String ext : new String[] { ".dbf", ".sbn", ".sbx", ".shp.xml", ".shx", ".xml" }) {
-            wc.getOriginalFiles().add(generateAndStoreVersion(Geospatial.class, name + ext, new File(string + ext), store));
+            FileContainer version = generateAndStoreVersion(Geospatial.class, name + ext, new File(string + ext), store);
+            wc.getOriginalFiles().add(version.getInformationResourceFileVersion());
 
         }
 

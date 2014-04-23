@@ -16,6 +16,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Index;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -24,6 +25,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.OrderColumn;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -151,8 +153,9 @@ public abstract class InformationResource extends Resource {
     // private Set<Document> sourceCitations = new HashSet<Document>();
 
     // FIXME: cascade "delete" ?
-    @OneToMany(mappedBy = "informationResource", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, orphanRemoval=true)
     @OrderBy("sequenceNumber asc")
+    @JoinColumn(nullable = false, updatable = false, name = "information_resource_id")
     @JSONTransient
     @IndexedEmbedded
     private Set<InformationResourceFile> informationResourceFiles = new LinkedHashSet<>();
@@ -566,6 +569,7 @@ public abstract class InformationResource extends Resource {
                     continue;
                 }
                 InformationResourceFileVersion indexableVersion = irFile.getIndexableVersion();
+                indexableVersion.setInformationResourceId(getId());
                 fileURIs.add(indexableVersion);
             } catch (Exception e) {
                 logger.trace("an exception occurred while reading file: {} ", e);
@@ -1134,20 +1138,6 @@ public abstract class InformationResource extends Resource {
     @XmlTransient
     public Set<ResourceCreator> getContacts() {
         return getResourceCreators(ResourceCreatorRole.CONTACT);
-    }
-
-    /**
-     * Override this if you need to pass resource specific information on to the work flow process.
-     * Make a new instance of the resource, and then copy the fields across that will be needed by the work flow process
-     * 
-     * @see Archive#getTransientCopyForWorkflow() for an implementation
-     * @return <b>The default is null!</b> A copy of the information resource that will be serialised and sent to the work flow.
-     */
-    @SuppressWarnings("static-method")
-    @Transient
-    @XmlTransient
-    public InformationResource getTransientCopyForWorkflow() {
-        return null;
     }
 
     /**

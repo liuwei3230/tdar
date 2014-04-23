@@ -23,6 +23,7 @@ import org.tdar.core.bean.resource.InformationResourceFile.FileType;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.struts.data.FileProxy;
@@ -112,7 +113,7 @@ public class FileAnalyzer {
         return wf;
     }
 
-    public boolean processFile(InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
+    public boolean processFile(ProcessingProxy proxy, InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
         if (informationResourceFileVersions == null) {
             throw new TdarRecoverableRuntimeException("filestore.file_version_null");
         }
@@ -122,10 +123,9 @@ public class FileAnalyzer {
             throw new TdarRecoverableRuntimeException(message);
         }
         checkFilesExist(informationResourceFileVersions);
-
         logger.debug("using workflow: {}", workflow);
         // Martin: if this is ever going to run asynchronously, this should this return anything?
-        return messageService.sendFileProcessingRequest(workflow, informationResourceFileVersions);
+        return messageService.sendFileProcessingRequest(workflow, proxy, informationResourceFileVersions);
     }
 
     private void checkFilesExist(InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
@@ -143,16 +143,16 @@ public class FileAnalyzer {
 
     }
 
-    public boolean processFile(InformationResourceFile irFile) throws Exception {
-        return processFile(irFile.getLatestUploadedVersion());
+    public boolean processFile(ProcessingProxy proxy, InformationResourceFile irFile) throws Exception {
+        return processFile(proxy, irFile.getLatestUploadedVersion());
     }
 
-    public boolean processFile(InformationResourceFile... irFiles) throws Exception {
+    public boolean processFile(ProcessingProxy proxy, InformationResourceFile... irFiles) throws Exception {
         List<InformationResourceFileVersion> versions = new ArrayList<>();
         for (InformationResourceFile irf : irFiles) {
             versions.add(irf.getLatestUploadedOrArchivalVersion());
         }
-        return processFile(versions.toArray(new InformationResourceFileVersion[0]));
+        return processFile(proxy, versions.toArray(new InformationResourceFileVersion[0]));
     }
 
     @Autowired

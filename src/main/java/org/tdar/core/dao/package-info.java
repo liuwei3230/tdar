@@ -116,7 +116,7 @@
                 query = "FROM DataTableColumn dtc WHERE dtc.dataTable.dataset.id=:datasetId AND dtc.defaultOntology IS NOT NULL ORDER BY dtc.id"),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME,
-                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.informationResource = :resource and "
+                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.id in (select irf.id from InformationResource ir inner join ir.informationResourceFiles irf where ir.id = :resource) and "
                         + "file=version.informationResourceFile and file.latestVersion=version.version and version.filename = :filename"
         ),
         @org.hibernate.annotations.NamedQuery(
@@ -201,6 +201,10 @@
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_EXTERNAL_ID_SYNC,
                 query = "select distinct res.id from InformationResource res inner join res.informationResourceFiles where res.dateUpdated > :updatedDate or res.externalId is null"
+        ),
+        @org.hibernate.annotations.NamedQuery(
+                name = TdarNamedQueries.QUERY_INFORMATION_RESOURCE_FROM_IRF,
+                query = "from InformationResource res inner join res.informationResourceFiles irf where irf.id=:id"
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_RECENT,
@@ -356,7 +360,7 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_INFORMATIONRESOURCES_WITH_FILES,
-                query = "SELECT file.informationResource.id from InformationResourceFile file"
+                query = "SELECT ir.id from InformationResource ir left join ir.informationResourceFiles"
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.INVOICES_FOR_PERSON,

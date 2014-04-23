@@ -279,10 +279,10 @@ public class RssService implements Serializable {
             InformationResource informationResource = (InformationResource) resource_;
             if (informationResource.getLatestUploadedVersions().size() > 0) {
                 for (InformationResourceFile file : informationResource.getVisibleFiles()) {
-                    addEnclosure(handler.getAuthenticatedUser(), entry, file.getLatestUploadedVersion());
+                    addEnclosure(handler.getAuthenticatedUser(), entry, informationResource, file.getLatestUploadedVersion());
                     InformationResourceFileVersion thumb = file.getLatestThumbnail();
                     if (thumb != null) {
-                        addEnclosure(handler.getAuthenticatedUser(), entry, thumb);
+                        addEnclosure(handler.getAuthenticatedUser(), entry, informationResource, thumb);
                     }
                 }
             }
@@ -325,11 +325,11 @@ public class RssService implements Serializable {
      * @param version
      */
     @SuppressWarnings("unchecked")
-    private void addEnclosure(Person user, SyndEntry entry, InformationResourceFileVersion version) {
+    private void addEnclosure(Person user, SyndEntry entry, InformationResource ir, InformationResourceFileVersion version) {
         if (version == null) {
             return;
         }
-        if ((user != null) && authenticationAndAuthorizationService.canDownload(version, user)) {
+        if ((user != null) && authenticationAndAuthorizationService.canDownload(ir, version, user)) {
             logger.info("allowed:" + version);
             SyndEnclosure enclosure = new SyndEnclosureImpl();
             enclosure.setLength(version.getFileLength());

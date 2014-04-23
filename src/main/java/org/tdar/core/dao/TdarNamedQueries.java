@@ -123,7 +123,7 @@ public interface TdarNamedQueries {
     String COLLECTION_VIEW = "collection.views";
     String CREATOR_VIEW = "creator.views";
     String QUERY_COLLECTION_CHILDREN = "resourceCollection.allChildren";
-
+    String QUERY_INFORMATION_RESOURCE_FROM_IRF = "resource.fromInformationResource";
     // raw SQL/HQL queries
 
     /**

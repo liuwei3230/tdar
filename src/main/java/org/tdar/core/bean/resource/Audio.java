@@ -128,13 +128,6 @@ public final class Audio extends InformationResource {
     }
 
     @Override
-    public Audio getTransientCopyForWorkflow() {
-        final Audio result = new Audio();
-        result.setId(this.getId());
-        return result;
-    }
-
-    @Override
     public void updateFromTransientResource(final InformationResource transientAudio) {
         if (transientAudio == null) {
             // Should never be here, so perhaps we should do more than return?

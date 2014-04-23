@@ -42,6 +42,7 @@ import org.tdar.core.dao.resource.OntologyNodeDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.integration.DataIntegrationWorkbook;
 import org.tdar.core.service.resource.InformationResourceService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.db.model.abstracts.TargetDatabase;
 import org.tdar.filestore.personal.PersonalFilestore;
 import org.tdar.struts.data.FileProxy;
@@ -391,7 +392,7 @@ public class DataIntegrationService {
             FileProxy fileProxy = new FileProxy(baseFileName + ".csv", FileProxy.createTempFileFromString(csvText), VersionType.UPLOADED);
             fileProxy.addVersion(new FileProxy(baseFileName + ".txt", FileProxy.createTempFileFromString(csvText), VersionType.UPLOADED_TEXT));
 
-            informationResourceService.processMetadataForFileProxies(codingSheet, fileProxy);
+            informationResourceService.processMetadataForFileProxies(new ProcessingProxy(codingSheet), fileProxy);
         } catch (Exception e) {
             logger.debug("could not process coding sheet", e);
         }

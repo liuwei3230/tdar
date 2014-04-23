@@ -32,6 +32,7 @@ import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.InformationResource;
+import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceProxy;
@@ -44,6 +45,7 @@ import org.tdar.core.bean.statistics.ResourceAccessStatistic;
 import org.tdar.core.dao.NamedNativeQueries;
 import org.tdar.core.service.RssService;
 import org.tdar.core.service.UrlService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.dataset.DatasetUtils;
 import org.tdar.db.model.abstracts.TargetDatabase;
 
@@ -301,6 +303,14 @@ public class DatasetDao extends ResourceDao<Dataset> {
             return text;
         }
         return StringEscapeUtils.escapeXml(RssService.stripInvalidXMLCharacters(text));
+    }
+
+    public InformationResourceFile createInformationResourceFile(ProcessingProxy informationResource) {
+        InformationResource ir = find(InformationResource.class, informationResource.getId());
+        InformationResourceFile e = new InformationResourceFile();
+        ir.getInformationResourceFiles().add(e);
+        saveOrUpdate(ir);
+        return e;
     }
 
 }

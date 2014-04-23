@@ -22,6 +22,7 @@ import org.tdar.core.service.resource.CodingSheetService;
 import org.tdar.core.service.resource.DatasetService;
 import org.tdar.core.service.resource.InformationResourceFileVersionService;
 import org.tdar.core.service.resource.OntologyService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.db.model.abstracts.TargetDatabase;
 import org.tdar.filestore.WorkflowContext;
@@ -127,7 +128,7 @@ public class WorkflowContextService {
             // }
             orig.setInformationResourceFile(irFile);
             // genericDao.saveOrUpdate(orig);
-            irFile.setInformationResource(genericDao.find(InformationResource.class, ctx.getInformationResourceId()));
+//            irFile.setInformationResource(genericDao.find(InformationResource.class, ctx.getInformationResourceId()));
             irFile.setWorkflowContext(ctx);
 
             // logger.info("end status: {}", irFile.getStatus());
@@ -159,19 +160,22 @@ public class WorkflowContextService {
     /**
      * given any InformationResourceFileVersion (for an uploaded file) this will create a workflow context
      */
-    public WorkflowContext initializeWorkflowContext(Workflow w, InformationResourceFileVersion... versions) {
+    public WorkflowContext initializeWorkflowContext(Workflow w, ProcessingProxy proxy, InformationResourceFileVersion... versions) {
         WorkflowContext ctx = new WorkflowContext();
         ctx.getOriginalFiles().addAll(Arrays.asList(versions));
         ctx.setTargetDatabase(tdarDataImportDatabase);
-        final InformationResource informationResource = versions[0].getInformationResourceFile().getInformationResource();
-        ctx.setResourceType(informationResource.getResourceType());
-        ctx.setTransientResource(informationResource.getTransientCopyForWorkflow());
+        ctx.setResourceType(proxy.getResourceType());
         ctx.setFilestore(TdarConfiguration.getInstance().getFilestore());
-        ctx.setInformationResourceId(versions[0].getInformationResourceId());
+        ctx.setInformationResourceId(proxy.getId());
+        try {
+            ctx.setTransientResource(proxy.getResourceType().getResourceClass().newInstance());
+        } catch (Exception e1) {
+            logger.error("Exception happened in instantiating class", e1);
+        }
         ctx.setWorkflowClass(w.getClass());
         ctx.setWorkingDirectory(TdarConfiguration.getInstance().getTempDirectory());
         ctx.setXmlService(xmlService);
-        w.initializeWorkflowContext(ctx, versions); // handle any special bits here
+        w.initializeWorkflowContext(ctx, proxy); // handle any special bits here
         try {
             if (logger.isTraceEnabled()) {
                 logger.trace(ctx.toXML());

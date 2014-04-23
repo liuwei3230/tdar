@@ -76,20 +76,17 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * Adds a @link InformationResourceFile to a resource given a file proxy. This method handles the full process of creating the metadata and
      * InformationResourceFileVersions to a file when processing it
      */
-    private void addInformationResourceFile(InformationResource resource, InformationResourceFile irFile, FileProxy proxy) throws IOException {
+    private void addInformationResourceFile(ProcessingProxy informationResource, InformationResourceFile irFile, FileProxy proxy) throws IOException {
         // always set the download/version info and persist the relationships between the InformationResource and its IRFile.
         incrementVersionNumber(irFile);
-        // genericDao.saveOrUpdate(resource);
-        getDao().saveOrUpdate(resource);
-        irFile.setInformationResource(resource);
-        proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(irFile, proxy));
+        proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(informationResource, irFile, proxy));
         setInformationResourceFileMetadata(irFile, proxy);
         for (FileProxy additionalVersion : proxy.getAdditionalVersions()) {
             logger.debug("Creating new version {}", additionalVersion);
-            createVersionMetadataAndStore(irFile, additionalVersion);
+            createVersionMetadataAndStore(informationResource, irFile, additionalVersion);
         }
         getDao().saveOrUpdate(irFile);
-        resource.add(irFile);
+//        informationResource.add(irFile);
         logger.debug("all versions for {}", irFile);
     }
 
@@ -110,7 +107,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * which is likely a controller.
      */
     @Transactional
-    public void importFileProxiesAndProcessThroughWorkflow(T resource, Person user, Long ticketId, ActionMessageErrorSupport listener,
+    public void importFileProxiesAndProcessThroughWorkflow(ProcessingProxy resource, Person user, Long ticketId, ActionMessageErrorSupport listener,
             List<FileProxy> fileProxiesToProcess) throws IOException {
         if (CollectionUtils.isEmpty(fileProxiesToProcess)) {
             logger.debug("Nothing to process, returning.");
@@ -150,7 +147,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
         if (irFiles.size() > 0) {
             addExistingCompositeFilesForProcessing(resource, filesToProcess, irFiles);
         }
-        processFiles(filesToProcess, resource.getResourceType().isCompositeFilesEnabled());
+        processFiles(resource, filesToProcess, resource.getResourceType().isCompositeFilesEnabled());
 
         /*
          * FIXME: When we move to an asynchronous model, this section and below will need to be moved into their own dedicated method
@@ -168,7 +165,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * When processing informationResourceFileVersions, make sure that we have ALL of the files available
      * This may mean trolling through the active files on the resource and adding them to the proxy
      */
-    private void addExistingCompositeFilesForProcessing(T resource, List<InformationResourceFileVersion> filesToProcess, List<InformationResourceFile> irFiles)
+    private void addExistingCompositeFilesForProcessing(ProcessingProxy resource, List<InformationResourceFileVersion> filesToProcess, List<InformationResourceFile> irFiles)
             throws FileNotFoundException {
         if (!resource.getResourceType().isCompositeFilesEnabled()) {
             return;
@@ -187,20 +184,20 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * Process the files based on whether the @link ResourceType is a composite (like a @link Dataset where all of the files are necessary) or not where each
      * file is processed separately
      */
-    private void processFiles(List<InformationResourceFileVersion> filesToProcess, boolean compositeFilesEnabled) throws IOException {
+    private void processFiles(ProcessingProxy proxy, List<InformationResourceFileVersion> filesToProcess, boolean compositeFilesEnabled) throws IOException {
         if (CollectionUtils.isEmpty(filesToProcess)) {
             return;
         }
 
         if (compositeFilesEnabled) {
-            analyzer.processFile(filesToProcess.toArray(new InformationResourceFileVersion[0]));
+            analyzer.processFile(proxy, filesToProcess.toArray(new InformationResourceFileVersion[0]));
         } else {
             for (InformationResourceFileVersion version : filesToProcess) {
                 if ((version.getTransientFile() == null) || (!version.getTransientFile().exists())) {
                     // If we are re-processing, the transient file might not exist.
                     version.setTransientFile(config.getFilestore().retrieveFile(ObjectType.RESOURCE, version));
                 }
-                analyzer.processFile(version);
+                analyzer.processFile(proxy, version);
             }
         }
     }
@@ -210,8 +207,9 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * not specified by the file itself
      */
     @Transactional(readOnly = true)
-    private void unmapDataTablesForFile(Dataset dataset, InformationResourceFile irFile) {
+    private void unmapDataTablesForFile(Long id, InformationResourceFile irFile) {
         String fileName = irFile.getFilename();
+        Dataset dataset = getDao().find(Dataset.class, id);
         switch (FilenameUtils.getExtension(fileName).toLowerCase()) {
             case "tab":
             case "csv":
@@ -233,19 +231,21 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * FileProxy action
      */
     @Transactional
-    public void processMetadataForFileProxies(InformationResource informationResource, FileProxy... proxies) throws IOException {
+    public void processMetadataForFileProxies(ProcessingProxy informationResource, FileProxy... proxies) throws IOException {
         for (FileProxy proxy : proxies) {
             logger.debug("applying {} to {}", proxy, informationResource);
             // will be reassigned in a REPLACE or ADD_DERIVATIVE
-            InformationResourceFile irFile = new InformationResourceFile();
-            irFile.setFilename(proxy.getFilename());
+            InformationResourceFile irFile = null;
             if (proxy.getAction().requiresExistingIrFile()) {
                 irFile = findInformationResourceFile(proxy);
                 if (irFile == null) {
                     logger.error("FileProxy {} {} had no InformationResourceFile.id ({}) set on it", proxy.getFilename(), proxy.getAction(), proxy.getFileId());
                     return;
                 }
+            } else {
+                irFile = createInformationResourceFile(informationResource);
             }
+            irFile.setFilename(proxy.getFilename());
 
             switch (proxy.getAction()) {
                 case MODIFY_METADATA:
@@ -259,13 +259,13 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
                     addInformationResourceFile(informationResource, irFile, proxy);
                     break;
                 case ADD_DERIVATIVE:
-                    createVersionMetadataAndStore(irFile, proxy);
+                    createVersionMetadataAndStore(informationResource, irFile, proxy);
                     break;
                 case DELETE:
                     irFile.setDeleted(true);
                     getDao().update(irFile);
-                    if (informationResource instanceof Dataset) {
-                        unmapDataTablesForFile((Dataset) informationResource, irFile);
+                    if (informationResource.getResourceType().isDataTableSupported()) {
+                        unmapDataTablesForFile(informationResource.getId(), irFile);
                     }
                     break;
                 case NONE:
@@ -276,6 +276,10 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
             }
             proxy.setInformationResourceFile(irFile);
         }
+    }
+
+    private InformationResourceFile createInformationResourceFile(ProcessingProxy informationResource) {
+        return datasetDao.createInformationResourceFile(informationResource);
     }
 
     /*
@@ -341,9 +345,9 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      */
     @SuppressWarnings("deprecation")
     @Transactional(readOnly = false)
-    public void reprocessInformationResourceFiles(T ir, ActionMessageErrorSupport listener) throws Exception {
+    public void reprocessInformationResourceFiles(ProcessingProxy proxy,  ActionMessageErrorSupport listener) throws Exception {
         List<InformationResourceFileVersion> latestVersions = new ArrayList<>();
-        for (InformationResourceFile irFile : ir.getInformationResourceFiles()) {
+        for (InformationResourceFile irFile : proxy.getActiveInformationResourceFiles()) {
             if (irFile.isDeleted()) {
                 continue;
             }
@@ -359,11 +363,11 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
                 }
             }
         }
-        processFiles(latestVersions, ir.getResourceType().isCompositeFilesEnabled());
+        processFiles(proxy, latestVersions, proxy.getResourceType().isCompositeFilesEnabled());
         // this is a known case where we need to purge the session
         // getDao().synchronize();
 
-        for (InformationResourceFile irFile : ir.getInformationResourceFiles()) {
+        for (InformationResourceFile irFile : proxy.getActiveInformationResourceFiles()) {
             final WorkflowContext workflowContext = irFile.getWorkflowContext();
             // may be null for "skipped" or composite file
             if ((workflowContext != null) && !workflowContext.isProcessedSuccessfully()) {
@@ -377,7 +381,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
      * Creates an @link InformationResourceFile and adds appropriate metadata and stores the file in the filestore.
      */
     @Transactional(readOnly = false)
-    private InformationResourceFileVersion createVersionMetadataAndStore(InformationResourceFile irFile, FileProxy fileProxy) throws IOException {
+    private InformationResourceFileVersion createVersionMetadataAndStore(ProcessingProxy proxy, InformationResourceFile irFile, FileProxy fileProxy) throws IOException {
         String filename = BaseFilestore.sanitizeFilename(fileProxy.getFilename());
         if ((fileProxy.getFile() == null) || !fileProxy.getFile().exists()) {
             throw new TdarRecoverableRuntimeException("fileprocessing.error.not_found", Arrays.asList(fileProxy.getFilename()));
@@ -388,6 +392,7 @@ public abstract class AbstractInformationResourceService<T extends InformationRe
         }
 
         irFile.addFileVersion(version);
+        version.setInformationResourceId(proxy.getId());
         config.getFilestore().store(ObjectType.RESOURCE, fileProxy.getFile(), version);
         version.setTransientFile(fileProxy.getFile());
         getDao().save(version);

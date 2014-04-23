@@ -155,8 +155,8 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
 
     @ManyToOne(optional = false)
     // cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
-    @JoinColumn(name = "information_resource_id", nullable = false, updatable = false)
-    private InformationResource informationResource;
+//    @JoinColumn(name = "information_resource_id", nullable = false, updatable = false)
+//    private InformationResource informationResource;
 
     private transient Long transientDownloadCount;
 
@@ -210,11 +210,11 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
     @Column(length = 32)
     private FileStatus status;
 
-    @XmlElement(name = "informationResourceRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public InformationResource getInformationResource() {
-        return informationResource;
-    }
+//    @XmlElement(name = "informationResourceRef")
+//    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
+//    public InformationResource getInformationResource() {
+//        return informationResource;
+//    }
 
     private transient boolean viewable = false;
 
@@ -228,9 +228,9 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
         }
     }
 
-    public void setInformationResource(InformationResource informationResource) {
-        this.informationResource = informationResource;
-    }
+//    public void setInformationResource(InformationResource informationResource) {
+//        this.informationResource = informationResource;
+//    }
 
     public FileType getInformationResourceFileType() {
         return informationResourceFileType;
@@ -600,12 +600,10 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
     }
 
     public boolean isHasTranslatedVersion() {
-        try {
-            if ((getLatestTranslatedVersion() != null) && getInformationResource().getResourceType().isDataTableSupported()) {
+        for (InformationResourceFileVersion version : getInformationResourceFileVersions()) {
+            if (version.isTranslated() && isColumnarDataFileType()) {
                 return true;
             }
-        } catch (Exception e) {
-            logger.error("cannot tell if file has translated version {}", e);
         }
         return false;
     }

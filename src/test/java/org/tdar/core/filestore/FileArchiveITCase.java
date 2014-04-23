@@ -18,12 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.InformationResourceFile.FileType;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
 import org.tdar.core.service.workflow.workflows.Workflow;
@@ -68,14 +70,7 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     public void testArchiveFormat(PairtreeFilestore store, String filename) throws InstantiationException, IllegalAccessException, IOException, Exception {
         File f = new File(TestConstants.TEST_SENSORY_DIR, filename);
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(SensoryData.class, filename, f, store);
-        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
-        assertEquals(FileType.FILE_ARCHIVE, fileType);
-        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
-        assertEquals(FileArchiveWorkflow.class, workflow.getClass());
-        messageService.sendFileProcessingRequest(workflow, originalVersion);
-        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
-        informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
+        InformationResourceFile informationResourceFile = generateAndSend(store, FileType.FILE_ARCHIVE, filename, f);
 
         boolean seen = false;
         for (InformationResourceFileVersion version : informationResourceFile.getLatestVersions()) {
@@ -93,6 +88,20 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         // FIXME: confirm that there is a resulting file, and that the file has the right contents
         // confirm x number of versions, confirm types
         // confirm contents
+    }
+
+    public InformationResourceFile generateAndSend(PairtreeFilestore store, FileType type, String filename, File f) throws InstantiationException, IllegalAccessException,
+            IOException {
+        FileContainer container = generateAndStoreVersion(SensoryData.class, filename, f, store);
+        InformationResourceFileVersion originalVersion = container.getInformationResourceFileVersion();
+        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
+        assertEquals(type, fileType);
+        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
+        assertEquals(FileArchiveWorkflow.class, workflow.getClass());
+        messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
+        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
+        informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
+        return informationResourceFile;
     }
 
 }

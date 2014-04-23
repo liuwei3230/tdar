@@ -17,6 +17,7 @@ import org.tdar.core.bean.resource.InformationResourceFile.FileType;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.filestore.Filestore.ObjectType;
 import org.tdar.filestore.WorkflowContext;
 import org.tdar.filestore.tasks.LoggingTask;
@@ -52,7 +53,7 @@ public interface Workflow {
 
     Map<String, List<String>> getSuggestedExtensions();
 
-    void initializeWorkflowContext(WorkflowContext ctx, InformationResourceFileVersion[] versions);
+    void initializeWorkflowContext(WorkflowContext ctx, ProcessingProxy proxy);
 
     boolean validateProxyCollection(FileProxy primary);
 
@@ -202,7 +203,7 @@ public interface Workflow {
         }
 
         @Override
-        public void initializeWorkflowContext(WorkflowContext ctx, InformationResourceFileVersion[] version) {
+        public void initializeWorkflowContext(WorkflowContext ctx, ProcessingProxy proxy) {
             return;
         }
 

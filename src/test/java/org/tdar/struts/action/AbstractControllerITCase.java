@@ -270,7 +270,7 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
             controller.setId(id);
         }
         controller.prepare();
-        final Resource resource = controller.getResource();
+        Resource resource = controller.getResource();
         resource.setTitle(filename);
         resource.setDescription("This resource was created as a result of a test: " + getClass());
         if ((resource instanceof InformationResource) && TdarConfiguration.getInstance().getCopyrightMandatory()) {
@@ -308,7 +308,11 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationTestCa
             // what now?
             exception.printStackTrace();
         }
-        return (C) controller.getResource();
+        Long resourceId = controller.getResource().getId();
+        genericService.synchronize();
+        resource = null;
+        controller = null;
+        return genericService.find(cls, resourceId);
     }
 
     protected String getTestFilePath() {

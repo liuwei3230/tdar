@@ -237,21 +237,19 @@ public class PairtreeFilestore extends BaseFilestore {
     public String getAbsoluteFilePath(ObjectType type, FileStoreFileProxy version) {
         Long irID = version.getPersistableId();
         StringBuffer base = new StringBuffer();
-        base.append(getResourceDirPath(type, irID));
         if (version instanceof InformationResourceFileVersion) {
-            InformationResourceFileVersion irfv = (InformationResourceFileVersion) version;
-            if (Persistable.Base.isNotNullOrTransient(irfv.getInformationResourceFileId())) {
-                append(base, irfv.getInformationResourceFileId());
-                append(base, "v" + irfv.getVersion());
-                if (irfv.isArchival()) {
+            base.append(getResourceDirPath(type, irID));
+            if (type == ObjectType.RESOURCE) {
+                // Persistable.Base.isNotNullOrTransient(version.getInformationResourceFileId())
+                append(base, version.getInformationResourceFileId());
+                append(base, "v" + version.getVersion());
+                if (version.isArchival()) {
                     append(base, ARCHIVAL);
-                } else if (!irfv.isUploaded()) {
+                } else if (!version.isUploaded()) {
                     append(base, DERIV);
                 }
             }
-        }
-
-        if (version instanceof FileStoreFile) {
+        } else {
             FileStoreFile fsf = (FileStoreFile) version;
             append(base, fsf.getType().toString().toLowerCase());
         }
@@ -298,15 +296,14 @@ public class PairtreeFilestore extends BaseFilestore {
     @Override
     public void purge(ObjectType type, FileStoreFileProxy version) throws IOException {
         File file = new File(getAbsoluteFilePath(type, version));
-        if (version instanceof InformationResourceFileVersion) {
-            InformationResourceFileVersion irfv = (InformationResourceFileVersion) version;
-            if (irfv.isDerivative() || irfv.isTranslated()) {
+        if (type == ObjectType.RESOURCE) {
+            if (version.isDerivative() || version.isTranslated()) {
                 FileUtils.deleteQuietly(file);
                 cleanEmptyParents(file.getParentFile());
             } else {
                 try {
                     // if archival, need to go up one more
-                    if (irfv.isArchival()) {
+                    if (version.isArchival()) {
                         file = file.getParentFile();
                     }
                     File parentFile = file.getParentFile();

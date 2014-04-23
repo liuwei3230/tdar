@@ -18,6 +18,7 @@ import org.tdar.core.parser.CodingSheetParser;
 import org.tdar.core.parser.CsvCodingSheetParser;
 import org.tdar.core.parser.ExcelCodingSheetParser;
 import org.tdar.core.parser.TabCodingSheetParser;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.workflow.workflows.Workflow.BaseWorkflow;
 import org.tdar.db.conversion.converters.AccessDatabaseConverter;
 import org.tdar.db.conversion.converters.CsvConverter;
@@ -92,14 +93,8 @@ public class GenericColumnarDataWorkflow extends BaseWorkflow {
     }
 
     @Override
-    public void initializeWorkflowContext(WorkflowContext ctx, InformationResourceFileVersion[] version) {
-        InformationResource resource = version[0].getInformationResourceFile().getInformationResource();
-        if (resource.getResourceType().isDataTableSupported()) {
-            Dataset dataset = (Dataset) resource;
-            for (DataTable table : dataset.getDataTables()) {
-                ctx.getDataTablesToCleanup().add(table.getName());
-            }
-        }
+    public void initializeWorkflowContext(WorkflowContext ctx, ProcessingProxy proxy) {
+        ctx.setDataTablesToCleanup(proxy.getDataTableNames());
     };
 
     @Override

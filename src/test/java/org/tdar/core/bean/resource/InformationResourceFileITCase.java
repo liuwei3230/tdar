@@ -27,6 +27,7 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.XmlService;
 import org.tdar.core.service.resource.InformationResourceFileService;
 import org.tdar.core.service.resource.InformationResourceService;
+import org.tdar.core.service.resource.ProcessingProxy;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.workflow.ActionMessageErrorListener;
 import org.tdar.filestore.Filestore.ObjectType;
@@ -167,7 +168,7 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
 
         evictCache();
         ActionMessageErrorListener listener = new ActionMessageErrorListener();
-        informationResourceService.reprocessInformationResourceFiles(ir, listener);
+        informationResourceService.reprocessInformationResourceFiles(new ProcessingProxy(ir), listener);
 
         map = new HashMap<>();
         for (InformationResourceFileVersion irfv : irFile.getInformationResourceFileVersions()) {

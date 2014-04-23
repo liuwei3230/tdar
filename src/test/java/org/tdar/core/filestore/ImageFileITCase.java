@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.InformationResourceFile.FileStatus;
 import org.tdar.core.bean.resource.InformationResourceFile.FileType;
@@ -99,15 +100,8 @@ public class ImageFileITCase extends AbstractIntegrationTestCase {
         File f = new File(TestConstants.TEST_IMAGE_DIR + "/sample_image_formats/", filename);
         Filestore store = TdarConfiguration.getInstance().getFilestore();
 
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(SensoryData.class, filename, f, store);
-        FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
-        assertEquals(FileType.IMAGE, fileType);
-        Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
-        assertEquals(ImageWorkflow.class, workflow.getClass());
-        boolean result = messageService.sendFileProcessingRequest(workflow, originalVersion);
-        InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
+        InformationResourceFile informationResourceFile = generateAndSend(Image.class, store, FileType.IMAGE, filename, f, true);
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
-        assertEquals(successful, result);
         return informationResourceFile;
     }
 }
