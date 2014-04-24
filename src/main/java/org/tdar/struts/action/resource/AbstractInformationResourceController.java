@@ -183,8 +183,10 @@ public abstract class AbstractInformationResourceController<R extends Informatio
         // abstractInformationResourceController.didnt_override=%s didn't override properly
 
         try {
-            
+            getInformationResourceService().saveOrUpdate(getPersistable());
             getInformationResourceService().importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy(getPersistable()), getAuthenticatedUser(), ticketId, this, proxies);
+            setPersistable(getGenericService().merge(getPersistable()));
+            getPersistable().getInformationResourceFiles().addAll(getInformationResourceFileService().findInformationResourceFilesForResource(getPersistable()));
         } catch (Exception e) {
             addActionErrorWithException(getText("abstractResourceController.we_were_unable_to_process_the_uploaded_content"), e);
         }

@@ -122,6 +122,7 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
         logger.info("versions: {} ", irFile.getInformationResourceFileVersions());
         for (InformationResourceFileVersion irfv : irFile.getInformationResourceFileVersions()) {
             map.put(irfv.getFileVersionType(), irfv);
+            irfv.setInformationResourceId(ir.getId());
             irfv.setTransientFile(TdarConfiguration.getInstance().getFilestore().retrieveFile(ObjectType.RESOURCE, irfv));
             irfvids.add(irfv.getId());
         }
@@ -220,11 +221,11 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
         for (InformationResourceFile file : ir.getInformationResourceFiles()) {
             file.setStatus(FileStatus.QUEUED);
             assertFalse(file.isProcessed());
-            genericService.save(file);
+            genericService.saveOrUpdate(file);
             flush();
             file.setStatus(FileStatus.PROCESSED);
             assertTrue(file.isProcessed());
-            genericService.save(file);
+            genericService.saveOrUpdate(file);
             flush();
 
         }

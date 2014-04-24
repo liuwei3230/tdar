@@ -14,8 +14,6 @@ import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.InformationResourceFile;
-import org.tdar.core.bean.resource.InformationResourceFileVersion;
-import org.tdar.core.bean.resource.InformationResourceFile.FileType;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.PairtreeFilestore;
@@ -28,6 +26,7 @@ import org.tdar.filestore.tasks.ShapefileReaderTask;
  */
 public class ShapefileITCase extends AbstractIntegrationTestCase {
 
+    @SuppressWarnings("unused")
     private Logger logger = Logger.getLogger(getClass());
 
     @Autowired
@@ -39,8 +38,8 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
         ShapefileReaderTask task = new ShapefileReaderTask();
         WorkflowContext wc = new WorkflowContext();
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true);
-        InformationResourceFile supportingFile = generateAndSend(Geospatial.class, store, null, "untitled.tfw", new File(TestConstants.TEST_GEOTIFF_TFW), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true).getInformationResourceFile();
+        InformationResourceFile supportingFile = generateAndSend(Geospatial.class, store, null, "untitled.tfw", new File(TestConstants.TEST_GEOTIFF_TFW), true).getInformationResourceFile();
 
         Workflow workflow = fileAnalyzer.getWorkflow(originalFile.getLatestUploadedVersion(), supportingFile.getLatestUploadedVersion());
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
@@ -57,7 +56,7 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
         ShapefileReaderTask task = new ShapefileReaderTask();
         WorkflowContext wc = new WorkflowContext();
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         task.setWorkflowContext(wc);
         task.run();
@@ -69,7 +68,7 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
         ShapefileReaderTask task = new ShapefileReaderTask();
         WorkflowContext wc = new WorkflowContext();
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "doc.kml", new File(TestConstants.TEST_KML), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "doc.kml", new File(TestConstants.TEST_KML), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         task.setWorkflowContext(wc);
         task.run();
@@ -83,11 +82,11 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "Occ_3l";
         String string = TestConstants.TEST_SHAPEFILE_DIR + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null, "untitled.tif", new File(TestConstants.TEST_GEOTIFF), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
 
         for (String ext : new String[] { ".dbf", ".sbn", ".sbx", ".shp.xml", ".shx", ".xml" }) {
-            InformationResourceFile file = generateAndSend(Geospatial.class, store, null, name + ext, new File(string + ext), true);
+            InformationResourceFile file = generateAndSend(Geospatial.class, store, null, name + ext, new File(string + ext), true).getInformationResourceFile();
             wc.getOriginalFiles().add(file.getLatestUploadedVersion());
 
 
@@ -105,10 +104,10 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "CAmpusMap1950new";
         String string = TestConstants.TEST_GEOTIFF_DIR + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".tif", new File(string + ".tif"), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".tif", new File(string + ".tif"), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         for (String ext : new String[] { ".tif.aux.xml" }) {
-            InformationResourceFile file = generateAndSend(Geospatial.class, store, null,  name + ext, new File(string + ext), true);
+            InformationResourceFile file = generateAndSend(Geospatial.class, store, null,  name + ext, new File(string + ext), true).getInformationResourceFile();
             wc.getOriginalFiles().add(file.getLatestUploadedVersion());
         }
         task.setWorkflowContext(wc);
@@ -123,7 +122,7 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "Tracklog";
         String string = TestConstants.TEST_ROOT_DIR + TestConstants.TEST_GIS_DIR + "/kml/" + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         task.setWorkflowContext(wc);
         task.run();
@@ -137,7 +136,7 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "extendedData";
         String string = TestConstants.TEST_ROOT_DIR + TestConstants.TEST_GIS_DIR + "/kml/" + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true);
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true).getInformationResourceFile();
 
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         task.setWorkflowContext(wc);

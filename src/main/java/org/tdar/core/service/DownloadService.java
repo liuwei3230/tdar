@@ -149,6 +149,7 @@ public class DownloadService {
             throws TdarActionException {
         File resourceFile = null;
         try {
+            irFileVersion.setInformationResourceId(informationResource.getId());
             resourceFile = TdarConfiguration.getInstance().getFilestore().retrieveFile(ObjectType.RESOURCE, irFileVersion);
         } catch (FileNotFoundException e1) {
             throw new TdarActionException(StatusCode.NOT_FOUND, "File not found");

@@ -115,6 +115,9 @@ import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.workflow.ActionMessageErrorListener;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
+import org.tdar.core.service.workflow.workflows.GenericDocumentWorkflow;
+import org.tdar.core.service.workflow.workflows.ImageWorkflow;
+import org.tdar.core.service.workflow.workflows.PDFWorkflow;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.Filestore;
@@ -287,10 +290,11 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         File file = new File(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME);
         assertTrue("testing " + TestConstants.TEST_DOCUMENT_NAME + " exists", file.exists());
         ir = (Document) addFileToResource(ir, file);
+        genericService.refresh(ir);
         return ir;
     }
 
-    public <R extends InformationResource> InformationResourceFile generateAndSend(Class<R> rType, Filestore store, FileType type, String filename, File f, boolean expecting) throws InstantiationException,
+    public <R extends InformationResource> FileContainer generateAndSend(Class<R> rType, Filestore store, FileType type, String filename, File f, boolean expecting) throws InstantiationException,
             IllegalAccessException,
             IOException {
         FileContainer container = generateAndStoreVersion(rType, filename, f, store);
@@ -300,19 +304,30 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             assertEquals(type, fileType);
         }
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
+        if (type == FileType.DOCUMENT) {            
+          assertEquals(PDFWorkflow.class, workflow.getClass());
+        }
+        if (type == FileType.IMAGE) {
+            assertEquals(ImageWorkflow.class, workflow.getClass());
+        }
+        if (type == FileType.FILE_ARCHIVE) {
         assertEquals(FileArchiveWorkflow.class, workflow.getClass());
+        }
+        genericService.saveOrUpdate(container.getInformationResource());
         boolean result = messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
         assertEquals(expecting, result);
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
-        return informationResourceFile;
+        return container;
     }
 
     public <R extends InformationResource> FileContainer generateAndStoreVersion(Class<R> type, String name, File f, Filestore filestore)
             throws InstantiationException,
             IllegalAccessException, IOException {
         InformationResource ir = createAndSaveNewInformationResource(type, false);
+        genericService.saveOrUpdate(ir);
         InformationResourceFile irFile = new InformationResourceFile();
+        ir.getInformationResourceFiles().add(irFile);
         // irFile.setInformationResource(ir);
         irFile.setLatestVersion(1);
         @SuppressWarnings("deprecation")
@@ -322,6 +337,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         version.setExtension(FilenameUtils.getExtension(name));
         version.setInformationResourceFile(irFile);
         version.setDateCreated(new Date());
+        version.setInformationResourceId(ir.getId());
         version.setFileVersionType(VersionType.UPLOADED);
         irFile.getInformationResourceFileVersions().add(version);
         genericService.save(irFile);
@@ -359,6 +375,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     }
 
     public InformationResource addFileToResource(InformationResource ir, File file, FileAccessRestriction restriction) {
+        genericService.saveOrUpdate(ir);
         try {
             FileProxy proxy = new FileProxy(file.getName(), file, VersionType.UPLOADED, FileAction.ADD);
             proxy.setRestriction(restriction);
@@ -382,6 +399,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
                 assertTrue(irfv.getId() != null);
             }
         }
+        genericService.refresh(ir);
         return ir;
     }
 

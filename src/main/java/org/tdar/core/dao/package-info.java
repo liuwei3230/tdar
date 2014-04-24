@@ -204,8 +204,13 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_INFORMATION_RESOURCE_FROM_IRF,
-                query = "from InformationResource res inner join res.informationResourceFiles irf where irf.id=:id"
+                query = "select res from InformationResource res inner join res.informationResourceFiles irf where irf.id=:id"
         ),
+        @org.hibernate.annotations.NamedQuery(
+                name = TdarNamedQueries.QUERY_INFORMATION_RESOURCE_FILES_FROM_IR,
+                query = "select irf from InformationResource res inner join res.informationResourceFiles irf where res.id=:id"
+        ),
+        
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_RECENT,
                 query = "from Resource res where (res.dateUpdated > :updatedDate or res.dateCreated > :updatedDate )"

@@ -77,7 +77,7 @@ public class InformationResourceFileService extends ServiceInterface.TypedDaoBas
     /*
      * Returns a Map of Extensions and count() for Files in the filestore
      */
-    @Transactional
+    @Transactional(readOnly=true)
     public Map<String, Float> getAdminFileExtensionStats() {
         return getDao().getAdminFileExtensionStats();
     }
@@ -90,10 +90,17 @@ public class InformationResourceFileService extends ServiceInterface.TypedDaoBas
         irFile.setTransientDownloadCount(getDao().getDownloadCount(irFile).longValue());
     }
 
+    @Transactional
     public List<InformationResource> findInformationResourcesWithFileStatus(Person authenticatedUser, List<Status> resourceStatus, List<FileStatus> fileStatus) {
         return getDao().findInformationResourcesWithFileStatus(authenticatedUser, resourceStatus, fileStatus);
     }
 
+    @Transactional
+    public List<InformationResourceFile> findInformationResourceFilesForResource(InformationResource r) {
+        return getDao().findInformationResourceFilesForResource(r);
+    }
+    
+    @Transactional
     public InformationResource findResourceForFile(InformationResourceFile irf) {
         return getDao().findResourceForFile(irf);
     }

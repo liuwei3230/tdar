@@ -15,16 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResourceFile;
 import org.tdar.core.bean.resource.InformationResourceFile.FileStatus;
 import org.tdar.core.bean.resource.InformationResourceFile.FileType;
-import org.tdar.core.bean.resource.InformationResourceFileVersion;
-import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.workflow.MessageService;
-import org.tdar.core.service.workflow.workflows.ImageWorkflow;
-import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.Filestore;
 import org.tdar.junit.MultipleTdarConfigurationRunner;
@@ -87,21 +84,14 @@ public class ImageFileITCase extends AbstractIntegrationTestCase {
         assertEquals(FileStatus.PROCESSING_ERROR, informationResourceFile.getStatus());
     }
 
-    // @Test
-    // @Rollback
-    // public void testImageLZW() throws Exception {
-    // String filename = "grandcanyon_lzw.tif";
-    // InformationResourceFile informationResourceFile = testFileProcessing(filename);
-    // assertEquals(FileStatus.PROCESSING_ERROR, informationResourceFile.getStatus());
-    // }
 
     private InformationResourceFile testFileProcessing(String filename, boolean successful) throws InstantiationException, IllegalAccessException, IOException,
             Exception {
         File f = new File(TestConstants.TEST_IMAGE_DIR + "/sample_image_formats/", filename);
         Filestore store = TdarConfiguration.getInstance().getFilestore();
 
-        InformationResourceFile informationResourceFile = generateAndSend(Image.class, store, FileType.IMAGE, filename, f, true);
-        informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
+        FileContainer container = generateAndSend(Image.class, store, FileType.IMAGE, filename, f, successful);
+        InformationResourceFile informationResourceFile = genericService.find(InformationResourceFile.class, container.getInformationResourceFile().getId());
         return informationResourceFile;
     }
 }

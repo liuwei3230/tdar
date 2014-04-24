@@ -70,13 +70,14 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     public void testArchiveFormat(PairtreeFilestore store, String filename) throws InstantiationException, IllegalAccessException, IOException, Exception {
         File f = new File(TestConstants.TEST_SENSORY_DIR, filename);
-        InformationResourceFile informationResourceFile = generateAndSend(store, FileType.FILE_ARCHIVE, filename, f);
-
+        FileContainer container = generateAndSend(store, FileType.FILE_ARCHIVE, filename, f);
+        InformationResourceFile informationResourceFile = container.getInformationResourceFile();
         boolean seen = false;
         for (InformationResourceFileVersion version : informationResourceFile.getLatestVersions()) {
             logger.info(version);
-
+            version.setInformationResourceId(container.getInformationResource().getId());
             if (version.isTranslated()) {
+                version.setInformationResourceFile(informationResourceFile);
                 String contents = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(ObjectType.RESOURCE, version));
                 assertTrue(contents.contains("Ark_HM_Headpot_01.txt"));
                 assertTrue(contents.contains("Ark_HM_Headpot_mtrx_01.txt"));
@@ -90,7 +91,7 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         // confirm contents
     }
 
-    public InformationResourceFile generateAndSend(PairtreeFilestore store, FileType type, String filename, File f) throws InstantiationException, IllegalAccessException,
+    public FileContainer generateAndSend(PairtreeFilestore store, FileType type, String filename, File f) throws InstantiationException, IllegalAccessException,
             IOException {
         FileContainer container = generateAndStoreVersion(SensoryData.class, filename, f, store);
         InformationResourceFileVersion originalVersion = container.getInformationResourceFileVersion();
@@ -101,7 +102,7 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
-        return informationResourceFile;
+        return container;
     }
 
 }

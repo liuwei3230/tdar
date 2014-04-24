@@ -142,4 +142,10 @@ public class InformationResourceFileDao extends HibernateBase<InformationResourc
         query.setParameter("id", irf.getId());
         return (InformationResource) query.uniqueResult();
     }
+
+    public List<InformationResourceFile> findInformationResourceFilesForResource(InformationResource r) {
+        Query query = getCurrentSession().getNamedQuery(TdarNamedQueries.QUERY_INFORMATION_RESOURCE_FILES_FROM_IR);
+        query.setParameter("id", r.getId());
+        return (List<InformationResourceFile>) query.list();
+    }
 }
