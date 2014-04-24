@@ -65,10 +65,10 @@ public class CodingSheet extends InformationResource implements SupportsResource
     @IndexedEmbedded
     private Set<CodingRule> codingRules = new LinkedHashSet<CodingRule>();
 
-    @OneToMany(mappedBy = "defaultCodingSheet")
+    @OneToMany(mappedBy = "defaultCodingSheet",cascade={CascadeType.MERGE, CascadeType.DETACH})
     private Set<DataTableColumn> associatedDataTableColumns = new HashSet<DataTableColumn>();
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "default_ontology_id")
     private Ontology defaultOntology;
 

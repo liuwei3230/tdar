@@ -290,16 +290,20 @@ public class BulkUploadService {
                 InformationResource informationResource = (InformationResource) manifestProxy.getResourcesCreated().get(fileName);
                 // createInternalResourceCollectionWithResource
                 manifestProxy.getResourcesCreated().put(fileName, null);
+                
                 importService.reconcilePersistableChildBeans(manifestProxy.getSubmitter(), informationResource);
                 genericDao.saveOrUpdate(informationResource);
                 genericDao.synchronize();
-                logger.debug("id: {} ", informationResource.getId());
+                ProcessingProxy proxy = new ProcessingProxy(informationResource);
+                genericDao.detachFromSession(informationResource);
+                Long id = informationResource.getId();
+                logger.debug("id: {} ", id);
                 manifestProxy.setSubmitter(null);
-                informationResourceService.importFileProxiesAndProcessThroughWorkflow(new ProcessingProxy(informationResource), manifestProxy.getSubmitter(), null, listener,
+                informationResourceService.importFileProxiesAndProcessThroughWorkflow(proxy, manifestProxy.getSubmitter(), null, listener,
                         Arrays.asList(fileProxy));
-                genericDao.saveOrUpdate(informationResource);
+                informationResource = resourceService.find(id);
                 manifestProxy.getResourcesCreated().put(fileName, informationResource);
-                manifestProxy.getAsyncUpdateReceiver().getDetails().add(new Pair<Long, String>(informationResource.getId(), fileName));
+                manifestProxy.getAsyncUpdateReceiver().getDetails().add(new Pair<Long, String>(id, fileName));
                 if (listener.hasActionErrors()) {
                     manifestProxy.getAsyncUpdateReceiver().addError(new Exception(String.format("Errors: %s", listener)));
                 }

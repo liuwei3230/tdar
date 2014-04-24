@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -61,7 +62,7 @@ public class OntologyNode extends Persistable.Base implements Comparable<Ontolog
         }
     };
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade={CascadeType.MERGE, CascadeType.DETACH})
     private Ontology ontology;
 
     // FIXME: jtd: i think this index may be unnecessary - TDAR-3417

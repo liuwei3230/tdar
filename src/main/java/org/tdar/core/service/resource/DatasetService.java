@@ -45,6 +45,7 @@ import org.tdar.core.bean.resource.InformationResourceFile.FileStatus;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.Project;
+import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.VersionType;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
@@ -312,10 +313,9 @@ public class DatasetService extends AbstractInformationResourceService<Dataset, 
      */
     @SuppressWarnings("deprecation")
     @Transactional(noRollbackFor = TdarRecoverableRuntimeException.class)
-    public void reconcileDataset(InformationResourceFile datasetFile, Dataset dataset, Dataset transientDatasetToPersist) {
+    public Dataset reconcileDataset(InformationResourceFile datasetFile, Dataset dataset, Dataset transientDatasetToPersist) {
         // helper Map to manage existing tables - all remaining entries in this existingTablesMap will be purged at the end of this process
         // take the dataset off the session at the last moment, and then bring it back on
-
         Collection<DataTable> tablesToRemove = reconcileTables(dataset, transientDatasetToPersist);
         reconcileRelationships(dataset, transientDatasetToPersist);
 
@@ -331,11 +331,13 @@ public class DatasetService extends AbstractInformationResourceService<Dataset, 
             }
         }
         datasetFile.setStatus(FileStatus.PROCESSED);
+//        dataset.getResourceCreators().clear();
 //        datasetFile.setInformationResource(dataset);
         logger.debug("{} === {} ", ObjectUtils.identityToString(transientDatasetToPersist), ObjectUtils.identityToString(dataset));
         transientDatasetToPersist = null;
         dataset = getDao().merge(dataset);
         // getDao().synchronize();
+        return dataset;
     }
 
     /*

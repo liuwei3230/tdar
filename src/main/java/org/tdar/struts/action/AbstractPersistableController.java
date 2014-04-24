@@ -233,8 +233,10 @@ public abstract class AbstractPersistableController<P extends Persistable> exten
                 if (shouldSaveResource()) {
                     getGenericService().saveOrUpdate(persistable);
                 }
-
-                indexPersistable();
+                
+                if (!isBulkUpload()) {
+                    indexPersistable();
+                }
                 // who cares what the save implementation says. if there's errors return INPUT
                 if (!getActionErrors().isEmpty()) {
                     getLogger().debug("Action errors found {}; Replacing return status of {} with {}", getActionErrors(), actionReturnStatus, INPUT);
@@ -801,6 +803,10 @@ public abstract class AbstractPersistableController<P extends Persistable> exten
 
     public List<Status> getStatuses() {
         return new ArrayList<Status>(getAuthenticationAndAuthorizationService().getAllowedSearchStatuses(getAuthenticatedUser()));
+    }
+
+    public boolean isBulkUpload() {
+        return false;
     }
 
 }

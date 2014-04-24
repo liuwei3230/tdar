@@ -35,6 +35,7 @@ public class ShapefileReaderTask extends AbstractTask {
     @Override
     public void run() throws Exception {
         File file = getWorkflowContext().getOriginalFiles().get(0).getTransientFile();
+        getLogger().debug("file: {}", file);
         File workingDir = new File(getWorkflowContext().getWorkingDirectory(), file.getName());
         workingDir.mkdir();
         FileUtils.copyFileToDirectory(file, workingDir);

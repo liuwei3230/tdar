@@ -125,16 +125,23 @@ public class BulkUploadController extends AbstractInformationResourceController<
         handleAsyncUploads();
         Collection<FileProxy> fileProxiesToProcess = getFileProxiesToProcess();
         setupAccountForSaving();
-        getCreditProxies().clear();
-        getGenericService().detachFromSession(getPersistable());
-        setPersistable(null);
-        getGenericService().detachFromSession(getAuthenticatedUser());
-        // getGenericService().detachFromSession(getPersistable().getResourceCollections());
-        for (ResourceCreator rc : image.getResourceCreators()) {
-            getLogger().debug("resourceCreators:{} {}", rc, rc.getId());
-        }
-
-        getAuthorizedUsers().clear();
+//        getCreditProxies().clear();
+//        getGenericService().detachFromSession(getPersistable());
+//        setPersistable(null);
+//        getGenericService().detachFromSession(getAuthenticatedUser());
+//        // getGenericService().detachFromSession(getPersistable().getResourceCollections());
+//        for (ResourceCreator rc : image.getResourceCreators()) {
+//            getLogger().debug("resourceCreators:{} {}", rc, rc.getId());
+//        }
+//        setProject(Project.NULL);
+//        setCreditProxies(null);
+//        setAuthorshipProxies(null);
+//        setAuthorizedUsers(null);
+//        setActiveAccounts(null);
+//        setSubmitter(null);
+//        setAccountId(null);
+//        getAuthorizedUsers().clear();
+//        image.setAccount(null);
         if (isAsync()) {
             getLogger().info("running asyncronously");
             bulkUploadService.saveAsync(image, getAuthenticatedUser().getId(), getTicketId(), excelManifest, fileProxiesToProcess, getAccountId());
@@ -383,5 +390,9 @@ public class BulkUploadController extends AbstractInformationResourceController<
     @Override
     protected void postSaveCleanup(String returnString) {
         // don't clean up personal filestore -- we have called async methods that need access to them and will handle cleanup.
+    }
+
+    @Override
+    protected void postSaveCallback(String actionMessage) {
     }
 }

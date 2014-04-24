@@ -1176,10 +1176,6 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         this.activeAccounts = activeAccounts;
     }
 
-    public boolean isBulkUpload() {
-        return false;
-    }
-
     public Map<String, List<AggregateDownloadStatistic>> getDownloadStats() {
         return downloadStats;
     }

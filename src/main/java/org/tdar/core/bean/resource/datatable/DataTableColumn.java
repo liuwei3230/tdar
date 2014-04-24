@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -88,7 +89,7 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
         }
     };
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,cascade={CascadeType.MERGE, CascadeType.DETACH})
     // , cascade = { CascadeType.PERSIST })
     @JoinColumn(name = "data_table_id")
     private DataTable dataTable;
@@ -119,11 +120,11 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
     @JoinColumn(name = "category_variable_id")
     private CategoryVariable categoryVariable;
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "default_ontology_id")
     private Ontology defaultOntology;
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "default_coding_sheet_id")
     private CodingSheet defaultCodingSheet;
 

@@ -382,7 +382,8 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         Pair<PersonalFilestoreTicket, List<FileProxy>> proxyPair = uploadFilesAsync(uploadFiles);
         final Long ticketId = proxyPair.getFirst().getId();
         bulkUploadController.setTicketId(ticketId);
-        bulkUploadController.setProjectId(TestConstants.ADMIN_INDEPENDENT_PROJECT_ID);
+        
+//        bulkUploadController.setProjectId(TestConstants.ADMIN_INDEPENDENT_PROJECT_ID);
         // setup controller
         bulkUploadController.setUploadedFiles(Arrays.asList(new File(TestConstants.TEST_BULK_DIR + manifestName)));
         bulkUploadController.setUploadedFilesFileName(Arrays.asList(manifestName));

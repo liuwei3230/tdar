@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -41,7 +42,7 @@ public class CodingRule extends Persistable.Base implements Comparable<CodingRul
 
     private static final long serialVersionUID = -577936920767925065L;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "coding_sheet_id")
     @ContainedIn
     private CodingSheet codingSheet;

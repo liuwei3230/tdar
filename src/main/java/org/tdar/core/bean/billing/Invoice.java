@@ -149,7 +149,7 @@ public class Invoice extends Base implements Updatable {
     @NotNull
     private Person transactedBy;
 
-    @ManyToOne(optional = true, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE })
+    @ManyToOne(optional = true, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH })
     @JoinColumn(nullable = true, name = "address_id", updatable = true)
     private Address address;
 

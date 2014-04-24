@@ -294,7 +294,8 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return ir;
     }
 
-    public <R extends InformationResource> FileContainer generateAndSend(Class<R> rType, Filestore store, FileType type, String filename, File f, boolean expecting) throws InstantiationException,
+    public <R extends InformationResource> FileContainer generateAndSend(Class<R> rType, Filestore store, FileType type, String filename, File f,
+            boolean expecting) throws InstantiationException,
             IllegalAccessException,
             IOException {
         FileContainer container = generateAndStoreVersion(rType, filename, f, store);
@@ -304,14 +305,16 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             assertEquals(type, fileType);
         }
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
-        if (type == FileType.DOCUMENT) {            
-          assertEquals(PDFWorkflow.class, workflow.getClass());
+        if (type == FileType.DOCUMENT) {
+            if (!workflow.getClass().equals(PDFWorkflow.class) && !workflow.getClass().equals(GenericDocumentWorkflow.class)) {
+                fail("expecting a document workflow");
+            }
         }
         if (type == FileType.IMAGE) {
             assertEquals(ImageWorkflow.class, workflow.getClass());
         }
         if (type == FileType.FILE_ARCHIVE) {
-        assertEquals(FileArchiveWorkflow.class, workflow.getClass());
+            assertEquals(FileArchiveWorkflow.class, workflow.getClass());
         }
         genericService.saveOrUpdate(container.getInformationResource());
         if (workflow != null) {
@@ -344,6 +347,8 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         irFile.getInformationResourceFileVersions().add(version);
         genericService.save(irFile);
         genericService.save(version);
+        version.setInformationResourceId(ir.getId());
+//        logger.debug("{}", version);
         filestore.store(ObjectType.RESOURCE, f, version);
         return new FileContainer(ir, irFile, version);
     }

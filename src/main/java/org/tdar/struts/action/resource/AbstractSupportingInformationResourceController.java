@@ -200,6 +200,7 @@ public abstract class AbstractSupportingInformationResourceController<R extends 
         InformationResourceFileVersion version = getLatestUploadedTextVersion();
         if (version != null) {
             try {
+                version.setInformationResourceId(getId());
                 versionText = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(ObjectType.RESOURCE, version));
             } catch (IOException e) {
                 getLogger().debug("an error occurred when trying to load the text version of a file", e);

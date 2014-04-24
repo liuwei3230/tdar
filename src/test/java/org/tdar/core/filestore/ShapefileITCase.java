@@ -6,16 +6,20 @@ package org.tdar.core.filestore;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+import org.hibernate.search.query.ObjectLookupMethod;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.FileContainer;
 import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.InformationResourceFile;
+import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.service.workflow.workflows.Workflow;
 import org.tdar.filestore.FileAnalyzer;
+import org.tdar.filestore.Filestore.ObjectType;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.filestore.WorkflowContext;
 import org.tdar.filestore.tasks.ShapefileReaderTask;
@@ -122,7 +126,7 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "Tracklog";
         String string = TestConstants.TEST_ROOT_DIR + TestConstants.TEST_GIS_DIR + "/kml/" + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true).getInformationResourceFile();
+        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + ".kml"), true).getInformationResourceFile();
         wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
         task.setWorkflowContext(wc);
         task.run();
@@ -136,9 +140,13 @@ public class ShapefileITCase extends AbstractIntegrationTestCase {
         WorkflowContext wc = new WorkflowContext();
         String name = "extendedData";
         String string = TestConstants.TEST_ROOT_DIR + TestConstants.TEST_GIS_DIR + "/kml/" + name;
-        InformationResourceFile originalFile = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + "kml"), true).getInformationResourceFile();
-
-        wc.getOriginalFiles().add(originalFile.getLatestUploadedVersion());
+        FileContainer container = generateAndSend(Geospatial.class, store, null,  name + ".kml", new File(string + ".kml"), true);
+        InformationResourceFile originalFile = container.getInformationResourceFile();
+        InformationResourceFileVersion version = originalFile.getLatestUploadedVersion();
+        version.setInformationResourceId(container.getInformationResource().getId());
+        store.retrieveFile(ObjectType.RESOURCE, version);
+        
+        wc.getOriginalFiles().add(version);
         task.setWorkflowContext(wc);
         task.run();
     }

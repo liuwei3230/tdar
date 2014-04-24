@@ -48,7 +48,7 @@ public class DataTable extends Persistable.Base {
 
     private static final long serialVersionUID = -4875482933981074863L;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade={CascadeType.MERGE, CascadeType.DETACH})
     private Dataset dataset;
 
     @Column(nullable = false)

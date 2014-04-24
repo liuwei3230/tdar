@@ -61,6 +61,7 @@ public class TdarConfiguration {
     private List<String> couponCodes = new ArrayList<>();
 
     private String configurationFile;
+    private boolean personalFilestoreInitalized = false;
 
     private final static TdarConfiguration INSTANCE = new TdarConfiguration();
     public static final String PRODUCTION = "production";
@@ -211,6 +212,9 @@ public class TdarConfiguration {
 
     // verify that the personal filestore location exists, attempt to make it if it doesn't, and System.exit() if that fails
     private void initPersonalFilestorePath() {
+        if (personalFilestoreInitalized ) {
+            return;
+        }
         File personalFilestoreHome = new File(getPersonalFileStoreLocation());
         String msg = null;
         try {
@@ -225,6 +229,7 @@ public class TdarConfiguration {
             logger.error(SECURITY_EXCEPTION_COULD_NOT_CREATE_PERSONAL_FILESTORE_HOME_DIRECTORY, ex);
             throw new IllegalStateException(msg);
         }
+        personalFilestoreInitalized = true;
     }
 
     public static TdarConfiguration getInstance() {

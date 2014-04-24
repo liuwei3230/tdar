@@ -6,6 +6,7 @@
  */
 package org.tdar.core.bean.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -63,7 +64,7 @@ public class AuthorizedUser extends Base implements Persistable {
     @Column(name = "admin_permission", length = FieldLength.FIELD_LENGTH_255)
     private AdminPermissions adminPermission;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(nullable = false, name = "user_id")
     private Person user;
 

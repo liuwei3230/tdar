@@ -167,7 +167,7 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
 
     @XmlTransient
     @ManyToMany(fetch = FetchType.LAZY,
-            mappedBy = "resourceCollections", targetEntity = Resource.class)
+            mappedBy = "resourceCollections", targetEntity = Resource.class,cascade={CascadeType.MERGE, CascadeType.DETACH})
     // cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE },
     // @JoinTable(name = "collection_resource", joinColumns = { @JoinColumn(name = "collection_id") })
     private Set<Resource> resources = new LinkedHashSet<Resource>();
@@ -210,7 +210,7 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
     @Column(nullable = true, name = "date_updated")
     private Date dateUpdated;
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "parent_id")
     private ResourceCollection parent;
 

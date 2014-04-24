@@ -1,5 +1,6 @@
 package org.tdar.core.bean.resource.datatable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -30,15 +31,15 @@ public class DataTableColumnRelationship extends Persistable.Base {
     /**
      * The relationship which this inter-column relationship forms part of
      */
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "relationship_id")
     private DataTableRelationship relationship;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "local_column_id")
     private DataTableColumn localColumn;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false,cascade={CascadeType.MERGE, CascadeType.DETACH})
     @JoinColumn(name = "foreign_column_id")
     private DataTableColumn foreignColumn;
 
