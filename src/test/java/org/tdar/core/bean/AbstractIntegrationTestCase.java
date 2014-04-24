@@ -314,9 +314,11 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         assertEquals(FileArchiveWorkflow.class, workflow.getClass());
         }
         genericService.saveOrUpdate(container.getInformationResource());
-        boolean result = messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
+        if (workflow != null) {
+            boolean result = messageService.sendFileProcessingRequest(workflow, new ProcessingProxy(container.getInformationResource()), originalVersion);
+            assertEquals(expecting, result);
+        }
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
-        assertEquals(expecting, result);
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
         return container;
     }
