@@ -1084,16 +1084,6 @@ nav ul {
     background: none !important;
 }
 
-.view .sidebar, .dashboard .sidebar {
-    background: url(/images/r4/bg-cols-right.png) top left repeat-y;
-    margin-left: 0px;
-    padding-left: 0px;
-}
-
-.edit .sidebar, .add .sidebar {
-    margin-top: 80px;
-}
-
 /* remove margin for first column when using grid-layout in a control-group so that they line up a little better with other fields. **/
 /* TODO: this is necessary in bootstrap 2.2.2,  but I suspect it will be accounted for in later version  */
 .controls-row > div[class *="span"]:first-child {
@@ -1433,4 +1423,13 @@ tr.DELETED {
     padding:0;
     width: 5%;
 
+}
+
+
+#atlwdg-trigger{
+    position:fixed;
+    right:10px;
+    bottom:0;
+    box-shadow: none;
+    opacity: 0.8;
 }

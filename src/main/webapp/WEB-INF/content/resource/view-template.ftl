@@ -37,6 +37,9 @@
         <#if local_.toolbarAdditions?? && local_.toolbarAdditions?is_macro>
             <@local_.toolbarAdditions />
         </#if>
+        <#if editor>
+        <li><a class="alert alert-info" href="<@s.url value="/resource/admin?id=${resource.id?c}"/>">ADMIN</a></li>
+        </#if>
     </@nav.toolbar>
 
 
@@ -62,9 +65,6 @@
         </p></div>
     </#if>
 
-    <#if editor>
-    <div data-spy="affix" class="affix  screen adminbox rotate-90"><a href="<@s.url value="/resource/admin?id=${resource.id?c}"/>">ADMIN</a></div>
-    </#if>
 
 <p class="meta">
     <@view.showCreatorProxy proxyList=authorshipProxies />

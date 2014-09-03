@@ -329,9 +329,7 @@
     </#if>
 
     <#if showJiraLink && jiraScriptLink?has_content && (!production || editor?has_content && editor) && !qunit>
-    <script type="text/javascript">
-        TDAR.loadScript('${protocol}//${jiraScriptLink}');
-    </script>
+    <script type="text/javascript" src="https://dev.tdar.org/jira/s/79fa0fce12b9e831ccf4439afb31e36d-T/en_US-c4ud0l/6328/26/1.4.13/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=6e7561fd"></script>
     </#if>
 
     <#if qunit>

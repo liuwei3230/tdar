@@ -42,7 +42,6 @@ navigation freemarker macros
                     </#if>
             <@makeLink "resource" "duplicate/duplicate?id=${resource.id?c}" "duplicate" "duplicate" "" false />
                 </#if>
-        <#nested>
        <#elseif creator??>
                     <@makeLink namespace "view" "view" "view" current />
                     <#if ableToEditAnything>
@@ -52,6 +51,7 @@ navigation freemarker macros
                     <@makeLink "workspace" "list" "bookmarked resources" "list" current false />
                     <@makeLink "workspace" "select-tables" "integrate data tables in your workspace" "select-tables" current false />
                 </#if>
+                <#nested>
             </ul>
         </div>
         </#if>

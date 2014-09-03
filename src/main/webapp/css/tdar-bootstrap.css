@@ -4,11 +4,6 @@
     visibility: hidden !important;
 }
 
-/* FIXME: jtd: I don't think the section.row.cols rule is necessary; need to check all pages to confirm I'm right,*/
-/* ab: undoing as this breaks the top of the view page! and the edit page! */
-section.row.cols {
-    margin-top: 3em !important;
-}
 
 .worldmap {
     border: 1px solid #aaa;
@@ -1209,11 +1204,6 @@ p.copyright-notice {
     paddding: 10px 0px 10px 0px !important;
 }
 
-/* ensure proper spacing in view page metadata name/value pairs, and don't wrap in the middle */
-.cols p.meta span.name-value {
-    margin-right: 0.5em;
-    diaplay: inline-block;
-}
 
 .tdar-gmap-control button:disabled {
     display: none;
