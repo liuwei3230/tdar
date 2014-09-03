@@ -32,6 +32,7 @@
 
 <#-- avoid js in the header. if you must include it,  declare inline scripts, then external css, then external js -->
 <head>
+    <#--<meta name="viewport" content="width=device-width, initial-scale=1">-->
     <title>${title!siteName}</title>
     <#if authenticatedUser??>
         <!-- logged-in-as: ${authenticatedUser.email} -->
@@ -72,7 +73,7 @@
     <div id="qunit"></div>
     <div id="qunit-fixture">
     </#if>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <header class="col-xs-12">
             <#include "${themeDir}/header.dec" />
