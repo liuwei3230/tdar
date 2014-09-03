@@ -1,5 +1,5 @@
 <div class="row  screen">
-    <div class="span3">
+    <div class="col-xs-3">
         <h4>About</h4>
         <ul>
             <li><a href="http://www.tdar.org/news/">News</a></li>
@@ -10,7 +10,7 @@
             <li><a href="http://www.tdar.org/news/tdar-software-update-in-situ/">Current Version of tDAR</a></li>
         </ul>
     </div>
-    <div class="span3">
+    <div class="col-xs-3">
         <h4>Use</h4>
         <ul>
             <li><a href='http://www.guidestogoodpractice.org/'>Guides to Good Practice</a></li>
@@ -21,7 +21,7 @@
             <li><a href="http://www.tdar.org/why-tdar/compliance/">Compliance</a></li>
         </ul>
     </div>
-    <div class="span3">
+    <div class="col-xs-3">
         <h4>Contact</h4>
         <ul>
             <li><a href="${commentUrlEscaped}?subject=tDAR%20comments">&#99;&#111;&#109;&#109;&#101;&#110;&#116;&#115;&#64;&#116;&#100;&#97;&#114;&#46;&#111;&#114;&#103;</a>
@@ -31,7 +31,7 @@
 
         </ul>
     </div>
-    <div class="span3">
+    <div class="col-xs-3">
         <h4>Start Digging</h4>
         <ul>
             <li><a href="<@s.url value="/search/results"/>">Browse</a></li>
@@ -43,7 +43,7 @@
     </div>
 </div>
 <div class="row  screen" id="copyright">
-    <p class="copyright-notice span12">
+    <p class="copyright-notice col-xs-12">
 
         tDAR is the digital repository of <a
 

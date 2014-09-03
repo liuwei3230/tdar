@@ -106,7 +106,7 @@
                 <@s.hidden name="toId" value="${contactId?c}" />
                 <@s.hidden name="resourceId" value="${resource.id?c}" />
                 <@s.hidden name="fromId" value="${(authenticatedUser.id)!-1?c}" /> 
-                <@s.textarea name="messageBody" id="messageBody" rows="4" label="Message" cssClass="span5"/>
+                <@s.textarea name="messageBody" id="messageBody" rows="4" label="Message" cssClass="col-xs-5"/>
                 <p><b>Note:</b> Please include sufficient information to fulfill your request (e.g. why you are requesting access to a file, or specific comments or corrections). Your contact information and a link to this resource will automatically be included in your message.</p>
                 <@common.antiSpam />
             </div>
@@ -177,7 +177,7 @@
             <p><@view.embargoCheck /></p>
 
             <div class="row">
-                <div class="span9">
+                <div class="col-xs-9">
                     <table id="dataTable" class="dataTable table tableFormat table-striped table-bordered"></table>
                 </div>
             </div>
@@ -188,13 +188,13 @@
 
         <h3>Data Set Structure</h3>
         <div class="row">
-            <div class="span3"><span class="columnSquare measurement"></span> Measurement Column</div>
-            <div class="span3"><span class="columnSquare count"></span>Count Column</div>
-            <div class="span3"><span class="columnSquare coded"></span>Coded Column</div>
+            <div class="col-xs-3"><span class="columnSquare measurement"></span> Measurement Column</div>
+            <div class="col-xs-3"><span class="columnSquare count"></span>Count Column</div>
+            <div class="col-xs-3"><span class="columnSquare coded"></span>Coded Column</div>
         </div>
         <div class="row">
-            <div class="span3"><span class="columnSquare mapped"></span>Mapping Column</div>
-            <div class="span6"><span class="columnSquare integration"></span>Integration Column (has Ontology)</div>
+            <div class="col-xs-3"><span class="columnSquare mapped"></span>Mapping Column</div>
+            <div class="col-xs-6"><span class="columnSquare integration"></span>Integration Column (has Ontology)</div>
         </div>
 
             <#list dataset.dataTables as dataTable>
@@ -308,16 +308,16 @@
         </#if>
     <div class="row">
         <#if (resource.keywordProperties?size > 1)>
-        <div class="span45">
+        <div class="col-xs-45">
         <#elseif resource.keywordProperties?size == 1>
-        <div class="span9">
+        <div class="col-xs-9">
         </#if>
 
         <#list resource.keywordProperties as prop>
         <#-- FIXME: somehow this should be folded into SearchFieldType to not have all of this if/else -->
             <#if ((resource.keywordProperties?size /2)?ceiling == prop_index)>
             </div>
-            <div class="span45">
+            <div class="col-xs-45">
             </#if>
             <#if prop == "activeSiteNameKeywords">
                 <@_keywordSection "Site Name" resource.activeSiteNameKeywords "siteNameKeywords" />
@@ -392,7 +392,7 @@
     </div>
 
     <div class="row">
-        <div id='large-google-map' class="google-map span9"></div>
+        <div id='large-google-map' class="google-map col-xs-9"></div>
     </div>
     <div id="divCoordContainer" style="display:none">
         <input type="hidden" class="ne-lat" value="${resource.firstActiveLatitudeLongitudeBox.maxObfuscatedLatitude}" id="maxy"/>

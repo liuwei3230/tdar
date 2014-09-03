@@ -18,38 +18,38 @@
     </#if>
 <#local showMinimal = (level == 1) />
 <#local showVerbose = (3 <= level) />
-<#local spanfull = "span${cols}" />
-<#local spanhalf = "span${cols/2}"/>
+<#local spanfull = "col-xs-${cols}" />
+<#local spanhalf = "col-xs-${cols/2}"/>
 
 <div class="row">
-    <div class="span8">
+    <div class="col-xs-8">
         <@s.textfield spellcheck="false" required=true id='username' label="Username" name="${beanPrefix}.person.username" cssClass="required username input-xlarge" />
     </div>
 </div>
 
 <div class="row">
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield spellcheck="false" required=true id='firstName' label='First name'  name='${beanPrefix}.person.firstName' cssClass="required input-xlarge" />
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield spellcheck="false" required=true id='lastName' label='Last name' name='${beanPrefix}.person.lastName' cssClass="required input-xlarge" />
     </div>
 </div>
 
 <div class="row">
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield spellcheck="false" required=true id='emailAddress' label="Email address" name="${beanPrefix}.person.email" cssClass="required email input-xlarge" />
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield spellcheck="false" required=true id='confirmEmail' label="Confirm email" name="${beanPrefix}.confirmEmail" cssClass="required email input-xlarge"/>
     </div>
 </div>
 
 <div class="row">
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield labelposition='left' label='Organization' name='${beanPrefix}.institutionName' id='institutionName' cssClass="input-xlarge"/>
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
     <#-- listValueKey="localeKey"	       theme="tdar" -->
             <@s.select list="${beanPrefix}.affiliations" name="${beanPrefix}.affiliation" label="Affiliation / Interest" listValue="label" headerKey=""
     headerValue="Select Affiliation"   />
@@ -57,17 +57,17 @@
 
 </div>
 <div class="row">
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.password required=true label='Password' name='${beanPrefix}.password' id='password'  cssClass="required input-xlarge" autocomplete="off" />
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.password required=true label='Confirm password' name='${beanPrefix}.confirmPassword' id='confirmPassword'  cssClass="required input-xlarge" autocomplete="off" />
     </div>
 </div>
 
 <#if (level > 1)>
 <div class="row">
-    <div class="span4">
+    <div class="col-xs-4">
         <@s.textfield label='Work phone' labelposition='left' name='${beanPrefix}.person.phone' id='phone' cssClass=" input-xlarge"/>
     </div>
 </div>

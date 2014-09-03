@@ -536,7 +536,7 @@ ${resource.formattedSourceInformation!''} (${siteAcronym} ID: ${resource.id?c}) 
                         <div class="item pagination-centered <#if irfile_index == 0>active</#if>"> <#t>
                         <div class="row-fluid"> <#t>
                         </#if>
-                        <div class="span3"> <#t>
+                        <div class="col-xs-3"> <#t>
                           <span class="primary-thumbnail thumbnail-border <#if irfile_index == 0>thumbnail-border-selected</#if>"> <#t>
                               <span class="thumbnail-center-spacing "></span> <#t>
                               <img class="thumbnailLink img-polaroid"<#t>
