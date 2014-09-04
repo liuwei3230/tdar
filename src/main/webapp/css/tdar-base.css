@@ -1413,23 +1413,3 @@ tr.DELETED {
     display:none;
     visibility:hidden;
 }
-
-.carousel .item {
-    padding: 0 10em 0 10em;
-}
-.carousel-control.left, .carousel-control.right {
-    background: none;
-    color:black;
-    padding:0;
-    width: 5%;
-
-}
-
-
-#atlwdg-trigger{
-    position:fixed;
-    right:10px;
-    bottom:0;
-    box-shadow: none;
-    opacity: 0.8;
-}
