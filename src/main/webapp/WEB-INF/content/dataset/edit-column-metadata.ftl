@@ -198,7 +198,7 @@
                             onchange='TDAR.common.changeSubcategory("#categoryVariableId_${column_index}","#subcategoryId_${column_index}")'
                             headerKey="-1"
                             headerValue=""
-                            cssClass="categorySelect span3"
+                            cssClass="categorySelect col-xs-3"
                             listKey='id'
                             listValue='name'
                             list='%{allDomainCategories}'
@@ -212,7 +212,7 @@
                                 <#if subCategoryId != "">
                                     <@s.select  target="#columnDiv_${column_index}"
                                     id='subcategoryId_${column_index}'
-                                    cssClass="subcategorySelect span3"
+                                    cssClass="subcategorySelect col-xs-3"
                                     name='dataTableColumns[${column_index}].tempSubCategoryVariable.id'
                                     list='%{subcategories[${column_index}]}'
                                     theme="simple"
@@ -227,7 +227,7 @@
                                     />
                                 <#else>
                                     <select id='subcategoryId_${column_index}' name='dataTableColumns[${column_index}].tempSubCategoryVariable.id'
-                                            class="span3" autocompleteName="subCategoryId">
+                                            class="col-xs-3" autocompleteName="subCategoryId">
                                         <option value='-1'>N/A</option>
                                     </select>
                                 </#if>

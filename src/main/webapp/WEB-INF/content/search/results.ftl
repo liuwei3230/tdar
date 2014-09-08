@@ -119,10 +119,10 @@
 
     <div id="divResultsSortControl">
         <div class="row">
-            <div class="span3">
+            <div class="col-xs-3">
                 <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Result" />
             </div>
-            <div class="span6 form-inline">
+            <div class="col-xs-6 form-inline">
                 <div class="pull-right">
                     <div class="control-group"></div>
                     <label>Records Per Page
@@ -143,7 +143,7 @@
     <div class="collectionResultsBox">
         <h4>Related Collections</h4>
         <div class="row">
-        <div class="span4">
+        <div class="col-xs-4">
         <ul>
         <#assign current = 0>
             <#list collectionResults as col>
@@ -154,7 +154,7 @@
             </#list>
         </ul>
         </div>
-        <div class="span4">
+        <div class="col-xs-4">
         <ul>
             <#list collectionResults as col>
                 <#if (col_index >= current)> 

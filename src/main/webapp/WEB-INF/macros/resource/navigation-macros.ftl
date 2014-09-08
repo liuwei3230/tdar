@@ -25,7 +25,7 @@ navigation freemarker macros
             </#if>
         </#if>
         <#if (sessionData.authenticated)!false>
-        <div class="span12 resource-nav  screen " id="toolbars" parse="true">
+        <div class="col-xs-12 resource-nav  screen " id="toolbars" parse="true">
             <ul>
                 <#if persistable??>
         <@makeLink namespace "view" "view" "view" current />
@@ -42,7 +42,6 @@ navigation freemarker macros
                     </#if>
             <@makeLink "resource" "duplicate/duplicate?id=${resource.id?c}" "duplicate" "duplicate" "" false />
                 </#if>
-        <#nested>
        <#elseif creator??>
                     <@makeLink namespace "view" "view" "view" current />
                     <#if ableToEditAnything>
@@ -52,6 +51,7 @@ navigation freemarker macros
                     <@makeLink "workspace" "list" "bookmarked resources" "list" current false />
                     <@makeLink "workspace" "select-tables" "integrate data tables in your workspace" "select-tables" current false />
                 </#if>
+                <#nested>
             </ul>
         </div>
         </#if>
@@ -76,7 +76,7 @@ navigation freemarker macros
             </#if>
 
             <#if sessionData?? && sessionData.authenticated>
-            <div class="span12 resource-nav  screen" id="toolbars" parse="true">
+            <div class="col-xs-12 resource-nav  screen" id="toolbars" parse="true">
                 <ul>
                     <@makeLink "browse" "creators" "view" "view" current true />
 
@@ -102,7 +102,7 @@ navigation freemarker macros
     <#macro keywordToolbar current>
 
         <#if editor>
-            <div class="span12 resource-nav  screen" id="toolbars" parse="true">
+            <div class="col-xs-12 resource-nav  screen" id="toolbars" parse="true">
                 <ul>
                     <@makeLink keyword.urlNamespace "" "view" "view" current true />
 
