@@ -592,7 +592,7 @@ with that datapoint -->
     <#macro listAddresses entity=person entityType="person" choiceField="" addressId=-1>
     <div class="row">
         <#list entity.addresses  as address>
-            <div class="span3">
+            <div class="col-xs-3">
                 <#local label = ""/>
                 <#if address.type?has_content>
                     <#local label = address.type.label>
@@ -610,7 +610,7 @@ with that datapoint -->
                 </@printAddress>
             </div>
         </#list>
-        <div class="span3">
+        <div class="col-xs-3">
             <#local retUrl><@s.url includeParams="all"/></#local>
             <a class="button btn btn-primary submitButton" href="/entity/${entityType}/${entity.id?c}/address?returnUrl=${retUrl?url}">Add Address</a>
         </div>

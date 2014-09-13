@@ -19,7 +19,7 @@
     </style>
 </head>
     <#macro pricingOption label files storage cost id=label?lower_case>
-    <div class="span2 well" id=div${id}>
+    <div class="col-xs-2 well" id=div${id}>
         <h3><span class="red">$${cost}</span>: ${label}</h3>
         <ul>
             <li>${files}</li>
@@ -52,11 +52,11 @@
     <#assign showSuggested=!administrator && actionName != 'modify'/>
 
     <div class="row">
-        <div class="span4" style="min-height:30em">
+        <div class="col-xs-4" style="min-height:30em">
             <@rates />
 
         </div>
-        <div class="span8">
+        <div class="col-xs-8">
             <ul class="nav nav-tabs">
                 <li class="<#if showSuggested>active</#if>">
                     <a href="#suggested" data-toggle="tab">Suggested</a>
@@ -66,7 +66,7 @@
             <div class="tab-content">
                 <div id="suggested" class="tab-pane <#if showSuggested>active</#if> ">
                     <div class="row">
-                        <div class="span8">
+                        <div class="col-xs-8">
                             <h2>Suggested Levels</h2>
 
                             <div class="row">
@@ -79,17 +79,17 @@
                 </div>
                 <div id="custom" class="tab-pane <#if !showSuggested>active</#if>">
                     <div class="row">
-                        <div class="span8">
+                        <div class="col-xs-8">
                             <h2>Cost Calculator</h2>
 
                             <div class="well">
-                                <@s.textfield name="invoice.numberOfFiles" label="Number of Files" cssClass="integer span2" maxlength=9  />
+                                <@s.textfield name="invoice.numberOfFiles" label="Number of Files" cssClass="integer col-xs-2" maxlength=9  />
 
                                 <div class="control-group">
                                     <label class="control-label">Number of Mb</label>
 
                                     <div class="controls">
-                                        <@s.textfield name="invoice.numberOfMb" label="Number of Mb"  theme="simple" cssClass="integer span2" maxlength=9 />
+                                        <@s.textfield name="invoice.numberOfMb" label="Number of Mb"  theme="simple" cssClass="integer col-xs-2" maxlength=9 />
                                         <span id="convert"></span>
                                     </div>
                                 </div>
@@ -145,7 +145,7 @@
             <@invoicecommon.paymentMethod />
         </#if>
 
-        <#--<@s.textarea name="invoice.otherReason" cols="" rows="" id="txtOtherReason" cssClass="span5"  label="Additional Information" />-->
+        <#--<@s.textarea name="invoice.otherReason" cols="" rows="" id="txtOtherReason" cssClass="col-xs-5"  label="Additional Information" />-->
 
         <#--<@s.hidden name="id" value="${invoice.id?c!-1}" />-->
 
@@ -166,7 +166,7 @@
                 <#if !act.production >
                     <tr>
                         <td>${act.name} <@s.hidden name="extraItemIds[${act_index}]" value="${act.id?c}"/> </td>
-                        <td><@s.textfield name="extraItemQuantities[${act_index}]" cssClass="integer span2" theme="simple"/></td>
+                        <td><@s.textfield name="extraItemQuantities[${act_index}]" cssClass="integer col-xs-2" theme="simple"/></td>
                     </tr>
                 </#if>
             </#list>
@@ -184,7 +184,7 @@
     </#if>
 
     <div class="row">
-        <div class="span12">
+        <div class="col-xs-12">
             <@s.textfield name="code" label="Redeem Code" cssClass="input-xxlarge" />
             <div class="form-actions">
                 <input type="submit" class="tdar-button" name="submitAction"

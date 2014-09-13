@@ -80,10 +80,10 @@
 
         <div id="divResultsSortControl">
             <div class="row">
-                <div class="span4">
+                <div class="col-xs-4">
                     <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Record"/>
                 </div>
-                <div class="span5"></div>
+                <div class="col-xs-5"></div>
             </div>
         </div>
 
@@ -138,29 +138,29 @@
 
             <@common.resourceUsageInfo />
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Collection Type" val=resourceCollection.type.label />
             </div>
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Visible" val=resourceCollection.visible?string />
             </div>
         </div>
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Sort By" val=resourceCollection.sortBy.label />
             </div>
-            <div class="span4">
+            <div class="col-xs-4">
                 <#assign viewed>${viewCount} times</#assign>
                 <@view.kvp key="Viewed" val=viewed />
             </div>
         </div>
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Created By" nested=true><a
                         href="<@s.url value="/browse/creators/${resourceCollection.owner.id?c}"/>">${resourceCollection.owner.properName}</a>
                     on ${resourceCollection.dateCreated?datetime}</@view.kvp>
             </div>
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Updated By" nested=true><a
                         href="<@s.url value="/browse/creators/${resourceCollection.updater.id?c}"/>">${resourceCollection.updater.properName}</a>
                     on ${resourceCollection.dateUpdated?datetime}</@view.kvp>

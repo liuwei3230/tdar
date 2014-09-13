@@ -10,7 +10,7 @@
 <h1>Filter Ontology Values</h1>
 
 <div class="row">
-    <div class="span8">
+    <div class="col-xs-8">
         <h3>Instructions</h3>
 
         <p>The complete ontologies for each integration column are listed below, along with columns for each data table that you've chosen to integrated.
@@ -28,7 +28,7 @@
             <li>Values that do not occur in a dataset are indicated with red X's ( <img src="<@s.url value="/images/unchecked.gif" />"/>).</li>
         </ul>
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
     <#-- display links with taxonomy expanded -->
         <h3>Copy / Restore Previous Selection</h3>
 
