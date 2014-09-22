@@ -114,9 +114,6 @@
         </div>
         </#if>
 
-
-
-
     <div id="divResultsSortControl">
         <div class="row">
             <div class="col-xs-3">
@@ -151,28 +148,35 @@
                 <#if col?has_content>
                 <li><a href="<@s.url value="/${col.urlNamespace}/${col.id?c}"/>">${col.name}</a></li>
                 </#if>
+        <#if showCollectionResults>
+        <#--split the collection list into, at most, two sublists -->
+        <#assign _lastIndex = (collectionResults?size -1)>
+        <#if (_lastIndex > 9)><#assign _lastIndex = 9></#if>
+        <#assign resultPage = collectionResults[0.._lastIndex]>
+        <#assign cols = collectionResults?chunk(((collectionResults?size)/2)?ceiling) >
+        <div class="collectionResultsBox">
+            <h4>Related Collections</h4>
+            <div class="row">
+            <#list cols as col>
+                <div class="col-xs-4">
+                    <ul>
+                    <#list col as res>
+                    <li> <@s.a href="/${res.urlNamespace}/${res.id?c}">${res.name}</@s.a>
+                    </#list>
+                    </ul>
+                </div>
             </#list>
-        </ul>
+            </div>
+            <#if ( collectionTotalRecords > 10)>
+            <div class="row">
+                <p class="cols-xs-9">
+                    <@s.a  href="/search/collections?query=${query}"
+                        cssClass="pull-right">&raquo; Show all ${collectionTotalRecords?c} collections</@s.a>
+                </p>
+            </div>
+            </#if>
         </div>
-        <div class="col-xs-4">
-        <ul>
-            <#list collectionResults as col>
-                <#if (col_index >= current)> 
-                <#if col?has_content>
-                <li><a href="<@s.url value="/${col.urlNamespace}/${col.id?c}"/>">${col.name!"unnamed"}</a></li>
-                </#if>
-                </#if>
-            </#list>
-        </ul>
-        </div>
-
-        </div>
-        <#if ( collectionTotalRecords > 10)>
-            <p><span class="pull-right"><a href="<@s.url value="/search/collections?query=${query}"/>">&raquo; See all ${collectionTotalRecords?c} collections</a></span></p>
-       <br/> </#if>
-    </div>
-    </#if>
-
+        </#if>
 
         <#if lookupSource == 'COLLECTION' || lookupSource='RESOURCE'>
         <#--fixme: replace explicit map sizes with css names -->
@@ -221,11 +225,8 @@
             });
         </#if>
     });
-    
 </script>
 
 </body>
-
-
 
 </#escape>
