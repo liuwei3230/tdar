@@ -32,6 +32,7 @@ import org.tdar.core.bean.util.ScheduledBatchProcess;
 import org.tdar.core.service.external.MockMailSender;
 import org.tdar.core.service.processes.CreatorAnalysisProcess;
 import org.tdar.core.service.processes.DailyEmailProcess;
+import org.tdar.core.service.processes.EmbargoedFilesUpdateProcess;
 import org.tdar.core.service.processes.OccurranceStatisticsUpdateProcess;
 import org.tdar.core.service.processes.OverdrawnAccountUpdate;
 import org.tdar.core.service.processes.RebuildHomepageCache;
@@ -125,16 +126,30 @@ public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
     @Test
     @Rollback
     public void testVerifyProcess() throws InstantiationException, IllegalAccessException {
+        scheduledProcessService.getScheduledProcessQueue().clear();
         Document document = generateDocumentWithFileAndUseDefaultUser();
         fsp.execute();
         scheduledProcessService.queueTask(SendEmailProcess.class);
-        scheduledProcessService.runScheduledProcessesInQueue();
+        scheduledProcessService.runNextScheduledProcessesInQueue();
         SimpleMailMessage received = ((MockMailSender)emailService.getMailSender()).getMessages().get(0);
         assertTrue(received.getSubject().contains(WeeklyFilestoreLoggingProcess.PROBLEM_FILES_REPORT));
         assertTrue(received.getText().contains("not found"));
         assertFalse(received.getText().contains(document.getInformationResourceFiles().iterator().next().getFilename()));
         assertEquals(received.getFrom(), emailService.getFromEmail());
         assertEquals(received.getTo()[0], getTdarConfiguration().getSystemAdminEmail());
+    }
+    
+    
+
+    @Test
+    @Rollback
+    public void testEmbargo() throws InstantiationException, IllegalAccessException {
+        // queue the embargo task
+        scheduledProcessService.queueTask(EmbargoedFilesUpdateProcess.class);
+        scheduledProcessService.runNextScheduledProcessesInQueue();
+        // queue the email task
+        scheduledProcessService.queueTask(SendEmailProcess.class);
+        scheduledProcessService.runNextScheduledProcessesInQueue();
     }
 
     @Test

@@ -13,10 +13,10 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.tdar.TestConstants;
+import org.tdar.core.bean.resource.FileAccessRestriction;
+import org.tdar.core.bean.resource.FileAction;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResourceFile;
-import org.tdar.core.bean.resource.InformationResourceFile.FileAccessRestriction;
-import org.tdar.core.bean.resource.InformationResourceFile.FileAction;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.StatusCode;
@@ -127,8 +127,8 @@ public class ThumbnailWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         // NOW MAKE THE PAGE EMBARGED -- THE THUMBNAIL SHOULD NOT BE VISIBLE
         loginAdmin();
         gotoPage(editPage);
-        setInput("fileProxies[0].action", "MODIFY_METADATA");
-        setInput("fileProxies[0].restriction", "EMBARGOED");
+        setInput("fileProxies[0].action", FileAction.MODIFY_METADATA.name());
+        setInput("fileProxies[0].restriction", FileAccessRestriction.EMBARGOED_FIVE_YEARS.name());
         submitForm();
         logout();
         gotoPage(viewPage);
