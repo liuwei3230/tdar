@@ -116,10 +116,10 @@
 
     <div id="divResultsSortControl">
         <div class="row">
-            <div class="span3">
+            <div class="col-xs-3">
                 <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Result" />
             </div>
-            <div class="span6 form-inline">
+            <div class="col-xs-6 form-inline">
                 <div class="pull-right">
                     <div class="control-group"></div>
                     <label>Records Per Page
@@ -135,6 +135,19 @@
     </div>
 
     <div class="tdarresults">
+
+    <#if ( lookupSource='RESOURCE' && collectionSearchBoxVisible && collectionTotalRecords > 0)>
+    <div class="collectionResultsBox">
+        <h4>Related Collections</h4>
+        <div class="row">
+        <div class="col-xs-4">
+        <ul>
+        <#assign current = 0>
+            <#list collectionResults as col>
+                <#if (col_index >= collectionResults?size / 2)><#assign current = col_index/><#break></#if> 
+                <#if col?has_content>
+                <li><a href="<@s.url value="/${col.urlNamespace}/${col.id?c}"/>">${col.name}</a></li>
+                </#if>
         <#if showCollectionResults>
         <#--split the collection list into, at most, two sublists -->
         <#assign _lastIndex = (collectionResults?size -1)>
@@ -145,7 +158,7 @@
             <h4>Related Collections</h4>
             <div class="row">
             <#list cols as col>
-                <div class="span4">
+                <div class="col-xs-4">
                     <ul>
                     <#list col as res>
                     <li> <@s.a href="/${res.urlNamespace}/${res.id?c}">${res.name}</@s.a>
@@ -156,7 +169,7 @@
             </div>
             <#if ( collectionTotalRecords > 10)>
             <div class="row">
-                <p class="span9">
+                <p class="cols-xs-9">
                     <@s.a  href="/search/collections?query=${query}"
                         cssClass="pull-right">&raquo; Show all ${collectionTotalRecords?c} collections</@s.a>
                 </p>

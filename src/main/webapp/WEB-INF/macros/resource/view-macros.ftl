@@ -536,7 +536,7 @@ ${resource.formattedSourceInformation!''} (${siteAcronym} ID: ${resource.id?c}) 
                         <div class="item pagination-centered <#if irfile_index == 0>active</#if>"> <#t>
                         <div class="row-fluid"> <#t>
                         </#if>
-                        <div class="span3"> <#t>
+                        <div class="col-xs-3"> <#t>
                           <span class="primary-thumbnail thumbnail-border <#if irfile_index == 0>thumbnail-border-selected</#if>"> <#t>
                               <span class="thumbnail-center-spacing "></span> <#t>
                               <img class="thumbnailLink img-polaroid"<#t>
@@ -770,10 +770,10 @@ ${resource.formattedSourceInformation!''} (${siteAcronym} ID: ${resource.id?c}) 
         </#if>
     </#macro>
 
-<#macro featured header="Featured Content" span="span12">
-<div class="tdar-slider slider ${span}">
-    <h3>${header}</h3>
+<#macro featured header="Featured Content" span="col-xs-12">
+<div class="slider ${span}">
 
+    <h3>${header}</h3>
     <div id="slider" class="carousel slide">
         <!-- Carousel items -->
         <div class="carousel-inner">
@@ -783,9 +783,15 @@ ${resource.formattedSourceInformation!''} (${siteAcronym} ID: ${resource.id?c}) 
             </#if>
             </#list>
         </div>
-        <!-- Carousel nav -->
-        <a class="carousel-control left" href="#slider" data-slide="prev">&lsaquo;</a>
-        <a class="carousel-control right" href="#slider" data-slide="next">&rsaquo;</a>
+
+
+    <!-- controls -->
+        <a class="left carousel-control" href="#slider" role="button" data-slide="prev">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#slider" role="button" data-slide="next">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
     </div>
 </div>
 </#macro>

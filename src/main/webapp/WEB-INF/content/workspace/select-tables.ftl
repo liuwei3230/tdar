@@ -107,7 +107,7 @@
 
     <div class="row">
         <#if (bookmarkedDataTables)?? && !bookmarkedDataTables.empty >
-            <div class="span12">
+            <div class="col-xs-12">
                 <h3>Step 1: Select Datasets to Integrate or Display</h3>
                 <@s.form name='selectDTForm' method='post' action='select-columns'>
                     <@s.token name='struts.csrf.token' />
@@ -122,7 +122,7 @@
     </div>
 
     <div class="row">
-        <div class="span6">
+        <div class="col-xs-6">
             <h3>Learn About Data Integration</h3>
 
             <p>${siteAcronym}'s revolutionary data integration tool is a simple interface to help you combine two or more disparate data sets into a single, new
@@ -144,7 +144,7 @@
                 <li><a href="https://dev.tdar.org/confluence/display/TDAR/Bookmarking+a+Dataset+for+Data+Integration">Bookmark Data Sets</a></li>
             </ul>
         </div>
-        <div class="span6">
+        <div class="col-xs-6">
             <img src="/images/r4/data_integration.png" class="responsive-image"/>
         </div>
 

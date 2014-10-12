@@ -86,7 +86,7 @@
 </div>
 
 <div class="row">
-    <div class="span9">
+    <div class="col-xs-9">
         Welcome <#if authenticated.penultimateLogin?has_content>back,</#if> ${authenticatedUser.firstName}!
         <#if contributor>
             The resources you can access are listed below. To create a <a href="<@s.url value="/resource/add"/>">new resource</a> or
@@ -130,10 +130,10 @@
 
 <#macro searchSection>
     <div class="row">
-        <div class="span9">
+        <div class="col-xs-9">
             <form name="searchheader" action="<@s.url value="/search/results"/>">
                 <input type="text" name="query" class="searchbox" placeholder="Search ${siteAcronym} &hellip; ">
-                <@s.checkboxlist id="includedResourceTypes" numColumns=4 spanClass="span2" name='resourceTypes' list='resourceTypes'  listValue='label' label="Resource Type"/>
+                <@s.checkboxlist id="includedResourceTypes" numColumns=4 spanClass="col-xs-2" name='resourceTypes' list='resourceTypes'  listValue='label' label="Resource Type"/>
                 <@s.submit value="Search" cssClass="btn btn-primary" />
             </form>
         </div>    
@@ -146,7 +146,7 @@
 
     <#macro gettingStarted>
     <div class="row">
-        <div class="span9">
+        <div class="col-xs-9">
             <h2>Getting Started</h2>
             <ol style='list-style-position:inside'>
                 <li><a href="<@s.url value="/project/add"/>">Start a new Project</a></li>
@@ -158,7 +158,7 @@
 
     <#macro resourcePieChart>
     <div class="row">
-        <div class="span3">
+        <div class="col-xs-3">
             <h2>At a glance</h2>
 
             <div class="piechart row">
@@ -182,7 +182,7 @@
     <#macro recentlyUpdatedSection>
 
     <div class="row">
-        <div class="span9">
+        <div class="col-xs-9">
             <h2><@s.text name="dashboard.recently_updated"/></h2>
             <ol id='recentlyEditedResources'>
 
@@ -211,7 +211,7 @@
     <#macro emptyProjectsSection>
         <#if (emptyProjects?? && !emptyProjects.empty )>
         <div class="row">
-            <div class="span9" id="divEmptyProjects">
+            <div class="col-xs-9" id="divEmptyProjects">
                 <h2>Empty Projects</h2>
                 <ol id="emptyProjects">
                     <#list emptyProjects as res>
@@ -275,7 +275,7 @@
 
     <#macro accountSection>
     <div id="accountSection" class="row">
-        <div id="divAccountInfo" class="<#if payPerIngestEnabled>span4<#else>span9</#if>">
+        <div id="divAccountInfo" class="<#if payPerIngestEnabled>col-xs-4<#else>span9</#if>">
             <h2>About ${authenticatedUser.firstName}</h2>
             <strong>Full Name: </strong>${authenticatedUser.properName}<#if authenticatedUser.institution??>, ${authenticatedUser.institution.name}</#if><br/>
             <#if authenticatedUser.penultimateLogin??>
@@ -284,7 +284,7 @@
             <a href="<@s.url value='/entity/user/edit?id=${authenticatedUser.id?c}'/>">edit your profile</a>
         </div>
 
-        <div class="span5" id="billing">
+        <div class="col-xs-5" id="billing">
             <@common.billingAccountList accounts />
         </div>
     </div>
@@ -293,7 +293,7 @@
 
     <#macro bookmarksSection>
     <div class="row">
-        <div class="span9" id="bookmarks">
+        <div class="col-xs-9" id="bookmarks">
             <#if ( bookmarkedResources?size > 0)>
             <h2 >Bookmarks</h2>
                 <@rlist.listResources resourcelist=bookmarkedResources sortfield='RESOURCE_TYPE' listTag='ol' headerTag="h3" />
