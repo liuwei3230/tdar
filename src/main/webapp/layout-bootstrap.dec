@@ -32,6 +32,7 @@
 
 <#-- avoid js in the header. if you must include it,  declare inline scripts, then external css, then external js -->
 <head>
+    <#--<meta name="viewport" content="width=device-width, initial-scale=1">-->
     <title>${title!siteName}</title>
     <#if authenticatedUser??>
         <!-- logged-in-as: ${authenticatedUser.email} -->
@@ -41,17 +42,8 @@
     <link rel="unapi-server" type="application/xml" title="unAPI" href="<@s.url value='/unapi'/>">
     <link rel="search" type="application/opensearchdescription+xml" href='<@s.url value="/opensearch.xml"/>' title="Search ${siteAcronym}">
 
-    <#--  per: http://stackoverflow.com/questions/12246096/bootstrap-printing-width && https://github.com/netdna/bootstrap-cdn/pull/106 -->
-    <#if useCDN>
-        <link href="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet" media="print">
-        <link rel="stylesheet" type="text/css" href='${protocol}//ajax.googleapis.com/ajax/libs/jqueryui/${jquery_ui_css_version}/themes/base/jquery-ui.css'>
-    <#else>
-        <link href="/includes/bootstrap-2.32/css/bootstrap-responsive.min.css" rel="stylesheet">
-        <link href="/includes/bootstrap-2.32/css/bootstrap.min.css" rel="stylesheet">
-        <link href="/includes/bootstrap-2.32/css/bootstrap.min.css" rel="stylesheet" media="print">
-        <link rel="stylesheet" type="text/css" href='/includes/jquery-ui-${jquery_ui_css_version}/development-bundle/themes/base/jquery-ui.css'>
-    </#if>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
 
     <link href="${staticHost}<@s.url value="/css/tdar-base.css"/>" rel="stylesheet">
     <link href="${staticHost}<@s.url value="/css/tdar-print.css"/>" rel="stylesheet" media="print">
@@ -81,9 +73,9 @@
     <div id="qunit"></div>
     <div id="qunit-fixture">
     </#if>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-        <header class="span12">
+        <header class="col-xs-12">
             <#include "${themeDir}/header.dec" />
             <#if (authenticatedUser??) >
 
@@ -157,7 +149,7 @@
 
     <#else>
         <div class="row">
-            <div class="span12 subnav">
+            <div class="col-xs-12 subnav">
                 <ul class="subnav-lft">
                     <li><a href="<@s.url value="/search"/>"><@s.text name="menu.search"/></a></li>
                     <li><a href="<@s.url value="/search/results"/>"><@s.text name="menu.browse"/></a></li>
@@ -224,7 +216,7 @@
 
     <#if actionMessages?has_content || (page.properties["div.messages"])?has_content>
         <div class="row">
-            <div class="span12">
+            <div class="col-xs-12">
                 <@s.actionmessage />
         ${(page.properties["div.messages"])!}
             </div>
@@ -252,19 +244,19 @@
     <section ${schemaScope} class="row ${part}">
 
         <#if page.properties["div.sidebar-left"]?has_content>
-            <aside class="span3">
+            <aside class="col-xs-3">
             ${page.properties["div.sidebar-left"]}
             </aside>
         </#if>
 
-        <article class="span${spanSize} results" id="articleBody">
+        <article class="col-xs-${spanSize} results" id="articleBody">
         <#--Keep in mind.your body is inside a div.span element. now would be a good time to review bootstrap grid layout conventions (esp. 'Nesting Columns') -->
             <#--http://twitter.github.com/bootstrap/scaffolding.html#gridSystem -->
             ${body}
         </article>
 
         <#if page.properties["div.sidebar-right"]?has_content>
-            <aside class="span3 sidebar <#if actionName=='edit' || actionName='add' || actionName='columns'>hidden-tablet hidden-phone</#if> <#if actionName=='view' &&  resource?has_content>${resource.resourceType?lower_case}-bg-large tdar-icon</#if>">
+            <aside class="col-xs-3 sidebar <#if actionName=='edit' || actionName='add' || actionName='columns'>hidden-tablet hidden-phone</#if> <#if actionName=='view' &&  resource?has_content>${resource.resourceType?lower_case}-bg-large tdar-icon</#if>">
             ${page.properties["div.sidebar-right"]}
             </aside>
         </#if>
@@ -291,16 +283,9 @@
 
 </footer>
 
-    <#if useCDN>
-        <script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
-        <script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/additional-methods.min.js"></script>
-        <script src="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
-    <#else>
-        <script src="/includes/jquery.validate-1.11.1/jquery.validate.js"></script>
-        <script src="/includes/jquery.validate-1.11.1/additional-methods.js"></script>
-        <script src="/includes/bootstrap-2.32/js/bootstrap.js"></script>
-    </#if>
-
+<script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+<script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/additional-methods.min.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
     //functionality for "welcome back, so-and-so!" (pulled from main.js)
@@ -344,9 +329,7 @@
     </#if>
 
     <#if showJiraLink && jiraScriptLink?has_content && (!production || editor?has_content && editor) && !qunit>
-    <script type="text/javascript">
-        TDAR.loadScript('${protocol}//${jiraScriptLink}');
-    </script>
+    <script type="text/javascript" src="https://dev.tdar.org/jira/s/79fa0fce12b9e831ccf4439afb31e36d-T/en_US-c4ud0l/6328/26/1.4.13/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=6e7561fd"></script>
     </#if>
 
     <#if qunit>
