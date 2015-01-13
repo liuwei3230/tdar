@@ -4,11 +4,6 @@
     visibility: hidden !important;
 }
 
-/* FIXME: jtd: I don't think the section.row.cols rule is necessary; need to check all pages to confirm I'm right,*/
-/* ab: undoing as this breaks the top of the view page! and the edit page! */
-section.row.cols {
-    margin-top: 3em !important;
-}
 
 .worldmap {
     border: 1px solid #aaa;
@@ -57,30 +52,21 @@ div.barlabel {
     height: 1.5em;
 }
 
-.subnavbar {
+#subnavbar {
     z-index: 10000;
-}
-
-#messages .lt-ie8 {
-    display: block !important;
-    visibility: visible !important;
+    background-color: #f0eeeb;
+    padding:5px 2px;
 }
 
 /* affix elements become fixed, so we need to specify new location (otherwise location after becoming fixed is undefined/browser-specific) */
-.subnavbar.affix {
+#subnavbar.affix {
+    width: 100%;
     top: 0;
     left: 0;
 }
 
-#subnavbar2.affix {
-    width: 100% !important;
-    left: 0 !important;
-}
-
-/* TODO:// HACK: .affix navbar needs to be same width as ".container" for proper formatting, but to break out our navbar requires mucking w/ layout.dec */
-.subnavbar.affix-top.container {
-    /*shrink the navbar when it is not affixed (i.e. when it is .affix-top) */
-    width: auto
+.nav-pills>li.active>a {
+    background-color: #7a1501;
 }
 
 /* fix for file upload control to make it not make space for label */
@@ -1192,11 +1178,6 @@ p.copyright-notice {
     paddding: 10px 0px 10px 0px !important;
 }
 
-/* ensure proper spacing in view page metadata name/value pairs, and don't wrap in the middle */
-.cols p.meta span.name-value {
-    margin-right: 0.5em;
-    diaplay: inline-block;
-}
 
 .tdar-gmap-control button:disabled {
     display: none;
@@ -1599,16 +1580,11 @@ div.orgChart div.node.level1.special {
     margin-bottom:0;
 }
 
-.form-condensed fieldset legend {
-    margin-bottom: 10px;
-    font-size: 14pt;
-    line-height: normal;
+.form-condensed .control-group {
+	/* todo: create condensed styles for .form-condensed>fieldset,  .form-condensed>fieldset>legend
+    margin-top: 0;
+    margin-bottom: 5px;
 }
-
-.form-condensed fieldset {
-    margin-bottom: 1em;
-}
-
 .cartpane .form-actions, .authpane .form-actions {
     border: none;
 }
@@ -1689,6 +1665,27 @@ div.tdar-rates {
 
 .well.form-condensed {
     padding:10px;
+}
+
+.carousel .item {
+    padding: 0 10em 0 10em;
+}
+
+.carousel-control.left, .carousel-control.right {
+    background: none;
+    color:black;
+    padding:0;
+    width: 5%;
+
+}
+
+/* make the bug submission button more subtle */
+#atlwdg-trigger{
+    position:fixed;
+    right:10px;
+    bottom:0;
+    box-shadow: none;
+    opacity: 0.8;
 }
 
 div.grippie {

@@ -53,8 +53,8 @@
         <label class="control-label">Volume Information</label>
 
         <div class="controls controls-row">
-            <@s.textfield id='volume' theme="tdar" placeholder='Volume' name='document.volume' cssClass="span2"   maxlength=255 />
-        <@s.textfield id='journalNumber' theme="tdar" placeholder='Issue Number' name='document.journalNumber' cssClass="span2"  maxlength=255 />
+            <@s.textfield id='volume' theme="tdar" placeholder='Volume' name='document.volume' cssClass="col-xs-2"   maxlength=255 />
+        <@s.textfield id='journalNumber' theme="tdar" placeholder='Issue Number' name='document.journalNumber' cssClass="col-xs-2"  maxlength=255 />
         </div>
     </div>
 
@@ -62,9 +62,9 @@
         <label class="control-label">Series Information</label>
 
         <div class="controls controls-row">
-            <@s.textfield id='seriesName' theme="tdar" placeholder='Series Title' name='document.seriesName' cssClass="span4"  maxlength=255 />
-            <@s.textfield id='seriesNumber' theme="tdar" placeholder='Series #' name='document.seriesNumber' cssClass="span1"  maxlength=255 />
-            <@s.textfield id='edition' theme="tdar" placeholder='Edition' name='document.edition' cssClass="span1"  maxlength=255 />
+            <@s.textfield id='seriesName' theme="tdar" placeholder='Series Title' name='document.seriesName' cssClass="col-xs-4"  maxlength=255 />
+            <@s.textfield id='seriesNumber' theme="tdar" placeholder='Series #' name='document.seriesNumber' cssClass="col-xs-1"  maxlength=255 />
+            <@s.textfield id='edition' theme="tdar" placeholder='Edition' name='document.edition' cssClass="col-xs-1"  maxlength=255 />
         </div>
     </div>
 
@@ -73,8 +73,8 @@
             <label class="control-label">Start/End Page</label>
 
             <div class="controls controls-row">
-                <@s.textfield theme="tdar" id='startPage' placeholder="Start#" name='document.startPage' cssClass="span1" maxlength=9/>
-                <@s.textfield theme="tdar" id='endPage'  placeholder="End#" name='document.endPage' cssClass="span1" maxlength=9 />
+                <@s.textfield theme="tdar" id='startPage' placeholder="Start#" name='document.startPage' cssClass="col-xs-1" maxlength=9/>
+                <@s.textfield theme="tdar" id='endPage'  placeholder="End#" name='document.endPage' cssClass="col-xs-1" maxlength=9 />
             </div>
         </div>
     </div>
