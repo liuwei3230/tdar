@@ -227,10 +227,10 @@
 
                     <#if creator.registered?? >
                         <div class="row">
-                            <div class="span6">
+                            <div class="col-xs-6">
                                 <@common.billingAccountList accounts />
                             </div>
-                            <div class="span6">
+                            <div class="col-xs-6">
                                 <h2>Group Membership</h2>
                                 <ul>
                                     <#list groups as group>
@@ -246,10 +246,10 @@
     <#if ( results?? && results?size > 0) >
     <div id="divResultsSortControl">
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Record"/>
             </div>
-            <div class="span5">
+            <div class="col-xs-5">
                 <#if !hideFacetsAndSort>
                     <div class="form-horizontal pull-right">
                         <@search.sortFields true/>
