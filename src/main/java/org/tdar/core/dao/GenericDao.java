@@ -341,12 +341,18 @@ public class GenericDao {
     }
 
     public <T> ScrollableResults findAllScrollable(Class<T> persistentClass) {
-        return getCriteria(persistentClass).setCacheMode(CacheMode.IGNORE).setFetchSize(TdarConfiguration.getInstance().getScrollableFetchSize())
+        return getCriteria(persistentClass).addOrder(Order.asc("id")).setCacheMode(CacheMode.IGNORE).setFetchSize(TdarConfiguration.getInstance().getScrollableFetchSize())
+                .scroll(ScrollMode.FORWARD_ONLY);
+    }
+
+    public <T> ScrollableResults findAllActiveScrollable(Class<T> persistentClass) {
+        return getCriteria(persistentClass).add(Restrictions.eq("status", Status.ACTIVE)).
+                setCacheMode(CacheMode.IGNORE).setFetchSize(TdarConfiguration.getInstance().getScrollableFetchSize())
                 .scroll(ScrollMode.FORWARD_ONLY);
     }
 
     public <T> ScrollableResults findAllScrollable(Class<T> persistentClass, int batchSize) {
-        return getCriteria(persistentClass).setCacheMode(CacheMode.IGNORE).setFetchSize(batchSize).scroll(ScrollMode.FORWARD_ONLY);
+        return getCriteria(persistentClass).addOrder(Order.asc("id")).setCacheMode(CacheMode.IGNORE).setFetchSize(batchSize).scroll(ScrollMode.FORWARD_ONLY);
     }
 
     @SuppressWarnings("unchecked")

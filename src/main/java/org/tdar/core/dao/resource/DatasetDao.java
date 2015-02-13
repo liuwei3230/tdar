@@ -5,10 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -38,6 +40,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.VersionType;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
+import org.tdar.core.bean.resource.datatable.DataTableRelationship;
 import org.tdar.core.dao.NamedNativeQueries;
 import org.tdar.core.dao.TdarNamedQueries;
 import org.tdar.core.service.RssService;
@@ -45,6 +48,7 @@ import org.tdar.core.service.UrlService;
 import org.tdar.core.service.resource.dataset.DatasetUtils;
 import org.tdar.db.model.abstracts.TargetDatabase;
 import org.tdar.search.query.SearchResultHandler;
+import org.tdar.utils.PersistableUtils;
 
 import com.redfin.sitemapgenerator.GoogleImageSitemapGenerator;
 import com.redfin.sitemapgenerator.GoogleImageSitemapUrl;
@@ -94,7 +98,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
             }
         };
 
-        Map<DataTableColumn, String> dataTableQueryResults = tdarDataImportDatabase.selectAllFromTable(column, key, resultSetExtractor);
+        Map<DataTableColumn, String> dataTableQueryResults = tdarDataImportDatabase.selectAllFromTableCaseInsensitive(column, key, resultSetExtractor);
         resource.setRelatedDatasetData(dataTableQueryResults);
     }
 
@@ -196,7 +200,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
                 SQLQuery insert = getCurrentSession().createSQLQuery(format);
                 insert.executeUpdate();
                 if (count % 250 == 0) {
-                    logger.debug(format);
+                    logger.trace(format);
                 }
                 count++;
             }
@@ -312,8 +316,9 @@ public class DatasetDao extends ResourceDao<Dataset> {
             ResourceType resourceType = ResourceType.valueOf((String) row[3]);
             String fileDescription = (String) row[4];
             Number imageId = (Number) row[5];
-
-            String resourceUrl = UrlService.absoluteUrl(resourceType.getUrlNamespace(), id.longValue());
+            Resource res = new Resource(id.longValue(), title, resourceType);
+            markReadOnly(res);
+            String resourceUrl = UrlService.absoluteUrl(res);
             String imageUrl = UrlService.thumbnailUrl(imageId.longValue());
             if (StringUtils.isNotBlank(fileDescription)) {
                 description = fileDescription;
@@ -359,6 +364,20 @@ public class DatasetDao extends ResourceDao<Dataset> {
         handler.setTotalRecords(max.intValue());
 
         return query.list();
+    }
+
+    public void deleteRelationships(Set<DataTableRelationship> relationshipsToRemove) {
+        List<Long> ids = PersistableUtils.extractIds(relationshipsToRemove);
+        ids.removeAll(Collections.singleton(null));
+        if (CollectionUtils.isEmpty(ids)) {
+            return;
+        }
+        Query query = getCurrentSession().getNamedQuery(TdarNamedQueries.DELETE_DATA_TABLE_COLUMN_RELATIONSHIPS);
+        query.setParameterList("ids", ids);
+        query.executeUpdate();
+        Query query2 = getCurrentSession().getNamedQuery(TdarNamedQueries.DELETE_DATA_TABLE_RELATIONSHIPS);
+        query2.setParameterList("ids", ids);
+        query2.executeUpdate();
     }
 
 
