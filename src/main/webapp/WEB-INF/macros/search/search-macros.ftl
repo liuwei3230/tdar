@@ -15,7 +15,7 @@
     <#macro narrowAndSort>
     <h2>Narrow Your Search</h2>
 
-        <@s.checkboxlist id="includedResourceTypes" numColumns=4 spanClass="span2" name='resourceTypes' list='allResourceTypes'  listValue='label' label="Resource Type"/>
+        <@s.checkboxlist id="includedResourceTypes" numColumns=4 spanClass="col-xs-2" name='resourceTypes' list='allResourceTypes'  listValue='label' label="Resource Type"/>
 
         <#if authenticated>
         <#--FIXME: there seems to be a bug in numColumns when the value is 'too high' (not sure what that number is yet) -->

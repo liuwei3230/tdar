@@ -12,8 +12,8 @@
     <#assign projectId_ = project.id />
 </#if>
 <div class="row">
-    <div class="span9">
-    <@s.form name='BulkMetadataForm' id='BulkMetadataForm'  cssClass="span8 form-horizontal well"  method='post' enctype='multipart/form-data' action='validate-template'>
+    <div class="col-xs-9">
+    <@s.form name='BulkMetadataForm' id='BulkMetadataForm'  cssClass="col-xs-8 form-horizontal well"  method='post' enctype='multipart/form-data' action='validate-template'>
         <@s.token name='struts.csrf.token' />
         <h2>Basic</h2>
         <@batchCommon.printTemplate />
@@ -28,7 +28,7 @@
     <#--  not a normal behavior -->
     <#-- 
     <#if editor>
-        <div class="span3">
+        <div class="col-xs-3">
             <h2>Advanced</h2>
     
             <p>If you've used the bulk upload tool before, or already have a template that you know works,
