@@ -17,17 +17,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
-import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
-import org.hibernate.search.annotations.Spatial;
-import org.hibernate.search.annotations.SpatialMode;
-import org.hibernate.search.annotations.Spatials;
-import org.hibernate.search.annotations.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.HasResource;
@@ -38,7 +31,6 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
 import org.tdar.core.exception.TdarValidationException;
-import org.tdar.search.index.bridge.TdarPaddedNumberBridge;
 import org.tdar.utils.json.JsonLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -94,27 +86,27 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
     private Double maxObfuscatedLongitude = null;
 
     // ranges from -90 (South) to +90 (North)
-    @Field
-    @NumericField(precisionStep = 6)
+    @Field(name="miny")
+    @NumericField
     @Latitude(of="minimum")
     @Column(nullable = false, name = "minimum_latitude")
     private Double minimumLatitude;
 
-    @Field
-    @NumericField(precisionStep = 6)
+    @Field(name="maxy")
+    @NumericField
     @Column(nullable = false, name = "maximum_latitude")
     @Latitude(of="maximum")
     private Double maximumLatitude;
 
     // ranges from -180 (West) to +180 (East)
-    @Field
+    @Field(name="minx")
     @Longitude(of="minimum")
-    @NumericField(precisionStep = 6)
+    @NumericField
     @Column(nullable = false, name = "minimum_longitude")
     private Double minimumLongitude;
 
-    @Field
-    @NumericField(precisionStep = 6)
+    @Field(name="maxx")
+    @NumericField
     @Longitude(of="maximum")
     @Column(nullable = false, name = "maximum_longitude")
     private Double maximumLongitude;
@@ -597,9 +589,10 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
      * the relative scale of the bounding box. The smaller the scale the smaller the bounding region
      * the more regional the search.
      */
-    @FieldBridge(impl = TdarPaddedNumberBridge.class)
-    @Field(norms = Norms.NO, store = Store.YES, analyze = Analyze.NO)
+//    @FieldBridge(impl = TdarPaddedNumberBridge.class)
+    @Field(name="scale")
     @Transient
+    @NumericField
     @JsonView(JsonLookupFilter.class)
     public Integer getScale() {
         Integer toReturn = -1;

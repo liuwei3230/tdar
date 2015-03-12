@@ -164,7 +164,7 @@ public abstract class AbstractSearchControllerITCase extends AbstractControllerI
         doSearch(controller, resource, false);
     }
 
-    public static void doSearch(AbstractLookupController controller, LookupSource resource, Boolean b) {
+    public static void doSearch(AbstractLookupController controller, LookupSource resource, Boolean expectErrors) {
         Exception e = null;
         String msg = null;
         Logger logger = LoggerFactory.getLogger(AbstractControllerITCase.class);
@@ -189,10 +189,10 @@ public abstract class AbstractSearchControllerITCase extends AbstractControllerI
             e = ex;
             logger.error("exception: {} ", e);
         }
-        if (b == Boolean.TRUE) {
+        if (expectErrors == Boolean.TRUE) {
             Assert.assertTrue(String.format("there should be an exception %s or returned input %s", e, msg),
                     (e != null) || Action.INPUT.equals(msg));
-        } else if (b == Boolean.FALSE) {
+        } else if (expectErrors == Boolean.FALSE) {
             Assert.assertTrue("there should not be an exception: " + ExceptionUtils.getFullStackTrace(e), e == null);
             assertEquals(Action.SUCCESS, msg);
         } else {

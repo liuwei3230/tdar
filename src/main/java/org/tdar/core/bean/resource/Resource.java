@@ -68,14 +68,9 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
-import org.hibernate.search.annotations.Latitude;
-import org.hibernate.search.annotations.Longitude;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Resolution;
-import org.hibernate.search.annotations.Spatial;
-import org.hibernate.search.annotations.SpatialMode;
-import org.hibernate.search.annotations.Spatials;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 import org.joda.time.DateTime;
@@ -854,7 +849,6 @@ public class Resource implements Persistable,
      */
     public void setLatitudeLongitudeBox(
             LatitudeLongitudeBox latitudeLongitudeBox) {
-        logger.debug("calling lat setter");
         if ((latitudeLongitudeBox == null) || !latitudeLongitudeBox.isValid()) {
             getLatitudeLongitudeBoxes().clear();
             return;
