@@ -49,15 +49,6 @@ public class HydrateableKeywordQueryPart<K extends Keyword> extends AbstractHydr
         }
             return topLevel.generateQuery(builder);
     }
-    
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup topLevel = generateRawQuery();
-        if (topLevel == null) {
-            return "";
-        }
-        return topLevel.generateQueryString();
-    }
 
     private QueryPartGroup generateRawQuery() {
         List<String> labels = new ArrayList<String>();

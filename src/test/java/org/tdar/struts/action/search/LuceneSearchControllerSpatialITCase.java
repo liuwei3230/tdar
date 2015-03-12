@@ -270,8 +270,8 @@ public class LuceneSearchControllerSpatialITCase extends AbstractControllerITCas
         genericService.saveOrUpdate(latitudeLongitudeBoxOfItem);
         searchIndexService.index(file);
 
-        logger.info("Item : {}", (new SpatialQueryPart(latitudeLongitudeBoxOfItem)).generateQueryString());
-        logger.info("Query: {}", (new SpatialQueryPart(latitudLongitudeBoxOfQuery)).generateQueryString());
+        logger.info("Item : {}", (new SpatialQueryPart(latitudeLongitudeBoxOfItem)).toString());
+        logger.info("Query: {}", (new SpatialQueryPart(latitudLongitudeBoxOfQuery)).toString());
 
         controller.setMap(latitudLongitudeBoxOfQuery);
         doSearch();

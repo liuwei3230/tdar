@@ -71,47 +71,47 @@ public class SkeletonPersistableQueryPart<P extends Persistable> extends Abstrac
         return fqp.generateQuery(builder);
         }
     
-    @Override
-    public String generateQueryString() {
-        StringBuilder sb = new StringBuilder();
-        List<Integer> trans = new ArrayList<Integer>();
-        // iterate through all of the values; if any of them are transient, put those positions off to the side
-        for (int i = 0; i < getFieldValues().size(); i++) {
-            if (PersistableUtils.isNotNullOrTransient(getFieldValues().get(i))) {
-                appendPhrase(sb, i);
-            } else {
-                trans.add(i);
-            }
-        }
-        if (sb.length() != 0) {
-            constructQueryPhrase(sb, getFieldName());
-        }
-        if (CollectionUtils.isEmpty(trans)) {
-            return sb.toString();
-        }
-
-        // for the transient values; we'll grab them via a query using the transientFieldQueryPart --
-        // this will look it up by "title" or "whatever"
-        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
-            for (int i = 0; i < getFieldValues().size(); i++) {
-                if (!trans.contains(i)) {
-                    transientFieldQueryPart.getFieldValues().remove(i);
-                }
-            }
-        }
-
-        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
-            sb.insert(0, "(");
-            if (sb.length() > 1) {
-                sb.append(" OR ");
-            }
-            logger.info(transientFieldQueryPart.generateQueryString());
-            sb.append(transientFieldQueryPart.generateQueryString());
-            sb.append(")");
-        }
-
-        return sb.toString();
-    }
+//    @Override
+//    public String generateQueryString() {
+//        StringBuilder sb = new StringBuilder();
+//        List<Integer> trans = new ArrayList<Integer>();
+//        // iterate through all of the values; if any of them are transient, put those positions off to the side
+//        for (int i = 0; i < getFieldValues().size(); i++) {
+//            if (PersistableUtils.isNotNullOrTransient(getFieldValues().get(i))) {
+//                appendPhrase(sb, i);
+//            } else {
+//                trans.add(i);
+//            }
+//        }
+//        if (sb.length() != 0) {
+//            constructQueryPhrase(sb, getFieldName());
+//        }
+//        if (CollectionUtils.isEmpty(trans)) {
+//            return sb.toString();
+//        }
+//
+//        // for the transient values; we'll grab them via a query using the transientFieldQueryPart --
+//        // this will look it up by "title" or "whatever"
+//        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
+//            for (int i = 0; i < getFieldValues().size(); i++) {
+//                if (!trans.contains(i)) {
+//                    transientFieldQueryPart.getFieldValues().remove(i);
+//                }
+//            }
+//        }
+//
+//        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
+//            sb.insert(0, "(");
+//            if (sb.length() > 1) {
+//                sb.append(" OR ");
+//            }
+//            logger.info(transientFieldQueryPart.generateQueryString());
+//            sb.append(transientFieldQueryPart.generateQueryString());
+//            sb.append(")");
+//        }
+//
+//        return sb.toString();
+//    }
 
     @Override
     protected String formatValueAsStringForQuery(int index) {

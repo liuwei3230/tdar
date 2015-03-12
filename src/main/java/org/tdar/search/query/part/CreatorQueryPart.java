@@ -66,12 +66,6 @@ public class CreatorQueryPart<C extends Creator> extends
         return constructRawQuery().generateQuery(builder);
     }
 
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = constructRawQuery();
-        return group.generateQueryString();
-    }
-
     private QueryPartGroup constructRawQuery() {
         QueryPartGroup group = new QueryPartGroup(Operator.OR);
         List<Integer> trans = new ArrayList<>();

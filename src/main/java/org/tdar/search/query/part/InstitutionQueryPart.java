@@ -23,15 +23,6 @@ public class InstitutionQueryPart extends FieldQueryPart<Institution> {
     }
 
 
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = new QueryPartGroup(getOperator());
-        for (Institution value : getFieldValues()) {
-            group.append(this.getQueryPart(value));
-        }
-        return group.generateQueryString();
-    }
-
     protected QueryPartGroup getQueryPart(Institution value) {
         String cleanedQueryString = getCleanedQueryString(value.getName());
 

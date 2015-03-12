@@ -31,12 +31,6 @@ public class StatusAndRelatedPermissionsQueryPart extends FieldQueryPart<Status>
     }
 
     @Override
-    public String generateQueryString() {
-        QueryPartGroup statusSubgroup = createRawQuery();
-        return statusSubgroup.generateQueryString();
-    }
-
-    @Override
     public Query generateQuery(QueryBuilder builder) {
         return createRawQuery().generateQuery(builder);
     }

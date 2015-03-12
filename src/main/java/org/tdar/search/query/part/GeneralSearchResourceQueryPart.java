@@ -32,15 +32,6 @@ public class GeneralSearchResourceQueryPart extends GeneralSearchQueryPart {
     }
 
     @Override
-    public String generateQueryString() {
-        QueryPartGroup group = new QueryPartGroup(getOperator());
-        for (String value : getFieldValues()) {
-            group.append(this.getQueryPart(value));
-        }
-        return group.generateQueryString();
-    }
-
-    @Override
     protected QueryPartGroup getQueryPart(String value) {
         boolean siteCodeSearch = false;
         if (SiteCodeTokenizingAnalyzer.pattern.matcher(value).matches()) {

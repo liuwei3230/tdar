@@ -26,6 +26,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarValidationException;
 import org.tdar.core.service.search.Operator;
+import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.TextProvider;
 
@@ -121,20 +122,7 @@ public class FieldQueryPart<C> implements QueryPart<C> {
 
     @Override
     public String toString() {
-        return generateQueryString();
-    }
-
-    @Override
-    public String generateQueryString() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < fieldValues.size(); i++) {
-            appendPhrase(sb, i);
-        }
-        if (sb.length() == 0) {
-            return "";
-        }
-        constructQueryPhrase(sb, getFieldName());
-        return sb.toString();
+        return getDescription(MessageHelper.getInstance());
     }
 
     @Override

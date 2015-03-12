@@ -78,12 +78,6 @@ public class TitleQueryPart extends FieldQueryPart<String> {
         return generateRawQuery().generateQuery(builder);
     }
 
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = generateRawQuery();
-        return group.generateQueryString();
-    }
-
     private QueryPartGroup generateRawQuery() {
         QueryPartGroup group = new QueryPartGroup(getOperator());
         for (String title : getFieldValues()) {

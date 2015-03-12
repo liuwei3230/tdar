@@ -30,13 +30,6 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
         return createRawQuery().generateQuery(builder);
     }
 
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = createRawQuery();
-        return group.generateQueryString();
-    }
-
-
     private QueryPartGroup createRawQuery() {
         QueryPartGroup group = new QueryPartGroup(getOperator());
         for (Creator value : getFieldValues()) {

@@ -73,11 +73,6 @@ public class AutocompleteTitleQueryPart implements QueryPart<String> {
     }
 
     @Override
-    public String generateQueryString() {
-        return isEmpty() ? "" : getQueryPart().generateQueryString();
-    }
-
-    @Override
     public String getDescription(TextProvider provider) {
         return "Title: " + title;
     }

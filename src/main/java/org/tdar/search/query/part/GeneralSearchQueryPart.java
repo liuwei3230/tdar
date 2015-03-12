@@ -117,15 +117,6 @@ public class GeneralSearchQueryPart extends FieldQueryPart<String> {
     }
 
     @Override
-    public String generateQueryString() {
-        QueryPartGroup group = new QueryPartGroup(getOperator());
-        for (String value : getFieldValues()) {
-            group.append(this.getQueryPart(value));
-        }
-        return group.generateQueryString();
-    }
-
-    @Override
     public String getDescription(TextProvider provider) {
         String fields = StringUtils.join(getFieldValues(), ", ");
         if (StringUtils.isBlank(fields)) {

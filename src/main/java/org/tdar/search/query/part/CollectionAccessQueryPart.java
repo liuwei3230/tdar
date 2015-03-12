@@ -75,11 +75,6 @@ public class CollectionAccessQueryPart implements QueryPart<Person> {
     }
 
     @Override
-    public String generateQueryString() {
-        return this.getQueryPart(user, permissions).generateQueryString();
-    }
-
-    @Override
     public String getDescription(TextProvider provider) {
         return "User: " + user.getProperName() + " " + permissions.getLabel();
     }

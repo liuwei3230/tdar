@@ -115,7 +115,7 @@ public class TagGateway implements TagGatewayPort, QueryFieldNames {
             // actually perform the search against the index
             try {
                 q = searchService.search(qb);
-                logger.info(qb.generateQueryString());
+                logger.info(qb.toString());
             } catch (ParseException e) {
                 logger.warn("Could not parse supplied query.", e);
             }

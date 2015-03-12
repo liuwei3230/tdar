@@ -24,15 +24,6 @@ public class CategoryTermQueryPart extends FieldQueryPart<String> {
     }
 
     @Override
-    public String generateQueryString() {
-        // assumption: if sortCategoryId is set, we assume we are serving a coding-sheet/ontology autocomplete
-        // FIXME: instead of guessing this way it may be better to break codingsheet/ontology autocomplete lookups to another action.
-        QueryPartGroup valueGroup = generateRawQuery();
-
-        return valueGroup.generateQueryString();
-    }
-
-    @Override
     public Query generateQuery(QueryBuilder builder) {
         return generateRawQuery().generateQuery(builder);
     }

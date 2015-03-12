@@ -49,14 +49,6 @@ public class CreatorOwnerQueryPart extends FieldQueryPart<Creator> {
     }
 
 
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup parent = createRawQuery();
-        String generateQueryString = parent.generateQueryString();
-        logger.trace(generateQueryString);
-        return generateQueryString;
-    }
-
     private QueryPartGroup generateGroupForCreator(Creator creator) {
         QueryPartGroup notGroup = new QueryPartGroup();
         notGroup.setOperator(Operator.AND);

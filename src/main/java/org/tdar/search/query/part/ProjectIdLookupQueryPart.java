@@ -18,12 +18,6 @@ public class ProjectIdLookupQueryPart extends FieldQueryPart<Long> {
     }
 
     @Override
-    public String generateQueryString() {
-        QueryPartGroup group = generateRawQuery();
-        return group.generateQueryString();
-    }
-
-    @Override
     public Query generateQuery(QueryBuilder builder) {
         return generateRawQuery().generateQuery(builder);
     }

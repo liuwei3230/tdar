@@ -23,14 +23,6 @@ public class InstitutionAutocompleteQueryPart extends FieldQueryPart<Institution
         }
         return group.generateQuery(builder);
     }
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = generateRawQuery();
-        if (group == null) {
-            return "";
-        }
-        return group.generateQueryString();
-    }
 
     private QueryPartGroup generateRawQuery() {
         QueryPartGroup group = new QueryPartGroup(Operator.OR);

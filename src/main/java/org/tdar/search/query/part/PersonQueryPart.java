@@ -24,13 +24,6 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
         return generateRawQuery().generateQuery(builder);
     };
     
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = generateRawQuery();
-                return group.toString();
-    }
-
-    
     private QueryPartGroup generateRawQuery() {
         List<String> fns = new ArrayList<>();
         List<String> lns = new ArrayList<>();
