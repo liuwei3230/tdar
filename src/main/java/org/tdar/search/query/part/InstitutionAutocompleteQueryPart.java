@@ -40,17 +40,17 @@ public class InstitutionAutocompleteQueryPart extends FieldQueryPart<Institution
                 names.add(StringUtils.trim(inst.getName()));
             }
             FieldQueryPart<String> fqp = new FieldQueryPart<String>("name", Operator.OR, names);
-            fqp.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
             fqp.setBoost(3f);
             group.append(fqp);
         }
         FieldQueryPart<Institution> name_auto = new FieldQueryPart<Institution>("name_auto", getFieldValues());
         group.append(name_auto);
-        name_auto.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+        name_auto.setPhraseFormatters(PhraseFormatter.ESCAPED);
 
         // match ASU, but not "arizona state"
         FieldQueryPart<String> acronym = new FieldQueryPart<String>("acronym", names);
-        acronym.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+        acronym.setPhraseFormatters(PhraseFormatter.ESCAPED);
         acronym.setOperator(Operator.OR);
         acronym.setBoost(7f);
         group.append(acronym);

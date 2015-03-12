@@ -76,7 +76,7 @@ public class KeywordLookupAction extends AbstractLookupController<Keyword> {
         if (StringUtils.equalsIgnoreCase(SiteNameKeyword.class.getSimpleName(), keywordType)) {
             if (StringUtils.isNotBlank(getTerm()) && SiteCodeTokenizingAnalyzer.pattern.matcher(getTerm()).matches()) {
                 FieldQueryPart<String> siteCodePart = new FieldQueryPart<String>(QueryFieldNames.SITE_CODE, getTerm());
-                siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+                siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPED);
                 siteCodePart.setDisplayName(getText("searchParameters.site_code"));
                 siteCodePart.setBoost(5f);
                 subgroup.append(siteCodePart);

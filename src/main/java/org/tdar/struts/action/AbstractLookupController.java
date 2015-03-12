@@ -195,7 +195,7 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
         if (checkMinString(value) && StringUtils.isNotBlank(value)) {
             getLogger().trace("{}:{}", field, value);
             FieldQueryPart<String> fqp = new FieldQueryPart<String>(field, StringUtils.trim(value));
-            fqp.setPhraseFormatters(PhraseFormatter.WILDCARD);
+            fqp.setWildcard(true);
             q.append(fqp);
         }
     }
@@ -204,7 +204,7 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
         if (checkMinString(value)) {
             getLogger().trace("{}:{}", field, value);
             FieldQueryPart<String> fqp = new FieldQueryPart<String>(field, StringUtils.trim(value));
-            fqp.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
             q.append(fqp);
         }
     }

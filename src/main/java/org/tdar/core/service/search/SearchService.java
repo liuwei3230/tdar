@@ -607,13 +607,13 @@ public class SearchService {
         if (creator instanceof Institution) {
             q = new InstitutionQueryBuilder();
             InstitutionAutocompleteQueryPart iqp = new InstitutionAutocompleteQueryPart();
-            iqp.setPhraseFormatters(PhraseFormatter.WILDCARD, PhraseFormatter.QUOTED);
+            iqp.setPhraseFormatters(PhraseFormatter.WILDCARD);
             iqp.add((Institution) creator);
             q.append(iqp);
         } else {
             q = new PersonQueryBuilder();
             PersonQueryPart pqp = new PersonQueryPart();
-            pqp.setPhraseFormatters(PhraseFormatter.WILDCARD, PhraseFormatter.QUOTED);
+            pqp.setPhraseFormatters(PhraseFormatter.WILDCARD);
             pqp.add((Person) creator);
             q.append(pqp);
         }

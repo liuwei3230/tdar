@@ -329,7 +329,7 @@ public class SearchParameters {
             for (String q : siteNames) {
                 if (StringUtils.isNotBlank(q) && SiteCodeTokenizingAnalyzer.pattern.matcher(q).matches()) {
                     FieldQueryPart<String> siteCodePart = new FieldQueryPart<String>(QueryFieldNames.SITE_CODE, q);
-                    siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+                    siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPED);
                     siteCodePart.setDisplayName(support.getText("searchParameters.site_code"));
                     siteCodePart.setBoost(5f);
                     subgroup.append(siteCodePart);

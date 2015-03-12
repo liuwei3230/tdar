@@ -109,9 +109,9 @@ public class Project extends Resource implements Sortable {
         return getTitle().trim().replaceAll("^[T|t]he\\s", "").replaceAll("\\s[P|p]roject$", "");
     }
 
-    @IndexedEmbedded(prefix = "informationResources.")
     @XmlTransient
     // @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
+    @Override
     public Collection<InformationResource> getCachedInformationResources() {
         return cachedInformationResources;
     }

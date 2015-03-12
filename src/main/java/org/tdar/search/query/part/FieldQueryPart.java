@@ -15,6 +15,7 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.QueryCustomization;
 import org.hibernate.search.query.dsl.RangeContext;
 import org.hibernate.search.query.dsl.TermContext;
+import org.hibernate.search.query.dsl.WildcardContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.HasLabel;
@@ -49,6 +50,9 @@ public class FieldQueryPart<C> implements QueryPart<C> {
     private boolean descriptionVisible = true;
     private boolean allowInvalid = false;
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
+
+    private boolean wildcard;
+    private boolean keyword;
 
     
     public FieldQueryPart() {
@@ -162,6 +166,10 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         Query q;
         if ( Number.class.isAssignableFrom(item.getClass())) {
             q = appendNumericQuery(builder, i);
+        } else if (isWildcard()) {
+            q = appendWildcard(builder, i);            
+        } else if (keyword) {
+            q = appendKeyword(builder, i);            
         } else {
             q = appendPhrase(builder, i);
         }
@@ -256,6 +264,24 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         }
     }
 
+    protected Query appendWildcard(QueryBuilder builder, int index) {
+        String value = "";
+        value = formatValueAsStringForQuery(index);
+        WildcardContext onField = builder.keyword().wildcard();
+        applyBoostProximitySlop(onField);
+
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
+        // for (PhraseFormatter formatter : phraseFormatters) {
+        // value = formatter.format(value);
+        // }
+        // }
+        return onField.onField(getFieldName()).matching(value).createQuery();
+    }
+
+    
     protected Query appendKeyword(QueryBuilder builder, int index) {
         String value = "";
         value = formatValueAsStringForQuery(index);
@@ -521,7 +547,15 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         if (cleanedQueryString.startsWith("\"") && cleanedQueryString.endsWith("\"")) {
             cleanedQueryString = cleanedQueryString.substring(1, cleanedQueryString.length() - 1);
         }
-        return PhraseFormatter.ESCAPE_QUOTED.format(cleanedQueryString);
+        return PhraseFormatter.ESCAPED.format(cleanedQueryString);
+    }
+
+    public boolean isWildcard() {
+        return wildcard;
+    }
+
+    public void setWildcard(boolean wildcard) {
+        this.wildcard = wildcard;
     }
 
 }

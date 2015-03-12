@@ -55,14 +55,14 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
                 String wildcard = StringUtils.trim(new String(wildcardName));
                 wildcard = PhraseFormatter.ESCAPED.format(wildcard);
                 if (!wildcard.contains(" ")) {
-                    wildcard = PhraseFormatter.WILDCARD.format(wildcard);
+//                    wildcard = PhraseFormatter.WILDCARD.format(wildcard);
                 } else {
-                    wildcard = PhraseFormatter.QUOTED.format(wildcard);
+//                    wildcard = PhraseFormatter.QUOTED.format(wildcard);
                 }
-//                FieldQueryPart<String> fullName = new FieldQueryPart<>(QueryFieldNames.PROPER_NAME, wildcard);
-//                fullName.setBoost(6f);
-//                fullName.setBoost(6f);
-//                group.append(fullName);
+                FieldQueryPart<String> fullName = new FieldQueryPart<>(QueryFieldNames.PROPER_NAME, wildcard);
+                fullName.setBoost(6f);
+                fullName.setBoost(6f);
+                group.append(fullName);
                 FieldQueryPart<String> auto = new FieldQueryPart<String>(QueryFieldNames.PROPER_AUTO, wildcard);
                 auto.setBoost(6f);
                 group.append(auto);
@@ -83,9 +83,9 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
                 String institution = StringUtils.trim(pers.getInstitutionName());
                 institution = PhraseFormatter.ESCAPED.format(institution);
                 // institution = PhraseFormatter.WILDCARD.format(institution);
-                if (institution.contains(" ")) {
-                    institution = PhraseFormatter.QUOTED.format(institution);
-                }
+//                if (institution.contains(" ")) {
+//                    institution = PhraseFormatter.QUOTED.format(institution);
+//                }
                 insts.add(institution);
             }
         }

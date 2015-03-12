@@ -43,7 +43,7 @@ public class AutocompleteTitleQueryPart implements QueryPart<String> {
     protected QueryPart<?> getQueryPart() {
         QueryPartGroup titleGroup = new QueryPartGroup(Operator.OR);
         // look up quoted leading match in autocomplete index
-        FieldQueryPart<String> autoPart = new FieldQueryPart<String>(QueryFieldNames.TITLE_AUTO, title).setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+        FieldQueryPart<String> autoPart = new FieldQueryPart<String>(QueryFieldNames.TITLE_AUTO, title).setPhraseFormatters(PhraseFormatter.ESCAPED);
         // FIXME: while allowed, I'm not sure it's helpful to include non-analyzed fields in a search, especially considering the fact that it will use a
         // default analyzer at search-time. arguments otherwise?
         FieldQueryPart<String> titleSortPart = new FieldQueryPart<String>(QueryFieldNames.TITLE_SORT, title).setPhraseFormatters(PhraseFormatter.ESCAPED,
@@ -54,14 +54,14 @@ public class AutocompleteTitleQueryPart implements QueryPart<String> {
             // FIXME: if title is over 2 characters, use escaped wildcard formatter?
             keywordTitlePart.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
         }
-        if (WHITESPACE_PATTERN.matcher(title).find()) {
-            // FIXME: if the value contains a space, should we change from ESCAPED -> WILDCARD to WILDCARD -> QUOTED?
-            titleSortPart.setPhraseFormatters(PhraseFormatter.WILDCARD, PhraseFormatter.QUOTED);
-            if (title.length() > 2) {
-                // FIXME: if value contains a space, should we change from ESCAPED -> WILDCARD to WILDCARD -> QUOTED?
-                keywordTitlePart.setPhraseFormatters(PhraseFormatter.WILDCARD, PhraseFormatter.QUOTED);
-            }
-        }
+//        if (WHITESPACE_PATTERN.matcher(title).find()) {
+//            // FIXME: if the value contains a space, should we change from ESCAPED -> WILDCARD to WILDCARD -> QUOTED?
+//            titleSortPart.setPhraseFormatters(PhraseFormatter.WILDCARD);
+//            if (title.length() > 2) {
+//                // FIXME: if value contains a space, should we change from ESCAPED -> WILDCARD to WILDCARD -> QUOTED?
+//                keywordTitlePart.setPhraseFormatters(PhraseFormatter.WILDCARD);
+//            }
+//        }
         autoPart.setBoost(TITLE_BOOST);
         titleGroup.append(autoPart);
         titleSortPart.setBoost(TITLE_SORT_BOOST);
