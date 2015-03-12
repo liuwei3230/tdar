@@ -12,19 +12,13 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -69,15 +63,12 @@ import org.tdar.core.service.GenericService;
 import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.external.AuthorizationService;
-import org.tdar.search.index.analyzer.LowercaseWhiteSpaceStandardAnalyzer;
 import org.tdar.search.query.FacetValue;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.SearchResult;
 import org.tdar.search.query.SearchResultHandler;
 import org.tdar.search.query.SearchResultHandler.ProjectionModel;
 import org.tdar.search.query.SortOption;
-import org.tdar.search.query.builder.DynamicQueryComponent;
-import org.tdar.search.query.builder.DynamicQueryComponentHelper;
 import org.tdar.search.query.builder.InstitutionQueryBuilder;
 import org.tdar.search.query.builder.KeywordQueryBuilder;
 import org.tdar.search.query.builder.PersonQueryBuilder;
@@ -96,7 +87,6 @@ import org.tdar.search.query.part.QueryPart;
 import org.tdar.search.query.part.QueryPartGroup;
 import org.tdar.struts.data.FacetGroup;
 import org.tdar.utils.MessageHelper;
-import org.tdar.utils.Pair;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -130,24 +120,7 @@ public class SearchService {
     private static final String[] LUCENE_RESERVED_WORDS = new String[] { "AND", "OR", "NOT" };
     private static final Pattern luceneSantizeQueryPattern = Pattern.compile("(^|\\W)(" + StringUtils.join(LUCENE_RESERVED_WORDS, "|") + ")(\\W|$)");
 
-    private transient ConcurrentMap<Class<?>, Pair<String[], org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper>> parserCacheMap = new ConcurrentHashMap<>();
-
     public static final int MAX_FTQ_RESULTS = 50_000;
-
-    /**
-     * Log the parser map (For debugging)
-     */
-    public void logParserMap() {
-        for (Map.Entry<Class<?>, Pair<String[], PerFieldAnalyzerWrapper>> entry : parserCacheMap.entrySet()) {
-            Class<?> type = entry.getKey();
-            Pair<String[], PerFieldAnalyzerWrapper> pair = entry.getValue();
-            logger.info("map key\t class: {}", type.getCanonicalName());
-            logger.info("map value\t first:arr[{}]\t second:{}", pair.getFirst().length, pair.getSecond());
-            for (int i = 0; i < pair.getFirst().length; i++) {
-                logger.info("\t\t i:{}\t v:{}", i, pair.getFirst()[i]);
-            }
-        }
-    }
 
     /**
      * get Hibernate's version of a query builder if needed
@@ -519,90 +492,6 @@ public class SearchService {
         return qb;
     }
 
-    /**
-     * Constructs a new MultiFieldQueryParser and sets it on the QueryBuilder parameter.
-     * 
-     * Currently caches the QueryBuilder's class with a Pair<String[] field names, PerFieldAnalyzerWrapper> used to construct the
-     * MultiFieldQueryParser.
-     * 
-     * The MultiFieldQueryParser cannot be cached as it is not thread-safe. PerFieldAnalyzerWrapper is not thread-safe either (has an internal HashMap) but
-     * appears to be safely usable by multiple threads as long as we don't add more analyzers to it (TODO: need to verify this).
-     * 
-     * @param qb
-     */
-    private void setupQueryParser(QueryBuilder qb) {
-        Pair<String[], PerFieldAnalyzerWrapper> pair = parserCacheMap.get(qb.getClass());
-        if (pair == null) {
-            List<String> fields = new ArrayList<>();
-            Set<DynamicQueryComponent> cmpnts = new HashSet<>();
-
-            // add all DynamicQueryComponents for specified classes
-            for (Class<?> cls : qb.getClasses()) {
-                cmpnts.addAll(DynamicQueryComponentHelper.createFields(cls, ""));
-            }
-
-            PerFieldAnalyzerWrapper analyzer = applyAnalyzers(qb, fields, cmpnts);
-            // XXX: do not cache the actual MultiFieldQueryParser, it's not thread-safe
-            // MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_31, fields.toArray(new String[0]), analyzer);
-            Pair<String[], PerFieldAnalyzerWrapper> newPair = new Pair<>(fields.toArray(new String[fields.size()]), analyzer);
-            pair = parserCacheMap.putIfAbsent(qb.getClass(), newPair);
-            if (pair == null) {
-                pair = newPair;
-            }
-        }
-        QueryParser parser = new MultiFieldQueryParser(pair.getFirst(), pair.getSecond());
-        qb.setQueryParser(parser);
-    }
-
-    /**
-     * The <b>fields</b> list specifies all of the generic fields that do not use the default analyzer.
-     * 
-     * @param qb
-     * @param fields
-     * @param cmpnts
-     * @param analyzer
-     * @return
-     */
-    @SuppressWarnings("deprecation")
-    private PerFieldAnalyzerWrapper applyAnalyzers(QueryBuilder qb, List<String> fields, Set<DynamicQueryComponent> cmpnts) {
-        List<DynamicQueryComponent> toRemove = new ArrayList<>();
-        // add all overrides and replace existing settings
-        if (qb.getOverrides() != null) {
-            for (DynamicQueryComponent over : qb.getOverrides()) {
-                for (DynamicQueryComponent cmp : cmpnts) {
-                    if (over.getLabel().equals(cmp.getLabel())) {
-                        toRemove.add(cmp);
-                    }
-                }
-            }
-            cmpnts.removeAll(toRemove);
-            cmpnts.addAll(qb.getOverrides());
-        }
-
-        Map<String, Analyzer> defaults = new HashMap<>();
-        for (DynamicQueryComponent cmp : cmpnts) {
-            String partialLabel = qb.stringContainedInLabel(cmp.getLabel());
-            if (partialLabel != null) {
-                Class<? extends org.apache.lucene.analysis.Analyzer> overrideAnalyzerClass = qb.getPartialLabelOverrides().get(partialLabel);
-                if (overrideAnalyzerClass != null) {
-                    cmp.setAnalyzer(overrideAnalyzerClass);
-                } else {
-                    continue;
-                }
-            }
-
-            fields.add(cmp.getLabel());
-            if (cmp.getAnalyzer() != null) {
-                try {
-                    defaults.put(cmp.getLabel(), (org.apache.lucene.analysis.Analyzer) cmp.getAnalyzer().newInstance());
-                } catch (Exception e) {
-                    logger.debug("cannot add analyzer:", e);
-                }
-                logger.trace(cmp.getLabel() + " : " + cmp.getAnalyzer().getCanonicalName());
-            }
-        }
-        return new PerFieldAnalyzerWrapper(new LowercaseWhiteSpaceStandardAnalyzer(), defaults);
-    }
 
     /**
      * remove unauthorized statuses from list. it's up to caller to handle implications of empty list

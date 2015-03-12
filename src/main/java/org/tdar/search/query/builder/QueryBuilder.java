@@ -32,20 +32,12 @@ public abstract class QueryBuilder extends QueryPartGroup {
     private static final String _AUTO = "_auto";
     private final Logger logger = Logger.getLogger(getClass());
     private Class<?>[] classes;
-    private List<DynamicQueryComponent> overrides = new ArrayList<DynamicQueryComponent>();
     // private List<String> omitContainedLabels = Arrays.asList("_auto");
     private Operator operator = Operator.AND;
     private QueryParser queryParser;
     private Query query;
     private String rawQuery;
 
-    public List<DynamicQueryComponent> getOverrides() {
-        return this.overrides;
-    }
-
-    public void setOverrides(List<DynamicQueryComponent> over) {
-        this.overrides = over;
-    }
 
     public void append(SearchParameters param, TextProvider provider) {
         if (param != null) {
