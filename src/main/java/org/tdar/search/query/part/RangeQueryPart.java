@@ -62,7 +62,7 @@ public class RangeQueryPart<C> extends FieldQueryPart<Range<C>> {
     public Query generateQuery(QueryBuilder builder) {
 
         BooleanJunction<?> bq = builder.bool();
-        List<Range<C>> values = getFieldValues(); 
+        List<Range<C>> values = getFieldValues();
         boolean seen = false;
         for (int i = 0; i < values.size(); i++) {
             Query q = appendRange(builder, getFieldName(), i);
@@ -82,7 +82,7 @@ public class RangeQueryPart<C> extends FieldQueryPart<Range<C>> {
         }
         return bq.createQuery();
     }
-    
+
     protected C getStart(int i) {
         return getFieldValues().get(i).getStart();
     }
@@ -91,7 +91,6 @@ public class RangeQueryPart<C> extends FieldQueryPart<Range<C>> {
         return getFieldValues().get(i).getEnd();
     }
 
-    
     protected Query appendRange(QueryBuilder builder, String fieldName, int index) {
         RangeContext range = builder.range();
         applyBoostProximitySlop(range);
@@ -108,16 +107,17 @@ public class RangeQueryPart<C> extends FieldQueryPart<Range<C>> {
             return null;
         }
         RangeMatchingContext onField = range.onField(fieldName);
+
         if (StringUtils.isNotBlank(start_) && StringUtils.isNotBlank(end_)) {
-            onField.from(start).to(end);
+            query = onField.from(start).to(end);
         } else if (StringUtils.isNotBlank(start_)) {
-            onField.above(start);
+            query = onField.above(start);
         } else {
-            onField.below(end);
+            query = onField.below(end);
         }
 
         if (!inclusive) {
-            query = query.excludeLimit();
+            query.excludeLimit();
         }
         return query.createQuery();
     }
