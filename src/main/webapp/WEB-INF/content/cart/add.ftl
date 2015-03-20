@@ -25,7 +25,7 @@
         <h1>What would you like to put into tDAR?</h1>
 
 <div class="row">
-    <div class="span8">
+    <div class="col-xs-8">
         <p>tDAR is operated thanks to the generous support of the National Science Foundation, The Andrew W. Mellon Foundation, and our paying clients. &nbsp;
         Uploads to tDAR carry a modest, one-time fee to ensure the long-term preservation of and permanent shared access to archaeological files stored in the repository. &nbsp;</p>
         <p>Our prices&nbsp;are based upon the number of files uploaded.&nbsp; Each file comes with 10MB of storage space.&nbsp; File price is based on a sliding scale&mdash;the more
@@ -33,7 +33,7 @@
             those files in any way you choose. We accept debit and major credit cards including MasterCard, Visa, and American Express.&nbsp;</p>
         <p>&nbsp;</p>
     </div>
-    <div class="span4">
+    <div class="col-xs-4">
         <div>
             <p><i class="icon-ok">&nbsp;</i> Designed to preserve files in perpetuity (<a href="http://www.tdar.org/why-tdar/preservation/">Learn More</a>)</p>
         </div>
@@ -51,11 +51,11 @@
     <#assign showSuggested=!administrator && actionName != 'modify'/>
 
     <div class="row">
-        <div class="span4" style="min-height:30em">
+        <div class="col-xs-4" style="min-height:30em">
             <@rates />
 
         </div>
-        <div class="span8">
+        <div class="col-xs-8">
             <ul class="nav nav-tabs">
                 <li class="<#if showSuggested>active</#if>">
                     <a href="#suggested" data-toggle="tab">Suggested</a>
@@ -65,7 +65,7 @@
             <div class="tab-content">
                 <div id="suggested" class="tab-pane <#if showSuggested>active</#if> ">
                     <div class="row">
-                        <div class="span8">
+                        <div class="col-xs-8">
                             <h2>Suggested Levels</h2>
 
                             <div class="row">
@@ -78,17 +78,17 @@
                 </div>
                 <div id="custom" class="tab-pane <#if !showSuggested>active</#if>">
                     <div class="row">
-                        <div class="span8">
+                        <div class="col-xs-8">
                             <h2>Cost Calculator</h2>
 
                             <div class="well">
-                                <@s.textfield name="invoice.numberOfFiles" label="Number of Files" cssClass="integer span2" maxlength=9  />
+                                <@s.textfield name="invoice.numberOfFiles" label="Number of Files" cssClass="integer col-xs-2" maxlength=9  />
 
                                 <div class="control-group">
                                     <label class="control-label">Number of Mb</label>
 
                                     <div class="controls">
-                                        <@s.textfield name="invoice.numberOfMb" label="Number of Mb"  theme="simple" cssClass="integer span2" maxlength=9 />
+                                        <@s.textfield name="invoice.numberOfMb" label="Number of Mb"  theme="simple" cssClass="integer col-xs-2" maxlength=9 />
                                         <span id="convert"></span>
                                     </div>
                                 </div>
@@ -143,7 +143,7 @@
             <@invoicecommon.paymentMethod />
         </#if>
 
-        <#--<@s.textarea name="invoice.otherReason" cols="" rows="" id="txtOtherReason" cssClass="span5"  label="Additional Information" />-->
+        <#--<@s.textarea name="invoice.otherReason" cols="" rows="" id="txtOtherReason" cssClass="col-xs-5"  label="Additional Information" />-->
 
         <#--<@s.hidden name="id" value="${invoice.id?c!-1}" />-->
 
@@ -164,7 +164,7 @@
                 <#if !act.production >
                     <tr>
                         <td>${act.name} <@s.hidden name="extraItemIds[${act_index}]" value="${act.id?c}"/> </td>
-                        <td><@s.textfield name="extraItemQuantities[${act_index}]" cssClass="integer span2" theme="simple"/></td>
+                        <td><@s.textfield name="extraItemQuantities[${act_index}]" cssClass="integer col-xs-2" theme="simple"/></td>
                     </tr>
                 </#if>
             </#list>
@@ -182,7 +182,7 @@
     </#if>
 
     <div class="row">
-        <div class="span12">
+        <div class="col-xs-12">
             <@s.textfield name="code" label="Redeem Code" cssClass="input-xxlarge" />
 
 

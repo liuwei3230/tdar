@@ -25,7 +25,7 @@ navigation freemarker macros
             </#if>
         </#if>
         <#if (sessionData.authenticated)!false>
-        <div class="span12 resource-nav  screen " id="toolbars" parse="true">
+        <div class="col-xs-12 resource-nav  screen " id="toolbars" parse="true">
             <ul>
                 <#if persistable??>
 			        <@makeLink namespace "view" "view" "view" current />
@@ -115,7 +115,7 @@ navigation freemarker macros
             </#if>
 
             <#if (sessionData.authenticated)!false>
-            <div class="span12 resource-nav  screen" id="toolbars" parse="true">
+            <div class="col-xs-12 resource-nav  screen" id="toolbars" parse="true">
                 <ul>
                     <@makeLink "browse" "creators" "view" "view" current true />
 
@@ -141,7 +141,7 @@ navigation freemarker macros
     <#macro keywordToolbar current>
 
         <#if editor>
-            <div class="span12 resource-nav  screen" id="toolbars" parse="true">
+            <div class="col-xs-12 resource-nav  screen" id="toolbars" parse="true">
                 <ul>
                     <@makeLink keyword.urlNamespace "" "view" "view" current true />
 

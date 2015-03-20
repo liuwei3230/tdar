@@ -38,9 +38,9 @@
             <#list codingRules as rule>
                 <div class="controls controls-row mappingPair ${rule.code}" id="row_${rule.code}">
                     <@s.hidden name='codingRules[${rule_index?c}].id' />
-                    <@s.textfield theme="simple" name='codingRules[${rule_index?c}].formattedTerm' size='50' readonly=true cssClass="span4 codingSheetTerm"/>
+                    <@s.textfield theme="simple" name='codingRules[${rule_index?c}].formattedTerm' size='50' readonly=true cssClass="col-xs-4 codingSheetTerm"/>
 
-                    <div class="span1">
+                    <div class="col-xs-1">
                         <img src="<@s.url value='/images/arrow_right.png' />" alt="right arrow"/>
                     </div>
 
@@ -48,7 +48,7 @@
                         <@s.hidden name="codingRules[${rule_index?c}].ontologyNode.id" id="ontologyNodeId_${rule_index?c}" />
                         <div class="input-append">
                             <@s.textfield theme="simple" name="codingRules[${rule_index?c}].ontologyNode.displayName" id="autocomp_${rule_index?c}"
-                            cssClass="manualAutocomplete ontologyValue span4" autocompleteIdElement="#ontologyNodeId_${rule_index?c}"/>
+                            cssClass="manualAutocomplete ontologyValue col-xs-4" autocompleteIdElement="#ontologyNodeId_${rule_index?c}"/>
                             <button type="button" class="btn show-all"><i class="icon-chevron-down"></i></button>
                         </div>
                     </div>
