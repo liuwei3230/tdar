@@ -20,7 +20,7 @@
         <p>Finally, click the "<em>Validate Template</em>" button.</p>
 
         <@s.hidden name="projectId" value="${projectId_}" />
-        <@edit.submit fileReminder=false span="span8" label="Validate Template" />
+        <@edit.submit fileReminder=false span="col-xs-8" label="Validate Template" />
     </@s.form>
     </div>
 

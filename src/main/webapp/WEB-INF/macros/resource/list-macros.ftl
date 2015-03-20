@@ -34,7 +34,7 @@
     <#-- set default ; add map wrapper -->
         <#if orientation == "GRID">
             <#local listTag_="div"/>
-            <#local itemClass = "span2"/>
+            <#local itemClass ="col-xs-2"/>
             <#local itemTag_="div"/>
         <#elseif orientation == "MAP" >
             <#local listTag_="ol"/>

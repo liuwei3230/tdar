@@ -305,10 +305,10 @@
 
     <div id="divResultsSortControl">
         <div class="row">
-            <div class="span3">
+            <div class="col-xs-3">
                 <@totalRecordsSection tag="h2" helper=paginationHelper itemType="Result" />
             </div>
-            <div class="span6 form-inline">
+            <div class="col-xs-6 form-inline">
                 <div class="pull-right">
                     <div class="control-group"></div>
                     <label>Records Per Page

@@ -420,7 +420,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     @nested any additional html/freemarker content - will be injected in div#editFormActions prior to the save button
         element
 -->
-    <#macro submit label="Save" fileReminder=true buttonid="submitButton" span="span9">
+    <#macro submit label="Save" fileReminder=true buttonid="submitButton" span="col-xs-9">
     <div class="errorsection row">
         <div class="${span}">
             <#if fileReminder>

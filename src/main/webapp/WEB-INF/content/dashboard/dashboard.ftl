@@ -117,7 +117,7 @@
     <#if featuredResources?has_content  >
     <hr/>
     <div class="row">
-        <@view.featured span="span9" header="Featured and Recent Content"/>
+        <@view.featured span="col-xs-9" header="Featured and Recent Content"/>
     </div>
     </#if>
     </#if>
@@ -274,7 +274,7 @@
 
     <#macro accountSection>
     <div id="accountSection" class="row">
-        <div id="divAccountInfo" class="<#if payPerIngestEnabled>col-xs-4<#else>span9</#if>">
+        <div id="divAccountInfo" class="<#if payPerIngestEnabled>col-xs-4<#else>col-xs-9</#if>">
             <h2>About ${authenticatedUser.firstName}</h2>
             <strong>Full Name: </strong>${authenticatedUser.properName}<#if authenticatedUser.institution??>, ${authenticatedUser.institution.name}</#if><br/>
             <#if authenticatedUser.penultimateLogin??>
