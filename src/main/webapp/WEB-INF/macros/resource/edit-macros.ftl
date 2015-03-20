@@ -645,7 +645,6 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                 </div>
             </div>
             <div class="controls controls-row">
-            <#--assuming we are in a span9 and that a controls-div is 2 cells narrower, our width should be span 7 -->
                 <div class="col-xs-6">
                     <@_userRow person=proxy.person _indexNumber=proxy_index _personPrefix="person" prefix="${prefix}Proxies"
                     includeRole=includeRole hidden=(creatorType =='INSTITUTION' || type_override == "INSTITUTION")
@@ -1227,7 +1226,7 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
     </script>
 
     <#-- The template to display files available for download (uses tmpl.min.js) -->
-    <#-- lets assume we are working with about span5 amount of space width -->
+    <#-- lets assume we are working with about 3-cols width -->
     <script id="template-download" type="text/x-tmpl">
 {% for (var i=0, file; file=o.files[i]; i++) { %}
 {% var idx = '' + TDAR.fileupload.getRowId();%}

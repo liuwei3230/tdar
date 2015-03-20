@@ -288,7 +288,7 @@
 <tdar-modal ng-controller="ModalDialogController"></tdar-modal>
 
 <span>
-<!-- Note: this modal is about span10 wide. Form-horizontal labels are ~span3 wide, leaving you ~span7 for controls. -->
+<!-- Note: this modal is about 10 cols wide. Form-horizontal labels are ~3 cols wide, leaving you ~7 cols for controls. -->
 <script type="text/ng-template" id="workspace/modal-dialog.html">
     <div id="divModalContainer" class="modal modal-big hide fade" tabindex="-1" role="dialog">
         <div class="modal-header alert-info">
