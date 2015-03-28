@@ -47,16 +47,9 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
 
         FieldQueryPart<String> titlePart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, cleanedQueryString);
 
-        List<String> fields = new ArrayList<String>();
-        for (String txt : StringUtils.split(cleanedQueryString)) {
-            txt = txt.replace("\"", "");
-            if (!ArrayUtils.contains(QueryPart.LUCENE_RESERVED_WORDS, txt)) {
-                fields.add(txt);
-            }
-        }
-
-        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, fields);
+        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, cleanedQueryString);
         allFieldsAsPart.setBoost(ANY_FIELD_BOOST);
+        allFieldsAsPart.setKeyword(true);
         allFieldsAsPart.setOperator(Operator.AND);
         allFieldsAsPart.setPhraseFormatters(PhraseFormatter.ESCAPED);
 

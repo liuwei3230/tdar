@@ -178,23 +178,13 @@ public class PersonLookupControllerITCase extends AbstractIntegrationTestCase {
     @Test
     public void testRegisteredPersonLookupWithOneResult() {
         searchIndexService.indexAll(getAdminUser(), Person.class, TdarUser.class);
+        // issue is case sensitivity
         controller.setFirstName("Keit");
         controller.setRegistered("true");
         String result = controller.lookupPerson();
         assertEquals("result should be success", Action.SUCCESS, result);
         List<Person> people = controller.getResults();
         assertEquals("person list should have exactly one item", 2, people.size());
-        
-        // personLookup: +(+firstName:keit* +registered:true) +status:ACTIVE (SORT:RELEVANCE,TITLE)  LUCENE: 132 | HYDRATION: 109 | # RESULTS: 2 | START #: 0
-        QueryBuilder builder = searchService.getQueryBuilder(TdarUser.class);
-        Query query = builder.bool().must(builder.keyword().wildcard().onField("firstName").matching("Keit*").createQuery()).must(
-                builder.phrase().onField("registered").sentence("true").createQuery()).createQuery();
-        query = builder.bool().must(query).must(builder.phrase().onField("status").sentence("ACTIVE").createQuery()).createQuery();
-        org.hibernate.Query fullTextQuery = searchService.createFullTextQuery(query, TdarUser.class);
-        logger.debug(query.toString());
-        logger.debug("results: {} ", fullTextQuery.list());
-        
-        
     }
 
     @Test
@@ -228,7 +218,7 @@ public class PersonLookupControllerITCase extends AbstractIntegrationTestCase {
         controller.lookupPerson();
         List<Person> people = controller.getResults();
         if (people != null) {
-            this.log.debug("people size:" + people.size() + "value:" + people);
+            log.debug("people size:" + people.size() + "value:" + people);
         }
         assertTrue("at least two people in search results", people.size() >= 2);
     }
@@ -245,7 +235,7 @@ public class PersonLookupControllerITCase extends AbstractIntegrationTestCase {
         List<Person> people = controller.getResults();
         logger.debug("people: {}", people);
         if (people != null) {
-            this.log.debug("people size:" + people.size() + "value:" + people);
+            log.debug("people size:" + people.size() + "value:" + people);
         }
         assertTrue("at least two people in search results", people.size() >= 2);
         Person p1 = (Person) people.get(0);

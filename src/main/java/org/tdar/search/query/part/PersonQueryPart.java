@@ -54,7 +54,7 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
                 }
                 FieldQueryPart<String> fullName = new FieldQueryPart<>(QueryFieldNames.PROPER_NAME, wildcard);
                 fullName.setBoost(6f);
-                fullName.setBoost(6f);
+                fullName.setWildcard(true);
                 group.append(fullName);
                 FieldQueryPart<String> auto = new FieldQueryPart<String>(QueryFieldNames.PROPER_AUTO, wildcard);
                 auto.setBoost(6f);
@@ -88,18 +88,21 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
         
         if (CollectionUtils.isNotEmpty(fns)) {
             FieldQueryPart<String> fqp = new FieldQueryPart<String>("firstName", fns);
-            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            fqp.setWildcard(true);
             group.append(fqp);
         }
 
         if (CollectionUtils.isNotEmpty(lns)) {
             FieldQueryPart<String> ln = new FieldQueryPart<String>("lastName", lns);
-            ln.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            ln.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            ln.setWildcard(true);
             group.append(ln);
         }
         if (CollectionUtils.isNotEmpty(ems)) {
             FieldQueryPart<String> emls = new FieldQueryPart<String>("email", ems);
-            emls.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            emls.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            emls.setWildcard(true);
             group.append(emls);
         }
         if (CollectionUtils.isNotEmpty(insts)) {
@@ -113,8 +116,9 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
             // adding wildcard search for username too
             if (CollectionUtils.isNotEmpty(wildcards)) {
                 FieldQueryPart<String> fqp = new FieldQueryPart<String>("username", wildcards);
-                fqp.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+                fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
                 fqp.setOperator(Operator.OR);
+                fqp.setWildcard(true);
                 group.append(fqp);
             }
 

@@ -75,14 +75,15 @@ public class GeneralSearchQueryPart extends FieldQueryPart<String> {
         FieldQueryPart<String> allFields = new FieldQueryPart<String>(QueryFieldNames.ALL, cleanedQueryString);
         allFields.setBoost(ANY_FIELD_BOOST);
 
-        List<String> fields = new ArrayList<String>();
-        for (String txt : StringUtils.split(cleanedQueryString)) {
-            if (!ArrayUtils.contains(QueryPart.LUCENE_RESERVED_WORDS, txt)) {
-                fields.add(txt);
-            }
-        }
+//        List<String> fields = new ArrayList<String>();
+//        for (String txt : StringUtils.split(cleanedQueryString)) {
+//            if (!ArrayUtils.contains(QueryPart.LUCENE_RESERVED_WORDS, txt)) {
+//                fields.add(txt);
+//            }
+//        }
 
-        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.ALL, fields);
+        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.ALL, cleanedQueryString);
+        allFieldsAsPart.setKeyword(true);
         allFieldsAsPart.setBoost(ANY_FIELD_BOOST);
 
         allFieldsAsPart.setOperator(Operator.AND);

@@ -156,7 +156,7 @@ public class FieldQueryPart<C> implements QueryPart<C> {
             q = appendNumericQuery(builder, i);
         } else if (isWildcard()) {
             q = appendWildcard(builder, i);            
-        } else if (keyword) {
+        } else if (isKeyword()) {
             q = appendKeyword(builder, i);            
         } else {
             q = appendPhrase(builder, i);
@@ -253,14 +253,14 @@ public class FieldQueryPart<C> implements QueryPart<C> {
     }
 
     protected Query appendWildcard(QueryBuilder builder, int index) {
-        String value = "";
-        value = formatValueAsStringForQuery(index);
+        String value = formatValueAsStringForQuery(index);
         WildcardContext onField = builder.keyword().wildcard();
         applyBoostProximitySlop(onField);
 
         if (StringUtils.isBlank(value)) {
             return null;
         }
+        value += "*";
         // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
         // for (PhraseFormatter formatter : phraseFormatters) {
         // value = formatter.format(value);
@@ -544,6 +544,14 @@ public class FieldQueryPart<C> implements QueryPart<C> {
 
     public void setWildcard(boolean wildcard) {
         this.wildcard = wildcard;
+    }
+
+    public boolean isKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(boolean keyword) {
+        this.keyword = keyword;
     }
 
 }
