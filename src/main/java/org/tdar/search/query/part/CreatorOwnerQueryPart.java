@@ -55,7 +55,7 @@ public class CreatorOwnerQueryPart extends FieldQueryPart<Creator> {
 
         Set<ResourceCreatorRole> roles = ResourceCreatorRole.getResourceCreatorRolesForProfilePage(creator.getCreatorType());
 
-        FieldQueryPart<ResourceCreatorRole> notRoles = new FieldQueryPart<ResourceCreatorRole>("activeResourceCreators.role", Operator.OR, roles);
+        FieldQueryPart<ResourceCreatorRole> notRoles = new FieldQueryPart<ResourceCreatorRole>("activeResourceCreators.role", Operator.AND, roles);
         notRoles.setInverse(true);
 
         notGroup.append(new FieldQueryPart<Long>(QueryFieldNames.SUBMITTER_ID, Operator.AND, creator.getId()));

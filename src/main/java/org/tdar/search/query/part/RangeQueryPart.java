@@ -99,6 +99,7 @@ public class RangeQueryPart<C> extends FieldQueryPart<Range<C>> {
         }
         C start = getStart(index);
         C end = getEnd(index);
+        
         String start_ = convert(start);
         String end_ = convert(end);
 

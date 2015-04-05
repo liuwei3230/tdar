@@ -73,9 +73,11 @@ import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.exception.TdarValidationException;
 import org.tdar.search.index.analyzer.AutocompleteAnalyzer;
+import org.tdar.search.index.analyzer.LowercaseWhiteSpaceStandardAnalyzer;
 import org.tdar.search.index.analyzer.NonTokenizingLowercaseKeywordAnalyzer;
 import org.tdar.search.index.analyzer.TdarCaseSensitiveStandardAnalyzer;
 import org.tdar.search.index.boost.InformationResourceBoostStrategy;
+import org.tdar.search.index.bridge.PersistentReaderBridge;
 import org.tdar.search.index.bridge.StringMapBridge;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
@@ -206,7 +208,6 @@ public abstract class InformationResource extends Resource {
     // currently just a 4 digit year.
     @Column(name = "date_created")
     @BulkImportField(key="YEAR", required = true, order = -10)
-    @Field(norms = Norms.NO, store = Store.YES, analyze = Analyze.NO)
     @JsonView(JsonLookupFilter.class)
     private Integer date = -1;
 
@@ -341,6 +342,7 @@ public abstract class InformationResource extends Resource {
         this.licenseText = licenseText;
     }
 
+    @Override
     public Integer getDate() {
         return date;
     }
@@ -562,9 +564,9 @@ public abstract class InformationResource extends Resource {
         return getLatestVersions(VersionType.UPLOADED);
     }
 
-//    @Field(store = Store.NO)
-//    @FieldBridge(impl = PersistentReaderBridge.class)
-//    @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)
+    @Field(store = Store.NO)
+    @FieldBridge(impl = PersistentReaderBridge.class)
+    @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)
     @Transient
     // @Boost(0.5f)
     @XmlTransient

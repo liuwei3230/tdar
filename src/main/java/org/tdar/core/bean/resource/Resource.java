@@ -2055,4 +2055,9 @@ public class Resource implements Persistable,
         return null;
     }
 
+    @Field(name=QueryFieldNames.DATE, indexNullAs=Field.DO_NOT_INDEX_NULL, store = Store.YES)
+    public Integer getDate() {
+        return null;
+    }
+
 }

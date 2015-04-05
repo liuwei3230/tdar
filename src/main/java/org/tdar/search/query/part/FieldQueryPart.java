@@ -139,10 +139,14 @@ public class FieldQueryPart<C> implements QueryPart<C> {
             seen = true;
             switch (getOperator()) {
                 case AND:
-                    bq = bq.must(q);
+                    if (inverse) {
+                        bq = bq.must(q).not();
+                    } else {
+                        bq = bq.must(q);
+                    }
                 case OR:
                     bq = bq.should(q);
-            }
+            }            
         }
         if (seen == false) {
             return null;
@@ -260,7 +264,9 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         if (StringUtils.isBlank(value)) {
             return null;
         }
-        value += "*";
+        
+        //FIXME: Analyzer seems to not force to lower case
+        value = value.toLowerCase() + "*";
         // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
         // for (PhraseFormatter formatter : phraseFormatters) {
         // value = formatter.format(value);

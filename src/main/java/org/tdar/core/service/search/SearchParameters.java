@@ -41,6 +41,7 @@ import org.tdar.search.query.part.TemporalQueryPart;
 import org.tdar.search.query.part.TitleQueryPart;
 import org.tdar.struts.action.search.SearchFieldType;
 import org.tdar.struts.data.DateRange;
+import org.tdar.struts.data.RangeImpl;
 import org.tdar.struts.data.StringRange;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
@@ -338,7 +339,7 @@ public class SearchParameters {
             appendKeywordQueryParts(subgroup, KeywordType.SITE_NAME_KEYWORD, Arrays.asList(siteNames));
             queryPartGroup.append(subgroup);
         }
-        
+
         appendKeywordQueryParts(queryPartGroup, KeywordType.CULTURE_KEYWORD, Arrays.asList(this.getUncontrolledCultureKeywords()));
         appendKeywordQueryParts(queryPartGroup, KeywordType.MATERIAL_TYPE, Arrays.asList(this.getUncontrolledMaterialKeywords()));
         appendKeywordQueryParts(queryPartGroup, KeywordType.TEMPORAL_KEYWORD, Arrays.asList(this.getTemporalKeywords()));
@@ -371,7 +372,16 @@ public class SearchParameters {
                 getRegisteredDates()));
         queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE_UPDATED, support.getText("searchParameter.date_updated"), getOperator(),
                 getUpdatedDates()));
-        queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE, support.getText("searchParameter.date"), getOperator(), getCreatedDates()));
+
+        if (CollectionUtils.isNotEmpty(getCreatedDates())) {
+            List<RangeImpl<Integer>> created = new ArrayList<RangeImpl<Integer>>();
+            for (StringRange r : getCreatedDates()) {
+                if (r != null) {
+                    created.add(new RangeImpl<Integer>(Integer.parseInt(r.getStart()), Integer.parseInt(r.getEnd())));
+                }
+            }
+            queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE, support.getText("searchParameter.date"), getOperator(), created));
+        }
 
         queryPartGroup.append(new TemporalQueryPart(getCoverageDates(), getOperator()));
         queryPartGroup.append(new SpatialQueryPart(getLatitudeLongitudeBoxes()));
