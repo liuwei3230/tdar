@@ -71,7 +71,10 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.Spatial;
+import org.hibernate.search.annotations.SpatialMode;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.spatial.Coordinates;
 import org.hibernate.validator.constraints.Length;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -2059,5 +2062,4 @@ public class Resource implements Persistable,
     public Integer getDate() {
         return null;
     }
-
 }

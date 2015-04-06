@@ -60,6 +60,7 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
                 titlePart.setProximity(3);
             }
         }
+        titlePart.setOperator(Operator.AND);
         titlePart.setBoost(NAME_BOOST);
         primary.append(titlePart);
         primary.append(allFieldsAsPart);
