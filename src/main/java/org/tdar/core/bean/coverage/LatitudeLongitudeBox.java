@@ -21,9 +21,6 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Latitude;
 import org.hibernate.search.annotations.Longitude;
 import org.hibernate.search.annotations.NumericField;
-import org.hibernate.search.annotations.Spatial;
-import org.hibernate.search.annotations.SpatialMode;
-import org.hibernate.search.spatial.Coordinates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.HasResource;
@@ -91,26 +88,26 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
     // ranges from -90 (South) to +90 (North)
     @Field(name="miny")
     @NumericField
-//    @Latitude(of="minimum")
+    @Latitude(of="minimum")
     @Column(nullable = false, name = "minimum_latitude")
     private Double minimumLatitude;
 
     @Field(name="maxy")
     @NumericField
     @Column(nullable = false, name = "maximum_latitude")
-//    @Latitude(of="maximum")
+    @Latitude(of="maximum")
     private Double maximumLatitude;
 
     // ranges from -180 (West) to +180 (East)
     @Field(name="minx")
-//    @Longitude(of="minimum")
+    @Longitude(of="minimum")
     @NumericField
     @Column(nullable = false, name = "minimum_longitude")
     private Double minimumLongitude;
 
     @Field(name="maxx")
     @NumericField
-//    @Longitude(of="maximum")
+    @Longitude(of="maximum")
     @Column(nullable = false, name = "maximum_longitude")
     private Double maximumLongitude;
 
@@ -135,12 +132,12 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
         return minimumLatitude;
     }
 
-//    @Latitude(of="center")
+    @Latitude(of="center")
     public Double getCenterLatitude() {
         return (getMaxObfuscatedLatitude() + getMinObfuscatedLatitude()) / 2.0;
     }
 
-//    @Longitude(of="center")
+    @Longitude(of="center")
     public Double getCenterLongitude() {
         return (getMaxObfuscatedLongitude() + getMinObfuscatedLongitude()) / 2.0;
     }

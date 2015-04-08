@@ -68,13 +68,12 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Latitude;
+import org.hibernate.search.annotations.Longitude;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Resolution;
-import org.hibernate.search.annotations.Spatial;
-import org.hibernate.search.annotations.SpatialMode;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.spatial.Coordinates;
 import org.hibernate.validator.constraints.Length;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -2010,42 +2009,6 @@ public class Resource implements Persistable,
         this.bookmarkedResources = bookmarkedResources;
     }
     
-//    @Latitude(of="min")
-//    @XmlTransient
-//    public Double getMinLatitude() {
-//        if (getFirstActiveLatitudeLongitudeBox() != null) {
-//            return getFirstActiveLatitudeLongitudeBox().getMinObfuscatedLatitude();
-//        }
-//        return null;
-//    }
-//
-//    @Latitude(of="max")
-//    @XmlTransient
-//    public Double getMaxLatitude() {
-//        if (getFirstActiveLatitudeLongitudeBox() != null) {
-//            return getFirstActiveLatitudeLongitudeBox().getMaxObfuscatedLatitude();
-//        }
-//        return null;
-//    }
-//
-//    @Longitude(of="min")
-//    @XmlTransient
-//    public Double getMinLongitude() {
-//        if (getFirstActiveLatitudeLongitudeBox() != null) {
-//            return getFirstActiveLatitudeLongitudeBox().getMinObfuscatedLongitude();
-//        }
-//        return null;
-//    }
-//
-//    @Longitude(of="max")
-//    @XmlTransient
-//    public Double getMaxLongitude() {
-//        if (getFirstActiveLatitudeLongitudeBox() != null) {
-//            return getFirstActiveLatitudeLongitudeBox().getMaxObfuscatedLongitude();
-//        }
-//        return null;
-//    }
-
     /**
      * Hack for Hibernate Search, cannot find fields in subclassess
      * @return
