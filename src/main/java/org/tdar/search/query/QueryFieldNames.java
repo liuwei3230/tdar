@@ -75,6 +75,7 @@ public interface QueryFieldNames {
     String RESOURCE_COLLECTION_SHARED_IDS = "sharedCollectionIds";
     String RESOURCE_ACCESS_TYPE = "resourceAccessType";
     String PROPER_NAME = "properName";
+    String NAME_KWD = "name_kwd";
     String RESOURCE_CREATORS_PROPER_NAME = "activeResourceCreators.creator." + PROPER_NAME;
     String INFORMATION_RESOURCE_FILES_FILENAME = "informationResourceFiles.filename";
     String RESOURCE_PROVIDER_ID = "resourceProviderInstitution.id";

@@ -415,11 +415,13 @@ public class LuceneSearchControllerITCase extends AbstractSearchControllerITCase
         logger.info("Created new image: " + imgId);
         searchIndexService.index(resourceService.find(imgId));
         setResourceTypes(allResourceTypes);
-
+        genericKeywordService.synchronize();
+        searchIndexService.flushToIndexes();
         setStatusAll();
         controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         // not sure this test should actually pass
-        doSearch("testabc");
+        doSearch("Testabc");
+        logger.debug("results:{}", controller.getResults());
         assertTrue("expected to find person in keyword style search of firstname", resultsContainId(imgId));
         controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         doSearch("\"" + TestConstants.DEFAULT_FIRST_NAME + "abc " + TestConstants.DEFAULT_LAST_NAME + "abc\"");

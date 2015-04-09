@@ -29,6 +29,7 @@ import org.tdar.core.bean.util.UrlUtils;
 import org.tdar.search.index.analyzer.AutocompleteAnalyzer;
 import org.tdar.search.index.analyzer.LowercaseWhiteSpaceStandardAnalyzer;
 import org.tdar.search.index.analyzer.NonTokenizingLowercaseKeywordAnalyzer;
+import org.tdar.search.index.analyzer.SiteCodeTokenizingAnalyzer;
 import org.tdar.search.index.analyzer.TdarCaseSensitiveStandardAnalyzer;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.json.JsonLookupFilter;
@@ -205,4 +206,13 @@ public abstract class KeywordBase<T extends KeywordBase<?>> extends Persistable.
         public String getDetailUrl() {
             return String.format("/%s/%s/%s", getUrlNamespace(), getId(), getSlug());
         }
+
+        @Field(name = QueryFieldNames.SITE_CODE, analyzer=@Analyzer(impl = SiteCodeTokenizingAnalyzer.class))
+        public String getSiteCode() {
+            if (getKeywordType().equals("SiteNameKeyword")) {
+            return getLabel();
+            }
+            return null;
+        }
+
 }

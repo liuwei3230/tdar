@@ -13,7 +13,6 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.service.search.Operator;
 import org.tdar.utils.PersistableUtils;
 
-
 public class SkeletonPersistableQueryPart<P extends Persistable> extends AbstractHydrateableQueryPart<P> {
 
     private FieldQueryPart<P> transientFieldQueryPart;
@@ -39,7 +38,7 @@ public class SkeletonPersistableQueryPart<P extends Persistable> extends Abstrac
     }
 
     @Override
-    //FIXME: confirm that this does the same thing as generateQueryStirng()
+    // FIXME: confirm that this does the same thing as generateQueryStirng()
     public Query generateQuery(QueryBuilder builder) {
         List<Integer> trans = new ArrayList<Integer>();
         List<P> nonTrans = new ArrayList<P>();
@@ -53,7 +52,7 @@ public class SkeletonPersistableQueryPart<P extends Persistable> extends Abstrac
         }
 
         FieldQueryPart<Long> fqp = new FieldQueryPart<>(getFieldName(), getOperator(), PersistableUtils.extractIds(nonTrans));
-        logger.debug("trans: {}, nonTrans: {}, other: {}" ,trans, nonTrans, transientFieldQueryPart.getFieldValues());
+        logger.debug("trans: {}, nonTrans: {}, other: {}", trans, nonTrans, transientFieldQueryPart.getFieldValues());
         if (CollectionUtils.isEmpty(trans)) {
             return fqp.generateQuery(builder);
         }
@@ -66,52 +65,15 @@ public class SkeletonPersistableQueryPart<P extends Persistable> extends Abstrac
                 }
             }
         }
-        List<Long> transientIds = PersistableUtils.extractIds(transientFieldQueryPart.getFieldValues());
-        fqp.add(transientIds.toArray(new Long[0]));
-        return fqp.generateQuery(builder);
+
+        if (CollectionUtils.isEmpty(transientFieldQueryPart.getFieldValues())) {
+            return fqp.generateQuery(builder);
         }
-    
-//    @Override
-//    public String generateQueryString() {
-//        StringBuilder sb = new StringBuilder();
-//        List<Integer> trans = new ArrayList<Integer>();
-//        // iterate through all of the values; if any of them are transient, put those positions off to the side
-//        for (int i = 0; i < getFieldValues().size(); i++) {
-//            if (PersistableUtils.isNotNullOrTransient(getFieldValues().get(i))) {
-//                appendPhrase(sb, i);
-//            } else {
-//                trans.add(i);
-//            }
-//        }
-//        if (sb.length() != 0) {
-//            constructQueryPhrase(sb, getFieldName());
-//        }
-//        if (CollectionUtils.isEmpty(trans)) {
-//            return sb.toString();
-//        }
-//
-//        // for the transient values; we'll grab them via a query using the transientFieldQueryPart --
-//        // this will look it up by "title" or "whatever"
-//        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
-//            for (int i = 0; i < getFieldValues().size(); i++) {
-//                if (!trans.contains(i)) {
-//                    transientFieldQueryPart.getFieldValues().remove(i);
-//                }
-//            }
-//        }
-//
-//        if ((transientFieldQueryPart != null) && !transientFieldQueryPart.isEmpty()) {
-//            sb.insert(0, "(");
-//            if (sb.length() > 1) {
-//                sb.append(" OR ");
-//            }
-//            logger.info(transientFieldQueryPart.generateQueryString());
-//            sb.append(transientFieldQueryPart.generateQueryString());
-//            sb.append(")");
-//        }
-//
-//        return sb.toString();
-//    }
+        QueryPartGroup gp = new QueryPartGroup(Operator.OR);
+        gp.append(fqp);
+        gp.append(transientFieldQueryPart);
+        return gp.generateQuery(builder);
+    }
 
     @Override
     protected String formatValueAsStringForQuery(int index) {

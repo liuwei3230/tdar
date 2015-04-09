@@ -227,7 +227,7 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
 
     @Override
     @Fields({ @Field(name = "name", analyzer = @Analyzer(impl = NonTokenizingLowercaseKeywordAnalyzer.class)),
-            @Field(name = "name_kwd", analyzer = @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)),
+            @Field(name = QueryFieldNames.NAME_KWD, analyzer = @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)),
             @Field(name = QueryFieldNames.CREATOR_NAME_SORT, norms = Norms.NO, store = Store.YES) })
     @JsonView(JsonLookupFilter.class)
     public abstract String getName();

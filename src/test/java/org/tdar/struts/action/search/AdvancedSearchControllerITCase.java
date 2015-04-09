@@ -737,6 +737,8 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
 
     // compare the counts returned from searchController against the counts we get from the database
     private void assertResultCount(ResourceType resourceType, Status status, TdarUser user) {
+        genericKeywordService.synchronize();
+        searchIndexService.flushToIndexes();
         String stat = String.format("testing %s , %s for %s", resourceType, status, user);
         logger.info(stat);
         long expectedCount = resourceService.getResourceCount(resourceType, status);

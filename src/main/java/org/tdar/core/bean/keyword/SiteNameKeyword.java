@@ -49,7 +49,7 @@ public class SiteNameKeyword extends KeywordBase<SiteNameKeyword> implements Unc
         this.synonyms = synonyms;
     }
 
-    @Field(name = QueryFieldNames.SITE_CODE, analyzer = @Analyzer(impl = SiteCodeTokenizingAnalyzer.class))
+    @Field(name = QueryFieldNames.SITE_CODE, analyzer=@Analyzer(impl = SiteCodeTokenizingAnalyzer.class))
     public String getSiteCode() {
         return getLabel();
     }
