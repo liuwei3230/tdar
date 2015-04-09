@@ -63,6 +63,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
@@ -95,7 +96,7 @@ import com.google.common.base.Predicates;
 public abstract class AbstractSeleniumWebITCase {
 
     public static final String AUTO_DOWNLOAD_MIME_TYPES = "application/pdf, text/csv, image/tiff, image/tif";
-    //, application/xls, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    // , application/xls, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 
     // default timeout used for waitFor()
     public static final int DEFAULT_WAITFOR_TIMEOUT = 20;
@@ -311,7 +312,7 @@ public abstract class AbstractSeleniumWebITCase {
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_TYPEKIT);
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_GOOGLE_ANALYTICS);
         WebDriver driver = null;
-        Browser browser = Browser.FIREFOX;
+        Browser browser = Browser.PHANTOMJS;
         String xvfbPort = System.getProperty("display.port");
         String browser_ = System.getProperty("browser");
         if (StringUtils.isNotBlank(browser_)) {
@@ -338,19 +339,17 @@ public abstract class AbstractSeleniumWebITCase {
                     profile.setPreference("focusmanager.testmode", true);
                 }
                 profile.setPreference("browser.helperApps.alwaysAsk.force", false);
-			    profile.setPreference("browser.download.folderList",2);
-			    profile.setPreference("browser.download.manager.showWhenStarting",false);
-                profile.setPreference("browser.download.manager.showAlertOnComplete",false);
+                profile.setPreference("browser.download.folderList", 2);
+                profile.setPreference("browser.download.manager.showWhenStarting", false);
+                profile.setPreference("browser.download.manager.showAlertOnComplete", false);
                 profile.setPreference("browser.helperApps.alwaysAsk.force", false);
-				profile.setPreference("browser.helperApps.neverAsk.saveToDisk",AUTO_DOWNLOAD_MIME_TYPES);
-				profile.setPreference("pdfjs.disabled", true);
-				// Use this to disable Acrobat plugin for previewing PDFs in Firefox (if you have Adobe reader installed on your computer)
-				profile.setPreference("plugin.scan.Acrobat", "99.0");
-				profile.setPreference("plugin.scan.plid.all", false);
+                profile.setPreference("browser.helperApps.neverAsk.saveToDisk", AUTO_DOWNLOAD_MIME_TYPES);
+                profile.setPreference("pdfjs.disabled", true);
+                // Use this to disable Acrobat plugin for previewing PDFs in Firefox (if you have Adobe reader installed on your computer)
+                profile.setPreference("plugin.scan.Acrobat", "99.0");
+                profile.setPreference("plugin.scan.plid.all", false);
 
-				
-				
-				//			    profile.setPreference("browser.download.dir","c:\\downloads");
+                // profile.setPreference("browser.download.dir","c:\\downloads");
                 driver = new FirefoxDriver(fb, profile);
                 break;
             case CHROME:
@@ -390,12 +389,27 @@ public abstract class AbstractSeleniumWebITCase {
                 }
                 break;
             case PHANTOMJS:
+                DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
+                ArrayList<String> cliArgsCap = new ArrayList<String>();
+                cliArgsCap.add("--ignore-ssl-errors=true");
+                cliArgsCap.add("--web-security=no");
+                // where the binary binary is expected (will be resolved when file does not exist)
+                capabilities.setCapability("phantomjs.binary.path", "./target/phantomjs");
+                // enforce resolver to use given phantomjs version
+                capabilities.setCapability("phantomjs.binary.version", "1.9.1");
+
+                // if there is phantomjs available on PATH, use that one
+                capabilities.setCapability("phantomjs.prefer.resolved", Boolean.FALSE);
+                capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
+                capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_GHOSTDRIVER_CLI_ARGS, new String[] { "--logLevel=2" });
+                logger.debug("setup");
                 driver = new PhantomJSDriver(
-                        ResolvingPhantomJSDriverService.createDefaultService(), // service resolving phantomjs binary automatically
-                        configureCapabilities(DesiredCapabilities.phantomjs()));
+                        ResolvingPhantomJSDriverService.createDefaultService(capabilities), // service resolving phantomjs binary automatically
+                        capabilities);
+
                 break;
-                default:
-                    break;
+            default:
+                break;
         }
         EventFiringWebDriver eventFiringWebDriver = new EventFiringWebDriver(driver);
         eventFiringWebDriver.register(eventListener);
@@ -439,6 +453,8 @@ public abstract class AbstractSeleniumWebITCase {
     }
 
     protected void takeScreenshot(String filename) {
+//        screenshotsAllowed = false;
+
         if (!screenshotsAllowed) {
             return;
         }
@@ -566,9 +582,9 @@ public abstract class AbstractSeleniumWebITCase {
         }
     }
 
-
     /**
      * Wait for specified css selector to match at least one element. Uses default timeout.
+     * 
      * @param cssSelector
      * @return
      */
@@ -584,9 +600,9 @@ public abstract class AbstractSeleniumWebITCase {
      * @return elements matched by specified selector
      */
     public WebElementSelection waitFor(String cssSelector, int timeoutInSeconds) {
-        //FIXME: rewrite in terms of waitFor(ExpectedCondition, int)
+        // FIXME: rewrite in terms of waitFor(ExpectedCondition, int)
         WebDriverWait wait = new WebDriverWait(driver, timeoutInSeconds);
-        List<WebElement> elements =  wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(cssSelector)));
+        List<WebElement> elements = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(cssSelector)));
         WebElementSelection selection = new WebElementSelection(elements, driver);
         return selection;
     }
@@ -594,9 +610,9 @@ public abstract class AbstractSeleniumWebITCase {
     /**
      * Wait for specified number of seconds. Use this as a last resort. Consider using {@link #waitFor(String)} or {@link #waitForPageload()}.
      *
-     * @Deprecated 
-     * Honestly, the author of this API does not like to engage in hyperbole, but if you use this method there is a strong likelyhood
-     * that you are a terrible person.  LOOK AWAY.
+     * @Deprecated
+     *             Honestly, the author of this API does not like to engage in hyperbole, but if you use this method there is a strong likelyhood
+     *             that you are a terrible person. LOOK AWAY.
      * 
      * @param timeInSeconds
      *            seconds to wait before timeout
@@ -611,33 +627,41 @@ public abstract class AbstractSeleniumWebITCase {
 
     /**
      * Wait for at least one element matched by the specified locator. Uses default timeout.
-     * @param elementsLocator A selenium element "locator",  such as {@link By#xpath(String)}  or {@link By#cssSelector(String)}
+     * 
+     * @param elementsLocator
+     *            A selenium element "locator", such as {@link By#xpath(String)} or {@link By#cssSelector(String)}
      * @return the matched elements wrapped in a WebElementSelection.
      */
     public WebElementSelection waitFor(By elementsLocator) {
-        List<WebElement> elements =  waitFor(ExpectedConditions.presenceOfAllElementsLocatedBy(elementsLocator));
+        List<WebElement> elements = waitFor(ExpectedConditions.presenceOfAllElementsLocatedBy(elementsLocator));
         WebElementSelection selection = new WebElementSelection(elements, driver);
         return selection;
     }
 
     /**
      * Wait for the specified expected condition. Uses default timeout.
+     * 
      * @param expectedCondition
      * @param <T>
      * @return
      */
-    public<T> T waitFor(ExpectedCondition<T> expectedCondition) {
+    public <T> T waitFor(ExpectedCondition<T> expectedCondition) {
         return waitFor(expectedCondition, DEFAULT_WAITFOR_TIMEOUT);
     }
 
     /**
      * Wait for the specified expected condition within the specified timeout (in seconds)
-     * @param expectedCondition ExpectedCondition predicate (e.g. {@link ExpectedConditions#alertIsPresent}, {@link ExpectedConditions#presenceOfAllElementsLocatedBy(org.openqa.selenium.By)}
-     * @param timeoutInSeconds amount of time that this method suppresses ElementNotFoundException
-     * @param <T> object returned by the ExpectedCondition
+     * 
+     * @param expectedCondition
+     *            ExpectedCondition predicate (e.g. {@link ExpectedConditions#alertIsPresent},
+     *            {@link ExpectedConditions#presenceOfAllElementsLocatedBy(org.openqa.selenium.By)}
+     * @param timeoutInSeconds
+     *            amount of time that this method suppresses ElementNotFoundException
+     * @param <T>
+     *            object returned by the ExpectedCondition
      * @return
      */
-    public<T> T waitFor(ExpectedCondition<T> expectedCondition, int timeoutInSeconds) {
+    public <T> T waitFor(ExpectedCondition<T> expectedCondition, int timeoutInSeconds) {
         WebDriverWait wait = new WebDriverWait(driver, timeoutInSeconds);
         T value = wait.until(expectedCondition);
         return value;
@@ -857,7 +881,7 @@ public abstract class AbstractSeleniumWebITCase {
     public boolean testRequiresLucene() {
         return false;
     }
-    
+
     public void reindex() {
         logout();
         loginAdmin();
@@ -962,14 +986,13 @@ public abstract class AbstractSeleniumWebITCase {
         }
     }
 
-
     @Deprecated
-    //FIXME: api cleanup: hamcrest assertions would work better here
+    // FIXME: api cleanup: hamcrest assertions would work better here
     protected boolean sourceContains(String substring) {
         return getSource().contains(substring);
     }
 
-    //FIXME: api clianup: hamcrest assertions would work better here
+    // FIXME: api clianup: hamcrest assertions would work better here
     @Deprecated
     protected boolean textContains(String substring) {
         return getText().toLowerCase().contains(substring.toLowerCase());
@@ -1000,43 +1023,44 @@ public abstract class AbstractSeleniumWebITCase {
             driver.switchTo().alert().accept();
         } catch (NoAlertPresentException ignored) {
             return false;
-        } catch(WebDriverException wde)  {
-            //try a few more times with kludgey version of dismissModal
+        } catch (WebDriverException wde) {
+            // try a few more times with kludgey version of dismissModal
             return dismissModal(10);
         }
         return true;
     }
 
     /**
-     * Workaround for Selenium <a href="https://code.google.com/p/selenium/issues/detail?id=3544">Issue 3544: WebDriver randomly fails to accept javascript alert windows (timing problem)</a>
+     * Workaround for Selenium <a href="https://code.google.com/p/selenium/issues/detail?id=3544">Issue 3544: WebDriver randomly fails to accept javascript
+     * alert windows (timing problem)</a>
      *
-     * Keep trying to accept modal dialog every 100ms until successful.  Give up after specified attempts .
+     * Keep trying to accept modal dialog every 100ms until successful. Give up after specified attempts .
      * This method assumes a modal is present and will give you a weird result if modal doesn't exist.
      *
-     * @param attempts number of attempts before giving up
+     * @param attempts
+     *            number of attempts before giving up
      * @return true if accept worked.
      */
-    private boolean  dismissModal(int attempts) {
+    private boolean dismissModal(int attempts) {
         boolean successful = false;
-        for(int i = 1; i <= attempts; i++) {
-            logger.debug("dissmiss modal:  attempt {} of {}",i , attempts);
+        for (int i = 1; i <= attempts; i++) {
+            logger.debug("dissmiss modal:  attempt {} of {}", i, attempts);
             try {
                 Alert statusConfirm = driver.switchTo().alert();
                 statusConfirm.accept();
                 successful = true;
-            } catch(WebDriverException ignored) {
-                logger.info("exception while trying to dismiss modal dialog:  attempt {} of {}",i , attempts);
+            } catch (WebDriverException ignored) {
+                logger.info("exception while trying to dismiss modal dialog:  attempt {} of {}", i, attempts);
                 try {
                     Thread.sleep(100);
-                } catch (InterruptedException alsoIgnored) {}
+                } catch (InterruptedException alsoIgnored) {
+                }
             }
-            if(successful) break; //don't judge me.
+            if (successful)
+                break; // don't judge me.
         }
         return successful;
     }
-
-
-
 
     /**
      * when indicates whether the test should (try to) ignore modal windows that appear during the course of test.
@@ -1086,7 +1110,7 @@ public abstract class AbstractSeleniumWebITCase {
     }
 
     public void uploadFileAsync(FileAccessRestriction restriction, File uploadFile) {
-        waitFor( elementToBeClickable( id("fileAsyncUpload")));
+        waitFor(elementToBeClickable(id("fileAsyncUpload")));
         find("#fileAsyncUpload").sendKeys(uploadFile.getAbsolutePath());
         waitFor(".delete-button");
         find("#proxy0_conf").val(restriction.name());
@@ -1164,7 +1188,7 @@ public abstract class AbstractSeleniumWebITCase {
         field.sendKeys(Keys.ARROW_DOWN);
         WebElementSelection menuItems = null;
 
-        //fixme: this  should be unnecessary -- WebDriverWait repeatedly executes predicate at set interval before timing out
+        // fixme: this should be unnecessary -- WebDriverWait repeatedly executes predicate at set interval before timing out
         for (int i = 0; i < 30; i++) {
             if ((menuItems == null) || menuItems.isEmpty()) {
                 try {
@@ -1249,9 +1273,10 @@ public abstract class AbstractSeleniumWebITCase {
 
     }
 
-    //FIXME: I originally exposed this because getText() was such a costly method,  but this 'fix' causes more problems in the form of returning outdated page text
+    // FIXME: I originally exposed this because getText() was such a costly method, but this 'fix' causes more problems in the form of returning outdated page
+    // text
     /**
-     * clear the cached result of getText(). The test updates the pageText whenever it detects a navigation event.  However
+     * clear the cached result of getText(). The test updates the pageText whenever it detects a navigation event. However
      * If you invoke navigation via javascript, it may be necessary to manually clear it.
      */
     public void clearPageCache() {
@@ -1338,16 +1363,16 @@ public abstract class AbstractSeleniumWebITCase {
         }
         getDriver().manage().window().setSize(testSize);
     }
-    
+
     public void resetSize() {
         if (originalSize != null) {
             getDriver().manage().window().setSize(originalSize);
         }
     }
 
-    
     /**
      * think up values for use on a registration attempt that satisfy minimum required fields
+     * 
      * @return
      */
     public TdarUser createUser(String prefix) {
@@ -1360,10 +1385,11 @@ public abstract class AbstractSeleniumWebITCase {
         return user;
     }
 
-
     /**
      * create user-registration info with random username,email that satisfies minimum required fields
-     * @param userPrefix prefix applied to username, email, firstname, and lastname
+     * 
+     * @param userPrefix
+     *            prefix applied to username, email, firstname, and lastname
      * @return
      */
     public UserRegistration createUserRegistration(String userPrefix) {
@@ -1378,13 +1404,14 @@ public abstract class AbstractSeleniumWebITCase {
         return reg;
     }
 
-
     /**
      * fill out the user registration fields on the cart/review page.
-     * @param reg user registration information
+     * 
+     * @param reg
+     *            user registration information
      */
     public void fillOutRegistration(UserRegistration reg) {
-        //on firefox, autofoxus occurs after pageload(bugzilla: 717361). so we wait
+        // on firefox, autofoxus occurs after pageload(bugzilla: 717361). so we wait
         waitForPageload();
         TdarUser person = reg.getPerson();
         find("#firstName").val(person.getFirstName());
@@ -1397,21 +1424,20 @@ public abstract class AbstractSeleniumWebITCase {
         find("#confirmPassword").val(reg.getConfirmPassword());
         find("#username").val(person.getUsername());
         WebElementSelection touId = find("#tou-id");
-        if(reg.isAcceptTermsOfUse() != touId.isSelected()) {
+        if (reg.isAcceptTermsOfUse() != touId.isSelected()) {
             touId.click();
         }
-        
-        
+
         WebElementSelection contribId = null;
         try {
             contribId = find("#contributor-id");
-            if(contribId != null && reg.isRequestingContributorAccess() != contribId.isSelected() ) {
+            if (contribId != null && reg.isRequestingContributorAccess() != contribId.isSelected()) {
                 contribId.click();
             }
         } catch (TdarRecoverableRuntimeException e) {
             // doesn't exist
         }
-        
+
     }
 
     /**
@@ -1422,6 +1448,5 @@ public abstract class AbstractSeleniumWebITCase {
         logger.debug(getCurrentUrl());
         assertThat("login button is missing", selection, is(not(empty())));
     }
-
 
 }
