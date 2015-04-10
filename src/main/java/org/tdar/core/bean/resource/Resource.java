@@ -2013,7 +2013,7 @@ public class Resource implements Persistable,
      * Hack for Hibernate Search, cannot find fields in subclassess
      * @return
      */
-    @IndexedEmbedded(prefix = QueryFieldNames.IR, depth=1)
+    @IndexedEmbedded(prefix = QueryFieldNames.IR, depth=2)
     @XmlTransient
     @Transient
     // @XmlJavaTypeAdapter(JaxbPersistableConverter.class)

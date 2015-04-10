@@ -54,6 +54,7 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
         allFieldsAsPart.setPhraseFormatters(PhraseFormatter.ESCAPED);
 
         if (cleanedQueryString.contains(" ")) {
+            allFieldsAsPart.setKeyword(false);
             titlePart = new FieldQueryPart<String>(QueryFieldNames.NAME_PHRASE, cleanedQueryString);
             // FIXME: magic words
             if (useProximity) {
