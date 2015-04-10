@@ -700,6 +700,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-spatial</artifactId>
+			<version>4.10.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-queries</artifactId>
 			<version>4.10.3</version>
 		</dependency>

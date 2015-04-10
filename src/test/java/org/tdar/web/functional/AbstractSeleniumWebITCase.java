@@ -312,7 +312,7 @@ public abstract class AbstractSeleniumWebITCase {
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_TYPEKIT);
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_GOOGLE_ANALYTICS);
         WebDriver driver = null;
-        Browser browser = Browser.PHANTOMJS;
+        Browser browser = Browser.FIREFOX;
         String xvfbPort = System.getProperty("display.port");
         String browser_ = System.getProperty("browser");
         if (StringUtils.isNotBlank(browser_)) {
