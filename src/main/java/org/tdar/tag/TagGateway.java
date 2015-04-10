@@ -12,7 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.hibernate.search.FullTextQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -115,7 +115,7 @@ public class TagGateway implements TagGatewayPort, QueryFieldNames {
             // actually perform the search against the index
             try {
                 q = searchService.search(qb);
-                logger.info(qb.generateQueryString());
+                logger.info(qb.toString());
             } catch (ParseException e) {
                 logger.warn("Could not parse supplied query.", e);
             }

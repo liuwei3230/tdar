@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.GeographicKeyword;
@@ -34,6 +35,7 @@ public class KeywordLookupControllerITCase extends AbstractIntegrationTestCase {
     }
 
     @Test
+    @Rollback
     public void testSiteNameKeywordLookup() {
         SiteNameKeyword keyword = new SiteNameKeyword();
         keyword.setLabel("18-ST-389");
@@ -46,15 +48,22 @@ public class KeywordLookupControllerITCase extends AbstractIntegrationTestCase {
         controller.lookupKeyword();
         List<Keyword> resources = controller.getResults();
         assertTrue("at least one document", resources.size() >= 1);
-        
-        initController();
+    }
+    
+    @Test
+    @Rollback
+    public void testSiteNameKeywordLookup2() {
+        SiteNameKeyword keyword = new SiteNameKeyword();
+        keyword.setLabel("18-ST-389");
+        genericService.saveOrUpdate(keyword);
+        Long id = keyword.getId();
+        searchIndexService.indexAll(getAdminUser(), SiteNameKeyword.class);
 
         controller.setKeywordType("SiteNameKeyword");
         controller.setTerm("18ST389");
         controller.lookupKeyword();
-        resources = controller.getResults();
+        List<Keyword> resources = controller.getResults();
         assertTrue("at least one document", resources.size() >= 1);
-
     }
 
 }

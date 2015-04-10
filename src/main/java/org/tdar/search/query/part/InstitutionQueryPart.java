@@ -5,10 +5,10 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.entity.Institution;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 
 public class InstitutionQueryPart extends FieldQueryPart<Institution> {
@@ -22,15 +22,6 @@ public class InstitutionQueryPart extends FieldQueryPart<Institution> {
         add(institution);
     }
 
-
-    @Override
-    public String generateQueryString() {
-        QueryPartGroup group = new QueryPartGroup(getOperator());
-        for (Institution value : getFieldValues()) {
-            group.append(this.getQueryPart(value));
-        }
-        return group.generateQueryString();
-    }
 
     protected QueryPartGroup getQueryPart(Institution value) {
         String cleanedQueryString = getCleanedQueryString(value.getName());
@@ -48,7 +39,8 @@ public class InstitutionQueryPart extends FieldQueryPart<Institution> {
             }
         }
 
-        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, fields).setBoost(ANY_FIELD_BOOST);
+        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, fields);
+        allFieldsAsPart.setBoost(ANY_FIELD_BOOST);
         allFieldsAsPart.setOperator(Operator.AND);
         allFieldsAsPart.setPhraseFormatters(PhraseFormatter.ESCAPED);
 
@@ -60,7 +52,8 @@ public class InstitutionQueryPart extends FieldQueryPart<Institution> {
             }
         }
 
-        primary.append(titlePart.setBoost(NAME_BOOST));
+        titlePart.setBoost(NAME_BOOST);
+        primary.append(titlePart);
         primary.append(allFieldsAsPart);
 
         return primary;

@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.search.index.analyzer.TdarCaseSensitiveStandardAnalyzer;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.json.JsonLookupFilter;
 
@@ -71,7 +73,8 @@ public class ResourceCreator extends Persistable.Sequence<ResourceCreator> imple
     private Creator creator;
 
     @Enumerated(EnumType.STRING)
-    @Field
+    @Field()
+    @Analyzer(impl = TdarCaseSensitiveStandardAnalyzer.class)
     @BulkImportField(key="CREATOR_ROLE", order = 200)
     @Column(length = FieldLength.FIELD_LENGTH_255)
     @JsonView(JsonLookupFilter.class)

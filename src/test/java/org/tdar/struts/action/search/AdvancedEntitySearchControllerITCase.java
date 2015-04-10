@@ -1,4 +1,4 @@
-package org.tdar.struts.action.search;
+    package org.tdar.struts.action.search;
 
 import static org.junit.Assert.assertTrue;
 
@@ -61,6 +61,7 @@ public class AdvancedEntitySearchControllerITCase extends AbstractSearchControll
 
     private void assertResultsOkay(String term, AbstractLookupController controller_) {
         assertNotEmpty(controller_.getResults());
+        logger.debug("{}",controller_.getResults());
         for (Object obj : controller_.getResults()) {
             Creator inst = (Creator) obj;
             assertTrue(String.format("Creator %s should match %s", inst, term), inst.getProperName().toLowerCase().contains(term.toLowerCase()));

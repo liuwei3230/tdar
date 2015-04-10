@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
@@ -47,6 +46,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Norms;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.BulkImportField;
@@ -79,7 +79,6 @@ import org.tdar.search.index.analyzer.TdarCaseSensitiveStandardAnalyzer;
 import org.tdar.search.index.boost.InformationResourceBoostStrategy;
 import org.tdar.search.index.bridge.PersistentReaderBridge;
 import org.tdar.search.index.bridge.StringMapBridge;
-import org.tdar.search.index.bridge.TdarPaddedNumberBridge;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 import org.tdar.utils.json.JsonLookupFilter;
@@ -209,13 +208,10 @@ public abstract class InformationResource extends Resource {
     // currently just a 4 digit year.
     @Column(name = "date_created")
     @BulkImportField(key="YEAR", required = true, order = -10)
-    @FieldBridge(impl = TdarPaddedNumberBridge.class)
-    @Field(norms = Norms.NO, store = Store.YES, analyze = Analyze.NO)
     @JsonView(JsonLookupFilter.class)
     private Integer date = -1;
 
     @Column(name = "date_created_normalized")
-    @FieldBridge(impl = TdarPaddedNumberBridge.class)
     @Field(norms = Norms.NO, store = Store.YES, name = QueryFieldNames.DATE_CREATED_DECADE, analyze = Analyze.NO)
     @XmlTransient
     private Integer dateNormalized = -1;
@@ -346,6 +342,7 @@ public abstract class InformationResource extends Resource {
         this.licenseText = licenseText;
     }
 
+    @Override
     public Integer getDate() {
         return date;
     }
@@ -386,7 +383,8 @@ public abstract class InformationResource extends Resource {
     }
 
     @Field(name = QueryFieldNames.PROJECT_ID)
-    @Analyzer(impl = KeywordAnalyzer.class)
+    @NumericField
+//    @Analyzer(impl = KeywordAnalyzer.class)
     public Long getProjectId() {
         if (projectId == null) {
             projectId = getProject().getId();
@@ -692,20 +690,20 @@ public abstract class InformationResource extends Resource {
         this.copyLocation = copyLocation;
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<InvestigationType> getActiveInvestigationTypes() {
         return isProjectVisible() && isInheritingInvestigationInformation() ? project.getInvestigationTypes() : getInvestigationTypes();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<ResourceCreator> getActiveIndividualAndInstitutionalCredit() {
         return isProjectVisible() && isInheritingIndividualAndInstitutionalCredit() ? project.getIndividualAndInstitutionalCredit()
                 : getIndividualAndInstitutionalCredit();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<ResourceCreator> getActiveResourceCreators() {
         Set<ResourceCreator> local = new HashSet<ResourceCreator>(super.getResourceCreators());
@@ -722,25 +720,25 @@ public abstract class InformationResource extends Resource {
         return getProject().isActive() || getProject().isDraft();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<SiteNameKeyword> getActiveSiteNameKeywords() {
         return isProjectVisible() && isInheritingSiteInformation() ? project.getSiteNameKeywords() : getSiteNameKeywords();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<SourceCollection> getActiveSourceCollections() {
         return isProjectVisible() && isInheritingCollectionInformation() ? project.getSourceCollections() : getSourceCollections();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<RelatedComparativeCollection> getActiveRelatedComparativeCollections() {
         return isProjectVisible() && isInheritingCollectionInformation() ? project.getRelatedComparativeCollections() : getRelatedComparativeCollections();
     }
 
-    @IndexedEmbedded
+//    @IndexedEmbedded
     @Override
     public Set<SiteTypeKeyword> getActiveSiteTypeKeywords() {
         return isProjectVisible() && isInheritingSiteInformation() ? project.getSiteTypeKeywords() : getSiteTypeKeywords();
@@ -755,19 +753,19 @@ public abstract class InformationResource extends Resource {
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<MaterialKeyword> getActiveMaterialKeywords() {
         return isProjectVisible() && isInheritingMaterialInformation() ? project.getMaterialKeywords() : getMaterialKeywords();
     }
 
     @Override
-    @IndexedEmbedded(targetElement = OtherKeyword.class)
+//    @IndexedEmbedded(targetElement = OtherKeyword.class)
     public Set<OtherKeyword> getActiveOtherKeywords() {
         return isProjectVisible() && isInheritingOtherInformation() ? project.getOtherKeywords() : getOtherKeywords();
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<CultureKeyword> getActiveCultureKeywords() {
         return isProjectVisible() && isInheritingCulturalInformation() ? project.getCultureKeywords() : getCultureKeywords();
     }
@@ -791,25 +789,25 @@ public abstract class InformationResource extends Resource {
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<GeographicKeyword> getActiveGeographicKeywords() {
         return isProjectVisible() && isInheritingSpatialInformation() ? project.getGeographicKeywords() : getGeographicKeywords();
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<LatitudeLongitudeBox> getActiveLatitudeLongitudeBoxes() {
         return isProjectVisible() && isInheritingSpatialInformation() ? project.getLatitudeLongitudeBoxes() : getLatitudeLongitudeBoxes();
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<TemporalKeyword> getActiveTemporalKeywords() {
         return isProjectVisible() && isInheritingTemporalInformation() ? project.getTemporalKeywords() : getTemporalKeywords();
     }
 
     @Override
-    @IndexedEmbedded
+//    @IndexedEmbedded
     public Set<CoverageDate> getActiveCoverageDates() {
         return isProjectVisible() && isInheritingTemporalInformation() ? project.getCoverageDates() : getCoverageDates();
     }

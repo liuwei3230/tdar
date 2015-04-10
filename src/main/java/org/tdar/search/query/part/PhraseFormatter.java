@@ -1,16 +1,16 @@
 package org.tdar.search.query.part;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public enum PhraseFormatter {
 
     WILDCARD,
-    ESCAPED,
-    QUOTED,
-    ESCAPE_QUOTED;
+    ESCAPED;
+//    QUOTED,
+//    ESCAPE_QUOTED;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -26,10 +26,10 @@ public enum PhraseFormatter {
                     logger.error("trying to wildcard a quoted element {}", value);
                 }
                 return String.format("%s*", value);
-            case QUOTED:
-                return String.format("\"%s\"", value);
-            case ESCAPE_QUOTED:
-                return QUOTED.format(ESCAPED.format(value));
+//            case QUOTED:
+//                return String.format("\"%s\"", value);
+//            case ESCAPE_QUOTED:
+//                return QUOTED.format(ESCAPED.format(value));
             default:
                 return value;
         }

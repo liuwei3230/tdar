@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.HasName;
@@ -33,7 +32,6 @@ import org.tdar.search.query.part.CreatorQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.GeneralSearchResourceQueryPart;
 import org.tdar.search.query.part.HydrateableKeywordQueryPart;
-import org.tdar.search.query.part.PaddedNumberQueryPart;
 import org.tdar.search.query.part.PhraseFormatter;
 import org.tdar.search.query.part.QueryPartGroup;
 import org.tdar.search.query.part.RangeQueryPart;
@@ -43,6 +41,7 @@ import org.tdar.search.query.part.TemporalQueryPart;
 import org.tdar.search.query.part.TitleQueryPart;
 import org.tdar.struts.action.search.SearchFieldType;
 import org.tdar.struts.data.DateRange;
+import org.tdar.struts.data.RangeImpl;
 import org.tdar.struts.data.StringRange;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
@@ -331,15 +330,16 @@ public class SearchParameters {
             for (String q : siteNames) {
                 if (StringUtils.isNotBlank(q) && SiteCodeTokenizingAnalyzer.pattern.matcher(q).matches()) {
                     FieldQueryPart<String> siteCodePart = new FieldQueryPart<String>(QueryFieldNames.SITE_CODE, q);
-                    siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED);
+                    siteCodePart.setPhraseFormatters(PhraseFormatter.ESCAPED);
                     siteCodePart.setDisplayName(support.getText("searchParameters.site_code"));
-                    subgroup.append(siteCodePart.setBoost(5f));
+                    siteCodePart.setBoost(5f);
+                    subgroup.append(siteCodePart);
                 }
             }
             appendKeywordQueryParts(subgroup, KeywordType.SITE_NAME_KEYWORD, Arrays.asList(siteNames));
             queryPartGroup.append(subgroup);
         }
-        
+
         appendKeywordQueryParts(queryPartGroup, KeywordType.CULTURE_KEYWORD, Arrays.asList(this.getUncontrolledCultureKeywords()));
         appendKeywordQueryParts(queryPartGroup, KeywordType.MATERIAL_TYPE, Arrays.asList(this.getUncontrolledMaterialKeywords()));
         appendKeywordQueryParts(queryPartGroup, KeywordType.TEMPORAL_KEYWORD, Arrays.asList(this.getTemporalKeywords()));
@@ -372,7 +372,16 @@ public class SearchParameters {
                 getRegisteredDates()));
         queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE_UPDATED, support.getText("searchParameter.date_updated"), getOperator(),
                 getUpdatedDates()));
-        queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE, support.getText("searchParameter.date"), getOperator(), getCreatedDates()));
+
+        if (CollectionUtils.isNotEmpty(getCreatedDates())) {
+            List<RangeImpl<Integer>> created = new ArrayList<RangeImpl<Integer>>();
+            for (StringRange r : getCreatedDates()) {
+                if (r != null) {
+                    created.add(new RangeImpl<Integer>(Integer.parseInt(r.getStart()), Integer.parseInt(r.getEnd())));
+                }
+            }
+            queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE, support.getText("searchParameter.date"), getOperator(), created));
+        }
 
         queryPartGroup.append(new TemporalQueryPart(getCoverageDates(), getOperator()));
         queryPartGroup.append(new SpatialQueryPart(getLatitudeLongitudeBoxes()));
@@ -384,7 +393,7 @@ public class SearchParameters {
         queryPartGroup.append(new CreatorQueryPart<Creator>(QueryFieldNames.CREATOR_ROLE_IDENTIFIER, Creator.class, null, resourceCreatorProxies));
 
         // explore: decade
-        queryPartGroup.append(new PaddedNumberQueryPart<Integer>(QueryFieldNames.DATE_CREATED_DECADE, Operator.OR, getCreationDecades()));
+        queryPartGroup.append(new FieldQueryPart<Integer>(QueryFieldNames.DATE_CREATED_DECADE, Operator.OR, getCreationDecades()));
 
         // explore: title starts with
         if (startingLetter != null) {

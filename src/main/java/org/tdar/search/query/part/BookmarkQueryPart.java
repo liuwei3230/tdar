@@ -1,8 +1,10 @@
 package org.tdar.search.query.part;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.core.service.search.Operator;
 
 import com.opensymphony.xwork2.TextProvider;
 
@@ -13,12 +15,12 @@ public class BookmarkQueryPart extends FieldQueryPart<Person> {
     }
 
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
         QueryPartGroup group = new QueryPartGroup(Operator.OR);
         for (Person person : getFieldValues()) {
             group.append(new FieldQueryPart<Long>("bookmarkedResource.person.id",person.getId()));
         }
-        return group.generateQueryString();
+        return group.generateQuery(builder);
     }
 
 

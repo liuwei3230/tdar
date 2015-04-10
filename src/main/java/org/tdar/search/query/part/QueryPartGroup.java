@@ -5,9 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.service.search.Operator;
+import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.TextProvider;
 
@@ -102,30 +105,13 @@ public class QueryPartGroup implements QueryPart, QueryGroup {
     }
 
     @Override
-    public String generateQueryString() {
-        StringBuilder builder = new StringBuilder();
-        for (QueryPart<?> part : getParts()) {
-            String queryString = part.generateQueryString();
-            logger.trace("{} -> {} ", part.getClass().getSimpleName(), queryString);
-            if (StringUtils.isNotBlank(queryString) && StringUtils.isNotBlank(queryString.trim())) {
-                if (builder.length() > 0) {
-                    builder.append(' ').append(getOperator().toString()).append(' ');
-                }
-                builder.append(queryString);
-            }
-        }
-        if (builder.length() == 0) {
-            return "";
-        }
-        builder.insert(0, "( ");
-        builder.append(" ) ");
-        logger.trace("{}", builder);
-        return builder.toString();
+    public Query generateQuery(QueryBuilder builder) {
+        return BooleanHelper.generateQuery(builder, getParts(), getOperator());
     }
 
     @Override
     public String toString() {
-        return generateQueryString();
+        return getDescription(MessageHelper.getInstance());
     }
 
     private String getDescription(TextProvider provider, boolean escape) {

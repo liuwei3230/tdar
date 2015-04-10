@@ -45,7 +45,6 @@ public class TdarUser extends Person {
 
     @Column(unique = true, nullable = true)
     @Length(min = 1, max = FieldLength.FIELD_LENGTH_255)
-    @Field(name = QueryFieldNames.USERNAME, analyzer = @Analyzer(impl = NonTokenizingLowercaseKeywordAnalyzer.class))
     private String username;
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH }, optional = true)
@@ -99,6 +98,11 @@ public class TdarUser extends Person {
     private Boolean newResourceSavedAsDraft = Boolean.FALSE;
     
     public TdarUser() {
+    }
+
+    public TdarUser(String firstName, String lastName, String email, String username) {
+        super(firstName, lastName, email);
+        this.username = username;
     }
 
     public TdarUser(String firstName, String lastName, String email) {
@@ -172,6 +176,7 @@ public class TdarUser extends Person {
         return results;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }

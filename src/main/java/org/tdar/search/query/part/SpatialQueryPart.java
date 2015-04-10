@@ -8,10 +8,15 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.MustJunction;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.RangeTerminationExcludable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.index.TdarIndexNumberFormatter;
 import org.tdar.search.index.bridge.LatLongClassBridge;
 import org.tdar.search.query.QueryFieldNames;
@@ -35,9 +40,10 @@ import com.opensymphony.xwork2.TextProvider;
  */
 public class SpatialQueryPart extends FieldQueryPart<LatitudeLongitudeBox> {
 
+    private static final double MERIDIAN = 180d;
     public static final int SCALE_RANGE = 2;
-    private static final String MIN_LUCENE = TdarIndexNumberFormatter.format(-540);
-    private static final String MAX_LUCENE = TdarIndexNumberFormatter.format(540);
+    private static final double MIN_LUCENE = -540d;
+    private static final double MAX_LUCENE = 540d;
 
     private Operator operator = Operator.AND;
 
@@ -87,66 +93,148 @@ public class SpatialQueryPart extends FieldQueryPart<LatitudeLongitudeBox> {
      * AND (( status:(draft) ) )
      */
 
-    @Override
-    public String generateQueryString() {
-        StringBuilder q = new StringBuilder();
+    public Query generateQuery(QueryBuilder builder) {
 
+        BooleanJunction<?> bool = builder.bool();
         for (LatitudeLongitudeBox spatialLimit : getFieldValues()) {
             if (!spatialLimit.isInitialized()) {
                 continue;
             }
-            if (q.length() > 0) {
-                q.append(" " + operator.name() + " ");
-            }
-
-            String format = SPATIAL_QUERY_FORMAT;
 
             logger.trace("crosses primeMeridian: {}, crosses antiMeridian: {}", spatialLimit.crossesPrimeMeridian(), spatialLimit.crossesDateline());
             // If the search bounds cross the antimeridian, we need to split up the spatial limit into two separate
             // boxes because the degrees change from positive to negative.
+            Query query = null;
             if (spatialLimit.crossesDateline() && !spatialLimit.crossesPrimeMeridian()) {
-                format = SPATIAL_QUERY_FORMAT_PRIME;
-                q.append(
-                        String.format(
-                                format,
-                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLongitude()),
-                                TdarIndexNumberFormatter.format(180d),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
-                                MAX_LUCENE,
-                                MIN_LUCENE
-                                ));
-                q.append(" OR ");
-                q.append(
-                        String.format(
-                                format,
-                                TdarIndexNumberFormatter.format(-180d),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLongitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
-                                MAX_LUCENE,
-                                MIN_LUCENE
-                                ));
-
+                Query prime1 = createPrimeQuery(builder, spatialLimit.getMinObfuscatedLongitude(), 180d, spatialLimit.getMinObfuscatedLatitude(),
+                        spatialLimit.getMaxObfuscatedLatitude(), MAX_LUCENE, MIN_LUCENE);
+                Query prime2 = createPrimeQuery(builder, -180d, spatialLimit.getMaxObfuscatedLongitude(), spatialLimit.getMinObfuscatedLatitude(),
+                        spatialLimit.getMaxObfuscatedLatitude(), MAX_LUCENE, MIN_LUCENE);
+                query = builder.bool().should(prime1).should(prime2).createQuery();
             } else {
-                q.append(
-                        String.format(
-                                format,
-                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLongitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLongitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
-                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
-                                MAX_LUCENE,
-                                MIN_LUCENE
-                                )
-                        );
+                query = createNormQuery(builder, spatialLimit);
             }
-            q.append(String.format(" AND %s:[%s TO %s] ", QueryFieldNames.SCALE, TdarIndexNumberFormatter.MIN_ALLOWED,
-                    TdarIndexNumberFormatter.format(spatialLimit.getScale() + SCALE_RANGE)));
-
+            MustJunction must = builder
+                    .bool()
+                    .must(query)
+                    .must(builder.range().onField(QueryFieldNames.SCALE).from(TdarIndexNumberFormatter.MIN_ALLOWED).to(spatialLimit.getScale() + SCALE_RANGE)
+                            .createQuery());
+            if (getOperator() == Operator.AND) {
+                bool = bool.must(must.createQuery());
+            } else {
+                bool = bool.should(must.createQuery());
+            }
         }
-        return q.toString();
+        return bool.createQuery();
     }
+
+    private Query createPrimeQuery(QueryBuilder builder, Double d1, Double d2, Double d3, Double d4, Double d5, Double d6) {
+
+        logger.debug("prime: {} {} {} {} {} {}", d1, d2, d3, d4, d5, d6);
+        RangeTerminationExcludable q1 = createRange(builder, QueryFieldNames.MINX, d6, d2);
+        RangeTerminationExcludable q2 = createRange(builder, QueryFieldNames.MAXX, d1, d5);
+        RangeTerminationExcludable q3 = createRange(builder, QueryFieldNames.MINXPRIME, d6, d2);
+        RangeTerminationExcludable q4 = createRange(builder, QueryFieldNames.MAXXPRIME, d1, d5);
+        RangeTerminationExcludable q5 = createRange(builder, QueryFieldNames.MINY, d6, d4);
+        RangeTerminationExcludable q6 = createRange(builder, QueryFieldNames.MAXY, d3, d5);
+
+        MustJunction b1 = builder.bool().must(q1.createQuery()).must(q2.createQuery());
+        MustJunction b2 = builder.bool().must(q3.createQuery()).must(q2.createQuery());
+        MustJunction b3 = builder.bool().must(q1.createQuery()).must(q4.createQuery());
+        MustJunction b4 = builder.bool().must(q5.createQuery()).must(q6.createQuery());
+        return builder.bool().should(b1.createQuery()).should(b2.createQuery()).should(b3.createQuery()).should(b4.createQuery()).createQuery();
+    };
+
+    private RangeTerminationExcludable createRange(QueryBuilder builder, String name, Double d1, Double d2) {
+        return builder.range().onField(name).from(Math.min(d1, d2)).to(Math.max(d2, d1));
+    }
+
+    private org.apache.lucene.search.Query createNormQuery(org.hibernate.search.query.dsl.QueryBuilder builder, LatitudeLongitudeBox box) {
+        // should be boolean w/and?
+        logger.debug("norm: {}", box);
+
+        RangeTerminationExcludable q1 = builder.range().boostedTo(1).onField(QueryFieldNames.MINX).andField(QueryFieldNames.MAXX)
+                .from(Math.min(box.getMinObfuscatedLongitude(), box.getMaxObfuscatedLongitude()))
+                .to(Math.max(box.getMinObfuscatedLongitude(), box.getMaxObfuscatedLongitude()));
+        RangeTerminationExcludable q2 = createRange(builder, QueryFieldNames.MINX, MIN_LUCENE, box.getMaxObfuscatedLongitude());
+        RangeTerminationExcludable q3 = createRange(builder, QueryFieldNames.MAXX, box.getMinObfuscatedLongitude(), MAX_LUCENE);
+
+        // should be boolean w/and?
+        RangeTerminationExcludable q4 = builder.range().boostedTo(1).onField(QueryFieldNames.MINY).andField(QueryFieldNames.MAXY)
+                .from(Math.min(box.getMinObfuscatedLatitude(), box.getMaxObfuscatedLatitude()))
+                .to(Math.max(box.getMinObfuscatedLatitude(), box.getMaxObfuscatedLatitude()));
+
+        RangeTerminationExcludable q5 = createRange(builder, QueryFieldNames.MINY, MIN_LUCENE, box.getMaxObfuscatedLatitude());
+        RangeTerminationExcludable q6 = createRange(builder, QueryFieldNames.MAXY, box.getMinObfuscatedLatitude(), MAX_LUCENE);
+
+        MustJunction b1 = builder.bool().must(q2.createQuery()).must(q3.createQuery());
+        MustJunction b2 = builder.bool().must(q5.createQuery()).must(q6.createQuery());
+        BooleanJunction b3 = builder.bool().should(q1.createQuery()).should(b1.createQuery());
+        BooleanJunction b4 = builder.bool().should(q4.createQuery()).should(b2.createQuery());
+        return builder.bool().must(q1.createQuery()).must(b3.createQuery()).must(b4.createQuery()).createQuery();
+    };
+//
+//    @Override
+//    public String generateQueryString() {
+//        StringBuilder q = new StringBuilder();
+//
+//        for (LatitudeLongitudeBox spatialLimit : getFieldValues()) {
+//            if (!spatialLimit.isInitialized()) {
+//                continue;
+//            }
+//            if (q.length() > 0) {
+//                q.append(" " + operator.name() + " ");
+//            }
+//
+//            String format = SPATIAL_QUERY_FORMAT;
+//
+//            logger.trace("crosses primeMeridian: {}, crosses antiMeridian: {}", spatialLimit.crossesPrimeMeridian(), spatialLimit.crossesDateline());
+//            // If the search bounds cross the antimeridian, we need to split up the spatial limit into two separate
+//            // boxes because the degrees change from positive to negative.
+//            if (spatialLimit.crossesDateline() && !spatialLimit.crossesPrimeMeridian()) {
+//                format = SPATIAL_QUERY_FORMAT_PRIME;
+//                q.append(
+//                        String.format(
+//                                format,
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLongitude()),
+//                                TdarIndexNumberFormatter.format(180d),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
+//                                MAX_LUCENE,
+//                                MIN_LUCENE
+//                                ));
+//                q.append(" OR ");
+//
+//                q.append(
+//                        String.format(
+//                                format,
+//                                TdarIndexNumberFormatter.format(-180d),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLongitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
+//                                MAX_LUCENE,
+//                                MIN_LUCENE
+//                                ));
+//
+//            } else {
+//                q.append(
+//                        String.format(
+//                                format,
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLongitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLongitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMinObfuscatedLatitude()),
+//                                TdarIndexNumberFormatter.format(spatialLimit.getMaxObfuscatedLatitude()),
+//                                MAX_LUCENE,
+//                                MIN_LUCENE
+//                                )
+//                        );
+//            }
+//            q.append(String.format(" AND %s:[%s TO %s] ", QueryFieldNames.SCALE, TdarIndexNumberFormatter.MIN_ALLOWED,
+//                    TdarIndexNumberFormatter.format(spatialLimit.getScale() + SCALE_RANGE)));
+//
+//        }
+//        return q.toString();
+//    }
 
     @Override
     public String getDescription(TextProvider provider) {

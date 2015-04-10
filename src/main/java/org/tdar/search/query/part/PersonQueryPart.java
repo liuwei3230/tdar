@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 
 public class PersonQueryPart extends FieldQueryPart<Person> {
@@ -18,7 +20,11 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
     private boolean registered = false;
 
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
+        return generateRawQuery().generateQuery(builder);
+    };
+    
+    private QueryPartGroup generateRawQuery() {
         List<String> fns = new ArrayList<>();
         List<String> lns = new ArrayList<>();
         List<String> ems = new ArrayList<>();
@@ -42,14 +48,14 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
                 String wildcard = StringUtils.trim(new String(wildcardName));
                 wildcard = PhraseFormatter.ESCAPED.format(wildcard);
                 if (!wildcard.contains(" ")) {
-                    wildcard = PhraseFormatter.WILDCARD.format(wildcard);
+//                    wildcard = PhraseFormatter.WILDCARD.format(wildcard);
                 } else {
-                    wildcard = PhraseFormatter.QUOTED.format(wildcard);
+//                    wildcard = PhraseFormatter.QUOTED.format(wildcard);
                 }
-//                FieldQueryPart<String> fullName = new FieldQueryPart<>(QueryFieldNames.PROPER_NAME, wildcard);
-//                fullName.setBoost(6f);
-//                fullName.setBoost(6f);
-//                group.append(fullName);
+                FieldQueryPart<String> fullName = new FieldQueryPart<>(QueryFieldNames.PROPER_NAME, wildcard);
+                fullName.setBoost(6f);
+                fullName.setWildcard(true);
+                group.append(fullName);
                 FieldQueryPart<String> auto = new FieldQueryPart<String>(QueryFieldNames.PROPER_AUTO, wildcard);
                 auto.setBoost(6f);
                 group.append(auto);
@@ -70,9 +76,9 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
                 String institution = StringUtils.trim(pers.getInstitutionName());
                 institution = PhraseFormatter.ESCAPED.format(institution);
                 // institution = PhraseFormatter.WILDCARD.format(institution);
-                if (institution.contains(" ")) {
-                    institution = PhraseFormatter.QUOTED.format(institution);
-                }
+//                if (institution.contains(" ")) {
+//                    institution = PhraseFormatter.QUOTED.format(institution);
+//                }
                 insts.add(institution);
             }
         }
@@ -82,18 +88,21 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
         
         if (CollectionUtils.isNotEmpty(fns)) {
             FieldQueryPart<String> fqp = new FieldQueryPart<String>("firstName", fns);
-            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            fqp.setWildcard(true);
             group.append(fqp);
         }
 
         if (CollectionUtils.isNotEmpty(lns)) {
             FieldQueryPart<String> ln = new FieldQueryPart<String>("lastName", lns);
-            ln.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            ln.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            ln.setWildcard(true);
             group.append(ln);
         }
         if (CollectionUtils.isNotEmpty(ems)) {
             FieldQueryPart<String> emls = new FieldQueryPart<String>("email", ems);
-            emls.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+            emls.setPhraseFormatters(PhraseFormatter.ESCAPED);
+            emls.setWildcard(true);
             group.append(emls);
         }
         if (CollectionUtils.isNotEmpty(insts)) {
@@ -107,18 +116,20 @@ public class PersonQueryPart extends FieldQueryPart<Person> {
             // adding wildcard search for username too
             if (CollectionUtils.isNotEmpty(wildcards)) {
                 FieldQueryPart<String> fqp = new FieldQueryPart<String>("username", wildcards);
-                fqp.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
+                fqp.setPhraseFormatters(PhraseFormatter.ESCAPED);
                 fqp.setOperator(Operator.OR);
+                fqp.setWildcard(true);
                 group.append(fqp);
             }
 
             QueryPartGroup qpg = new QueryPartGroup(Operator.AND);
             qpg.append(group);
             qpg.append(new FieldQueryPart<Boolean>("registered", Boolean.TRUE));
-            return qpg.generateQueryString();
+            return qpg;
         }
-        return group.toString();
+        return group;
     }
+
 
     public boolean isRegistered() {
         return registered;

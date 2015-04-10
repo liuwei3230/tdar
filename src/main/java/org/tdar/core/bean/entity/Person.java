@@ -404,4 +404,9 @@ public class Person extends Creator implements Comparable<Person>, Dedupable<Per
         }
     }
 
+    // affordance for HibernateSearch
+    @Field(name = QueryFieldNames.USERNAME, analyzer = @Analyzer(impl = NonTokenizingLowercaseKeywordAnalyzer.class))
+    public String getUsername() {
+        return null;
+    }
 }

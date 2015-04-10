@@ -8,7 +8,16 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.BooleanJunction;
+import org.hibernate.search.query.dsl.PhraseContext;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.QueryCustomization;
+import org.hibernate.search.query.dsl.RangeContext;
+import org.hibernate.search.query.dsl.TermContext;
+import org.hibernate.search.query.dsl.WildcardContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Localizable;
 import org.tdar.core.bean.Validatable;
@@ -16,6 +25,8 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarValidationException;
+import org.tdar.core.service.search.Operator;
+import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.TextProvider;
 
@@ -39,7 +50,12 @@ public class FieldQueryPart<C> implements QueryPart<C> {
     private boolean inverse;
     private boolean descriptionVisible = true;
     private boolean allowInvalid = false;
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
+    private boolean wildcard;
+    private boolean keyword;
+
+    
     public FieldQueryPart() {
     }
 
@@ -106,20 +122,50 @@ public class FieldQueryPart<C> implements QueryPart<C> {
 
     @Override
     public String toString() {
-        return generateQueryString();
+        return getDescription(MessageHelper.getInstance());
     }
 
     @Override
-    public String generateQueryString() {
-        StringBuilder sb = new StringBuilder();
+    public Query generateQuery(QueryBuilder builder) {
+
+        BooleanJunction<?> bq = builder.bool();
+        boolean seen = false;
         for (int i = 0; i < fieldValues.size(); i++) {
-            appendPhrase(sb, i);
+            C item = fieldValues.get(i);
+            Query q = appendQuery(builder, i, item);
+            if (q == null) {
+                continue;
+            }
+            seen = true;
+            switch (getOperator()) {
+                case AND:
+                    if (inverse) {
+                        bq = bq.must(q).not();
+                    } else {
+                        bq = bq.must(q);
+                    }
+                case OR:
+                    bq = bq.should(q);
+            }            
         }
-        if (sb.length() == 0) {
-            return "";
+        if (seen == false) {
+            return null;
         }
-        constructQueryPhrase(sb, getFieldName());
-        return sb.toString();
+        return bq.createQuery();
+    }
+
+    protected Query appendQuery(QueryBuilder builder, int i, C item) {
+        Query q;
+        if ( Number.class.isAssignableFrom(item.getClass())) {
+            q = appendNumericQuery(builder, i);
+        } else if (isWildcard()) {
+            q = appendWildcard(builder, i);            
+        } else if (isKeyword()) {
+            q = appendKeyword(builder, i);            
+        } else {
+            q = appendPhrase(builder, i);
+        }
+        return q;
     }
 
     protected void constructQueryPhrase(StringBuilder sb, String fieldName) {
@@ -162,6 +208,89 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         if (getProximity() != null) {
             sb.append('~').append(getProximity());
         }
+    }
+
+    protected Query appendPhrase(QueryBuilder builder, int index) {
+        String value = "";
+        value = formatValueAsStringForQuery(index);
+        PhraseContext onField = builder.phrase();
+        applyBoostProximitySlop(onField);
+        // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
+        // for (PhraseFormatter formatter : phraseFormatters) {
+        // value = formatter.format(value);
+        // }
+        // }
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+
+        return onField.onField(getFieldName()).sentence(value).createQuery();
+    }
+
+    protected Query appendNumericQuery(QueryBuilder builder, int index) {
+        C item = fieldValues.get(index);
+        RangeContext range = builder.range();
+        applyBoostProximitySlop(range);
+        if (item == null) {
+            return null;
+        }
+
+        return range.onField(getFieldName()).from(item).to(item).createQuery();
+    }
+
+    protected void applyBoostProximitySlop(QueryCustomization<?> fld) {
+        if (getProximity() != null) {
+            if (fld instanceof TermContext) {
+                ((TermContext) fld).fuzzy().withEditDistanceUpTo(getProximity());
+            }
+
+            if (fld instanceof PhraseContext) {
+                ((PhraseContext) fld).withSlop(getProximity());
+            }
+        }
+        if (getBoost() != null) {
+            fld.boostedTo(getBoost());
+        }
+        if (StringUtils.isEmpty(getFieldName())) {
+            throw new TdarRecoverableRuntimeException("fieldQueryPart.field_is_null", Arrays.asList(getFieldName(), getFieldValues()));
+        }
+    }
+
+    protected Query appendWildcard(QueryBuilder builder, int index) {
+        String value = formatValueAsStringForQuery(index);
+        WildcardContext onField = builder.keyword().wildcard();
+        applyBoostProximitySlop(onField);
+
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        
+        //FIXME: Analyzer seems to not force to lower case
+        value = value.toLowerCase() + "*";
+        // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
+        // for (PhraseFormatter formatter : phraseFormatters) {
+        // value = formatter.format(value);
+        // }
+        // }
+        return onField.onField(getFieldName()).matching(value).createQuery();
+    }
+
+    
+    protected Query appendKeyword(QueryBuilder builder, int index) {
+        String value = "";
+        value = formatValueAsStringForQuery(index);
+        TermContext onField = builder.keyword();
+        applyBoostProximitySlop(onField);
+
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        // if (CollectionUtils.isNotEmpty(phraseFormatters)) {
+        // for (PhraseFormatter formatter : phraseFormatters) {
+        // value = formatter.format(value);
+        // }
+        // }
+        return onField.onField(getFieldName()).matching(value).createQuery();
     }
 
     protected String formatValueAsStringForQuery(int index) {
@@ -208,9 +337,8 @@ public class FieldQueryPart<C> implements QueryPart<C> {
      *            "jakarta apache"^4 "Apache Lucene"
      *            By default, the boost factor is 1. Although the boost factor must be positive, it can be less than 1 (e.g. 0.2)
      */
-    public FieldQueryPart<C> setBoost(Float boost) {
+    public void setBoost(Float boost) {
         this.boost = boost;
-        return this;
     }
 
     /**
@@ -237,12 +365,11 @@ public class FieldQueryPart<C> implements QueryPart<C> {
      *            roam~0.8
      *            The default that is used if the parameter is not given is 0.5.
      */
-    public FieldQueryPart<C> setFuzzy(Float fuzzy) {
+    public void setFuzzy(Float fuzzy) {
         if (fuzzy > 1) {
             throw new TdarRecoverableRuntimeException("fieldQueryPart.fuzzyness_out_of_range");
         }
         this.fuzzy = fuzzy;
-        return this;
     }
 
     /**
@@ -260,9 +387,8 @@ public class FieldQueryPart<C> implements QueryPart<C> {
      * 
      *            "jakarta apache"~10
      */
-    public FieldQueryPart<C> setProximity(Integer proximity) {
+    public void setProximity(Integer proximity) {
         this.proximity = proximity;
-        return this;
     }
 
     @Override
@@ -276,7 +402,7 @@ public class FieldQueryPart<C> implements QueryPart<C> {
             StringBuilder builder = new StringBuilder();
             if (Resource.class.isAssignableFrom(fieldValue.getClass())) {
                 fieldValue = ((Resource) fieldValue).getTitle();
-            }else if (ResourceCollection.class.isAssignableFrom(fieldValue.getClass())) {
+            } else if (ResourceCollection.class.isAssignableFrom(fieldValue.getClass())) {
                 fieldValue = ((ResourceCollection) fieldValue).getTitle();
             } else if (fieldValue instanceof Localizable) {
                 fieldValue = provider.getText(((Localizable) fieldValue).getLocaleKey());
@@ -409,14 +535,29 @@ public class FieldQueryPart<C> implements QueryPart<C> {
         return builder.toString();
     }
 
-
     public String getCleanedQueryString(String value) {
         String cleanedQueryString = value.trim();
         // if we have a leading and trailng quote, strip them
         if (cleanedQueryString.startsWith("\"") && cleanedQueryString.endsWith("\"")) {
             cleanedQueryString = cleanedQueryString.substring(1, cleanedQueryString.length() - 1);
         }
-        return PhraseFormatter.ESCAPE_QUOTED.format(cleanedQueryString);
+        return PhraseFormatter.ESCAPED.format(cleanedQueryString);
     }
-    
+
+    public boolean isWildcard() {
+        return wildcard;
+    }
+
+    public void setWildcard(boolean wildcard) {
+        this.wildcard = wildcard;
+    }
+
+    public boolean isKeyword() {
+        return keyword;
+    }
+
+    public void setKeyword(boolean keyword) {
+        this.keyword = keyword;
+    }
+
 }

@@ -6,7 +6,11 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -15,6 +19,8 @@ public class TitleQueryPart extends FieldQueryPart<String> {
 
     private static final float TITLE_BOOST = 6f;
     private String prefix = "";
+    protected final transient Logger logger = LoggerFactory.getLogger(getClass());
+
 
     public TitleQueryPart() {
     }
@@ -56,24 +62,28 @@ public class TitleQueryPart extends FieldQueryPart<String> {
         group.setOperator(Operator.OR);
         FieldQueryPart<String> wordsInTitle = new FieldQueryPart<String>(getPrefix() + QueryFieldNames.TITLE, value);
         if (value.contains(" ")) {
-            wordsInTitle.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD, PhraseFormatter.QUOTED);
+            wordsInTitle.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
         } else {
             wordsInTitle.setPhraseFormatters(PhraseFormatter.ESCAPED, PhraseFormatter.WILDCARD);
         }
         FieldQueryPart<String> wholeTitle = new FieldQueryPart<String>(getPrefix() + QueryFieldNames.TITLE_AUTO, value);
-        wholeTitle.setPhraseFormatters(PhraseFormatter.ESCAPE_QUOTED).setBoost(TITLE_BOOST);
+        wholeTitle.setPhraseFormatters(PhraseFormatter.ESCAPED).setBoost(TITLE_BOOST);
         group.append(wholeTitle);
         group.append(wordsInTitle);
         return group;
     }
-
+    
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
+        return generateRawQuery().generateQuery(builder);
+    }
+
+    private QueryPartGroup generateRawQuery() {
         QueryPartGroup group = new QueryPartGroup(getOperator());
         for (String title : getFieldValues()) {
             group.append(getQueryPart(title));
         }
-        return group.generateQueryString();
+        return group;
     }
 
     @Override

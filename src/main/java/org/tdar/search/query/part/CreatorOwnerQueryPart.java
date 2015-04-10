@@ -7,12 +7,14 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -27,9 +29,15 @@ public class CreatorOwnerQueryPart extends FieldQueryPart<Creator> {
         setAllowInvalid(true);
         add(term);
     }
+    
 
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
+        return createRawQuery().generateQuery(builder);
+    }
+
+
+    private QueryPartGroup createRawQuery() {
         QueryPartGroup parent = new QueryPartGroup(Operator.OR);
         parent.append(generateGroupForCreator(term));
         if (CollectionUtils.isNotEmpty(term.getSynonyms())) {
@@ -37,10 +45,9 @@ public class CreatorOwnerQueryPart extends FieldQueryPart<Creator> {
                 parent.append(generateGroupForCreator(creator));
             }
         }
-        String generateQueryString = parent.generateQueryString();
-        logger.trace(generateQueryString);
-        return generateQueryString;
+        return parent;
     }
+
 
     private QueryPartGroup generateGroupForCreator(Creator creator) {
         QueryPartGroup notGroup = new QueryPartGroup();
@@ -48,7 +55,7 @@ public class CreatorOwnerQueryPart extends FieldQueryPart<Creator> {
 
         Set<ResourceCreatorRole> roles = ResourceCreatorRole.getResourceCreatorRolesForProfilePage(creator.getCreatorType());
 
-        FieldQueryPart<ResourceCreatorRole> notRoles = new FieldQueryPart<ResourceCreatorRole>("activeResourceCreators.role", Operator.OR, roles);
+        FieldQueryPart<ResourceCreatorRole> notRoles = new FieldQueryPart<ResourceCreatorRole>("activeResourceCreators.role", Operator.AND, roles);
         notRoles.setInverse(true);
 
         notGroup.append(new FieldQueryPart<Long>(QueryFieldNames.SUBMITTER_ID, Operator.AND, creator.getId()));

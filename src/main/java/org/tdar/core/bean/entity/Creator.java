@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.search.Explanation;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -165,9 +164,8 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @DocumentId
     @JsonView(JsonLookupFilter.class)
-    @Field(store = Store.YES, analyzer = @Analyzer(impl = KeywordAnalyzer.class), name = QueryFieldNames.ID)
+//    @Field(store = Store.YES, analyzer = @Analyzer(impl = KeywordAnalyzer.class), name = QueryFieldNames.ID)
     private Long id = -1L;
     /*
      * @Boost(.5f)
@@ -229,7 +227,7 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
 
     @Override
     @Fields({ @Field(name = "name", analyzer = @Analyzer(impl = NonTokenizingLowercaseKeywordAnalyzer.class)),
-            @Field(name = "name_kwd", analyzer = @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)),
+            @Field(name = QueryFieldNames.NAME_KWD, analyzer = @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)),
             @Field(name = QueryFieldNames.CREATOR_NAME_SORT, norms = Norms.NO, store = Store.YES) })
     @JsonView(JsonLookupFilter.class)
     public abstract String getName();
@@ -255,6 +253,7 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
 
     @Override
     @XmlAttribute
+    @DocumentId
     public Long getId() {
         return id;
     }

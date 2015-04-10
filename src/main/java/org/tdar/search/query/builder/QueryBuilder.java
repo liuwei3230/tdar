@@ -9,11 +9,11 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.tdar.core.service.search.Operator;
 import org.tdar.core.service.search.SearchParameters;
 import org.tdar.search.index.analyzer.NonTokenizingLowercaseKeywordAnalyzer;
 import org.tdar.search.query.part.QueryPartGroup;
@@ -32,20 +32,12 @@ public abstract class QueryBuilder extends QueryPartGroup {
     private static final String _AUTO = "_auto";
     private final Logger logger = Logger.getLogger(getClass());
     private Class<?>[] classes;
-    private List<DynamicQueryComponent> overrides = new ArrayList<DynamicQueryComponent>();
     // private List<String> omitContainedLabels = Arrays.asList("_auto");
     private Operator operator = Operator.AND;
     private QueryParser queryParser;
     private Query query;
     private String rawQuery;
 
-    public List<DynamicQueryComponent> getOverrides() {
-        return this.overrides;
-    }
-
-    public void setOverrides(List<DynamicQueryComponent> over) {
-        this.overrides = over;
-    }
 
     public void append(SearchParameters param, TextProvider provider) {
         if (param != null) {

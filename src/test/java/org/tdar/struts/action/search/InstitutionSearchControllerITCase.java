@@ -69,6 +69,7 @@ public class InstitutionSearchControllerITCase extends AbstractControllerITCase 
         for (Person p : people) {
             updateAndIndex(p);
         }
+        searchIndexService.flushToIndexes();
         controller.setQuery("Mary Whelan");
         controller.searchPeople();
         List<Person> results = ((List<Person>)(List<?>)controller.getResults());

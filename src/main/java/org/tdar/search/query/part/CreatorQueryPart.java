@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.entity.Creator;
@@ -14,6 +15,7 @@ import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.ResourceCreatorProxy;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.PersistableUtils;
 
@@ -40,17 +42,14 @@ public class CreatorQueryPart<C extends Creator> extends
                 if (proxy.isValid()) {
                     List<Creator> creators = new ArrayList<Creator>();
                     if (rc.getCreator() instanceof Dedupable<?>) {
-                        creators.addAll(((Dedupable<Creator>) rc.getCreator())
-                                .getSynonyms());
+                        creators.addAll(((Dedupable<Creator>) rc.getCreator()).getSynonyms());
                     }
                     creators.add(rc.getCreator());
                     for (Creator creator_ : creators) {
                         if (PersistableUtils.isTransient(creator_)) {
                             // user entered a complete-ish creator record but
                             // autocomplete callback did fire successfully
-                            throw new TdarRecoverableRuntimeException(
-                                    "creatorQueryPart.use_autocomplete",
-                                    Arrays.asList(creator_.toString()));
+                            throw new TdarRecoverableRuntimeException("creatorQueryPart.use_autocomplete", Arrays.asList(creator_.toString()));
                         }
                         this.roles.add(rc.getRole());
                         this.getFieldValues().add((C) creator_);
@@ -63,7 +62,11 @@ public class CreatorQueryPart<C extends Creator> extends
     }
 
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
+        return constructRawQuery().generateQuery(builder);
+    }
+
+    private QueryPartGroup constructRawQuery() {
         QueryPartGroup group = new QueryPartGroup(Operator.OR);
         List<Integer> trans = new ArrayList<>();
         List<String> terms = new ArrayList<>();
@@ -78,17 +81,19 @@ public class CreatorQueryPart<C extends Creator> extends
         }
         if (terms.size() > 0) {
             FieldQueryPart<String> fqp = new FieldQueryPart<>(getFieldName(), terms);
+            fqp.setWildcard(true);
             fqp.setOperator(Operator.OR);
             group.append(fqp);
             if (QueryFieldNames.CREATOR_ROLE_IDENTIFIER.equals(getFieldName())) {
-                FieldQueryPart<String> projectChildren = new FieldQueryPart<>(QueryFieldNames.IR_CREATOR_ROLE_IDENTIFIER, terms);
+                FieldQueryPart<String> projectChildren = new FieldQueryPart<String>(QueryFieldNames.IR_CREATOR_ROLE_IDENTIFIER, terms);
+                projectChildren.setWildcard(true);
                 projectChildren.setOperator(Operator.OR);
                 group.append(projectChildren);
                 group.setOperator(Operator.OR);
             }
 
         }
-        return group.generateQueryString();
+        return group;
     }
 
     @Override
@@ -119,8 +124,7 @@ public class CreatorQueryPart<C extends Creator> extends
             ResourceCreatorRole role = getRoles().get(i);
             if ((creator != null) && !creator.hasNoPersistableValues()) {
                 if (names.length() > 0) {
-                    names.append(" " + getOperator().name().toLowerCase())
-                            .append(" ");
+                    names.append(" ").append(getOperator().name().toLowerCase()).append(" ");
                 }
                 names.append(creator.getProperName());
                 if (role != null) {

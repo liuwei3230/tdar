@@ -31,7 +31,7 @@ import org.tdar.search.query.QueryFieldNames;
 @Check(constraints = "label <> ''")
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.keyword.SiteNameKeyword")
 @Cacheable
-public class SiteNameKeyword extends UncontrolledKeyword.Base<SiteNameKeyword> {
+public class SiteNameKeyword extends KeywordBase<SiteNameKeyword> implements UncontrolledKeyword {
 
     private static final long serialVersionUID = 60750909588980398L;
 
@@ -49,7 +49,7 @@ public class SiteNameKeyword extends UncontrolledKeyword.Base<SiteNameKeyword> {
         this.synonyms = synonyms;
     }
 
-    @Field(name = QueryFieldNames.SITE_CODE, analyzer = @Analyzer(impl = SiteCodeTokenizingAnalyzer.class))
+    @Field(name = QueryFieldNames.SITE_CODE, analyzer=@Analyzer(impl = SiteCodeTokenizingAnalyzer.class))
     public String getSiteCode() {
         return getLabel();
     }

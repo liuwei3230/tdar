@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.search.Query;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.entity.Creator;
+import org.tdar.core.service.search.Operator;
 import org.tdar.search.query.QueryFieldNames;
 
 public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
@@ -23,14 +25,17 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
         add(creator);
     }
 
-
     @Override
-    public String generateQueryString() {
+    public Query generateQuery(QueryBuilder builder) {
+        return createRawQuery().generateQuery(builder);
+    }
+
+    private QueryPartGroup createRawQuery() {
         QueryPartGroup group = new QueryPartGroup(getOperator());
         for (Creator value : getFieldValues()) {
             group.append(this.getQueryPart(value));
         }
-        return group.generateQueryString();
+        return group;
     }
 
     protected QueryPartGroup getQueryPart(Creator value) {
@@ -42,27 +47,23 @@ public class GeneralCreatorQueryPart extends FieldQueryPart<Creator> {
 
         FieldQueryPart<String> titlePart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, cleanedQueryString);
 
-        List<String> fields = new ArrayList<String>();
-        for (String txt : StringUtils.split(cleanedQueryString)) {
-            txt = txt.replace("\"", "");
-            if (!ArrayUtils.contains(QueryPart.LUCENE_RESERVED_WORDS, txt)) {
-                fields.add(txt);
-            }
-        }
-
-        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, fields).setBoost(ANY_FIELD_BOOST);
+        FieldQueryPart<String> allFieldsAsPart = new FieldQueryPart<String>(QueryFieldNames.NAME_TOKEN, cleanedQueryString);
+        allFieldsAsPart.setBoost(ANY_FIELD_BOOST);
+        allFieldsAsPart.setKeyword(true);
         allFieldsAsPart.setOperator(Operator.AND);
         allFieldsAsPart.setPhraseFormatters(PhraseFormatter.ESCAPED);
 
         if (cleanedQueryString.contains(" ")) {
+            allFieldsAsPart.setKeyword(false);
             titlePart = new FieldQueryPart<String>(QueryFieldNames.NAME_PHRASE, cleanedQueryString);
             // FIXME: magic words
             if (useProximity) {
                 titlePart.setProximity(3);
             }
         }
-
-        primary.append(titlePart.setBoost(NAME_BOOST));
+        titlePart.setOperator(Operator.AND);
+        titlePart.setBoost(NAME_BOOST);
+        primary.append(titlePart);
         primary.append(allFieldsAsPart);
 
         return primary;
