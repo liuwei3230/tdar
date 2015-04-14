@@ -688,27 +688,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-			<version>4.10.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>4.10.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-spatial</artifactId>
-			<version>4.10.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-			<version>4.10.3</version>
-		</dependency>
-
+        <dependency>
+       	   <groupId>org.elasticsearch</groupId>
+		   <artifactId>elasticsearch</artifactId>
+   		   <version>1.5.1</version>
+   		   <exclusions>
+   		   	<exclusion>
+   		   		<artifactId>asm-commons</artifactId>
+   		   		<groupId>org.ow2.asm</groupId>
+   		   	</exclusion>
+   		   	<exclusion>
+   		   		<artifactId>asm</artifactId>
+   		   		<groupId>org.ow2.asm</groupId>
+   		   	</exclusion>
+   		   </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>

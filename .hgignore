@@ -35,6 +35,7 @@ import.log
 
 node
 node_modules
+elasticsearch-data
 syntax: regexp
 ^src/main/webapp/robots\.txt$
 
