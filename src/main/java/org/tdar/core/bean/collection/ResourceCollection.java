@@ -6,16 +6,7 @@
  */
 package org.tdar.core.bean.collection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
@@ -48,6 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.search.Explanation;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
@@ -227,6 +219,11 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private ResourceCollection parent;
+
+    @OneToMany( mappedBy = "parent", fetch = FetchType.LAZY)
+    @Immutable
+    private List<ResourceCollection> directChildren = new ArrayList<>();
+
 
     @ElementCollection()
     @CollectionTable(name = "collection_parents", joinColumns = @JoinColumn(name = "collection_id"))
@@ -723,8 +720,22 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
 
     }
 
+    /**
+     * Returns the direct children of this resource collection object.  Do not attempt to modify this list direcly.
+     * Instead, indirectly build the list by calling {@link #setParent(ResourceCollection) setParent} on a child
+     * collection.
+     *
+     * @return
+     */
+    @XmlTransient
+    public List<ResourceCollection> getDirectChildren() {
+        return Collections.unmodifiableList(directChildren);
+    }
+
+
     @XmlTransient
     @Transient
+    @Deprecated //FIXME: remove transientChildren (and related code) if we successfully implement one-to-many directChildren field (TDAR-4648)
     public Set<ResourceCollection> getTransientChildren() {
         return transientChildren;
     }
