@@ -1,5 +1,6 @@
 package org.tdar.core.service.search;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -42,6 +45,7 @@ import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.ActivityManager;
+import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.EmailService;
 import org.tdar.search.index.LookupSource;
 import org.tdar.utils.ImmutableScrollableCollection;
@@ -67,6 +71,9 @@ public class SearchIndexService {
     @Autowired
     private DatasetDao datasetDao;
 
+    @Autowired
+    private SerializationService serializationService;
+    
     @Autowired
     private EmailService emailService;
 
@@ -281,6 +288,7 @@ public class SearchIndexService {
         try {
             if (deleteFirst) {
                 fullTextSession.purge(item.getClass(), item.getId());
+                client.delete(new DeleteRequest(getIndexForClass(item.getClass())).id(item.getId().toString()));
             }
 
             if (item instanceof InformationResource) {
@@ -292,13 +300,24 @@ public class SearchIndexService {
                 Project project = (Project) item;
                 if (null == project.getCachedInformationResources()) {
                     setupProjectForIndexing(project);
-//                    logger.debug("project contents null: {} {}", project, project.getCachedInformationResources());
                 }
             }
+            
+            client.index(new IndexRequest(getIndexForClass(item.getClass())).id(item.getId().toString()).source(serializationService.convertToJson(item)));
             fullTextSession.index(item);
+        } catch (IOException ioe) {
+            logger.error("error ocurred in indexing", ioe);
         } catch (Throwable t) {
             logger.error("error ocurred in indexing", t);
             throw t;
+        }
+    }
+
+    private String getIndexForClass(Class<? extends Indexable> class1) {
+        if (Resource.class.isAssignableFrom(class1) ) {
+            return "resource";
+        } else {
+            return class1.getSimpleName().toLowerCase();
         }
     }
 

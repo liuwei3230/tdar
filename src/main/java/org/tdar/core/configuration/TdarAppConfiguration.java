@@ -90,7 +90,6 @@ public class TdarAppConfiguration implements Serializable, SchedulingConfigurer,
 
         LocalSessionFactoryBuilder builder = new LocalSessionFactoryBuilder(dataSource);
         builder.scanPackages(new String[] { "org.tdar.core" });
-        // builder.addPackages(new String[] { "org.tdar.core" });
         builder.addProperties(properties);
         return builder.buildSessionFactory();
     }
