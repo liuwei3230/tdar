@@ -72,6 +72,7 @@ public class TdarAppConfiguration implements Serializable, SchedulingConfigurer,
     public TdarAppConfiguration() {
         logger.debug("Initializing tDAR Application Context");
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
+        embeddedElasticsearchServer.setupIndexes();
     }
 
     @Bean(name="elasticClient")

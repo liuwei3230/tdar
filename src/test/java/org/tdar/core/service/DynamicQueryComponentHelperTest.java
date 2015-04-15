@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.search.query.QueryFieldNames;
@@ -14,6 +15,7 @@ import org.tdar.search.query.builder.DynamicQueryComponentHelper;
 import org.tdar.search.query.builder.QueryBuilder;
 import org.tdar.search.query.builder.ResourceQueryBuilder;
 
+@Ignore
 public class DynamicQueryComponentHelperTest {
 
     public Logger logger = Logger.getLogger(getClass());
