@@ -8,6 +8,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.Requests;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.ScrollableResults;
@@ -55,6 +61,9 @@ public class SearchIndexService {
     @Autowired
     private GenericDao genericDao;
 
+    @Autowired
+    private Client client;
+    
     @Autowired
     private DatasetDao datasetDao;
 
@@ -105,6 +114,20 @@ public class SearchIndexService {
         return toReindex;
     }
 
+    public void createIndex(String name, LookupSource source) {
+        Settings indexSettings = ImmutableSettings.settingsBuilder()
+                .put("number_of_shards", 1)
+                .put("number_of_replicas", 1)
+                .build();
+        CreateIndexRequest request =
+            Requests.createIndexRequest("orange11")
+                .settings(indexSettings);
+//                .mapping();
+        CreateIndexResponse response =
+            client.admin().indices().create(request).actionGet();
+
+    }
+    
     /**
      * Index all of the @link Indexable items. Uses a ScrollableResult to manage memory and object complexity
      * 
@@ -440,6 +463,7 @@ public class SearchIndexService {
         }
     }
 
+    
     /**
      * Exposes the FullTextSession (HibernateSearch's interface to Lucene)
      * 
