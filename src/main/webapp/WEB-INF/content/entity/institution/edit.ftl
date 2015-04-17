@@ -17,7 +17,11 @@
         <@s.token name='struts.csrf.token' />
         <@common.jsErrorLog />
     <div class="glide">
+        <#if actionName = 'add'>
+        <h1>Create New Institution</h1>
+        <#else>
         <h1>Institution Information for: ${institution.name}</h1>
+        </#if>
         <@s.hidden name="id" />
         <@s.textfield name="name" required=true label="Name" id="txtInstitutionName" cssClass="input-xlarge"  maxlength=255 />
 
@@ -37,7 +41,7 @@
 
         <@s.textfield name="institution.email" label="Email" id="txtEmail" cssClass="input-xlarge email"  maxlength=255 />
 
-        <@s.textarea name="institution.description" label="Description" cssClass="input-xxlarge" />
+        <@s.textarea name="institution.description" label="Description" cssClass="input-xxlarge"  cols="80"  rows="4"/>
 
         <h3>Address List</h3>
         <@common.listAddresses entity=institution entityType="institution" />

@@ -183,7 +183,7 @@
                 // NOTE: hibernate is not smart enough to handle the "group by kwd" it needs to be told to include ALL of the keyword attributes that
                 // it's going to request in the setter.
                 query = "select kwd.label , kwd.level, count(r.id), kwd.id from Resource r join " +
-                        "r.managedGeographicKeywords as kwd where kwd.level='ISO_COUNTRY' and r.status='ACTIVE'  group by kwd.label , kwd.level, kwd.id"),
+                        "r.managedGeographicKeywords as kwd where kwd.level='COUNTRY' and r.status='ACTIVE'  group by kwd.label , kwd.level, kwd.id"),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_ACTIVE_RESOURCE_TYPE_COUNT,
                 query = "select count(res.id) as count , res.resourceType as resourceType from Resource as res where res.status='ACTIVE' group by res.resourceType "
@@ -261,7 +261,7 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_KEYWORD_COUNT_FILE_EXTENSION,
-                query = "select extension, count(*) from InformationResourceFileVersion where fileVersionType in (:internalTypes)  group by extension "
+                query = "select lower(extension), count(*) from InformationResourceFileVersion where fileVersionType in (:internalTypes)  group by lower(extension) "
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_RECENT_USERS_ADDED,
@@ -273,7 +273,7 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_FILE_STATS,
-                query = "select extension, avg(fileLength) , min(fileLength) , max(fileLength) from InformationResourceFileVersion where fileVersionType in (:types) group by extension order by extension desc"
+                query = "select lower(extension), avg(fileLength) , min(fileLength) , max(fileLength) from InformationResourceFileVersion where fileVersionType in (:types) group by lower(extension) order by lower(extension) desc"
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_RESOURCES_IN_PROJECT,

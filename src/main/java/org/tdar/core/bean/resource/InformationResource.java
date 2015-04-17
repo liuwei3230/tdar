@@ -84,6 +84,7 @@ import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 import org.tdar.utils.json.JsonLookupFilter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 
 /**
@@ -499,6 +500,7 @@ public abstract class InformationResource extends Resource {
     }
 
     @XmlTransient
+    @JsonIgnore
     public InformationResourceFile getFirstInformationResourceFile() {
         if (getInformationResourceFiles().isEmpty()) {
             return null;
@@ -507,6 +509,7 @@ public abstract class InformationResource extends Resource {
     }
 
     @XmlTransient
+    @JsonIgnore
     public Set<InformationResourceFile> getActiveInformationResourceFiles() {
         HashSet<InformationResourceFile> files = new HashSet<>();
         for (InformationResourceFile file : informationResourceFiles) {
@@ -552,6 +555,7 @@ public abstract class InformationResource extends Resource {
     }
 
     @XmlTransient
+    @JsonIgnore
     public InformationResourceFileVersion getLatestUploadedVersion() {
         Collection<InformationResourceFileVersion> latestUploadedVersions = getLatestUploadedVersions();
         if (CollectionUtils.isEmpty(latestUploadedVersions)) {
@@ -562,6 +566,7 @@ public abstract class InformationResource extends Resource {
     }
 
     @XmlTransient
+    @JsonIgnore
     public Collection<InformationResourceFileVersion> getLatestUploadedVersions() {
         return getLatestVersions(VersionType.UPLOADED);
     }
@@ -571,6 +576,7 @@ public abstract class InformationResource extends Resource {
     @Analyzer(impl = LowercaseWhiteSpaceStandardAnalyzer.class)
     @Transient
     // @Boost(0.5f)
+    @JsonIgnore
     @XmlTransient
     public List<InformationResourceFileVersion> getContent() {
         logger.trace("getContent");
@@ -880,9 +886,10 @@ public abstract class InformationResource extends Resource {
             }
         }
 
-        // if (getProject() != null) {
-        // getProject().getTitle();
-        // }
+        if (getProject() != Project.NULL) {
+            sb.append(getProject().getTitle());
+            sb.append(" ");
+        }
         return sb.toString();
     }
 
