@@ -1,6 +1,7 @@
 package org.tdar.struts.action;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
 import org.junit.Test;

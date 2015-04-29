@@ -1,19 +1,18 @@
 package org.tdar.experimental;
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.collection.DownloadAuthorization;
-
-import java.nio.charset.Charset;
-import java.util.UUID;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+
+import java.util.UUID;
+
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.collection.DownloadAuthorization;
 
 /**
  * Jdevos: We are not testing java.util.UUID, but rather my assumptions on how it works.  Assume that a failed test is a bad test, and ignore it.
