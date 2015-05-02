@@ -10,9 +10,11 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.annotation.PreDestroy;
 import javax.persistence.Transient;
 import javax.sql.DataSource;
 
+import org.elasticsearch.client.Client;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,7 @@ import org.tdar.core.dao.external.auth.AuthenticationProvider;
 import org.tdar.core.dao.external.auth.CrowdRestDao;
 import org.tdar.core.dao.external.pid.EZIDDao;
 import org.tdar.core.dao.external.pid.ExternalIDProvider;
+import org.tdar.search.EmbeddedElasticsearchServer;
 import org.tdar.web.SessionData;
 
 @Configuration
@@ -64,9 +67,22 @@ public class TdarAppConfiguration implements Serializable, SchedulingConfigurer,
     private static final long serialVersionUID = 6038273491995542363L;
     @Transient
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
+    private EmbeddedElasticsearchServer embeddedElasticsearchServer;
 
     public TdarAppConfiguration() {
         logger.debug("Initializing tDAR Application Context");
+        embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
+        embeddedElasticsearchServer.setupIndexes();
+    }
+
+    @Bean(name="elasticClient")
+    public Client getClient() {
+        return embeddedElasticsearchServer.getClient();
+    }
+    
+    @PreDestroy
+    public void shutdown() {
+        embeddedElasticsearchServer.shutdown();
     }
 
     @Bean(name = "sessionFactory")
@@ -75,7 +91,6 @@ public class TdarAppConfiguration implements Serializable, SchedulingConfigurer,
 
         LocalSessionFactoryBuilder builder = new LocalSessionFactoryBuilder(dataSource);
         builder.scanPackages(new String[] { "org.tdar.core" });
-        builder.addPackages(new String[] { "org.tdar.core" });
         builder.addProperties(properties);
         return builder.buildSessionFactory();
     }
@@ -184,7 +199,7 @@ public class TdarAppConfiguration implements Serializable, SchedulingConfigurer,
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new AsyncUncaughtExceptionHandler() {
-            
+
             @Override
             public void handleUncaughtException(Throwable ex, Method method, Object... params) {
                 logger.error("exception in async: {} {} ", method, params);

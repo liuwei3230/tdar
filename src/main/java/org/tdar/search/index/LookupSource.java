@@ -71,4 +71,19 @@ public enum LookupSource implements HasLabel, Localizable {
         return classes;
     }
 
+    public static String getIndexForName(Class<?> clss) {
+        for (LookupSource src : LookupSource.values()) {
+            for (Class<? extends Indexable> lookup : src.getClasses()) {
+                if (lookup.isAssignableFrom(clss)) {
+                    return src.getIndexName();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getIndexName() {
+        return "tdar-" + name().toLowerCase();
+    }
+
 }
