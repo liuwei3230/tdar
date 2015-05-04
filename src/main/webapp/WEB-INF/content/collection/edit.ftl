@@ -11,6 +11,8 @@
     </#if>
     <meta name="lastModifiedDate" content="$Date$"/>
 
+    <link href="/css/tdar-integration.css" rel="stylesheet" media="all">
+
 
 </head>
 <body>
@@ -143,17 +145,7 @@
                     in this list by clicking the left/right arrows at the bottom of this table.  Use the input fields above the table to limit the number
                     of results.">
             <h2>Add/Remove Resources</h2>
-
-            <@edit.resourceDataTable false true>
-            <#--
-        <div class="btn-group">
-            <button class="button btn" name="showAll" id="showAll" type="button">Show All Resources</button>
-            <button class="button btn" name="limitToCollection" id="limitToCollection" type="button">Show Only resources in this collection</button>
-        </div>
-        <br><br>
-        -->
-            </@edit.resourceDataTable>
-
+            <button type="button" class="btn" id="btnOpenModal"  data-toggle="modal" >Open popup</button>
 
 
             <div id="divNoticeContainer" style="display:none">
@@ -185,17 +177,11 @@
 
         <#noescape>
         <script type='text/javascript'>
-            //selectResourcesFromCollectionid
 
-            $(function () {
-                TDAR.datatable.setupDashboardDataTable({
-                    isAdministrator: ${(editor!false)?string},
-                    isSelectable: true,
-                    showDescription: false,
-                    selectResourcesFromCollectionid: $("#metadataForm_id").val()
-                });
+            $(function() {
+                TDAR.collection.setupResourcePopup();
+
             });
-
 
 
             $(function () {
@@ -207,10 +193,17 @@
                 TDAR.datatable.registerAddRemoveSection(${(id!-1)?c});
                         //remind users that adding a project does not also add the project's contents
                 TDAR.common.validateProfileImage();
-        });
+            });
         </script>
         </#noescape>
         <@edit.personAutocompleteTemplate />
 <div style="display:none"></div>
+
+<script src="/js/tdar.collection.js"></script>
+    <div id="bodyEnd" parse="true">
+        end of the line
+        <@edit.resourceDataTablePopup />
+    </div>
+
 </body>
 </#escape>

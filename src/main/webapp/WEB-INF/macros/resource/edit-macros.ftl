@@ -1083,8 +1083,8 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
 
     </div>
     <#nested />
-    <div class="row">
-        <div class="span9">
+    <div class="row-fluid">
+        <div class="span12">
 
             <table class="display table table-striped table-bordered tableFormat" id="resource_datatable">
                 <colgroup>
@@ -1129,6 +1129,31 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
     </script>
     </#macro>
 
+
+<#macro resourceDataTablePopup>
+    <div id="divDataTablePopupContainer" class="modal modal-big hide fade " tabindex="-1" role="dialog">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="hModalHeader" class="ng-binding">Add Resources</h3>
+        </div>
+        <div class="modal-body">
+            <@resourceDataTable showDescription=false selectable=true />
+        </div>
+        <div class="modal-footer">
+            <div class="row-fluid">
+                <span class="span4 text-left">Displaying records x - y of n</span>
+                <span class="span4 text-center">(nav buttons)</span>
+                <span class="span4">N records selected</span>
+            </div>
+            <div class="row-fluid">
+                <div class="span12">
+                    <button class="btn"  id="btnModalClose" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+                    <button class="btn btn-primary" id="btnModalAdd" data-dismiss="modal" ng-click="confirm(selectedItems)">Add selected items</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</#macro>
 <#-- emit the copyright holders section -->
     <#macro copyrightHolders sectionTitle copyrightHolderProxies >
         <#if copyrightMandatory>

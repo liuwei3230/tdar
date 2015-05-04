@@ -302,13 +302,12 @@ TDAR.datatable = function() {
             });
         }
         var $dataTable = $('#resource_datatable');
-        _registerLookupDataTable({
+        _registerLookupDataTable($.extend({}, {
             tableSelector : '#resource_datatable',
             sAjaxSource : '/lookup/resource',
             "bLengthChange" : true,
             "bFilter" : false,
             aoColumns : aoColumns_,
-            // "sDom": "<'row'<'span9'l><'span6'f>r>t<'row'<'span4'i><'span5'p>>",
             "sDom" : "<'row'<'span6'l><'pull-right span3'r>>t<'row'<'span4'i><'span5'p>>", // no text filter!
             sAjaxDataProp : 'resources',
             requestCallback : function(searchBoxContents) {
@@ -332,7 +331,7 @@ TDAR.datatable = function() {
                     _rowUnselected(obj, $dataTable);
                 }
             }
-        });
+        }, _options));
 
         $("#project-selector").change(function() {
             var projId = $(this).val();

@@ -359,5 +359,9 @@
     </#if>
 </#if>
 
+<#-- some scripts and divs need to be at top level of DOM for correct functionality -->
+<#if page.properties["div.bodyEnd"]?has_content>
+${(page.properties["div.bodyEnd"])!""}
+</#if>
 </body>
 </html>
