@@ -1141,14 +1141,8 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
         </div>
         <div class="modal-footer">
             <div class="row-fluid">
-                <span class="span4 text-left">Displaying records x - y of n</span>
-                <span class="span4 text-center">(nav buttons)</span>
-                <span class="span4">N records selected</span>
-            </div>
-            <div class="row-fluid">
                 <div class="span12">
                     <button class="btn"  id="btnModalClose" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
-                    <button class="btn btn-primary" id="btnModalAdd" data-dismiss="modal" ng-click="confirm(selectedItems)">Add selected items</button>
                 </div>
             </div>
         </div>

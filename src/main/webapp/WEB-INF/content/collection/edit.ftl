@@ -157,6 +157,7 @@
 
         </div>
 
+
         <div id="divAddRemove">
             <h2>Modifications</h2>
 
@@ -171,6 +172,24 @@
             </div>
         </div>
 
+        <#if resourceCollection.id != -1>
+            <div id="divCurrentResources" class="">
+                <h4>Current Resources</h4>
+                <table id="tblCurrentResources" class="table table-bordered" style="height: 500px" data-collectionId="${resourceCollection.id?c}">
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+
+            </div>
+        </#if>
 
             <@edit.submit fileReminder=false />
         </@s.form>
@@ -181,8 +200,11 @@
             $(function() {
                 TDAR.collection.setupResourcePopup();
 
+                //if on an edit page,  show current selections
+                if($("#tblCurrentResources").length) {
+                    TDAR.collection.setupCurrentResourcesDataTable("#tblCurrentResources");
+                }
             });
-
 
             $(function () {
                 'use strict';
