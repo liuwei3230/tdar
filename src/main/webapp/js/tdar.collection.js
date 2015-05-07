@@ -37,7 +37,6 @@
             if(!tableInitialized) {
                 _initializeDataTable()
             }
-
         });
 
         $popupContainer.on("hidden", function() {
@@ -48,15 +47,39 @@
     }
 
     function _resetDataTable(selector) {
-        $("")
     }
 
     function _setupCurrentResourcesDataTable(selector) {
-
         var $dataTable = $(selector);
+        var $tableRemove = $("#tblToRemove");
+        var action = "toRemove";
+
         var collectionId = $(selector).data("collectionid");
 
+        var _deleteClicked =  function(id, obj) {
+            //_rowSelected(obj, $dataTable)
+            var $dataTable = $("#resource_datatable");
+            var addIds = $dataTable.data("toAdd");
+            var removeIds = $dataTable.data("toRemove");
 
+            if(!removeIds) {
+                console.log("no removeIds array present, creating one");
+                removeIds = [];
+                $dataTable.data("toRemove", removeIds);
+            }
+            var idx = removeIds.indexOf(id);
+            if(idx > -1) {
+                console.log("in array:%s", id);
+                TDAR.datatable.removeRow($dataTable, $tableRemove, "trmod_"+id,obj, action);
+
+            } else {
+                console.log("not in array:%s", id);
+                TDAR.datatable.addRow($dataTable, $tableRemove, "trmod_"+id, obj, action);
+            }
+
+
+
+        };
 
         var $dataTable = TDAR.datatable.registerLookupDataTable({
             tableSelector : selector,
@@ -90,7 +113,7 @@
                     sTitle: "action",
                     fnRender: function(obj, resourceId) {
                         console.log("fnrender", obj);
-                        return "<button type='button' class='btn btn-mini btnRemoveResource' data-id='"+ obj.aData.id + "' >Remove</button>";
+                        return "<button type='button' class='btn btn-mini btnRemoveResource' data-id='"+ obj.aData.id + "' data-title='"+ obj.aData.title + "'>Remove</button>";
                         }
                 }
 
@@ -102,6 +125,16 @@
             "sScrollX" : "",
             "bScrollCollapse" : true
         });
+
+        //register listener for clicked in dataTable
+        $(selector).on("click", "button.btnRemoveResource", function(){
+            var $elem = $(this);
+            var id = $elem.data("id");
+            var title = $elem.data("title");
+
+            _deleteClicked(id, {id:id, title:title});
+        });
+
     }
 
 

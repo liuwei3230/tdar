@@ -468,6 +468,11 @@ TDAR.datatable = function() {
         $table.append($tr);
     }
 
+    function _removeRow($dataTable, $table, idattr, obj, action) {
+        _arrayRemove($dataTable.data(action), obj.id);
+        $table.find("#" + idattr).remove();
+    }
+
 
 
     /**
@@ -735,6 +740,10 @@ TDAR.datatable = function() {
         checkAllToggle : _checkAllToggle,
         registerChild : _registerChild,
         initalizeResourceDatasetDataTable : _initalizeResourceDatasetDataTable,
-        registerAddRemoveSection : _initializeCollectionAddRemove
+        registerAddRemoveSection : _initializeCollectionAddRemove,
+        rowSelected: _rowSelected,
+        rowUnselected: _rowUnselected,
+        addRow: _addRow,
+        removeRow: _removeRow
     };
 }();
