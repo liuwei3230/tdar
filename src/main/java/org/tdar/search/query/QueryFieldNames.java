@@ -100,4 +100,7 @@ public interface QueryFieldNames {
     String PROPER_AUTO = "proper_name_auto";
     String COLLECTION_HIDDEN_WITH_RESOURCES = "visibleInSearch";
 
+    String RESOURCE_COLLECTION_DIRECT_SHARED_IDS = "directSharedCollectionIds";
+    String LAST_NAME_AUTO = "lastName_auto";
+    String FIRST_NAME_AUTO = "firstName_auto";
 }

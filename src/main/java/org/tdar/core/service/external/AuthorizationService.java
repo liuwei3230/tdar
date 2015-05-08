@@ -234,6 +234,24 @@ public class AuthorizationService implements Accessible {
         return authorizedUserDao.isAllowedTo(person, resource, basePermission);
     }
 
+    
+    /**
+     * Avoid using in general, but this allows us to ask whether a User has the "inherited" rights to do something as opposed to being granted direct rights to it.
+     * @param person
+     * @param permission
+     * @param ids
+     * @return
+     */
+    public boolean isAllowedToEditInherited(TdarUser person, Resource resource) {
+        GeneralPermissions permission = GeneralPermissions.MODIFY_METADATA;
+        List<Long> ids = new ArrayList<>();
+        for (ResourceCollection collection : resource.getRightsBasedResourceCollections()) {
+            ids.addAll(collection.getParentIds());
+            ids.add(collection.getId());
+        }
+        return authorizedUserDao.isAllowedTo(person, permission, ids);
+    }
+
     /**
      * Checks whether a @link Person has the rights to edit a @link ResourceCollection. First, checking whether the person's @link TdarGroup permissions grant
      * them
@@ -615,8 +633,14 @@ public class AuthorizationService implements Accessible {
 
     @Transactional(readOnly = true)
     public boolean canEditWorkflow(DataIntegrationWorkflow workflow, TdarUser authenticatedUser) {
-        return (PersistableUtils.isNullOrTransient(workflow) ||
+        return (isAdministrator(authenticatedUser) ||
+                PersistableUtils.isNullOrTransient(workflow) ||
                 PersistableUtils.isNotNullOrTransient(workflow) && PersistableUtils.isEqual(workflow.getSubmitter(), authenticatedUser));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean canViewWorkflow(DataIntegrationWorkflow workflow, TdarUser authenticatedUser) {
+        return canEditWorkflow(workflow, authenticatedUser);
 
     }
 

@@ -7,7 +7,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- managed versions -->
-        <struts2.version>2.3.20</struts2.version>
+        <struts2.version>2.3.20.1</struts2.version>
         <hibernate.version>4.3.8.Final</hibernate.version>
         <hibernate.search.version>4.5.3.Final</hibernate.search.version>
         <spring.framework.version>4.1.6.RELEASE</spring.framework.version>
@@ -1991,6 +1991,23 @@
                                         <ignore></ignore>
                                     </action>
                                 </pluginExecution>
+                                <pluginExecution>
+                                	<pluginExecutionFilter>
+                                		<groupId>org.liquibase</groupId>
+                                		<artifactId>
+                                			liquibase-maven-plugin
+                                		</artifactId>
+                                		<versionRange>
+                                			[3.2.2,)
+                                		</versionRange>
+                                		<goals>
+                                			<goal>update</goal>
+                                		</goals>
+                                	</pluginExecutionFilter>
+                                	<action>
+                                		<ignore></ignore>
+                                	</action>
+                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
@@ -2244,7 +2261,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <targetGroups>default</targetGroups>
+                            <targetGroups>default,ng-integrate</targetGroups>
                             <minimize>true</minimize>
                             <destinationFolder>${project.build.directory}/generated/webapp/wro/${hg.version.as_dir}</destinationFolder>
                             <contextFolder>${basedir}/src/main/webapp/</contextFolder>
@@ -2298,9 +2315,17 @@
                         </configuration>
                         <executions>
                             <execution>
+                                <id>generate</id>
                                 <phase>generate-sources</phase>
                                 <goals>
                                     <goal>setup</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>clover</goal>
                                 </goals>
                             </execution>
                         </executions>

@@ -322,7 +322,7 @@ public class BillingAccountService extends ServiceInterface.TypedDaoBase<Billing
 
     public void resetAccountTotalsToHaveOneFileLeft(BillingAccount account) {
         getDao().markWritableOnExistingSession(account);
-        getLogger().debug(">>>>> F: {} S: {} ", account.getFilesUsed(), account.getSpaceUsedInMb());
+        getLogger().debug("::::: F: {} S: {} ", account.getFilesUsed(), account.getSpaceUsedInMb());
         updateQuota(account, account.getResources());
         getDao().refresh(account);
         getLogger().debug(":::: F: {} S: {} ", account.getFilesUsed(), account.getSpaceUsedInMb());
