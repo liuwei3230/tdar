@@ -260,6 +260,16 @@ public class RssService implements Serializable {
                     entry.setAuthors(authors);
                 }
 
+                // NOTE: this may not display info if we're using a ResourceProxy b/c it doesn't query keywords
+                List<SyndCategory> categories = new ArrayList<>();
+                for (Keyword kwd : resource.getAllActiveKeywords()) {
+                    SyndCategory cat = new SyndCategoryImpl();
+                    cat.setName(cleanStringForXML(kwd.getLabel()));
+                    cat.setTaxonomyUri(kwd.getDetailUrl());
+                    categories.add(cat);
+                }
+                entry.setCategories(categories);
+
                 boolean hasRestrictions = false;
                 if (includeEnclosures) {
                     hasRestrictions = addFileEnclosures(handler, resource_, entry, resource);
