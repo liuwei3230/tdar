@@ -50,9 +50,10 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         HttpServletRequest request = new MockHttpServletRequest();
         ((MockHttpServletRequest) request).addHeader("referer", "http://test.tdar.org/blog/this-is-my-test-url");
         controller.setServletRequest(request);
-        controller.setInformationResourceFileVersionId(doc.getFirstInformationResourceFile().getLatestPDF().getId());
+        controller.setInformationResourceFileId(doc.getFirstInformationResourceFile().getId());
 
         controller.prepare();
+        controller.validate();
         assertEquals(Action.SUCCESS, controller.execute());
         assertEquals(TestConstants.TEST_DOCUMENT_NAME, controller.getDownloadTransferObject().getFileName());
         IOUtils.copyLarge(controller.getDownloadTransferObject().getInputStream(), new FileOutputStream(new File("target/out.pdf")));
@@ -70,9 +71,10 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         HttpServletRequest request = new MockHttpServletRequest();
         ((MockHttpServletRequest) request).addHeader(REFERER, "http://tdar.org/blog/this-is-my-test-url");
         controller.setServletRequest(request);
-        controller.setInformationResourceFileVersionId(doc.getFirstInformationResourceFile().getLatestPDF().getId());
+        controller.setInformationResourceFileId(doc.getFirstInformationResourceFile().getId());
 
         controller.prepare();
+        controller.validate();
         assertTrue(CollectionUtils.isNotEmpty(controller.getActionErrors()));
     }
 
@@ -87,12 +89,13 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         controller.setServletRequest(request);
-        controller.setInformationResourceFileVersionId(doc.getFirstInformationResourceFile().getLatestPDF().getId());
+        controller.setInformationResourceFileId(doc.getFirstInformationResourceFile().getId());
 
         controller.prepare();
+        controller.validate();
     }
 
-    @Test
+    @Test()
     @Rollback
     public void testInvalidApiKeyHostedDownloadReferrer() throws Exception {
         setIgnoreActionErrors(true);
@@ -104,9 +107,10 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         request.addHeader(REFERER, "http://bobs-file-hut.ru/tdar");
 
         controller.setServletRequest(request);
-        controller.setInformationResourceFileVersionId(doc.getFirstInformationResourceFile().getLatestPDF().getId());
+        controller.setInformationResourceFileId(doc.getFirstInformationResourceFile().getId());
 
         controller.prepare();
+        controller.validate();
         assertTrue(CollectionUtils.isNotEmpty(controller.getActionErrors()));
     }
 
@@ -121,9 +125,10 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         request.addHeader(REFERER, "http://invalid-apikey-exchange.biz/archaeology");
 
         controller.setServletRequest(request);
-        controller.setInformationResourceFileVersionId(doc.getFirstInformationResourceFile().getLatestPDF().getId());
+        controller.setInformationResourceFileId(doc.getFirstInformationResourceFile().getId());
 
         controller.prepare();
+        controller.validate();
         assertTrue(CollectionUtils.isNotEmpty(controller.getActionErrors()));
     }
 
