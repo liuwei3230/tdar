@@ -145,11 +145,16 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
      * @return
      */
     protected boolean isFormObsolete() {
+        //a 'new' resource wont ever be obsolete
         if(PersistableUtils.isNullOrTransient(getPersistable())) {return false;}
+        //if dateUpdated is null, we can't (easily) determine obsolescence
+        if(getPersistable().getDateUpdated() == null) {return false;}
+
         long now = System.currentTimeMillis();
-        long formAge = now - getStartTime();
-        long persistableAge = now - getEpochTimeUpdated();
-        return formAge < persistableAge;
+        long formAge = now - getStartTime(); 
+        long persistableAge = now - getEpochTimeUpdated(); 
+        getLogger().debug("now:{} startTime:{} epochTimeUpdated:{}", now, getStartTime(), getEpochTimeUpdated());
+        return formAge > persistableAge;
     }
 
     @Action(value = SAVE,
@@ -304,7 +309,7 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     @HttpsOnly
     public String add() throws TdarActionException {
 
-        if ((getPersistable() instanceof HasStatus) && (isEditor() && !isAdministrator() || 
+        if ((getPersistable() instanceof HasStatus) && (isEditor() && !isAdministrator() ||
                 getAuthenticatedUser().getNewResourceSavedAsDraft())) {
             ((HasStatus) getPersistable()).setStatus(Status.DRAFT);
         }
@@ -341,8 +346,8 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     })
     @HttpsOnly
     public String edit() throws TdarActionException {
-        if (PersistableUtils.isNullOrTransient(getPersistable() )) {
-            throw new TdarActionException(StatusCode.NOT_FOUND,getText("abstractPersistableController.not_found"));
+        if (PersistableUtils.isNullOrTransient(getPersistable())) {
+            throw new TdarActionException(StatusCode.NOT_FOUND, getText("abstractPersistableController.not_found"));
         }
         logAction("EDITING");
         return loadEditMetadata();
@@ -404,7 +409,8 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
      * This method is invoked when the paramsPrepareParamsInterceptor stack is
      * applied. It allows us to fetch an entity from the database based on the
      * incoming resourceId param, and then re-apply params on that resource.
-     * @throws TdarActionException 
+     * 
+     * @throws TdarActionException
      * 
      * @see <a href="http://blog.mattsch.com/2011/04/14/things-discovered-in-struts-2/">Things discovered in Struts 2</a>
      */
@@ -417,7 +423,7 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
             type = RequestType.CREATE;
         }
         prepareAndLoad(this, type);
-        if(PersistableUtils.isNotNullOrTransient(getId())) {
+        if(PersistableUtils.isNotNullOrTransient(getId()) && getPersistable().getDateUpdated() != null) {
             setEpochTimeUpdated(getPersistable().getDateUpdated().getTime());
         }
      }
@@ -624,12 +630,12 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     public void setSaveSuccessSuffix(String saveSuccessSuffix) {
         this.saveSuccessSuffix = saveSuccessSuffix;
     }
-    
+
     // ideally factor out, but used by the view layer to determine whether to show the edit button or not
     public boolean isEditable() {
         return authorize();
     }
-    
+
     @Override
     public boolean authorize() {
         return true;

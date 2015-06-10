@@ -1,5 +1,6 @@
 package org.tdar.struts.action;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,12 +21,15 @@ import org.tdar.core.bean.Sortable;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.resource.Document;
+import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.external.RecaptchaService;
+import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.search.query.FacetValue;
 import org.tdar.search.query.SortOption;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
@@ -55,7 +59,8 @@ import com.opensymphony.xwork2.Preparable;
         @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.HTTPHEADER, params = { "error", "404" }),
         @Result(name = TdarActionSupport.DRAFT, location = "/WEB-INF/content/errors/resource-in-draft.ftl")
 })
-public abstract class AbstractPersistableViewableAction<P extends Persistable> extends AuthenticationAware.Base implements Preparable, ViewableAction<P>, PersistableLoadingAction<P> {
+public abstract class AbstractPersistableViewableAction<P extends Persistable> extends AuthenticationAware.Base implements Preparable, ViewableAction<P>,
+        PersistableLoadingAction<P> {
 
     private static final long serialVersionUID = -5126488373034823160L;
 
@@ -84,7 +89,6 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
     private String slug;
     private String slugSuffix;
 
-
     public static String formatTime(long millis) {
         Date dt = new Date(millis);
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -100,6 +104,7 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
     @HttpOnlyIfUnauthenticated
     @Actions(value = {
             @Action(value = "{id}/{slug}"),
+            @Action(value = "{id}/"),
             @Action(value = "{id}")
     })
     public String view() throws TdarActionException {
@@ -181,15 +186,12 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
     protected void handleSlug() {
         if (!handleSlugRedirect(persistable, this)) {
             setRedirectBadSlug(true);
-        } 
+        }
     }
 
     protected boolean isPersistableIdSet() {
         return PersistableUtils.isNotNullOrTransient(getPersistable());
     }
-
-    @Override
-    public abstract Class<P> getPersistableClass();
 
     public void setPersistableClass(Class<P> persistableClass) {
         this.persistableClass = persistableClass;
@@ -336,7 +338,7 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
     public InternalTdarRights getAdminRights() {
         return InternalTdarRights.VIEW_ANYTHING;
     }
-    
+
     protected void reSortFacets(ResourceFacetedAction handler, Sortable persistable) {
         // sort facets A-Z unless sortOption explicitly otherwise
         if (PersistableUtils.isNotNullOrTransient(getPersistable()) && CollectionUtils.isNotEmpty(handler.getResourceTypeFacets())) {
@@ -353,4 +355,20 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
             });
         }
     }
+
+    /**
+     * Is the specified public file available for the current resource
+     * 
+     * @param filename
+     * @return
+     */
+    protected boolean checkHostedFileAvailable(String filename) {
+        File baseFolder = new File(getTdarConfiguration().getHostedFileStoreLocation());
+        File pairTreeRoot = new File(baseFolder, PairtreeFilestore.toPairTree(getId()));
+        File file = new File(pairTreeRoot, filename);
+        boolean exists = file.exists();
+        getLogger().debug("checkPublicFile({})\t -> {}", filename, exists);
+        return exists;
+    }
+
 }

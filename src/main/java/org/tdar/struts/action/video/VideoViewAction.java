@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Video;
 import org.tdar.struts.action.resource.AbstractResourceViewAction;
 
-
 @Component
 @Scope("prototype")
 @ParentPackage("default")
@@ -16,4 +15,8 @@ public class VideoViewAction extends AbstractResourceViewAction<Video> {
 
     private static final long serialVersionUID = -1500162569254791978L;
 
+    @Override
+    public Class<Video> getPersistableClass() {
+        return Video.class;
+    }
 }

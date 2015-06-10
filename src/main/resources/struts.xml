@@ -22,20 +22,18 @@
     <constant name="struts.ui.theme" value="bootstrap" />
     <constant name="struts.url.includeParams" value="none" />
     <constant name="struts.action.extension" value="," />
-    <constant name="struts.action.excludePattern" value="/services/.*" />
+    <constant name="struts.additional.excludedPatterns" value="^(action|method):.*"/>
+    <constant name="struts.action.excludePattern" value="/services/.*,/hosted/.*" />
     <constant name="struts.custom.i18n.resources"
         value="Locales/tdar-freemarker-messages,/Locales/tdar-messages" />
     <constant name="struts.freemarker.manager.classname" value="org.tdar.struts.freemarker.TdarFreemarkerManager"/>
     <constant name="struts.objectFactory"
         value="org.apache.struts2.spring.StrutsSpringObjectFactory" />
-    <constant name="struts.objectFactory.spring.autoWire.alwaysRespect"
-        value="true" />
-    <constant name="struts.objectFactory.spring.autoWire"
-        value="name" />
+    <constant name="struts.objectFactory.spring.autoWire.alwaysRespect" value="true" />
+    <constant name="struts.objectFactory.spring.autoWire" value="name" />
 
     <constant name="struts.enable.SlashesInActionNames" value="true" />
-    <constant name="struts.mapper.alwaysSelectFullNamespace"
-        value="false" />
+    <constant name="struts.mapper.alwaysSelectFullNamespace" value="false" />
 
     <constant name="struts.patternMatcher"
         value="com.opensymphony.xwork2.util.NamedVariablePatternMatcher" />
@@ -101,7 +99,7 @@
                         with 'cache: false' we get a _=timestamp with each request -->
                     <!-- As we don't have a property named '_' in our actions 
                         we get an error logged in development mode. Excluding '-' removes the error -->
-                    <param name="excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*,_tdar\..*</param>
+                    <!-- <param name="excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*,_tdar\..*</param> -->
                 </interceptor-ref>
                 <interceptor-ref name="servletConfig" />
                 <interceptor-ref name="prepare" />
@@ -122,7 +120,7 @@
                 <interceptor-ref name="params">
                     <!-- See AbstractPersistableController.prepare() for 
                         more detail on why this entry occurs twice -->
-                    <param name="excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*,_tdar\..*</param>
+                    <!-- <param name="excludeParams">(.*\.|^|.*|\[('|"))(c|C)lass(\.|('|")]|\[).*,^dojo\..*,^struts\..*,^session\..*,^request\..*,^application\..*,^servlet(Request|Response)\..*,^parameters\..*,^action:.*,^method:.*,_tdar\..*</param> -->
                 </interceptor-ref>
                 <interceptor-ref name="conversionError" />
                 <interceptor-ref name="validation">
@@ -234,4 +232,7 @@
         </interceptors>
         <default-interceptor-ref name="authenticatedStack" />
     </package>
+
+
+
 </struts>

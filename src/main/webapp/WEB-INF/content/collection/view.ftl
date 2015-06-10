@@ -11,18 +11,6 @@
     <@view.canonical resourceCollection />
     <#assign rssUrl = "/search/rss?groups[0].fieldTypes[0]=COLLECTION&groups[0].collections[0].id=${resourceCollection.id?c}&groups[0].collections[0].name=${(resourceCollection.name!'untitled')?url}">
     <@search.rssUrlTag url=rssUrl />
-
-    <style>
-        i.search-list-checkbox-grey {
-            background-image: none !important;
-        }
-
-        li.media {
-            display: inline-block
-        }
-    </style>
-
-
 </head>
 <body>
 
@@ -48,7 +36,7 @@
     <@view.pageStatusCallout />
 <h1>
     <#if logoAvailable>
-        <img class="pull-right" src="/files/collection/sm/${id?c}/logo"
+        <img class="pull-right collection-logo" src="/files/collection/sm/${id?c}/logo"
         alt="logo" title="logo" /> 
     </#if>
 
@@ -68,8 +56,14 @@ ${resourceCollection.name!"untitled collection"}</h1>
 
         <#if resourceCollection.parent?? || resourceCollection.description??  || resourceCollection.adminDescription?? || collections??>
         <div class="glide">
-            <#if resourceCollection.parent??><p><b>Part of:</b> <a
-                    href="${resourceCollection.parent.detailUrl}">${resourceCollection.parent.name!"(n/a)"}</a></p></#if>
+            <#if resourceCollection.parent??><p><b>Part of:</b>
+            	<#if resourceCollection.parent.hidden && !authenticated >
+					${resourceCollection.parent.name!"(n/a)"}
+				<#else>
+				 <a
+                    href="${resourceCollection.parent.detailUrl}">${resourceCollection.parent.name!"(n/a)"}</a>
+               	</#if>
+			</p></#if>
             <@common.description resourceCollection.description />
 
             <#if resourceCollection.adminDescription??>
@@ -95,6 +89,7 @@ ${resourceCollection.name!"untitled collection"}</h1>
         </div>
 
 
+        <div class="collection-facets">
             <#assign mapSize="450" />
             <#if (totalRecords > 10)>
                 <#assign mapSize="700" />
@@ -124,6 +119,8 @@ ${resourceCollection.name!"untitled collection"}</h1>
             </#if>
             </h4>
             </#if>
+        </div>
+
         <div class="tdarresults">
             <#assign itemsPerRow = 4/>
 		<#assign mapPosition="top"/>

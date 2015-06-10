@@ -64,7 +64,7 @@
     <div id="subtitle">
         <p>Part of the
             <#if resource.projectVisible || editable>
-                <a href="<@s.url value='/project/${resource.project.id?c}'/>">${resource.project.coreTitle}</a>
+                <a href="<@s.url value='${resource.project.detailUrl}'/>">${resource.project.coreTitle}</a>
             <#else>
             ${resource.project.coreTitle}
             </#if>
@@ -110,13 +110,21 @@
                 <#if contactProxies?has_content>
                 <#list contactProxies as prox>
                 <#assign contactId = prox.person.id />
+                <#if contactId == -1>
+                    <#assign contactId = prox.institution.id />
+                </#if>
                 <#break/>
                 </#list>
                 </#if>
                 <@s.hidden name="toId" value="${contactId?c}" />
                 <@s.hidden name="resourceId" value="${resource.id?c}" />
-                <@s.hidden name="fromId" value="${(authenticatedUser.id)!-1?c}" /> 
+                <#assign fromId = -1 />
+                <#if (authenticatedUser.id)?has_content>
+                    <#assign fromId = authenticatedUser.id />
+                </#if>
+                <@s.hidden name="fromId" value="${fromId?c}" /> 
                 <@s.textarea name="messageBody" id="messageBody" rows="4" label="Message" cssClass="col-xs-5" cols="80" />
+
                 <p><b>Note:</b> Please include sufficient information to fulfill your request (e.g. why you are requesting access to a file, or specific comments or corrections). Your contact information and a link to this resource will automatically be included in your message.</p>
                 <@common.antiSpam />
             </div>
@@ -498,10 +506,14 @@
 
 <div id="sidebar-right" parse="true">
     <i class="${resource.resourceType?lower_case}-bg-large"></i>
+    <#if whiteLabelLogoAvailable>
+        <@s.a href="/collection/${whiteLabelCollection.id?c}/${whiteLabelCollection.slug}"
+            title="${whiteLabelCollection.title}"
+            ><img src="${whiteLabelLogoUrl}" class="whitelabel-logo"></@s.a>
+    </#if>
     <#if !resource.resourceType.project>
         <@view.uploadedFileInfo />
     </#if>
-         
         <ul class="inline">
             <#assign txt><#if !resource.citationRecord>Request Access,</#if> Submit Correction, Comment</#assign>
             <li class="media"><i class="icon-envelope pull-left"></i>

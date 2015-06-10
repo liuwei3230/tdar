@@ -10,20 +10,21 @@ import org.tdar.core.bean.resource.Ontology;
 import org.tdar.struts.action.resource.AbstractResourceViewAction;
 import org.tdar.utils.PersistableUtils;
 
-
 @Component
 @Scope("prototype")
 @ParentPackage("default")
 @Namespace("/coding-sheet")
 public class CodingSheetViewAction extends AbstractResourceViewAction<CodingSheet> {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 3034924577588283512L;
 
+    @Override
+    public Class<CodingSheet> getPersistableClass() {
+        return CodingSheet.class;
+    }
+    
     public boolean isOkToMapOntology() {
-        CodingSheet persistable = (CodingSheet)getPersistable();
+        CodingSheet persistable = (CodingSheet) getPersistable();
         if (persistable.getResourceType().isCodingSheet()) {
             Ontology defaultOntology = persistable.getDefaultOntology();
             if (PersistableUtils.isNullOrTransient(defaultOntology) || CollectionUtils.isNotEmpty(defaultOntology.getFilesWithProcessingErrors())) {

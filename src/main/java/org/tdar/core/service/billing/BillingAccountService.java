@@ -366,10 +366,15 @@ public class BillingAccountService extends ServiceInterface.TypedDaoBase<Billing
 
     @Transactional
     /**
-     * Create a billing account with a default name and assign it to the specified invoice.
+     * If an invoice is not assigned to a billing account,  reate a billing account with a default name and
+     * assign it to the specified invoice.
      */
     private BillingAccount processBillingAccountChoice(Invoice invoice, TdarUser authenticatedUser) {
-        BillingAccount account = new BillingAccount();
+        BillingAccount account = getAccountForInvoice(invoice);
+        if(account == null) {
+            account = new BillingAccount();
+        }
+
         TdarUser owner = invoice.getOwner() == null ? invoice.getOwner() : authenticatedUser;
         account.setName("Default account for " + owner.getProperName());
         return account;
@@ -401,16 +406,16 @@ public class BillingAccountService extends ServiceInterface.TypedDaoBase<Billing
         return getDao().canAddResource(account, re);
     }
 
-    @Transactional(readOnly=false)
+    @Transactional(readOnly = false)
     public void deleteForController(TextProvider provider, BillingAccount account, String deletionReason, TdarUser authenticatedUser) {
         if (StringUtils.isNotBlank(getDeletionIssues(provider, account).getIssue())) {
             return;
         }
         delete(account);
-        
+
     }
 
-    @Transactional(readOnly=false)
+    @Transactional(readOnly = false)
     public DeleteIssue getDeletionIssues(TextProvider provider, BillingAccount persistable) {
         DeleteIssue deleteIssue = new DeleteIssue();
         if (CollectionUtils.isNotEmpty(persistable.getResources()) || CollectionUtils.isNotEmpty(persistable.getCoupons())) {

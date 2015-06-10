@@ -177,7 +177,8 @@ public class DownloadService {
 
     @Transactional(readOnly = false)
     public DownloadTransferObject validateFilterAndSetupDownload(TdarUser authenticatedUser, InformationResourceFileVersion versionToDownload,
-            InformationResource resourceToDownload, boolean includeCoverPage, TextProvider textProvider, DownloadAuthorization authorization, boolean countDownload) {
+            InformationResource resourceToDownload, boolean includeCoverPage, TextProvider textProvider, DownloadAuthorization authorization,
+            boolean countDownload) {
         List<InformationResourceFileVersion> versionsToDownload = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(versionToDownload)) {
             versionsToDownload.add(versionToDownload);
@@ -228,23 +229,22 @@ public class DownloadService {
                 resourceFile = TdarConfiguration.getInstance().getFilestore().retrieveFile(ObjectType.RESOURCE, version);
                 version.setTransientFile(resourceFile);
             } catch (FileNotFoundException e1) {
-                logger.error("FILE NOT FOUND: {} ({})", version, TdarConfiguration.getInstance().getServerEnvironmentStatus(), e1);
+                logNotFound(version, e1, null);
                 dto.setResult(DownloadResult.NOT_FOUND);
                 return dto;
             }
 
             if ((resourceFile == null)) {
-                logger.error("FILE NOT FOUND: {} ({})", version, TdarConfiguration.getInstance().getServerEnvironmentStatus() );
+                logNotFound(version, null, null);
                 dto.setResult(DownloadResult.NOT_FOUND);
                 return dto;
             }
 
             if (!resourceFile.exists()) {
-                logger.error("FILE NOT FOUND: {} ({})", version, TdarConfiguration.getInstance().getServerEnvironmentStatus(), resourceFile.getAbsolutePath());
+                logNotFound(version, null, resourceFile.getAbsolutePath());
                 dto.setResult(DownloadResult.NOT_FOUND);
                 return dto;
             }
-            
 
         }
 
@@ -268,4 +268,31 @@ public class DownloadService {
         dto.setResult(DownloadResult.SUCCESS);
         return dto;
     }
+
+    private void logNotFound(InformationResourceFileVersion version, FileNotFoundException e1, String path) {
+        if (TdarConfiguration.getInstance().isProductionEnvironment()) {
+            if (e1 == null) {
+                logger.error("FILE NOT FOUND: {} [{}]", version, path);
+            } else {
+                logger.error("FILE NOT FOUND: {} [{}]", version, path, e1);
+            }
+        } else {
+            logger.warn("FileNotFound (FilestoreConfigured?):: {}");
+        }
+    }
+
+    @Transactional(readOnly = false)
+    /**
+     * Validate, filter, and setup download for latest uploaded version of the specified InformationResourceFile.
+     */
+    public DownloadTransferObject validateFilterAndSetupDownload(TdarUser authenticatedUser, InformationResourceFile fileToDownload,
+            boolean includeCoverPage, TextProvider textProvider, DownloadAuthorization authorization,
+            boolean countDownload) {
+
+        InformationResourceFileVersion fileVersion = fileToDownload.getLatestUploadedVersion();
+
+        return validateFilterAndSetupDownload(authenticatedUser, fileVersion, null, includeCoverPage, textProvider,
+                authorization, countDownload);
+    }
+
 }

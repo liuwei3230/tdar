@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.InformationResourceFileVersion;
-import org.tdar.core.service.PdfService;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.core.service.download.DownloadTransferObject;
 import org.tdar.core.service.external.AuthorizationService;
@@ -39,7 +38,7 @@ import com.opensymphony.xwork2.Preparable;
 })
 public class AbstractDownloadController extends AuthenticationAware.Base implements Preparable {
 
-    private static final long serialVersionUID = -1831798412944149017L;
+    private static final long serialVersionUID = -1831798412944149018L;
     @Autowired
     private transient DownloadService downloadService;
     @Autowired
@@ -47,9 +46,6 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
 
     @Autowired
     private transient ResourceService resourceService;
-
-    @Autowired
-    private transient PdfService pdfService;
 
     @Autowired
     private transient InformationResourceFileVersionService informationResourceFileVersionService;
@@ -61,9 +57,8 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
     public static final String LOGIN_REGISTER_PROMPT = "../filestore/download-unauthenticated.ftl";
     public static final String DOWNLOAD_SUFFIX = "/${informationResourceId}/${informationResourceFileVersionId}";
     public static final String SUCCESS_REDIRECT_DOWNLOAD = "/filestore/confirm" + DOWNLOAD_SUFFIX;
-    public static final String DOWNLOAD_SINGLE_LANDING = "/filestore/get" +DOWNLOAD_SUFFIX;
+    public static final String DOWNLOAD_SINGLE_LANDING = "/filestore/get" + DOWNLOAD_SUFFIX;
     public static final String FORBIDDEN = "forbidden";
-//    public static final String SHOW_DOWNLOAD_LANDING = "show-download-landing";
     public static final String DOWNLOAD_ALL_LANDING = "/filestore/confirm/${informationResourceId}";
     public static final String DOWNLOAD_ALL = "downloadAllAsZip";
     private Long informationResourceFileVersionId;
@@ -125,10 +120,6 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
         Long irfvId = getInformationResourceFileVersionId();
 
         getLogger().trace("IRID: {}, IRFVID: {}", irId, irfvId);
-        if (PersistableUtils.isNullOrTransient(irfvId) &&
-                PersistableUtils.isNullOrTransient(irId)) {
-            addActionError(getText("downloadController.specify_what_to_download"));
-        }
         if (PersistableUtils.isNotNullOrTransient(irId)) {
             setInformationResource(getGenericService().find(InformationResource.class, irId));
             // bad, but force onto session until better way found
@@ -142,6 +133,16 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
                 informationResourceId = informationResource.getId();
                 authorizationService.applyTransientViewableFlag(informationResourceFileVersion, getAuthenticatedUser());
             }
+        }
+    }
+
+    @Override
+    public void validate() {
+        Long irId = getInformationResourceId();
+        Long irfvId = getInformationResourceFileVersionId();
+        if (PersistableUtils.isNullOrTransient(irfvId) &&
+                PersistableUtils.isNullOrTransient(irId)) {
+            addActionError(getText("downloadController.specify_what_to_download"));
         }
     }
 

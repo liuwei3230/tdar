@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.struts.action.dataset.AbstractDatasetViewAction;
 
-
 @Component
 @Scope("prototype")
 @ParentPackage("default")
@@ -16,4 +15,8 @@ public class GeospatialViewAction extends AbstractDatasetViewAction<Geospatial> 
 
     private static final long serialVersionUID = 6518833514525728322L;
 
+    @Override
+    public Class<Geospatial> getPersistableClass() {
+        return Geospatial.class;
+    }
 }

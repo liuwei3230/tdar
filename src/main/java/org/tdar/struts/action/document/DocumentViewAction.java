@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.struts.action.resource.AbstractResourceViewAction;
 
-
 @Component
 @Scope("prototype")
 @ParentPackage("default")
@@ -15,5 +14,10 @@ import org.tdar.struts.action.resource.AbstractResourceViewAction;
 public class DocumentViewAction extends AbstractResourceViewAction<Document> {
 
     private static final long serialVersionUID = 2384325295193047858L;
+    
+    @Override
+    public Class<Document> getPersistableClass() {
+        return Document.class;
+    }
 
 }

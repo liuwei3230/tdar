@@ -2,6 +2,7 @@ package org.tdar.core.bean.entity;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +30,8 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -92,7 +95,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.entity.Creator")
-public abstract class Creator implements Persistable, HasName, HasStatus, Indexable, Updatable, OaiDcProvider,
+public abstract class Creator<T extends Creator<?>> implements Persistable, HasName, HasStatus, Indexable, Updatable, OaiDcProvider,
         Obfuscatable, Validatable, Addressable, XmlLoggable, HasImage,Slugable, HasEmail {
 
     protected final static transient Logger logger = LoggerFactory.getLogger(Creator.class);
@@ -132,7 +135,7 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
             this.code = code;
         }
 
-        public static CreatorType valueOf(Class<? extends Creator> cls) {
+        public static CreatorType valueOf(Class<? extends Creator<?>> cls) {
             if (cls.equals(Person.class)) {
                 return CreatorType.PERSON;
             } else if (cls.equals(Institution.class)) {
@@ -141,6 +144,16 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
             return null;
         }
 
+        public Class<? extends Creator<?>> getImplementedClass() {
+            switch (this) {
+                case INSTITUTION:
+                    return Institution.class;
+                case PERSON:
+                    return Person.class;
+            }
+            return null;
+        }
+        
         public String getCode() {
             return this.code;
         }
@@ -197,6 +210,12 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
     @Analyzer(impl = TdarCaseSensitiveStandardAnalyzer.class)
     private Status status = Status.ACTIVE;
 
+    @OneToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST}, targetEntity=Creator.class, orphanRemoval=true)
+    @JoinColumn(name = "merge_creator_id")
+    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+    private Set<T> synonyms = new HashSet<>();
+
+    
     @Lob
     @Type(type = "org.hibernate.type.StringClobType")
     private String description;
@@ -223,7 +242,7 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
     private transient Integer maxHeight;
     private transient Integer maxWidth;
     private transient VersionType maxSize;
-    
+
     // @OneToMany(cascade = CascadeType.ALL, mappedBy = "creator", fetch = FetchType.LAZY, orphanRemoval = true)
     // private Set<ResourceCreator> resourceCreators = new LinkedHashSet<ResourceCreator>();
 
@@ -381,6 +400,17 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
         return this.status;
     }
 
+    @XmlElementWrapper(name = "synonyms")
+    @XmlElement(name = "synonymRef")
+    public Set<T> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(Set<T> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+
     @Override
     public void setStatus(Status status) {
         this.status = status;
@@ -525,15 +555,14 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
 
     @JsonView(JsonLookupFilter.class)
     public String getDetailUrl() {
-        return String.format("/%s/%s/%s", getUrlNamespace(), getId(),getSlug());
+        return String.format("/%s/%s/%s", getUrlNamespace(), getId(), getSlug());
     }
-    
+
     @Override
     public String getSlug() {
         return UrlUtils.slugify(getProperName());
     }
 
-    abstract public Set<? extends Creator> getSynonyms();
 
     @Override
     public Integer getMaxHeight() {
@@ -564,5 +593,5 @@ public abstract class Creator implements Persistable, HasName, HasStatus, Indexa
     public void setMaxSize(VersionType maxSize) {
         this.maxSize = maxSize;
     }
-    
+
 }

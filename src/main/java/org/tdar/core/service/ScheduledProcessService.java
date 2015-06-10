@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.Persistable;
+import org.tdar.core.bean.billing.AccountUsageHistory;
 import org.tdar.core.bean.util.UpgradeTask;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao.FindOptions;
@@ -166,6 +167,15 @@ public class ScheduledProcessService implements ApplicationListener<ContextRefre
     }
 
     /**
+     * Log Account Usage History
+     */
+    @Scheduled(cron = "0 1 1 * * *")
+    public void cronUpdateAccountUsageHistory() {
+        logger.info("updating account usage history");
+        queue(scheduledProcessMap.get(AccountUsageHistory.class));
+    }
+
+    /**
      * Update the Sitemap.org sitemap files
      */
     @Scheduled(cron = "20 15 0 * * *")
@@ -249,7 +259,7 @@ public class ScheduledProcessService implements ApplicationListener<ContextRefre
         if (scheduledProcessQueue.size() <= 0) {
             return;
         }
-        
+
         ScheduledProcess<Persistable> process = scheduledProcessQueue.iterator().next();
         // FIXME: merge UpgradeTask and ScheduledProcess at some point, so that UpgradeTask-s are
         // created / added / managed within a ScheduledProcess.execute()
