@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <version>14-NEOLITHIC</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,7 +60,7 @@
             to the command line -->
         <build.profile.id>default</build.profile.id>
         <clover.version>4.0.2</clover.version>
-		<clover.license><![CDATA[NQoQrArmcFqnDlAnPUOntuQSQpNTLrjUQbxPKTUCRGLwXe
+        <clover.license><![CDATA[NQoQrArmcFqnDlAnPUOntuQSQpNTLrjUQbxPKTUCRGLwXe
 		                        mi2K4GmdlIZXHlkIo6S>epcT2KclzV6H9YiHR6feWFo20m
 		                        rprMsxRnPRNOrnQROQMTTmorOoMoQQmpPRvSwxvqutsTWv
 		                        umxSSSWTsTwTuWStQUwsVXUSTnMNnmqmUUnqnmmnommmmm
@@ -78,19 +78,26 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>2.3</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
                 <version>${spring.framework.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-                <dependency>
-                    <groupId>org.apache.struts</groupId>
-                    <artifactId>struts2-bom</artifactId>
-                    <version>${struts2.version}</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
+            <dependency>
+                <groupId>org.apache.struts</groupId>
+                <artifactId>struts2-bom</artifactId>
+                <version>${struts2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <repositories>
@@ -239,79 +246,6 @@
             <!-- LICENSE: MIT -->
         </dependency>
         <dependency>
-            <groupId>org.dataone</groupId>
-            <artifactId>d1_libclient_java</artifactId>
-            <version>1.3.1</version>
-            <type>jar</type>
-            <scope>test</scope>
-            <!-- LICENSE: APACHE 2.0 -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>httpclient</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpcore</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>foresite</artifactId>
-                    <groupId>com.googlecode.foresite-toolkit</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jcs</artifactId>
-                    <groupId>jcs</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- declared dependency with excludes for DataOne and maven 
-                version management -->
-            <artifactId>jcs</artifactId>
-            <groupId>jcs</groupId>
-            <version>1.3</version>
-            <!-- APACHE 2.0 License -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>hsqldb</artifactId>
-                    <groupId>hsqldb</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>servlet-api</artifactId>
-                    <groupId>javax.servlet</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>xercesImpl</artifactId>
-                    <groupId>xerces</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- declared dependency with excludes for DataOne and maven 
-                version management -->
-            <artifactId>foresite</artifactId>
-            <groupId>com.googlecode.foresite-toolkit</groupId>
-            <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jena</artifactId>
-                    <groupId>com.hp.hpl.jena</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>rome</artifactId>
-                    <groupId>rome</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>joda-time</artifactId>
-                    <groupId>joda-time</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>xalan</artifactId>
-                    <groupId>xalan</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
             <version>55.1</version>
@@ -373,29 +307,40 @@
         </dependency>
         <!-- log4j -->
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-            <!-- LICENSE: APACHE 2.0 -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>apache-log4j-extras</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <!-- LICENSE: APACHE 2.0 -->
+        <!--             <exclusions>
+                        <exclusion>
+                            <groupId>com.sun.jdmk</groupId>
+                            <artifactId>jmxtools</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>javax.jms</groupId>
+                            <artifactId>jms</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.sun.jmx</groupId>
+                            <artifactId>jmxri</artifactId>
+                        </exclusion>
+                    </exclusions>
+         -->
+        <!--         <dependency>
+                    <groupId>log4j</groupId>
+                    <artifactId>apache-log4j-extras</artifactId>
+                    <version>1.2.17</version>
+                </dependency>
+         -->
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.2</version>
+            <!-- LICENSE: APACHE 2.0 -->
         </dependency>
         <dependency>
             <groupId>org.atteo</groupId>
@@ -421,16 +366,16 @@
                     <groupId>commons-httpclient</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpcore</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpclient</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpclient-cache</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient-cache</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -440,31 +385,6 @@
             </exclusion> <exclusion> <artifactId>httpmime</artifactId> <groupId>org.apache.httpcomponents</groupId>
             </exclusion> <exclusion> <artifactId>httpcore</artifactId> <groupId>org.apache.httpcomponents</groupId>
             </exclusion> </exclusions> </dependency> -->
-        <dependency>
-            <groupId>org.dataone</groupId>
-            <artifactId>d1_libclient_java</artifactId>
-            <version>1.3.1</version>
-            <type>jar</type>
-            <!-- LICENSE: APACHE 2.0 -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>httpclient</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpmime</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>httpcore</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>servlet-api</artifactId>
-                    <groupId>javax.servlet</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
@@ -574,8 +494,8 @@
                     <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpclient-cache</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient-cache</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -678,10 +598,10 @@
         </dependency>
         <!-- needed for ANDSPidClient -->
         <dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-		</dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
         <!-- these are required for htmlunit 2.10 -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -759,19 +679,19 @@
             <version>1.5.3</version>
             <!-- LICENSE: BSD -->
             <exclusions>
-            	<exclusion>
-            		<artifactId>commons-httpclient</artifactId>
-            		<groupId>commons-httpclient</groupId>
-            	</exclusion>
+                <exclusion>
+                    <artifactId>commons-httpclient</artifactId>
+                    <groupId>commons-httpclient</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
-            <!-- LICENSE: Apache 2.0 -->
+            <!--  LICENSE: Apache 2.0 -->
         </dependency>
-    <!-- Apache POI / HSSF - included via tika -->
+        <!-- Apache POI / HSSF - included via tika -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -787,7 +707,7 @@
             <artifactId>poi-ooxml</artifactId>
             <version>${poi.version}</version>
         </dependency>
-    <!-- hibernate and JPA persistence -->
+        <!-- hibernate and JPA persistence -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -840,19 +760,19 @@
             <version>2.2.4</version>
         </dependency>
         <dependency>
-		    <groupId>nu.validator</groupId>
-		    <artifactId>validator</artifactId>
-		    <version>15.4.12</version>
-		    <exclusions>
-		    	<exclusion>
-		    		<artifactId>httpcore</artifactId>
-		    		<groupId>org.apache.httpcomponents</groupId>
-		    	</exclusion>
-		    	<exclusion>
-		    		<artifactId>httpclient</artifactId>
-		    		<groupId>org.apache.httpcomponents</groupId>
-		    	</exclusion>
-		    </exclusions>
+            <groupId>nu.validator</groupId>
+            <artifactId>validator</artifactId>
+            <version>15.4.12</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>httpcore</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.glassfish.web</groupId>
@@ -866,10 +786,9 @@
             <!-- LICENSE: MIT -->
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <!-- LICENSE: MIT -->
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>com.mattbertolini</groupId>
@@ -934,9 +853,13 @@
             <artifactId>spring-aop</artifactId>
             <!-- LICENSE: APACHE 2.0 -->
         </dependency>
-        <!-- <dependency> <!- needed by spring for @Transactional calls -> 
-            <groupId>cglib</groupId> <artifactId>cglib-nodep</artifactId> <version>3.1</version> 
-            <!- LICENSE: APACHE 1.1 -> </dependency> -->
+        <!--  <dependency>
+            <!- needed by spring for @Transactional calls ->
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>3.1</version>
+            <!- LICENSE: APACHE 1.1 ->
+        </dependency> -->
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>jta</artifactId>
@@ -1113,16 +1036,16 @@
                     <groupId>org.bouncycastle</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpcore</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpclient</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
                 <exclusion>
-                	<artifactId>httpmime</artifactId>
-                	<groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpmime</artifactId>
+                    <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1378,30 +1301,30 @@
 
     <reporting>
         <plugins>
-<!--             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.4</version>
-                <configuration>
-                    <includes>
-                        <include>${project.basedir}/src/main/java/**/*.java</include>
-                    </includes>
-                </configuration>
-            </plugin>
+            <!--             <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jxr-plugin</artifactId>
+                            <version>2.4</version>
+                            <configuration>
+                                <includes>
+                                    <include>${project.basedir}/src/main/java/**/*.java</include>
+                                </includes>
+                            </configuration>
+                        </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.11</version>
-                <configuration>
-                    <enableRSS>false</enableRSS>
-                    <includes>**\/*.java</includes>
-                    <enableRulesSummary>true</enableRulesSummary>
-                    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-                    <configLocation>src/main/resources/validation_tools/check_style.xml</configLocation>
-                </configuration>
-            </plugin>
--->
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-checkstyle-plugin</artifactId>
+                            <version>2.11</version>
+                            <configuration>
+                                <enableRSS>false</enableRSS>
+                                <includes>**\/*.java</includes>
+                                <enableRulesSummary>true</enableRulesSummary>
+                                <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+                                <configLocation>src/main/resources/validation_tools/check_style.xml</configLocation>
+                            </configuration>
+                        </plugin>
+            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>findbugs-maven-plugin</artifactId>
@@ -1676,30 +1599,30 @@
                             <exportAntProperties>true</exportAntProperties>
                             <target>
                                 <condition property="hg.location"
-                                    value="/usr/local/bin/hg">
+                                           value="/usr/local/bin/hg">
                                     <available file="/usr/local/bin/hg" />
                                 </condition>
                                 <condition property="hg.location"
-                                    value="/usr/bin/hg">
+                                           value="/usr/bin/hg">
                                     <available file="/usr/bin/hg" />
                                 </condition>
                                 <property name="hg.location"
-                                    value="hg" />
+                                          value="hg" />
                                 <echo
-                                    message=" using mercurial from: ${hg.location}" />
+                                        message=" using mercurial from: ${hg.location}" />
                                 <mkdir dir="target" />
                                 <mkdir dir="target/classes" />
                                 <exec output="target/classes/version.txt"
-                                    executable="${hg.location}">
+                                      executable="${hg.location}">
                                     <arg line="id -n" />
                                 </exec>
                                 <loadfile property="hg.version"
-                                    srcFile="target/classes/version.txt" />
+                                          srcFile="target/classes/version.txt" />
                                 <loadfile property="hg.version.as_dir"
-                                    srcFile="target/classes/version.txt">
+                                          srcFile="target/classes/version.txt">
                                     <filterchain>
                                         <deletecharacters
-                                            chars="\t\r\n+" />
+                                                chars="\t\r\n+" />
                                     </filterchain>
                                 </loadfile>
                             </target>
@@ -1725,46 +1648,46 @@
                     </execution>
                 </executions>
             </plugin>
-             <plugin>
-                 <groupId>org.liquibase</groupId>
-                 <artifactId>liquibase-maven-plugin</artifactId>
-                 <configuration>
-                     <username>${javax.persistence.jdbc.user}</username>
-                     <password>${javax.persistence.jdbc.password}</password>
-                     <url>${javax.persistence.jdbc.url}</url>
-                     <driver>${javax.persistence.jdbc.driver}</driver>
-                     <verbose>false</verbose>
-                     <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
-                 </configuration>
-                 <executions>
-                     <execution>
-                     <!--  in the "test" context, drop the database contents, and reload it -->
-                     <id>test-liquibase</id>
-                     <configuration>
-                         <changeLogFile>src/test/db/changelog.xml</changeLogFile>
-                         <skip>${skipTestLiquibase}</skip>
-                     </configuration>
-                         <phase>pre-integration-test</phase>
-                         <goals>
-                             <goal>dropAll</goal>
-                             <goal>update</goal>
-                         </goals>
-                     </execution>
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <configuration>
+                    <username>${javax.persistence.jdbc.user}</username>
+                    <password>${javax.persistence.jdbc.password}</password>
+                    <url>${javax.persistence.jdbc.url}</url>
+                    <driver>${javax.persistence.jdbc.driver}</driver>
+                    <verbose>false</verbose>
+                    <promptOnNonLocalDatabase>false</promptOnNonLocalDatabase>
+                </configuration>
+                <executions>
                     <execution>
-                     <id>upgrade-liquibase</id>
-                     <!--  if the liquibase profile is active (default context) run the upgrade  -->
-                     <configuration>
-                         <changeLogFile>src/main/db/changelog.xml</changeLogFile>
-                         <skip>${skipUpgradeLiquibase}</skip>
-                     </configuration>
+                        <!--  in the "test" context, drop the database contents, and reload it -->
+                        <id>test-liquibase</id>
+                        <configuration>
+                            <changeLogFile>src/test/db/changelog.xml</changeLogFile>
+                            <skip>${skipTestLiquibase}</skip>
+                        </configuration>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>dropAll</goal>
+                            <goal>update</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>upgrade-liquibase</id>
+                        <!--  if the liquibase profile is active (default context) run the upgrade  -->
+                        <configuration>
+                            <changeLogFile>src/main/db/changelog.xml</changeLogFile>
+                            <skip>${skipUpgradeLiquibase}</skip>
+                        </configuration>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>update</goal>
                         </goals>
                     </execution>
-                 </executions>
-             </plugin>
-             
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -1805,7 +1728,6 @@
                 </executions>
             </plugin>
             <plugin>
-
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
@@ -1814,12 +1736,12 @@
                     <useTestClasspath>${use.test.classpath}</useTestClasspath>
                     <scanIntervalSeconds>10</scanIntervalSeconds>
                     <jettyXml>src/main/resources/jetty/jetty.xml,src/main/resources/jetty/jetty-ssl.xml,src/main/resources/jetty/jetty-https.xml,src/main/resources/jetty/jetty-http.xml</jettyXml>
-                     <contextXml>src/main/resources/jetty/jetty-context.xml</contextXml>
-                     <systemProperties>
-                          <systemProperty>
-                           <name>jetty.ssl.port</name>
-                           <value>${jetty.ssl.port}</value>
-                         </systemProperty>
+                    <contextXml>src/main/resources/jetty/jetty-context.xml</contextXml>
+                    <systemProperties>
+                              <systemProperty>
+                               <name>jetty.ssl.port</name>
+                               <value>${jetty.ssl.port}</value>
+                             </systemProperty>
                         <systemProperty>
                             <name>jetty.port</name>
                             <value>${jetty.port}</value>
@@ -1832,14 +1754,14 @@
                             <name>slf4j</name>
                             <value>true</value>
                         </systemProperty>
-                     </systemProperties>
-                     <contextPath>/</contextPath>
-                      <webDefaultXml>src/main/resources/jetty/webdefault.xml</webDefaultXml>
-                     <scanIntervalSeconds>0</scanIntervalSeconds>
+                    </systemProperties>
+                    <contextPath>/</contextPath>
+                    <webDefaultXml>src/main/resources/jetty/webdefault.xml</webDefaultXml>
+                    <scanIntervalSeconds>0</scanIntervalSeconds>
                     <stopKey>tdar</stopKey>
                     <webApp>
                         <baseResource
-                            implementation="org.eclipse.jetty.util.resource.ResourceCollection">
+                                implementation="org.eclipse.jetty.util.resource.ResourceCollection">
                             <resourcesAsCSV>src/main/webapp,${project.build.directory}/generated/webapp</resourcesAsCSV>
                         </baseResource>
                     </webApp>
@@ -2050,7 +1972,7 @@
                     <artifactId>selenium-maven-plugin</artifactId>
                     <version>2.3</version>
                 </plugin>
-                
+
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>
@@ -2098,21 +2020,21 @@
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>org.liquibase</groupId>
-                                		<artifactId>
-                                			liquibase-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[3.2.2,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>update</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.liquibase</groupId>
+                                        <artifactId>
+                                            liquibase-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [3.2.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>update</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
@@ -2216,7 +2138,7 @@
                                         <mkdir dir="target/generated/db" />
                                         <mkdir dir="target/generated/webapp" />
                                         <mkdir
-                                            dir="target/generated/webapp-test" />
+                                                dir="target/generated/webapp-test" />
                                     </target>
                                 </configuration>
                             </execution>
@@ -2284,7 +2206,7 @@
                                         <mkdir dir="target/generated/db" />
                                         <mkdir dir="target/generated/webapp" />
                                         <mkdir
-                                            dir="target/generated/webapp-test" />
+                                                dir="target/generated/webapp-test" />
                                         <!--<rmdir dir="src/main/webapp/wro" 
                                             /> -->
                                     </target>
@@ -2325,13 +2247,13 @@
                                         <mkdir dir="target/generated/db" />
                                         <mkdir dir="target/generated/webapp" />
                                         <mkdir
-                                            dir="target/generated/webapp-test" />
+                                                dir="target/generated/webapp-test" />
                                     </target>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-                    
+
                     <!-- 
                     
                       <plugin>
@@ -2391,9 +2313,9 @@
                                 <configuration>
                                     <target>
                                         <copy
-                                            todir="${project.build.directory}/generated/webapp/wro/">
+                                                todir="${project.build.directory}/generated/webapp/wro/">
                                             <fileset
-                                                dir="${project.build.directory}/generated/webapp/wro/${hg.version.as_dir}" />
+                                                    dir="${project.build.directory}/generated/webapp/wro/${hg.version.as_dir}" />
                                         </copy>
                                     </target>
                                 </configuration>
@@ -2552,33 +2474,33 @@
                                 <configuration>
                                     <target>
                                         <copy
-                                            file="src/main/resources/crowd.properties.template"
-                                            tofile="src/main/resources/crowd.properties" />
+                                                file="src/main/resources/crowd.properties.template"
+                                                tofile="src/main/resources/crowd.properties" />
                                         <copy
-                                            file="src/main/resources/ldap.properties.template"
-                                            tofile="src/main/resources/ldap.properties" />
+                                                file="src/main/resources/ldap.properties.template"
+                                                tofile="src/main/resources/ldap.properties" />
                                         <copy
-                                            file="src/main/resources/hibernate.properties.template"
-                                            tofile="src/main/resources/hibernate.properties" />
+                                                file="src/main/resources/hibernate.properties.template"
+                                                tofile="src/main/resources/hibernate.properties" />
                                         <copy
-                                            file="src/main/resources/log4j.xml.template"
-                                            tofile="src/main/resources/log4j.xml" />
+                                                file="src/main/resources/log4j.xml.template"
+                                                tofile="src/main/resources/log4j.xml" />
                                         <copy
-                                            file="src/main/resources/tdar.properties.template"
-                                            tofile="src/main/resources/tdar.properties" />
+                                                file="src/main/resources/tdar.properties.template"
+                                                tofile="src/main/resources/tdar.properties" />
                                         <copy
-                                            file="src/main/resources/struts-local-settings.xml.template"
-                                            tofile="src/main/resources/struts-local-settings.xml" />
+                                                file="src/main/resources/struts-local-settings.xml.template"
+                                                tofile="src/main/resources/struts-local-settings.xml" />
                                         <copy
-                                            file="src/main/resources/spring-local-settings.xml.template"
-                                            tofile="src/main/resources/spring-local-settings.xml" />
+                                                file="src/main/resources/spring-local-settings.xml.template"
+                                                tofile="src/main/resources/spring-local-settings.xml" />
                                         <copy
-                                            file="src/main/resources/hibernate-ehcache.xml.template"
-                                            tofile="src/main/resources/hibernate-ehcache.xml" />
+                                                file="src/main/resources/hibernate-ehcache.xml.template"
+                                                tofile="src/main/resources/hibernate-ehcache.xml" />
                                         <echo
-                                            message="the following can be used to grab all of the config files into a tar from an existing repo" />
+                                                message="the following can be used to grab all of the config files into a tar from an existing repo" />
                                         <echo
-                                            message=" hg status --all | grep 'I ' | grep -v 'I target/' | awk '{print substr($0, index($0, $2))}' | tar -cvzf ../backup.tgz -T -" />
+                                                message=" hg status --all | grep 'I ' | grep -v 'I target/' | awk '{print substr($0, index($0, $2))}' | tar -cvzf ../backup.tgz -T -" />
                                     </target>
                                 </configuration>
                             </execution>
@@ -2632,86 +2554,86 @@
 
         <profile>
             <id>liquibase-export</id>
-		            <!--  mvn -Pliquibase-export clean compile  -->
-			<build>
-				<defaultGoal>liquibase:generateChangeLog</defaultGoal>
-				<resources>
-					<resource>
-						<!-- switch filtering off for all but the desired set -->
-						<filtering>false</filtering>
-						<directory>${basedir}/src/main/resources</directory>
-						<excludes>
-							<exclude>tdar.properties</exclude>
-							<exclude>crowd.properties</exclude>
-							<exclude>hibernate.properties</exclude>
-							<exclude>local-wro-config.properties</exclude>
-							<exclude>struts-local-settings.xml</exclude>
-							<exclude>common.json</exclude>
-							<exclude>liquibase.properties</exclude>
-						</excludes>
-					</resource>
-					<resource>
-						<!-- And on for the set of files -->
-						<!-- Having to do it as mutually exclusive but that's how Maven works -->
-						<!-- See: http://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html -->
-						<filtering>true</filtering>
-						<directory>${basedir}/src/main/resources</directory>
-						<includes>
-							<include>liquibase.properties</include>
-							<include>hibernate.properties</include>
-						</includes>
-					</resource>
-				</resources>
-				<filters>
-					<filter>src/main/resources/hibernate.properties</filter>
-					<filter>src/main/resources/liquibase.properties</filter>
-				</filters>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>properties-maven-plugin</artifactId>
-						<version>1.0-alpha-2</version>
-						<executions>
-							<execution>
-								<phase>initialize</phase>
-								<goals>
-									<goal>read-project-properties</goal>
-								</goals>
-								<configuration>
-									<files>
-										<file>src/main/resources/hibernate.properties</file>
-									</files>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.liquibase</groupId>
-						<artifactId>liquibase-maven-plugin</artifactId>
-						<configuration>
-							<username>${javax.persistence.jdbc.user}</username>
-							<password>${javax.persistence.jdbc.password}</password>
-							<url>${javax.persistence.jdbc.url}</url>
-							<driver>${javax.persistence.jdbc.driver}</driver>
-							<outputChangeLogFile>src/test/db/changelog-setup.xml</outputChangeLogFile>
-							<diffTypes>tables,views,columns, indexes, foreignkeys, primarykeys,
-								uniqueconstraints,data,sequence</diffTypes>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>process-resources</phase>
-								<goals>
-									<goal>generateChangeLog</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
+            <!--  mvn -Pliquibase-export clean compile  -->
+            <build>
+                <defaultGoal>liquibase:generateChangeLog</defaultGoal>
+                <resources>
+                    <resource>
+                        <!-- switch filtering off for all but the desired set -->
+                        <filtering>false</filtering>
+                        <directory>${basedir}/src/main/resources</directory>
+                        <excludes>
+                            <exclude>tdar.properties</exclude>
+                            <exclude>crowd.properties</exclude>
+                            <exclude>hibernate.properties</exclude>
+                            <exclude>local-wro-config.properties</exclude>
+                            <exclude>struts-local-settings.xml</exclude>
+                            <exclude>common.json</exclude>
+                            <exclude>liquibase.properties</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <!-- And on for the set of files -->
+                        <!-- Having to do it as mutually exclusive but that's how Maven works -->
+                        <!-- See: http://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html -->
+                        <filtering>true</filtering>
+                        <directory>${basedir}/src/main/resources</directory>
+                        <includes>
+                            <include>liquibase.properties</include>
+                            <include>hibernate.properties</include>
+                        </includes>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/resources/hibernate.properties</filter>
+                    <filter>src/main/resources/liquibase.properties</filter>
+                </filters>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>properties-maven-plugin</artifactId>
+                        <version>1.0-alpha-2</version>
+                        <executions>
+                            <execution>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>read-project-properties</goal>
+                                </goals>
+                                <configuration>
+                                    <files>
+                                        <file>src/main/resources/hibernate.properties</file>
+                                    </files>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.liquibase</groupId>
+                        <artifactId>liquibase-maven-plugin</artifactId>
+                        <configuration>
+                            <username>${javax.persistence.jdbc.user}</username>
+                            <password>${javax.persistence.jdbc.password}</password>
+                            <url>${javax.persistence.jdbc.url}</url>
+                            <driver>${javax.persistence.jdbc.driver}</driver>
+                            <outputChangeLogFile>src/test/db/changelog-setup.xml</outputChangeLogFile>
+                            <diffTypes>tables,views,columns, indexes, foreignkeys, primarykeys,
+                                uniqueconstraints,data,sequence</diffTypes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>generateChangeLog</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>liquibase-setup-dev-instance</id>
-                    <!--  mvn -Pliquibase-setup-dev-instance clean compile  -->
+            <!--  mvn -Pliquibase-setup-dev-instance clean compile  -->
             <build>
                 <defaultGoal>liquibase:update</defaultGoal>
                 <resources>
@@ -2788,7 +2710,7 @@
         </profile>
         <profile>
             <id>liquibase-setup-production-instance</id>
-                    <!--  mvn -Pliquibase-export clean compile  -->
+            <!--  mvn -Pliquibase-export clean compile  -->
             <build>
                 <defaultGoal>liquibase:update</defaultGoal>
                 <resources>
@@ -2863,17 +2785,17 @@
                 </plugins>
             </build>
         </profile>
-        
-    <profile>
-    <!-- this profile is "temporary" and is not run in isolation. It should 
-        be run along with jetty:run which will setup the properties files correctly. 
-        Eventually, this will be built into the default "jetty" launch process and 
-        "deploy" process. 
-        
-        Enabling this profile activates the liquibase.properties 
-        and sets skipUpgradeLiquibase=false which means that liquibase is processed 
-        during the setup process. -->
-        <id>liquibase</id>
+
+        <profile>
+            <!-- this profile is "temporary" and is not run in isolation. It should
+                be run along with jetty:run which will setup the properties files correctly.
+                Eventually, this will be built into the default "jetty" launch process and
+                "deploy" process.
+
+                Enabling this profile activates the liquibase.properties
+                and sets skipUpgradeLiquibase=false which means that liquibase is processed
+                during the setup process. -->
+            <id>liquibase</id>
             <build>
                 <resources>
                     <resource>
@@ -2927,19 +2849,19 @@
                     </plugin>
                 </plugins>
             </build>
-        <properties>
-            <skipUpgradeLiquibase>false</skipUpgradeLiquibase>
-        </properties>
-    </profile>
+            <properties>
+                <skipUpgradeLiquibase>false</skipUpgradeLiquibase>
+            </properties>
+        </profile>
 
-    <profile>
-    <!-- this profile is intended to reset liquibase's change log (if something gets out of sync)
+        <profile>
+            <!-- this profile is intended to reset liquibase's change log (if something gets out of sync)
 
-        Enabling this profile activates the liquibase.properties 
-        and sets skipUpgradeLiquibase=false which means that liquibase is processed 
-        during the setup process. -->
-        <id>changelogSync</id>
-       <build>
+                Enabling this profile activates the liquibase.properties
+                and sets skipUpgradeLiquibase=false which means that liquibase is processed
+                during the setup process. -->
+            <id>changelogSync</id>
+            <build>
                 <defaultGoal>liquibase:changelogSync</defaultGoal>
                 <resources>
                     <resource>
@@ -3013,10 +2935,10 @@
                     </plugin>
                 </plugins>
             </build>
-        <properties>
-<!--             <skipUpgradeLiquibase>false</skipUpgradeLiquibase>
- -->        </properties>
-    </profile>
+            <properties>
+                <!--             <skipUpgradeLiquibase>false</skipUpgradeLiquibase>
+                 -->        </properties>
+        </profile>
 
         <!--profile: skip-web-tests - when activated,  skip all integration tests with title ending in WebITCase.java -->
         <!--TODO: don't fire up webserver when this profile is active -->
