@@ -23,7 +23,7 @@ public class ResourceStatusWrapper extends Persistable.Base {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = FieldLength.FIELD_LENGTH_50)
-    private Status status;
+    private TaskStatus status;
 
     public Resource getResource() {
         return resource;
@@ -33,11 +33,11 @@ public class ResourceStatusWrapper extends Persistable.Base {
         this.resource = resource;
     }
 
-    public Status getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
     }
 

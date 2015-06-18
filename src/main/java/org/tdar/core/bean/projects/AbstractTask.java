@@ -32,7 +32,7 @@ public abstract class AbstractTask extends Persistable.Base {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = FieldLength.FIELD_LENGTH_50)
-    private Status status;
+    private TaskStatus status;
     
     @ManyToOne(optional = false, cascade = { CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE, CascadeType.DETACH })
     private TdarUser creator;
@@ -62,11 +62,11 @@ public abstract class AbstractTask extends Persistable.Base {
         this.resources = resources;
     }
 
-    public Status getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
     }
 
