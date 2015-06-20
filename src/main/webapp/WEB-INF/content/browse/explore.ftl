@@ -29,10 +29,10 @@
 <br/>
 
 <div class="row">
-    <div class="span6">
+    <div class="col-xs-6">
         <@common.resourceBarGraph />
     </div>
-    <div class="span6 map">
+    <div class="col-xs-6 map">
         <!-- fixme styling -->
         <h3 style="">${siteAcronym} Worldwide</h3>
         <@common.renderWorldMap />
@@ -62,7 +62,7 @@
 
 
 <div class="row">
-    <div class="span6">
+    <div class="col-xs-6">
         <h2>Most Popular in the Past Week</h2>
         <ul>
             <#list featuredResources as resource>
@@ -70,7 +70,7 @@
             </#list>
         </ul>
     </div>
-    <div class="span6">
+    <div class="col-xs-6">
         <h2>Recently Added Resources</h2>
         <ul>
             <#list recentResources as resource>

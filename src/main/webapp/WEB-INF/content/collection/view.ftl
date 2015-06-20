@@ -81,10 +81,10 @@ ${resourceCollection.name!"untitled collection"}</h1>
 
         <div id="divResultsSortControl">
             <div class="row">
-                <div class="span4">
+                <div class="col-xs-4">
                     <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Record"/>
                 </div>
-                <div class="span5"></div>
+                <div class="col-xs-5"></div>
             </div>
         </div>
 
@@ -142,29 +142,29 @@ ${resourceCollection.name!"untitled collection"}</h1>
 
             <@common.resourceUsageInfo />
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Collection Type" val=resourceCollection.type.label />
             </div>
-            <div class="span4">
-                <@view.kvp key="Hidden" val=resourceCollection.hidden?string />
+            <div class="col-xs-4">
+                <@view.kvp key="Visibility" val=resourceCollection.hidden?string("Hidden", "Visible") />
             </div>
         </div>
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Sort By" val=resourceCollection.sortBy.label />
             </div>
-            <div class="span4">
+            <div class="col-xs-4">
                 <#assign viewed>${viewCount} times</#assign>
                 <@view.kvp key="Viewed" val=viewed />
             </div>
         </div>
         <div class="row">
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Created By" nested=true><a
                         href="<@s.url value="${resourceCollection.owner.detailUrl}"/>">${resourceCollection.owner.properName}</a>
                     on ${resourceCollection.dateCreated?datetime}</@view.kvp>
             </div>
-            <div class="span4">
+            <div class="col-xs-4">
                 <@view.kvp key="Updated By" nested=true><a
                         href="<@s.url value="${resourceCollection.updater.detailUrl}"/>">${resourceCollection.updater.properName}</a>
                     on ${resourceCollection.dateUpdated?datetime}</@view.kvp>

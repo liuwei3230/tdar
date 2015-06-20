@@ -454,13 +454,6 @@ label.help-inline[generated="true"] {
     visibility: hidden;
 }
 
-/*FIXME: we are doing this hack because the contents of the left-pane can't fit in a .span9  (view page and edit page)  */
-/* see TDAR-2634, remove this css rule when ticket closed */
-article + aside.span3 > div {
-    margin-left: 40px !important;
-    /*    float: right; */
-}
-
 /* Normally I like the default bootstrap styles... but hot pink for CODE tags?  Really? */
 code {
     color: navy;
@@ -1255,16 +1248,6 @@ p.copyright-notice {
     display: inherit !important;
 }
 
-/*FIXME: temp hack for TDAR-2634, remove when resolved */
-.lt-ie9 .span9 .form-horizontal fieldset {
-    width: 750px; /* normally 700px */
-}
-
-/*FIXME: temp hack for TDAR-2634, remove when resolved */
-.lt-ie9 .span9 .form-horizontal fieldset .input-xxlarge {
-    width: 500px; /* normally 530px */
-}
-
 /* .fade, fade.in transitions not supported in ie8 */
 .lt-ie9 .fade {
     visibility: hidden;
@@ -1274,7 +1257,6 @@ p.copyright-notice {
     visibility: inherit !important;
 }
 
-/* ie8 hacks: end */
 .view-deleted-file {
     background-color: #edd87b;
     text-decoration: line-through;
