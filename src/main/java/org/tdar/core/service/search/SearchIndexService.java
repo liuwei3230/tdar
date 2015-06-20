@@ -1,5 +1,6 @@
 package org.tdar.core.service.search;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,6 +9,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.client.Requests;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.indices.IndexMissingException;
 import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.ScrollableResults;
@@ -36,6 +50,7 @@ import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.ActivityManager;
+import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.EmailService;
 import org.tdar.search.index.LookupSource;
 import org.tdar.utils.ImmutableScrollableCollection;
@@ -56,7 +71,13 @@ public class SearchIndexService {
     private GenericDao genericDao;
 
     @Autowired
+    private Client client;
+
+    @Autowired
     private DatasetDao datasetDao;
+
+    @Autowired
+    private SerializationService serializationService;
 
     @Autowired
     private EmailService emailService;
@@ -103,6 +124,20 @@ public class SearchIndexService {
             }
         }
         return toReindex;
+    }
+
+    public void createIndex(String name, LookupSource source) {
+        Settings indexSettings = ImmutableSettings.settingsBuilder()
+                .put("number_of_shards", 1)
+                .put("number_of_replicas", 1)
+                .build();
+        CreateIndexRequest request =
+                Requests.createIndexRequest("orange11")
+                        .settings(indexSettings);
+        // .mapping();
+        CreateIndexResponse response =
+                client.admin().indices().create(request).actionGet();
+
     }
 
     /**
@@ -258,6 +293,7 @@ public class SearchIndexService {
         try {
             if (deleteFirst) {
                 fullTextSession.purge(item.getClass(), item.getId());
+                client.delete(new DeleteRequest(getIndexForClass(item.getClass())).id(item.getId().toString())).actionGet();
             }
 
             if (item instanceof InformationResource) {
@@ -272,7 +308,13 @@ public class SearchIndexService {
                     // logger.debug("project contents null: {} {}", project, project.getCachedInformationResources());
                 }
             }
+
+            IndexResponse actionGet = client.index(
+                    new IndexRequest(getIndexForClass(item.getClass()), item.getClass().getSimpleName()).id(item.getId().toString()).source(
+                            serializationService.convertToJson(item))).actionGet();
             fullTextSession.index(item);
+        } catch (IOException ioe) {
+            logger.error("error ocurred in indexing", ioe);
         } catch (Throwable t) {
             logger.error("error ocurred in indexing", t);
             throw t;
@@ -466,6 +508,17 @@ public class SearchIndexService {
         FullTextSession fullTextSession = getFullTextSession();
         for (Class<?> clss : classes) {
             fullTextSession.purgeAll(clss);
+            String indexName = getIndexForClass(clss);
+            try {
+                DeleteIndexResponse delete = client.admin().indices().delete(new DeleteIndexRequest(indexName)).actionGet();
+                client.admin().indices().refresh(new RefreshRequest(indexName)).actionGet();
+
+                if (!delete.isAcknowledged()) {
+                    logger.error("Index wasn't deleted");
+                }
+            } catch (IndexMissingException ime) {
+                logger.trace("[{}] indexMissing: {}", indexName, ime.getMessage());
+            }
         }
     }
 
@@ -541,5 +594,10 @@ public class SearchIndexService {
             email.setUserGenerated(false);
             emailService.send(email);
         }
+    }
+    
+    
+    public String getIndexForClass(Class<?> clss) {
+        return LookupSource.getIndexForName(clss);
     }
 }

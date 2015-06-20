@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.tdar.search.query.builder.DynamicQueryComponentHelper;
 import org.tdar.search.query.builder.QueryBuilder;
 import org.tdar.search.query.builder.ResourceQueryBuilder;
 
+@Ignore
 public class DynamicQueryComponentHelperTest {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());

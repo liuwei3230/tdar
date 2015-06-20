@@ -20,11 +20,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.queryParser.QueryParser.Operator;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -35,8 +35,8 @@ import org.hibernate.CacheMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
-import org.hibernate.search.ProjectionConstants;
 import org.hibernate.search.Search;
+import org.hibernate.search.engine.ProjectionConstants;
 import org.hibernate.search.query.facet.Facet;
 import org.hibernate.search.query.facet.FacetSortOrder;
 import org.hibernate.search.query.facet.FacetingRequest;
@@ -520,7 +520,6 @@ public class SearchService {
                 cmpnts.addAll(DynamicQueryComponentHelper.createFields(cls, ""));
             }
 
-            applyAnalyzers(qb, fields, cmpnts, analyzer);
             // XXX: do not cache the actual MultiFieldQueryParser, it's not thread-safe
             // MultiFieldQueryParser qp = new MultiFieldQueryParser(Version.LUCENE_31, fields.toArray(new String[0]), analyzer);
             Pair<String[], PerFieldAnalyzerWrapper> newPair = new Pair<>(fields.toArray(new String[fields.size()]), analyzer);
@@ -533,51 +532,7 @@ public class SearchService {
         qb.setQueryParser(parser);
     }
 
-    /**
-     * The <b>fields</b> list specifies all of the generic fields that do not use the default analyzer.
-     * 
-     * @param qb
-     * @param fields
-     * @param cmpnts
-     * @param analyzer
-     */
-    @SuppressWarnings("deprecation")
-    private void applyAnalyzers(QueryBuilder qb, List<String> fields, Set<DynamicQueryComponent> cmpnts, PerFieldAnalyzerWrapper analyzer) {
-        List<DynamicQueryComponent> toRemove = new ArrayList<>();
-        // add all overrides and replace existing settings
-        if (qb.getOverrides() != null) {
-            for (DynamicQueryComponent over : qb.getOverrides()) {
-                for (DynamicQueryComponent cmp : cmpnts) {
-                    if (over.getLabel().equals(cmp.getLabel())) {
-                        toRemove.add(cmp);
-                    }
-                }
-            }
-            cmpnts.removeAll(toRemove);
-            cmpnts.addAll(qb.getOverrides());
-        }
-        for (DynamicQueryComponent cmp : cmpnts) {
-            String partialLabel = qb.stringContainedInLabel(cmp.getLabel());
-            if (partialLabel != null) {
-                Class<? extends org.apache.lucene.analysis.Analyzer> overrideAnalyzerClass = qb.getPartialLabelOverrides().get(partialLabel);
-                if (overrideAnalyzerClass != null) {
-                    cmp.setAnalyzer(overrideAnalyzerClass);
-                } else {
-                    continue;
-                }
-            }
 
-            fields.add(cmp.getLabel());
-            if (cmp.getAnalyzer() != null) {
-                try {
-                    analyzer.addAnalyzer(cmp.getLabel(), (org.apache.lucene.analysis.Analyzer) cmp.getAnalyzer().newInstance());
-                } catch (Exception e) {
-                    logger.debug("cannot add analyzer:", e);
-                }
-                logger.trace(cmp.getLabel() + " : " + cmp.getAnalyzer().getCanonicalName());
-            }
-        }
-    }
 
     /**
      * remove unauthorized statuses from list. it's up to caller to handle implications of empty list
