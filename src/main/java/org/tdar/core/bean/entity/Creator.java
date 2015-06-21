@@ -35,14 +35,12 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.search.Explanation;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.DateBridge;
-import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Norms;
@@ -178,9 +176,7 @@ public abstract class Creator<T extends Creator<?>> implements Persistable, HasN
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @DocumentId
     @JsonView(JsonLookupFilter.class)
-    @Field(store = Store.YES, analyzer = @Analyzer(impl = KeywordAnalyzer.class), name = QueryFieldNames.ID)
     private Long id = -1L;
     /*
      * @Boost(.5f)

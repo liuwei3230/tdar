@@ -11,7 +11,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.hibernate.search.FullTextQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

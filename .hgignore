@@ -36,6 +36,7 @@ import.log
 
 node
 node_modules
+elasticsearch-data
 clover.snapshot
 src/main/webapp/components
 syntax: regexp
