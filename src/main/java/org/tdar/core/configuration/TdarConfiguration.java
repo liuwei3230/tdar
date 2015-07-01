@@ -318,7 +318,7 @@ public class TdarConfiguration {
     }
 
     public String getSitemapDir() {
-        return String.format("%s/%s", getPersonalFileStoreLocation(), "sitemap");
+        return String.format("%s/%s", getHostedFileStoreLocation(), "sitemap");
     }
 
     public String getBaseUrl() {
@@ -896,5 +896,9 @@ public class TdarConfiguration {
 
     public int getTdarDataBatchSize() {
         return assistant.getIntProperty("tdardata.batch_size", 5000);
+    }
+
+    public int getDownloadBufferSize() {
+        return assistant.getIntProperty("download.buffer_size",2048);
     }
 }
