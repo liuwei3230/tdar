@@ -25,6 +25,7 @@
 
 <#-- avoid js in the header. if you must include it,  declare inline scripts, then external css, then external js -->
 <head>
+    <#--<meta name="viewport" content="width=device-width, initial-scale=1">-->
     <title>${title!siteName}</title>
     <#if authenticatedUser??>
         <!-- logged-in-as: ${authenticatedUser.email} -->
@@ -35,14 +36,10 @@
     <link rel="search" type="application/opensearchdescription+xml" href='<@s.url value="/opensearch.xml"/>' title="Search ${siteAcronym}">
 
 <#--  per: http://stackoverflow.com/questions/12246096/bootstrap-printing-width && https://github.com/netdna/bootstrap-cdn/pull/106 -->
+    <@s.head includeStyles=true includeScripts=false includeScriptsValidation=false />
     <#if useCDN>
-        <link href="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet" media="print">
-        <link rel="stylesheet" type="text/css" href='${protocol}//ajax.googleapis.com/ajax/libs/jqueryui/${jquery_ui_css_version}/themes/base/jquery-ui.css'>
+        <link rel="stylesheet" type="text/css" href='https://ajax.googleapis.com/ajax/libs/jqueryui/${jquery_ui_css_version}/themes/base/jquery-ui.css'>
     <#else>
-        <link href="${staticHost}/includes/bootstrap-2.32/css/bootstrap-responsive.min.css" rel="stylesheet">
-        <link href="${staticHost}/includes/bootstrap-2.32/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${staticHost}/includes/bootstrap-2.32/css/bootstrap.min.css" rel="stylesheet" media="print">
         <link rel="stylesheet" type="text/css" href='${staticHost}/includes/jquery-ui-${jquery_ui_css_version}/development-bundle/themes/base/jquery-ui.css'>
     </#if>
 
@@ -57,8 +54,8 @@
     <script type="text/javascript" src="${staticHost}/js/tdar.errorutils.js?build${common.tdarBuildId}"></script>
     <script src="${staticHost}/includes/modernizr-custom-2.6.2.min.js"></script>
     <#if useCDN>
-        <script src="${protocol}//ajax.googleapis.com/ajax/libs/jquery/${jquery_version}/jquery.min.js"></script>
-        <script src="${protocol}//ajax.googleapis.com/ajax/libs/jqueryui/${jquery_ui_version}/jquery-ui.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/${jquery_version}/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/${jquery_ui_version}/jquery-ui.min.js"></script>
     <#else>
         <script src="${staticHost}/includes/jquery-${jquery_version}.js"></script>
         <script src="${staticHost}/includes/jquery-ui-${jquery_ui_version}/ui/minified/jquery-ui.min.js"></script>
@@ -82,16 +79,15 @@ ${head}
     <div id="qunit"></div>
     <div id="qunit-fixture">
     </#if>
-    <div class="container">
-        <div class="row">
-            <header class="span12">
-                <#include "${themeDir}/header.dec" />
-                <#if (authenticatedUser??) >
+<div class="container-fluid">
+    <div class="row">
+        <header class="col-xs-12">
+            <#include "${themeDir}/header.dec" />
+            <#if (authenticatedUser??) >
 
                     <p id="welcome-menu" class="welcome  screen ">
                         <@s.text name="menu.welcome_back"/> <a href="">${authenticatedUser.properName}
-                        <i class="caret drop-down"></i>
-                    </a>
+                        <i class="caret drop-down"></i> </a>
                     </p>
 
                     <div class="welcome-drop  screen ">
@@ -158,7 +154,7 @@ ${head}
 
         <#else>
             <div class="row">
-                <div class="span12 subnav">
+                <div class="col-xs-12 subnav">
                     <ul class="subnav-lft">
                         <li><a href="<@s.url value="/search"/>"><@s.text name="menu.search"/></a></li>
                         <li><a href="<@s.url value="/search/results"/>"><@s.text name="menu.browse"/></a></li>
@@ -177,8 +173,6 @@ ${head}
                 </div>
             </div>
             <!-- BEGIN-TDAR-CONTENT -->
-
-
 
         </#if>
         <#if  page.properties["div.toolbars"]?? && page.properties["div.toolbars"] != "">
@@ -225,7 +219,7 @@ ${head}
 
         <#if actionMessages?has_content || (page.properties["div.messages"])?has_content>
             <div class="row">
-                <div class="span12">
+                <div class="col-xs-12">
                     <@s.actionmessage />
         ${(page.properties["div.messages"])!}
                 </div>
@@ -252,20 +246,20 @@ ${head}
 
         <section class="row ${part}">
 
-            <#if page.properties["div.sidebar-left"]?has_content>
-                <aside class="span3">
-                ${page.properties["div.sidebar-left"]}
-                </aside>
-            </#if>
+        <#if page.properties["div.sidebar-left"]?has_content>
+            <aside class="col-xs-3">
+            ${page.properties["div.sidebar-left"]}
+            </aside>
+        </#if>
 
-            <article class="span${spanSize} results" id="articleBody">
+            <article class="col-xs-${spanSize} results" id="articleBody">
             <#--Keep in mind.your body is inside a div.span element. now would be a good time to review bootstrap grid layout conventions (esp. 'Nesting Columns') -->
             <#--http://twitter.github.com/bootstrap/scaffolding.html#gridSystem -->
             ${body}
             </article>
 
             <#if page.properties["div.sidebar-right"]?has_content>
-                <aside class="span3 sidebar <#if actionName=='edit' || actionName='add' || actionName='columns'>hidden-tablet hidden-phone</#if> <#if actionName=='view' &&  resource?has_content>${resource.resourceType?lower_case}-bg-large tdar-icon</#if>">
+                <aside class="col-xs-3 sidebar <#if actionName=='edit' || actionName='add' || actionName='columns'>hidden-tablet hidden-phone</#if> <#if actionName=='view' &&  resource?has_content>${resource.resourceType?lower_case}-bg-large tdar-icon</#if>">
                 ${page.properties["div.sidebar-right"]}
                 </aside>
             </#if>
@@ -293,15 +287,12 @@ ${head}
     </footer>
 
     <#if useCDN>
-        <script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script>
-        <script src="${protocol}//ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/additional-methods.min.js"></script>
-        <script src="${protocol}//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/additional-methods.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <#else>
-        <script src="${staticHost}/includes/jquery.validate-1.13.1/jquery.validate.js"></script>
-        <script src="${staticHost}/includes/jquery.validate-1.13.1/additional-methods.js"></script>
-        <script src="${staticHost}/includes/bootstrap-2.32/js/bootstrap.js"></script>
+        <@s.head includeStyles=false includeScripts=true includeScriptsValidation=true />
     </#if>
-
 
     <script type="text/javascript">
         //functionality for "welcome back, so-and-so!" (pulled from main.js)

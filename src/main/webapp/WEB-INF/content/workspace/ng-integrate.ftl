@@ -15,7 +15,7 @@
 
     <form id="frmIntegrationEdit" class="form-horizontal" ng-init="ctrl.loadJSON()">
         <div class="row">
-            <div class="span9">
+            <div class="col-xs-9">
                <div class="control-group">
                    <label class="control-label">
                        Integration Name
@@ -32,7 +32,7 @@
                    </div>
                </div>
             </div>
-            <div class="span3">
+            <div class="col-xs-3">
                 <button type="button" class="btn btn-primary" ng-disabled="!isValid()" id="btnIntegrate" ng-click="ctrl.submitIntegration()">Integrate</button>
                 <#--<button type="button" class="btn btn-primary" ng-disabled="!isValid()" id="btnIntegrate" ng-click="ctrl.integrateClicked()">Integrate</button>-->
 
@@ -55,30 +55,30 @@
 
         <div id="divSelectedItemsSection">
             <div class="row">
-                <div class="span12">
+                <div class="col-xs-12">
                     <div class="control-group">
                         <label class="control-label">Datasets & Ontologies</label>
                         <div class="controls controls-row">
-                            <div class="span4">
+                            <div class="col-xs-4">
                                 <label><b>Selected Datasets</b></label>
                                 <div>
                                     <select size="5" class="input-block-level" multiple
                                             ng-model="selectedDataTables" name="selectedDatasets" id="selDatasets"
                                             ng-options="dataTable|dtDisplayName|titleCase for dataTable in ctrl.integration.dataTables"></select>
                                 </div>
+
                                 
-                                
-<div class="controls controls-row">
-                                <div class="btn-group">
-                                    <button type="button" class="btn"  id="btnAddDataset"
-                                            ng-click="ctrl.addDatasetsClicked()">Add Datasets...</button>
-                                    
-                                    <button type="button" class="btn" id="rmDatasetBtn" 
-                                            ng-click="ctrl.removeSelectedDatasetClicked()" ng-disabled="ctrl.integration.dataTables.length === 0">Remove selected dataset</button>
+                                <div class="controls controls-row">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn"  id="btnAddDataset"
+                                                ng-click="ctrl.addDatasetsClicked()">Add Datasets...</button>
+
+                                        <button type="button" class="btn" id="rmDatasetBtn"
+                                                ng-click="ctrl.removeSelectedDatasetClicked()" ng-disabled="ctrl.integration.dataTables.length === 0">Remove selected dataset</button>
+                                    </div>
                                 </div>
-                        </div>
-                        </div>
-                            <div class="span4">
+                            </div>
+                            <div class="col-xs-4">
                                 <label><b>Shared Ontologies</b></label>
                                 <ul>
                                     <li class="sharedOntologies" ng-repeat="ontology in ctrl.integration.ontologies">{{ontology | ontDisplayName}}</li>
@@ -123,7 +123,7 @@
         
         <div id="divColumnSection">
             <div class="row">
-                <div class="span12">
+                <div class="col-xs-12">
 
                     <div class="control-group" ng-show="ctrl.integration.columns.length">
                         <label class="control-label">
@@ -282,7 +282,7 @@
         </div>
         <div class="modal-body">
             <div class="row-fluid">
-                <div class="span12">
+                <div class="col-xs-12">
                     <form id="frmModal" class="form-horizontal form-condensed" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur':0, 'click':0} }">
                         <div>
                             <div class="control-group">
@@ -294,14 +294,14 @@
                             <div class="control-group">
                                 <label class="control-label">Belongs to</label>
                                 <div class="controls controls-row">
-                                    <div class="span3">
+                                    <div class="col-xs-3">
                                         <select name="searchFilter.projectId" class="input-block-level"
                                                 ng-model="filter.projectId" ng-options="project.id as project.title for project in projects"
                                                 ng-change="updateFilter()">
                                             <option value="">Any project</option>
                                         </select>
                                     </div>
-                                    <div class="span3">
+                                    <div class="col-xs-3">
                                         <select name="searchFilter.collectionId" class="input-block-level"
                                                 ng-model="filter.collectionId" ng-options="collection.id as collection.title for collection in collections"
                                                 ng-change="updateFilter()">
@@ -368,15 +368,15 @@
         </div>
         <div class="modal-footer">
             <div class="row-fluid">
-                <div class="span4 text-left">
+                <div class="col-xs-4 text-left">
                     <span ng-show="results.length"> Displaying records {{startRecord() + 1| number}} - {{endRecord()  | number}} of {{modalTotalResults}} </span>
                 </div>
-                <div class="span4 text-center">
+                <div class="col-xs-4 text-center">
                     <button type="button" class="btn btn-mini" id="btnPrevious" ng-click="previousPage()" ng-disabled="!hasPreviousPage()">previous</button>
                     <button type="button" class="btn btn-mini" id="btnNext" ng-click="nextPage()" ng-disabled="!hasNextPage()">next</button>
 
                 </div>
-                <div class="span4">
+                <div class="col-xs-4">
                     <ng-pluralize count="selectedItems.length"
                                   when="{'0': 'No datasets selected',
                                 '1': '1 dataset selected',                                'other': '{{selectedItems.length}} datasets selected'}"></ng-pluralize>
@@ -389,7 +389,7 @@
 
 
             <div class="row-fluid">
-                <div class="span12">
+                <div class="col-xs-12">
                     <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
                     <button class="btn btn-primary" id="btnModalAdd" data-dismiss="modal" ng-click="confirm(selectedItems)">Add selected items</button>
                 </div>
@@ -440,7 +440,7 @@ ${categoriesJson}
         </div>
         <div class="modal-body">
             <div class="row-fluid">
-                <div class="span12">
+                <div class="col-xs-12">
                     
                     <div role="tabpanel">
                     
@@ -467,7 +467,7 @@ ${categoriesJson}
         <div class="modal-footer">
 
             <div class="row-fluid">
-                <div class="span12">
+                <div class="col-xs-12">
                     <a type="button" class="btn" ng-href="/workspace/download?ticketId={{download.ticketId}}">Download</a>
                     <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
                 </div>

@@ -25,33 +25,33 @@
 <hr>
 <div class="row">
     <div class="pricing">
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=DOCUMENT"/>"><h3 class="document-mid-black red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=DATASET"/>"><h3 class="dataset-mid-red red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=IMAGE"/>"><h3 class="image-mid-black red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=SENSORY_DATA"/>"><h3 class="sensory_data-mid-red red"></h3></a>
         </div>
-        <div class="span4 center" style="margin-top: 10px;">
+        <div class="col-xs-4 center" style="margin-top: 10px;">
             <#if payPerIngestEnabled >
                 <a href="/cart/add" class="button">tDAR Pricing Information</a>
             </#if>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=ONTOLOGY"/>"><h3 class="ontology-mid-red red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=GEOSPATIAL"/>"><h3 class="geospatial-mid-black red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/results?_tdar.searchType=simple&resourceTypes=PROJECT"/>"><h3 class="project-mid-red red"></h3></a>
         </div>
-        <div class="span1 center">
+        <div class="col-xs-1 center">
             <a href="<@s.url value="/search/collections"/>"><h3 class="collection-mid-black red"></h3></a>
         </div>
     </div>
@@ -70,11 +70,11 @@
 <#if !archiveFileEnabled>
     
     <div class="row">
-        <div class="span6 map">
+        <div class="col-xs-6 map">
             <h3>${siteAcronym} Worldwide</h3>
             <@common.renderWorldMap />
         </div>
-        <div class="span6 news">
+        <div class="col-xs-6 news">
     
             <h3><a href="${newsUrl}">What's New at ${siteAcronym}?</a></h3>
     
@@ -101,14 +101,14 @@
 <br/>
 <hr />
 <div class="row">
-    <div class="span6">
+    <div class="col-xs-6">
 		<#if featuredCollection?has_content>
             <@common.featuredCollection featuredCollection />
 		<#else>
             <#include "/${themeDir}/homepage-bottom-left.dec" />
 		</#if>
     </div>
-    <div class="span6">
+    <div class="col-xs-6">
         <@common.resourceBarGraph />
     </div>
 </div>
