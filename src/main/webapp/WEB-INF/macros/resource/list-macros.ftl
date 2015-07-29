@@ -34,17 +34,17 @@
     <#-- set default ; add map wrapper -->
         <#if orientation == "GRID">
             <#local listTag_="div"/>
-            <#local itemClass = "span2"/>
+            <#local itemClass ="col-xs-2"/>
             <#local itemTag_="div"/>
         <#elseif orientation == "MAP" >
             <#local listTag_="ol"/>
             <#local itemTag_="li"/>
         <div class="resource-list row">
             <#if mapPosition=="top" || mapPosition == "right">
-                <div class="span9 google-map" <#if mapHeight?has_content>style="height:${mapHeight}px"</#if> ></div>
+                <div class="col-xs-9 google-map" <#if mapHeight?has_content>style="height:${mapHeight}px"</#if> ></div>
             </#if>
 
-        <div class="<#if mapPosition=='left' || mapPosition=="right">span3<#else>span9</#if>">
+        <div class="<#if mapPosition=='left' || mapPosition=="right">col-xs-3<#else>span9</#if>">
         </#if>
 
         <#local rowCount = -1 />
@@ -106,7 +106,7 @@
         <#if orientation == "MAP">
         </div>
             <#if mapPosition=="left" || mapPosition == "bottom">
-            <div class="span9 google-map" <#if mapHeight?has_content>style="height:${mapHeight}px"</#if> >
+            <div class="col-xs-9 google-map" <#if mapHeight?has_content>style="height:${mapHeight}px"</#if> >
 
             </div>
             </#if>
@@ -131,7 +131,7 @@
                 </div>    </div>
                 <hr/>
                 <div class=" ${orientation} resource-list row">
-                <div class="span2">
+                <div class="col-xs-2">
                 </#if>
             </#if>
         </#if>

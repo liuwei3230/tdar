@@ -1,6 +1,14 @@
 /*
     History: this file represents the original source code as provided by Fervor
 */
+/** TODO: gradually remove styles here until this file is empty and we can delete it.
+
+    - if style not used, kill it
+    - if style used, try to replicate with stock bootstrap3 classes, then kill it
+    - if unkillable, migrate to tdar-bootstrap.css.
+
+  */
+
 
 .red {
     color: #7a1501;
@@ -9,18 +17,6 @@
 .alwaysHidden {
     display: none !important;
     visibility: hidden !important;
-}
-
-.span45 {
-    width: 420px;
-}
-
-.responsive-desktop .span45 {
-    width: 340px !important;
-}
-
-.responsive-tablet .span45 {
-    width: 250px !important;
 }
 
 body {
@@ -1121,9 +1117,6 @@ footer a:hover {
 }
 
 /* Form Styles */
-.span12 hr {
-    margin-left: 0px !important;
-}
 
 #ajaxIndicator {
     position: fixed;

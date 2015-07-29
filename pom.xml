@@ -67,8 +67,7 @@
             to the command line -->
         <build.profile.id>default</build.profile.id>
         <clover.version>4.0.2</clover.version>
-        <clover.dir>${project.build.directory}</clover.dir>
-		<clover.license><![CDATA[NQoQrArmcFqnDlAnPUOntuQSQpNTLrjUQbxPKTUCRGLwXe
+        <clover.license><![CDATA[NQoQrArmcFqnDlAnPUOntuQSQpNTLrjUQbxPKTUCRGLwXe
 		                        mi2K4GmdlIZXHlkIo6S>epcT2KclzV6H9YiHR6feWFo20m
 		                        rprMsxRnPRNOrnQROQMTTmorOoMoQQmpPRvSwxvqutsTWv
 		                        umxSSSWTsTwTuWStQUwsVXUSTnMNnmqmUUnqnmmnommmmm
@@ -227,7 +226,7 @@
         <dependency>
             <groupId>com.jgeppert.struts2.bootstrap</groupId>
             <artifactId>struts2-bootstrap-plugin</artifactId>
-            <version>1.7.0</version>
+            <version>2.0.1</version>
             <!-- LICENSE: APACHE 2.0 -->
         </dependency>
         <dependency>
@@ -2330,7 +2329,7 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <copy 
+                                        <copy
                                             todir="${project.build.directory}/generated/webapp/wro/">
                                             <fileset
                                                 dir="${project.build.directory}/generated/webapp/wro/${hg.version.as_dir}" />

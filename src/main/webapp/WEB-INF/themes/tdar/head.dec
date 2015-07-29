@@ -10,6 +10,9 @@
       content="The Digital Archaeological Record (tDAR) is the digital repository of Digital Antiquity, an organization devoted to enhancing preservation and access to digital records of archaeological investigations. tDAR is a national/international digital repository for archaeological information, including databases, reports, images, and other kinds of archaeological information. tDAR is a database of archaeological Information"/>
 </#if>
 <meta name="keywords" content="tdar, database, archaeology, digital repository, Digital Antiquity, preservation, access"/>
+
+<#-- disabling typekit until it stops screwing up bootstrap3 icons, carousels, and autofocus -->
+<#--
 <script type="text/javascript">
     (function(d) {
         var config = {
@@ -26,11 +29,13 @@
 
 <style>
     @media screen {
+        /* todo: refactor. replace rarely-used classnames with .bodyfont, and then use this classname where needed */
         /* typekit fonts don't seem to work well in print -- we can revisit, but turning off for now */
-        h1, h2, h3, header .welcome-drop p, #home .news span, .why article p, .why article ul, .contrib p, .contrib ul, .contrib .span3 li, .searchresults p, .searchresults aside li, .searchresults .sort p, .searchresults .sort form, .searchresults .pagin td.prev, .searchresults .pagin td.next, .searchresults .pagin li, header .welcome-drop p {
+        h1, h2, h3, header .welcome-drop p, #home .news span, .why article p, .why article ul, .contrib p, .contrib ul, .contrib .searchresults p, .searchresults aside li, .searchresults .sort p, .searchresults .sort form, .searchresults .pagin td.prev, .searchresults .pagin td.next, .searchresults .pagin li, header .welcome-drop p {
             font-family: "soleil", sans-serif !important;
         }
 
+        /* todo: refactor. replace rarely-used classnames with .primaryfont, and then use this classname where needed */
         #home .news li, .cols p, .tableFormat td, header form input.searchbox, header .welcome-drop a, .hero input.searchbox, #slider p, #slider span, .bucket p, #alt aside li, .why article li, .contrib li, .contrib .span3 p, .searchresults aside li, .searchresults aside label, .searchresults article p, footer ul, footer li {
             font-family: "ff-tisa-web-pro", serif !important;
         }
@@ -47,3 +52,4 @@
         visibility: visible;
     }
 </style>
+-->
