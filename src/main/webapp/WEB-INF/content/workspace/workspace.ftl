@@ -17,7 +17,7 @@
 <div class="glide">
 
     <div class="row">
-        <div class="span8">
+        <div class="col-xs-8">
             <#if (workflows?size > 0) >
             <h3>Saved Integrations</h3>
             <table class="table table-bordered table-hover">
@@ -48,7 +48,7 @@
                 <@learn />
             </#if>
         </div>
-        <div class="span4">
+        <div class="col-xs-4">
         <#if workflows?size != 0>
             <@learn />
         </#if>
@@ -56,7 +56,7 @@
         </div>
     </div>
     <div class="row">
-		<div class="span12">
+		<div class="col-xs-12">
         <p><a href="/workspace/select-tables">Click here to use the Legacy Integration tool</a></p>
         </div>
     </div>

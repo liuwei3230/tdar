@@ -50,7 +50,7 @@
 	<@auth.loginWarning />
 
     <div class="row">
-        <div class="span9" id="divRegistrationSection">
+        <div class="col-xs-9" id="divRegistrationSection">
             <@s.form name='registrationForm' id='registrationForm' method="post" cssClass="disableFormNavigate form-condensed"
                     enctype='multipart/form-data' action="/filestore/process-download-registration">
                     <@s.token name='struts.csrf.token' />
@@ -71,7 +71,7 @@
 
         </div>
 
-        <div class="span3" id="divLoginSection">
+        <div class="col-xs-3" id="divLoginSection">
             <@s.form name='loginForm' id='loginForm'  method="post" cssClass="disableFormNavigate form-condensed"
                     enctype='multipart/form-data' action="process-download-login">
                 <fieldset>
