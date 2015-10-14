@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -15,16 +14,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.tdar.core.dao.external.auth.AuthenticationProvider;
 import org.tdar.core.dao.external.auth.CrowdRestDao;
 import org.tdar.core.dao.external.pid.EZIDDao;
 import org.tdar.core.dao.external.pid.ExternalIDProvider;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-
 @ImportResource(value = { "classpath:spring-local-settings.xml" })
-@Configuration
+@Configuration()
 @EnableCaching
 public class TdarAppConfiguration extends IntegrationAppConfiguration implements Serializable {
 
@@ -32,23 +28,6 @@ public class TdarAppConfiguration extends IntegrationAppConfiguration implements
 
     public TdarAppConfiguration() {
         logger.debug("Initializing tDAR Application Context");
-    }
-
-    @Bean
-    // @Value("#{'${my.list.of.strings}'.split(',')}")
-    public FreeMarkerConfigurationFactoryBean getFreemarkerMailConfiguration() {
-        FreeMarkerConfigurationFactoryBean freemarkerConfig = new FreeMarkerConfigurationFactoryBean();
-        List<String> templateLoaderPaths = new ArrayList<>();
-        templateLoaderPaths.add("classpath:/freemarker-templates");
-        templateLoaderPaths.add("file:/WEB-INF/freemarker-templates");
-        templateLoaderPaths.add("classpath:/WEB-INF/content");
-        templateLoaderPaths.add("classpath:src/main/webapp");
-        templateLoaderPaths.add("file:src/main/webapp");
-        templateLoaderPaths.add("classpath:/freemarker-templates-test");
-        templateLoaderPaths.add("classpath:/templates");
-        templateLoaderPaths.add("file:/templates");
-        freemarkerConfig.setTemplateLoaderPaths(templateLoaderPaths.toArray(new String[0]));
-        return freemarkerConfig;
     }
 
     @Bean(name = "AuthenticationProvider")
@@ -85,21 +64,12 @@ public class TdarAppConfiguration extends IntegrationAppConfiguration implements
     public boolean disableHibernateSearch() {
         return false;
     }
-    
-   @Bean(name = "tdarGeoDataSource")
+
+    @Bean(name = "tdarGeoDataSource")
     public DataSource tdarGeoDataSource() {
         try {
-            ComboPooledDataSource ds = new ComboPooledDataSource();
-            ds.setDriverClass(env.getRequiredProperty("javax.persistence.jdbc.driver"));
-            ds.setJdbcUrl(env.getRequiredProperty("javax.persistence.jdbc.url"));
-            ds.setUser(env.getRequiredProperty("javax.persistence.jdbc.user"));
-            ds.setPassword(env.getRequiredProperty("javax.persistence.jdbc.password"));
-            ds.setAcquireIncrement(5);
-            ds.setIdleConnectionTestPeriod(60);
-            ds.setMaxPoolSize(env.getRequiredProperty("tdardata.maxConnections", Integer.class));
-            ds.setMaxStatements(50);
-            ds.setMinPoolSize(env.getRequiredProperty("tdardata.minConnections", Integer.class));
-            return ds;
+            String prefix = "tdargisdata";
+            return configureDataSource(prefix);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

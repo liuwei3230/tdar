@@ -22,8 +22,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
@@ -38,6 +40,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.orm.hibernate4.LocalSessionFactoryBuilder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 import org.tdar.core.service.external.session.SessionData;
 import org.tdar.core.service.processes.manager.BaseProcessManager;
@@ -47,21 +50,32 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 @EnableTransactionManagement()
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@ComponentScan(basePackages = { "org.tdar" }, excludeFilters = {})
-
-@PropertySource(value="hibernate.properties", ignoreResourceNotFound=true)
-@PropertySource(value="classpath:hibernate.properties", ignoreResourceNotFound=true)
-@PropertySource(value="file://${TDAR_CONFIG_PATH}/hibernate.properties", ignoreResourceNotFound=true)
+// NOTE: this exclude filter is to ensure that we don't instantiate every @Configuration by default. @Configuration is a subclass of @Component, so the
+// autowiring happens by default w/o this
+@ComponentScan(basePackages = { "org.tdar" },
+        excludeFilters = {
+                @Filter(type = FilterType.ASSIGNABLE_TYPE,
+                        value = {
+                                SimpleAppConfiguration.class
+                        })
+        })
+@PropertySource(value = SimpleAppConfiguration.HIBERNATE_PROPERTIES, ignoreResourceNotFound = true)
+@PropertySource(value = "classpath:" + SimpleAppConfiguration.HIBERNATE_PROPERTIES, ignoreResourceNotFound = true)
+@PropertySource(value = "file://${TDAR_CONFIG_PATH}/hibernate.properties", ignoreResourceNotFound = true)
 
 @Configuration
 public class SimpleAppConfiguration implements Serializable {
 
-    private static final String HIBERNATE_PROPERTIES = "hibernate.properties";
+    protected static final String HIBERNATE_PROPERTIES = "hibernate.properties";
     private static final long serialVersionUID = 2190713147269025044L;
     public transient Logger logger = LoggerFactory.getLogger(getClass());
     public static transient Logger staticLogger = LoggerFactory.getLogger(SimpleAppConfiguration.class);
 
+    ConfigurationAssistant configurationAssistant = new ConfigurationAssistant();
+
     public SimpleAppConfiguration() {
+        logger.debug("Initializing Simple Application Context");
+
         /*
          * tDAR primarily uses the SLF4j fascade for all logging of the application, but then filters that through to log4j2 on the backend.
          * This does produce some complexities with Hibernate. These issues are related to the following:
@@ -71,36 +85,27 @@ public class SimpleAppConfiguration implements Serializable {
          */
         System.setProperty("org.jboss.logging.provider", "slf4j");
 
+        System.setProperty("java.awt.headless", "true");
+
     }
-    
+
     @Autowired
     protected Environment env;
 
     @Bean(name = "tdarMetadataDataSource")
     public DataSource tdarMetadataDataSource() {
-        logger.debug(env.toString());
-        logger.debug(env.getProperty("javax.persistence.jdbc.driver"));
         try {
-            ComboPooledDataSource ds = new ComboPooledDataSource();
-            ds.setDriverClass(env.getRequiredProperty("javax.persistence.jdbc.driver"));
-            ds.setJdbcUrl(env.getRequiredProperty("javax.persistence.jdbc.url"));
-            ds.setUser(env.getRequiredProperty("javax.persistence.jdbc.user"));
-            ds.setPassword(env.getRequiredProperty("javax.persistence.jdbc.password"));
-            ds.setAcquireIncrement(5);
-            ds.setIdleConnectionTestPeriod(60);
-            ds.setMaxPoolSize(env.getRequiredProperty("tdarmetadata.maxConnections", Integer.class));
-            ds.setMaxStatements(50);
-            ds.setMinPoolSize(env.getRequiredProperty("tdarmetadata.minConnections", Integer.class));
-            return ds;
+            return configureDataSource("tdarmetadata");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     @Bean(name = "sessionFactory")
-    public SessionFactory getSessionFactory(@Qualifier("tdarMetadataDataSource") DataSource dataSource) throws FileNotFoundException, IOException, URISyntaxException {
+    public SessionFactory getSessionFactory(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
+            throws FileNotFoundException, IOException, URISyntaxException {
         Properties properties = new Properties();
-        
+
         URL resource = getClass().getClassLoader().getResource(HIBERNATE_PROPERTIES);
         logger.trace("{}", resource);
         File file = null;
@@ -108,9 +113,9 @@ public class SimpleAppConfiguration implements Serializable {
             file = new File(resource.toURI());
             properties.load(new FileReader(file));
         }
-        String dir = System.getenv(ConfigurationAssistant.DEFAULT_CONFIG_PATH);
-        if (dir != null) {
-            file = new File(dir, HIBERNATE_PROPERTIES);
+        File dir = configurationAssistant.getConfigPath();
+        file = new File(dir, HIBERNATE_PROPERTIES);
+        if(file.exists()) {
             properties.load(new FileReader(file));
         }
 
@@ -142,8 +147,31 @@ public class SimpleAppConfiguration implements Serializable {
     }
 
     @Bean
+    // @Value("#{'${my.list.of.strings}'.split(',')}")
+    public FreeMarkerConfigurationFactoryBean getFreemarkerMailConfiguration() {
+        FreeMarkerConfigurationFactoryBean freemarkerConfig = new FreeMarkerConfigurationFactoryBean();
+        List<String> templateLoaderPaths = extracted();
+        freemarkerConfig.setTemplateLoaderPaths(templateLoaderPaths.toArray(new String[0]));
+        return freemarkerConfig;
+    }
+
+    protected List<String> extracted() {
+        List<String> templateLoaderPaths = new ArrayList<>();
+        templateLoaderPaths.add("classpath:/freemarker-templates");
+        templateLoaderPaths.add("file:/WEB-INF/freemarker-templates");
+        templateLoaderPaths.add("classpath:/WEB-INF/content");
+        templateLoaderPaths.add("classpath:src/main/webapp");
+        templateLoaderPaths.add("file:src/main/webapp");
+        templateLoaderPaths.add("classpath:/freemarker-templates-test");
+        templateLoaderPaths.add("classpath:/templates");
+        templateLoaderPaths.add("file:/templates");
+        return templateLoaderPaths;
+    }
+
+    @Bean
     @Primary
-    public HibernateTransactionManager transactionManager(@Qualifier("tdarMetadataDataSource") DataSource dataSource) throws PropertyVetoException, FileNotFoundException, IOException, URISyntaxException {
+    public HibernateTransactionManager transactionManager(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
+            throws PropertyVetoException, FileNotFoundException, IOException, URISyntaxException {
         HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager(getSessionFactory(dataSource));
         return hibernateTransactionManager;
     }
@@ -153,23 +181,50 @@ public class SimpleAppConfiguration implements Serializable {
         return new BaseProcessManager();
     }
 
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
-        PropertySourcesPlaceholderConfigurer placeholder = new PropertySourcesPlaceholderConfigurer();
-        String CONFIG_DIR = System.getenv(ConfigurationAssistant.DEFAULT_CONFIG_PATH);
-        staticLogger.debug("USING CONFIG PATH:" + CONFIG_DIR);
-        List<Resource> resources = new ArrayList<>();
-        String[] propertyFiles = { HIBERNATE_PROPERTIES };
-        for (String propertyFile : propertyFiles) {
-            if (CONFIG_DIR == null) {
-                ClassPathResource resource = new ClassPathResource(propertyFile);
-                resources.add(resource);
-            } else {
-                FileSystemResource resource = new FileSystemResource(new File(CONFIG_DIR, propertyFile));
-                resources.add(resource);
-            }
-        }
-        placeholder.setLocations(resources.toArray(new Resource[0]));
-        return placeholder;
+    /**
+     * Configure the dataSource by using the dataSource prefix (tdardata, tdarmetadata, tdargis); for jpa properties, the defaults of javax.persistance.jdbc.
+     * can be swapped in.
+     * 
+     * @param prefix
+     * @return
+     * @throws PropertyVetoException
+     */
+    protected DataSource configureDataSource(String prefix) throws PropertyVetoException {
+        ComboPooledDataSource ds = new ComboPooledDataSource();
+
+        String driver_ = ".persistence.jdbc.driver";
+        String url_ = ".persistence.jdbc.url";
+        String user_ = ".persistence.jdbc.user";
+        String password_ = ".persistence.jdbc.password";
+        ds.setDriverClass(getProperty(prefix, driver_));
+        ds.setJdbcUrl(getProperty(prefix, url_));
+        ds.setUser(getProperty(prefix, user_));
+        ds.setPassword(getProperty(prefix, password_));
+
+        ds.setAcquireIncrement(env.getProperty(prefix + ".acquireIncrement", Integer.class, 5));
+        ds.setPreferredTestQuery(env.getProperty(prefix + ".preferredTestQuery", String.class, "select 1"));
+        ds.setMaxIdleTime(env.getProperty(prefix + ".maxIdleTime", Integer.class, 600));
+        ds.setIdleConnectionTestPeriod(env.getProperty(prefix + ".idleConnectionTestPeriod", Integer.class, 300));
+        ds.setMaxStatements(env.getProperty(prefix + ".maxStatements", Integer.class, 100));
+        ds.setTestConnectionOnCheckin(env.getProperty(prefix + ".testConnectionOnCheckin", Boolean.class, true));
+        ds.setMaxPoolSize(env.getProperty(prefix + ".maxConnections", Integer.class, 10));
+        ds.setMinPoolSize(env.getProperty(prefix + ".minConnections", Integer.class, 1));
+        return ds;
     }
+
+    /**
+     * Allow for the override of the default connection properties (good for postGIS)
+     * 
+     * @param prefix
+     * @param val_
+     * @return
+     */
+    private String getProperty(String prefix, String val_) {
+        String val = env.getProperty(prefix + val_);
+        if (val == null) {
+            val = env.getRequiredProperty("javax" + val_);
+        }
+        return val;
+    }
+
 }
