@@ -1,13 +1,10 @@
 package org.tdar.core.configuration;
 
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -30,11 +27,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
@@ -71,8 +64,6 @@ public class SimpleAppConfiguration implements Serializable {
     public transient Logger logger = LoggerFactory.getLogger(getClass());
     public static transient Logger staticLogger = LoggerFactory.getLogger(SimpleAppConfiguration.class);
 
-    ConfigurationAssistant configurationAssistant = new ConfigurationAssistant();
-
     public SimpleAppConfiguration() {
         logger.debug("Initializing Simple Application Context");
 
@@ -106,18 +97,7 @@ public class SimpleAppConfiguration implements Serializable {
             throws FileNotFoundException, IOException, URISyntaxException {
         Properties properties = new Properties();
 
-        URL resource = getClass().getClassLoader().getResource(HIBERNATE_PROPERTIES);
-        logger.trace("{}", resource);
-        File file = null;
-        if (resource != null) {
-            file = new File(resource.toURI());
-            properties.load(new FileReader(file));
-        }
-        File dir = configurationAssistant.getConfigPath();
-        file = new File(dir, HIBERNATE_PROPERTIES);
-        if(file.exists()) {
-            properties.load(new FileReader(file));
-        }
+        properties.load(ConfigurationAssistant.getResourceAsStream(HIBERNATE_PROPERTIES));
 
         LocalSessionFactoryBuilder builder = new LocalSessionFactoryBuilder(dataSource);
         builder.scanPackages(new String[] { "org.tdar" });

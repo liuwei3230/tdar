@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Properties;
@@ -30,9 +29,7 @@ import org.tdar.core.exception.ConfigurationFileException;
 public class ConfigurationAssistant implements Serializable {
 
     private static final long serialVersionUID = -9093022080387404606L;
-    public static final String TDAR_CONFIG_PATH = "TDAR_CONFIG_PATH";
-    public static final String TDAR_CONFIG_PATH_DEFAULT = "src/main/resources";
-
+    public static final String DEFAULT_CONFIG_PATH = "TDAR_CONFIG_PATH";
 
     private final Properties properties;
     private final transient static Logger logger = LoggerFactory.getLogger(ConfigurationAssistant.class);
@@ -47,25 +44,6 @@ public class ConfigurationAssistant implements Serializable {
 
     public Properties getProperties() {
         return properties;
-    }
-
-    /**
-     * Return a File object representing the location of the application configuration files. The method first
-     * looks for a system environment variable identified by {@link ConfigurationAssistant#TDAR_CONFIG_PATH}.  If the
-     * system environment variable does not exist,  the method uses the path defined by
-     * {@link ConfigurationAssistant#TDAR_CONFIG_PATH_DEFAULT}
-     *
-     * @return
-     */
-    public File getConfigPath() {
-        String strConfigdir = System.getenv(TDAR_CONFIG_PATH_DEFAULT);
-        File configdir;
-        if(strConfigdir==null) {
-            configdir  = Paths.get("src/main/resources").toFile();
-        } else {
-            configdir = new File(strConfigdir);
-        }
-        return configdir;
     }
 
     public void loadProperties(String resource) {
@@ -98,19 +76,20 @@ public class ConfigurationAssistant implements Serializable {
         }
     }
 
-    @SuppressWarnings("resource")
-    public InputStream toInputStream(final String resource) {
+    public static InputStream toInputStream(final String resource) {
         // first try to read it as a file
         InputStream stream = null;
-        String CONFIG_DIR = System.getenv(TDAR_CONFIG_PATH);
+        String CONFIG_DIR = System.getenv(DEFAULT_CONFIG_PATH);
         try {
-            if (getConfigPath().exists()) {
-                File file = new File(CONFIG_DIR,resource);
-                return new FileInputStream(file);
+            if (CONFIG_DIR != null) {
+                File file = new File(CONFIG_DIR, resource);
+                if (file.exists()) {
+                    return new FileInputStream(file);
+                }
             }
 
             File file = new File(resource);
-            if (file.isFile()) {
+            if (file.isFile() && file.exists()) {
                 stream = new FileInputStream(file);
             } else {
                 stream = getResourceAsStream(resource);
@@ -123,8 +102,8 @@ public class ConfigurationAssistant implements Serializable {
         return stream;
     }
 
-    public InputStream getResourceAsStream(String path) {
-        InputStream stream = getClass().getResourceAsStream(path);
+    public static InputStream getResourceAsStream(String path) {
+        InputStream stream = ConfigurationAssistant.class.getResourceAsStream(path);
         if (stream == null) {
             stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
         }
