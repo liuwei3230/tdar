@@ -39,7 +39,7 @@ public class ExcelTemplateProcessorTest {
         ExcelTemplateProcessor processor = new ExcelTemplateProcessor();
         File outfile = File.createTempFile("foo", ".xls", targetDir);
 
-        List<String> headers = Arrays.asList("col1, col2, col3");
+          List<String> headers = Arrays.asList("FirstName", "LastName", "Email");
         List<Person> data = new ArrayList<Person>() {{
             add(new Person("jim", "devos", "email1"));
             add(new Person("john", "doe", "email2"));
