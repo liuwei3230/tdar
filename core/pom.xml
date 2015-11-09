@@ -17,10 +17,10 @@
         <jena.version>2.13.0</jena.version>
         <exec-maven-version>1.3.2</exec-maven-version>
         <!-- /end managed versions -->
-        <geotools.version>13.1</geotools.version>
-        <tika.version>1.10</tika.version>
+        <geotools.version>14.0</geotools.version>
+        <tika.version>1.11</tika.version>
         <batik.version>1.7</batik.version>
-        <jackson.version>2.6.2</jackson.version>
+        <jackson.version>2.6.3</jackson.version>
         <http-components.version>4.4.3</http-components.version>
         <http-client.version>4.5.1</http-client.version>
     </properties>
@@ -130,6 +130,12 @@
             <artifactId>ij</artifactId>
             <version>1.50b</version>
             <!-- LICENSE: PUBLIC DOMAIN -->
+            <exclusions>
+                <exclusion>
+                    <artifactId>tools</artifactId>
+                    <groupId>com.sun</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.sf.ij_io</groupId>
@@ -181,19 +187,6 @@
             <groupId>org.atteo</groupId>
             <artifactId>evo-inflector</artifactId>
             <version>1.2.1</version>
-        </dependency>
-        <!-- Log4J e-mail throttling: https://github.com/reaktor/log4j-email-throttle -->
-        <dependency>
-            <groupId>fi.reaktor.log4j</groupId>
-            <artifactId>log4j-email-throttle</artifactId>
-            <version>1.0.0</version>
-            <!-- LICENSE: APACHE 2.0 -->
-            <exclusions>
-                <exclusion>
-                    <artifactId>log4j</artifactId>
-                    <groupId>log4j</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- crowd integration -->
         <dependency>
@@ -352,6 +345,11 @@
             <artifactId>gt-shapefile</artifactId>
             <version>${geotools.version}</version>
             <!-- LICENSE: LGPL 2.1 -->
+        </dependency>
+        <dependency>
+          <groupId>org.geotools</groupId>
+          <artifactId>gt-geometry</artifactId>
+          <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -761,7 +759,7 @@
         <dependency>
             <groupId>edu.asu.lib</groupId>
             <artifactId>jaxb-document-api</artifactId>
-            <version>1.0.4.1</version>
+            <version>1.0.5-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

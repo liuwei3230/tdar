@@ -94,6 +94,13 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController {
     private ArrayList<FacetValue> fileAccessFacets = new ArrayList<>();
     private ArrayList<FacetValue> integratableOptionFacets = new ArrayList<>();
 
+    private boolean showLeftSidebar = false;
+    
+    @Override
+    public boolean isLeftSidebar() {
+        return showLeftSidebar;
+    }
+    
     @Action(value = "results", results = {
             @Result(name = SUCCESS, location = "results.ftl"),
             @Result(name = INPUT, location = ADVANCED_FTL) })
@@ -122,6 +129,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController {
             addActionErrorWithException(e.getMessage(), e);
             result = INPUT;
         }
+        showLeftSidebar = true;
         return result;
     }
 
@@ -277,7 +285,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController {
     public List<MaterialKeyword> getAllMaterialKeywords() {
 
         if (CollectionUtils.isEmpty(allMaterialKeywords)) {
-            allMaterialKeywords = genericKeywordService.findAllWithCache(MaterialKeyword.class);
+            allMaterialKeywords = genericKeywordService.findAllApprovedWithCache(MaterialKeyword.class);
             Collections.sort(allMaterialKeywords);
         }
         return allMaterialKeywords;

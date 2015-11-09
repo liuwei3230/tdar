@@ -13,7 +13,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.configuration.ConfigurationAssistant;
@@ -72,7 +71,7 @@ public class CrowdRestDao extends BaseAuthenticationProvider {
         Properties properties = new Properties();
         // leveraging factory method over spring autowiring
         // https://developer.atlassian.com/display/CROWDDEV/Java+Integration+Libraries
-        InputStream inputStream = ConfigurationAssistant.getResourceAsStream(CROWD_PROPERTIES);
+        InputStream inputStream = ConfigurationAssistant.toInputStream(CROWD_PROPERTIES);
         properties.load(inputStream);
         init(properties);
     }
@@ -84,6 +83,7 @@ public class CrowdRestDao extends BaseAuthenticationProvider {
             ClientProperties clientProperties = ClientPropertiesImpl.newInstanceFromProperties(crowdProperties);
             RestCrowdClientFactory factory = new RestCrowdClientFactory();
             securityServerClient = factory.newInstance(clientProperties);
+            setPasswordResetURL(crowdProperties.getProperty("crowd.passwordreseturl","http://auth.tdar.org/crowd/console/forgottenlogindetails!default.action"));
             httpAuthenticator = new CrowdHttpAuthenticatorImpl(securityServerClient, clientProperties,
                     CrowdHttpTokenHelperImpl.getInstance(CrowdHttpValidationFactorExtractorImpl.getInstance()));
             logger.debug("maxHttpConnections: {} timeout: {}", clientProperties.getHttpMaxConnections(), clientProperties.getHttpTimeout());
@@ -124,7 +124,10 @@ public class CrowdRestDao extends BaseAuthenticationProvider {
             if (StringUtils.isBlank(token)) {
                 token = httpAuthenticator.getToken(request);
             }
-            securityServerClient.invalidateSSOToken(token);
+            logger.debug("token: " + token);
+            if (token != null) {
+                securityServerClient.invalidateSSOToken(token);
+            }
             logger.debug("logged out");
         } catch (ApplicationPermissionException e) {
             logger.error("application permission exception", e);
@@ -385,8 +388,6 @@ public class CrowdRestDao extends BaseAuthenticationProvider {
         return passwordResetURL;
     }
 
-    @SuppressWarnings("el-syntax")
-    @Value("${crowd.passwordreseturl:http://auth.tdar.org/crowd/console/forgottenlogindetails!default.action}")
     public void setPasswordResetURL(String url) {
         this.passwordResetURL = url;
     }
