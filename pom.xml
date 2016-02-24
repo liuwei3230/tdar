@@ -117,10 +117,28 @@
 			<id>Laughing Panda</id>
 			<url>http://maven.laughingpanda.org/maven2</url>
 		</repository>
-		<repository>
-			<id>local-dev</id>
-			<url>http://dev.tdar.org/repo/</url>
-		</repository>
+        <repository>
+            <id>internal</id>
+            <name>Archiva Managed Internal Repository</name>
+            <url>https://dev.tdar.org/archiva/repository/internal/</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <name>Archiva Managed Snapshot Repository</name>
+            <url>https://dev.tdar.org/archiva/repository/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
 	</repositories>
 
 	<modelVersion>4.0.0</modelVersion>
@@ -789,7 +807,7 @@
  -->		<dependency>
 			<groupId>edu.asu.lib</groupId>
 			<artifactId>jaxb-document-api</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -1136,7 +1154,7 @@
 				<!-- http://mojo.codehaus.org/keytool/keytool-maven-plugin/generateKeyPair-mojo.html -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>keytool-maven-plugin</artifactId>
-				<version>1.3</version>
+				<version>1.5</version>
 				<executions>
 					<execution>
 						<phase>generate-resources</phase>

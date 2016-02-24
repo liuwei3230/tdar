@@ -161,7 +161,11 @@ public class SearchIndexService {
 
     private void index(FullTextSession fullTextSession, Object item) {
         if (item instanceof InformationResource) {
+            try {
             datasetDao.assignMappedDataForInformationResource(((InformationResource) item));
+            } catch (Exception e) {
+                log.error("{}", e);
+            }
         }
 
         if (item instanceof Project) {
