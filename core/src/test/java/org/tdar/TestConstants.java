@@ -33,6 +33,10 @@ public interface TestConstants {
     public static String TEST_CODING_SHEET_DIR = TEST_ROOT_DIR + "coding sheet/";
     public static final String TEST_DATA_INTEGRATION_DIR = TEST_ROOT_DIR + "data_integration_tests/";
 
+    public static final String TEST_JXLS_TEMPLATE_DIR = TEST_ROOT_DIR + "jxls-templates/";
+    public static final String TEST_JXLS_DEST_DIR = "target/generated/jxls/";
+
+
     public static final Long DOCUMENT_INHERITING_CULTURE_ID = 4230L;
     public static final Long DOCUMENT_INHERITING_NOTHING_ID = 4231L;
 

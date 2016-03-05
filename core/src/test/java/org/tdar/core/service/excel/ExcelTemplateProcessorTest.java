@@ -3,7 +3,9 @@ package org.tdar.core.service.excel;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.TestConstants;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.utils.TestConfiguration;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -15,24 +17,31 @@ import java.util.*;
 public class ExcelTemplateProcessorTest {
 
     File targetDir;
+    File templateDir;
     Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ExcelTemplateProcessorTest() {}
+    public ExcelTemplateProcessorTest() {
+        targetDir = Paths.get(System.getProperty("xlsdir", TestConstants.TEST_JXLS_DEST_DIR)).toFile();
 
-    @Before
-    public void beforeEach() {
-        String path = System.getProperty("xlsdir", "target/generated/excel");
-        targetDir = Paths.get(path).toFile();
-        logger.debug("target: {}", targetDir.getAbsolutePath());
+        //FIXME: the maven process-resources phase isn't copying the jxjs-template dir to target/test-resources.
+        templateDir = Paths.get(System.getProperty("xlstemplatedir", TestConstants.TEST_JXLS_TEMPLATE_DIR)).toFile();
+    }
 
-        if (!targetDir.exists()){
-            targetDir.mkdirs();
+    void mkdirs(File dir) {
+        if(!dir.exists()) {
+            dir.mkdirs();
+            logger.debug("directory created:{}", dir.getAbsolutePath());
         }
     }
 
-    @After
-    public void afterEach() {
+    @Before
+    public void beforeEach() {
+        mkdirs(targetDir);
+        mkdirs(templateDir);
     }
+
+    @After
+    public void afterEach() {}
 
 
 
@@ -54,6 +63,12 @@ public class ExcelTemplateProcessorTest {
         processor.process(headers, data, names, os);
 
         // TODO: use POI to open the resultant file and slurp the data back in, then verify w/ data in test
+    }
+
+
+    @Test
+    public void testTemplate() {
+
     }
 
 }
