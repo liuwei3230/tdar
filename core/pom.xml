@@ -1054,6 +1054,13 @@
             <artifactId>jxls-poi</artifactId>
             <version>1.0.8</version>
         </dependency>
+        <dependency>
+            <groupId>org.fluttercode.datafactory</groupId>
+            <artifactId>datafactory</artifactId>
+            <version>0.8</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -1289,10 +1296,6 @@
                 <the.jdbc.password>tdar</the.jdbc.password>
                 <webapp.deploy.dir>target/</webapp.deploy.dir>
             </properties>
-            <dependencies>
-                <!-- <dependency> <groupId>org.apache.struts</groupId> <artifactId>struts2-config-browser-plugin</artifactId> 
-                    </dependency> -->                    <!-- LICENSE: APACHE 2.0 -->
-            </dependencies>
         </profile>
         <profile>
             <id>test</id>

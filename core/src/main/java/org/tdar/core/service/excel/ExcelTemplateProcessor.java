@@ -18,7 +18,7 @@ public class ExcelTemplateProcessor {
     SimpleExporter exporter;
 
     /**
-     * Instantiate template processor with a default  template.
+     * Instantiate template processor with a default template.
      *
      * @see  <a href="http://jxls.sourceforge.net/samples/simple_exporter.html">JXLS: SimpleExporter</a>
      *
