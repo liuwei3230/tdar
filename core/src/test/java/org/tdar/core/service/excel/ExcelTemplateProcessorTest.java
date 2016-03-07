@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.core.bean.resource.InformationResource;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -92,20 +93,39 @@ public class ExcelTemplateProcessorTest {
     public void testSearchResultsTemplate() throws IOException {
         File template = new File(templateDir, "search_results_template.xls");
         File outfile = new File(targetDir, "search_results_output.xls");
-        Map<String, Object> context = newMap(
+        Map<String, Object> data = newMap(
                 entry("employees", generateSampleEmployeeData(20)),
                 entry("info", newMap(
                         entry("dateCreated", new Date(0)),
                         entry("url", "http://www.tdar.org"),
                         entry("description", "this is a test")
                 )));
-        templateProcessor.process(template, context, outfile);
+        templateProcessor.process(template, data, outfile);
     }
 
     @Test
-    //process template that has data streams
-    public void testTemplateWithIterableData() {
+    public void testSearchResultEditorTemplate() throws IOException {
+        File template = new File(templateDir, "search_results_editor_template.xls");
+        File outfile = new File(targetDir, "search_results_editor_output.xls");
 
+        Map<String, Object> data = newMap(
+                entry("info", newMap(
+                        entry("generatedFor", "John Dow, 1/1/2015"),
+                        entry("searchUrl", "http://core.tdar.org/search/advanced?query=foo&query=bar")
+                )),
+                entry("results", Arrays.asList(
+                        newMap(
+                                entry("id", 1111L),
+                                entry("title", "Hello World")
+                        ),
+                        newMap(
+                                entry("id", 2222L),
+                                entry("title", "Hello Mom")
+                        )
+                ))
+        );
+
+        templateProcessor.process(template, data, outfile);
     }
 
 }
