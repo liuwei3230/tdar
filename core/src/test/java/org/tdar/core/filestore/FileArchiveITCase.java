@@ -19,12 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.bean.resource.file.FileType;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
 import org.tdar.core.service.workflow.workflows.Workflow;
@@ -40,7 +42,8 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     @Autowired
     private FileAnalyzer fileAnalyzer;
-
+    @Autowired 
+    InformationResourceDao informationResourceDao;
     @Autowired
     private MessageService messageService;
 
@@ -74,7 +77,8 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         assertEquals(FileType.FILE_ARCHIVE, fileType);
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
         assertEquals(FileArchiveWorkflow.class, workflow.getClass());
-        messageService.sendFileProcessingRequest(workflow, originalVersion);
+        InformationResource ir = informationResourceDao.findResourceForVersion(originalVersion);
+        messageService.sendFileProcessingRequest(workflow, ir, originalVersion);
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
 

@@ -79,7 +79,7 @@ public class InformationResourceDao extends ResourceDao<InformationResource> {
         return query.list();
     }
 
-    public InformationResource findResourcesForVersion(InformationResourceFileVersion versionsToDownload) {
+    public InformationResource findResourceForVersion(InformationResourceFileVersion versionsToDownload) {
         Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
         query.setParameterList("ids", Arrays.asList(versionsToDownload.getId()));
         return (InformationResource) query.uniqueResult();

@@ -216,7 +216,7 @@ public class ResourceCollectionDao extends Dao.HibernateBase<ResourceCollection>
      */
     public List<DownloadAuthorization> getDownloadAuthorizations(InformationResourceFileVersion informationResourceFileVersion, String apiKey,
             String referrer) {
-        InformationResource ir = informationResourceDao.findResourcesForVersion(informationResourceFileVersion);
+        InformationResource ir = informationResourceDao.findResourceForVersion(informationResourceFileVersion);
         Set<Long> sharedCollectionIds = new HashSet<>();
         for (ResourceCollection rc : ir.getSharedResourceCollections()) {
             sharedCollectionIds.add(rc.getId());

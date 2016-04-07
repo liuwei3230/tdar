@@ -446,7 +446,7 @@ public class AuthorizationService implements Accessible {
         if (irFileVersion == null) {
             return false;
         }
-        InformationResource ir = informationResourceDao.findResourcesForVersion(irFileVersion);
+        InformationResource ir = informationResourceDao.findResourceForVersion(irFileVersion);
         return canDownload(ir, irFileVersion.getInformationResourceFile(), person);
     }
 

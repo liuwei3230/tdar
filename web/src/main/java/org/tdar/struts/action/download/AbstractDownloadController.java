@@ -15,6 +15,7 @@ import org.tdar.core.service.download.DownloadTransferObject;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
+import org.tdar.core.service.resource.InformationResourceService;
 import org.tdar.struts.action.AuthenticationAware;
 import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.utils.PersistableUtils;
@@ -42,6 +43,8 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
     private static final long serialVersionUID = -1831798412944149018L;
     @Autowired
     private transient AuthorizationService authorizationService;
+    @Autowired
+    private transient InformationResourceService informationResourceService;
 
     private DownloadTransferObject downloadTransferObject;
     private List<UserAffiliation> affiliations = UserAffiliation.getUserSubmittableAffiliations();
@@ -123,9 +126,9 @@ public class AbstractDownloadController extends AuthenticationAware.Base impleme
             setInformationResourceFileVersion(getGenericService().find(InformationResourceFileVersion.class, irfvId));
             // bad, but force onto session until better way found
             if (PersistableUtils.isNotNullOrTransient(getInformationResourceFileVersion())) {
-                setInformationResource(informationResourceFileVersion.getInformationResourceFile().getInformationResource());
+                informationResource = informationResourceService.findResourceForVersion(getInformationResourceFileVersion());
                 informationResourceId = informationResource.getId();
-                authorizationService.applyTransientViewableFlag(informationResourceFileVersion, getAuthenticatedUser());
+                authorizationService.applyTransientViewableFlag(informationResource, informationResourceFileVersion, getAuthenticatedUser());
             }
         }
     }

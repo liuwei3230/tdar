@@ -60,6 +60,8 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
     @Autowired
     private InformationResourceFileDao informationResourceFileDao;
     @Autowired
+    private InformationResourceDao informationResourceDao;
+    @Autowired
     private DatasetDao datasetDao;
 
     @Autowired
@@ -262,6 +264,17 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
 
     public FileAnalyzer getAnalyzer() {
         return analyzer;
+    }
+
+    @Transactional(readOnly=true)
+    public InformationResource findResourceForVersion(InformationResourceFileVersion informationResourceFileVersion) {
+        return informationResourceDao.findResourceForVersion(informationResourceFileVersion);
+    }
+
+
+    @Transactional(readOnly=true)
+    public InformationResource finResourceForFile(InformationResourceFile informationResourceFile) {
+        return informationResourceDao.findResourceForFile(informationResourceFile);
     }
 
 }
