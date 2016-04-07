@@ -37,9 +37,7 @@ import org.tdar.filestore.FilestoreObjectType;
 // making the assumption formally that there can only be one version of any type
 // of a given file at any moment.
 // That is, only one archival version, translated version, etc...
-@Table(name = "information_resource_file_version", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "information_resource_file_id", "file_version", "internal_type" })
-})
+@Table(name = "information_resource_file_version")
 /**
  * Representation a specific file or derivative version of an InformationResourceFile. Each InformationResouceFile may have multiple versions, eg. web sized imzges (small/med/large) or indexable data, as well as the original file version.
  * 
