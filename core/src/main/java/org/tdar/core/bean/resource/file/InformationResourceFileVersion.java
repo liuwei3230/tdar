@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Viewable;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.filestore.FileStoreFileProxy;
 import org.tdar.filestore.FilestoreObjectType;
 
@@ -147,7 +148,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
         setInformationResourceFileId(irFileId);
     }
 
-    public InformationResourceFileVersion(VersionType type, String filename, InformationResourceFile irFile) {
+    public InformationResourceFileVersion(VersionType type, String filename, InformationResource ir, InformationResourceFile irFile) {
         setFileVersionType(type);
         setFilename(filename);
         setExtension(FilenameUtils.getExtension(filename));
@@ -155,7 +156,9 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
             setVersion(irFile.getLatestVersion());
             setInformationResourceFile(irFile);
             setInformationResourceFileId(irFile.getId());
-            setInformationResourceId(irFile.getInformationResource().getId());
+        }
+        if (ir != null) {
+            setInformationResourceId(ir.getId());
         }
         setDateCreated(new Date());
     }
@@ -396,9 +399,6 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     @XmlAttribute(name = "informationResourceId")
     @Transient
     public Long getInformationResourceId() {
-        if ((informationResourceFile != null) && (informationResourceFile.getInformationResource() != null)) {
-            return informationResourceFile.getInformationResource().getId();
-        }
         return informationResourceId;
     }
 

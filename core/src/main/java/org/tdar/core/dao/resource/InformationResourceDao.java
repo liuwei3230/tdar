@@ -1,6 +1,8 @@
 package org.tdar.core.dao.resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -10,8 +12,10 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.cache.BrowseDecadeCountCache;
 import org.tdar.core.cache.BrowseYearCountCache;
+import org.tdar.utils.PersistableUtils;
 
 /**
  * $Id$
@@ -66,6 +70,24 @@ public class InformationResourceDao extends ResourceDao<InformationResource> {
     public InformationResource findByDoi(String doi) {
         Query query = getCurrentSession().getNamedQuery(QUERY_BY_DOI);
         query.setParameter("doi", doi);
+        return (InformationResource) query.uniqueResult();
+    }
+
+    public Collection<? extends InformationResource> findResourcesForVersions(List<InformationResourceFileVersion> versionsToDownload) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
+        query.setParameterList("ids", PersistableUtils.extractIds(versionsToDownload));
+        return query.list();
+    }
+
+    public InformationResource findResourcesForVersion(InformationResourceFileVersion versionsToDownload) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
+        query.setParameterList("ids", Arrays.asList(versionsToDownload.getId()));
+        return (InformationResource) query.uniqueResult();
+    }
+
+    public InformationResource findResourceForFile(InformationResourceFile file) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_FILE);
+        query.setParameterList("ids", Arrays.asList(file.getId()));
         return (InformationResource) query.uniqueResult();
     }
 

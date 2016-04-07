@@ -17,6 +17,7 @@ import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.external.EmailService;
 import org.tdar.core.service.processes.AbstractScheduledProcess;
 import org.tdar.core.service.resource.InformationResourceFileService;
@@ -43,6 +44,9 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 	@Autowired
 	private transient InformationResourceFileService informationResourceFileService;
 
+	@Autowired
+	private transient InformationResourceDao informationResourceDao;
+	
 	private boolean completed;
 
 	@Override
@@ -88,7 +92,7 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 	private Map<TdarUser, Set<InformationResourceFile>> createMap(List<InformationResourceFile> expired) {
 		Map<TdarUser, Set<InformationResourceFile>> expiredMap = new HashMap<>();
 		for (InformationResourceFile file : expired) {
-            InformationResource r = file.getInformationResource();
+            InformationResource r = informationResourceDao.findResourceForFile(file);
 			TdarUser submitter = r.getSubmitter();
 			if (!expiredMap.containsKey(submitter)) {
 				expiredMap.put(submitter, new HashSet<>());

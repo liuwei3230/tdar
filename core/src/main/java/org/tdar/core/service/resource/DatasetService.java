@@ -176,7 +176,7 @@ public class DatasetService extends ServiceInterface.TypedDaoBase<Dataset, Datas
                 latestVersions.add(latestUploadedVersion);
             }
 
-            analyzer.processFiles(latestVersions,true);
+            analyzer.processFiles(dataset, latestVersions,true);
             if (dataset.hasCodingColumns()) {
                 createTranslatedFile(dataset);
             }

@@ -180,7 +180,7 @@ public class FileProxyWrapper {
         if ((file == null) || !file.exists()) {
             throw new TdarRecoverableRuntimeException("fileprocessing.error.not_found", Arrays.asList(originalFilename));
         }
-        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, irFile);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, informationResource, irFile);
         if (irFile.isTransient()) {
             datasetDao.saveOrUpdate(irFile);
         }
