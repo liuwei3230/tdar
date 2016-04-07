@@ -181,6 +181,7 @@ public class FilestoreTest {
         version.setId(INFORMATION_RESOURCE_FILE_VERSION_ID);
         version.setFilename(name);
         version.setInformationResourceFile(irFile);
+        version.setInformationResourceId(ir.getId());
         version.setFileVersionType(VersionType.UPLOADED_ARCHIVAL);
         return version;
     }
