@@ -1,6 +1,7 @@
 package org.tdar.core.dao;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -75,27 +76,32 @@ public abstract class AbstractEventListener<C> implements EventListener {
         }
     }
 
-    private void flushInternal(Session session) {
+    private synchronized void flushInternal(Session session) {
         Set<C> set = idChangeMap.getIfPresent(session);
-        if (!CollectionUtils.isEmpty(set)) {
-            int counter = 0;
-            for (Object obj : set) {
-                try {
-                	if (logger.isTraceEnabled()) {
-                		logger.trace("  flush ({} - {}):{}", session.hashCode(),idChangeMap.hashCode(), obj);
-                	}
-                    counter++;
-                    process(obj);
-                } catch (Exception e) {
-                    logger.error("error batch processing {}", name, e);
-                }
-            }
-            if (counter > 0) {
-            logger.debug("flushed to {} ({})", name, counter);
-            }
-            set.clear();
-            cleanup();
+        if (CollectionUtils.isEmpty(set)) {
+            return;
         }
+
+        int counter = 0;
+        Iterator<C> iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Object obj = iterator.next();
+            try {
+            	if (logger.isTraceEnabled()) {
+            		logger.trace("  flush ({} - {}):{}", session.hashCode(),idChangeMap.hashCode(), obj);
+            	}
+                counter++;
+                process(obj);
+            } catch (Exception e) {
+                logger.error("error batch processing {}", name, e);
+            }
+            iterator.remove();
+        }
+        if (counter > 0) {
+        logger.debug("flushed to {} ({})", name, counter);
+        }
+        cleanup();
+        set.clear();
     }
 
     protected synchronized void addToSession(EventSource session, C entity) {
@@ -127,7 +133,10 @@ public abstract class AbstractEventListener<C> implements EventListener {
         }
 
         Set<C> ifPresent = idChangeMap.getIfPresent(session);
-		ifPresent.add((C) entity);
+        C entity2 = (C)entity;
+        if (ifPresent.contains(entity2)) {
+            ifPresent.add(entity2);
+        }
     }
 
     protected void cleanup() {
