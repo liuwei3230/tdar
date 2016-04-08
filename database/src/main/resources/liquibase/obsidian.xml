@@ -12,8 +12,13 @@
         <dropColumn tableName="person" columnName="merge_creator_id" />
     </changeSet>
 
-    <changeSet id="obsidian-2" author="abrin">
-        <dropUniqueConstraint tableName="information_resource_file_version"/>
+    <changeSet id="obsidian-2" author="abrin" failOnError="false">
+    	<!-- setup for test -->
+        <dropUniqueConstraint tableName="information_resource_file_version" constraintName="uk_fltku4fwlvfyf6x2ibb1s1m4d"/>
+    </changeSet>
+    <changeSet id="obsidian-3" author="abrin" failOnError="false">
+    	<!-- setup for production -->
+        <dropUniqueConstraint tableName="information_resource_file_version" constraintName="information_resource_file_vers_information_resource_file_id_key"/>
     </changeSet>
     
 </databaseChangeLog>
