@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.InformationResource;
@@ -28,6 +30,8 @@ import org.tdar.utils.PersistableUtils;
 @Component("informationResourceDao")
 public class InformationResourceDao extends ResourceDao<InformationResource> {
 
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
+    
     public InformationResourceDao() {
         super(InformationResource.class);
     }
@@ -82,7 +86,8 @@ public class InformationResourceDao extends ResourceDao<InformationResource> {
     public InformationResource findResourceForVersion(InformationResourceFileVersion versionsToDownload) {
         Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
         query.setParameterList("ids", Arrays.asList(versionsToDownload.getId()));
-        return (InformationResource) query.uniqueResult();
+        Object obj = query.uniqueResult();
+        return (InformationResource) obj;
     }
 
     public InformationResource findResourceForFile(InformationResourceFile file) {

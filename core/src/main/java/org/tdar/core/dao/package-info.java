@@ -545,12 +545,13 @@
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.COUNT_MAPPED_RESOURCES,
                 query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col"),
+        // FIXME: remove distinct
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_VERSION,
-                query = "from InformationResource ir inner join ir.informationResourceFiles as irf inner join irf.informationResourceFileVersions as irfv where irfv.id in (:ids)"),
+                query = "select distinct(ir) from InformationResource ir inner join ir.informationResourceFiles as irf inner join irf.informationResourceFileVersions as irfv where irfv.id in (:ids)"),
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_FILE,
-                query = "from InformationResource ir inner join ir.informationResourceFiles irf where irf.id in (:ids)")        
+                query = "select distinct(ir) from InformationResource ir inner join ir.informationResourceFiles irf where irf.id in (:ids)")        
 })
 package org.tdar.core.dao;
 
