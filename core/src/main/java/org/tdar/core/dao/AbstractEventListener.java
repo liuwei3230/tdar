@@ -133,10 +133,7 @@ public abstract class AbstractEventListener<C> implements EventListener {
         }
 
         Set<C> ifPresent = idChangeMap.getIfPresent(session);
-        C entity2 = (C)entity;
-        if (ifPresent.contains(entity2)) {
-            ifPresent.add(entity2);
-        }
+		ifPresent.add((C) entity);
     }
 
     protected void cleanup() {

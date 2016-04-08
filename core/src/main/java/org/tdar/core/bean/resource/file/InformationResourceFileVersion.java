@@ -397,7 +397,13 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     @XmlAttribute(name = "informationResourceId")
     @Transient
     public Long getInformationResourceId() {
+        if (informationResourceId != null) {
         return informationResourceId;
+        }
+        if (getInformationResourceFile() != null && getInformationResourceFile().getInformationResource() != null) {
+            return getInformationResourceFile().getInformationResource().getId();
+        }
+        return null;
     }
 
     @Override

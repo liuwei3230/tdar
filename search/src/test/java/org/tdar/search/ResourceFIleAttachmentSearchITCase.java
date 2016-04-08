@@ -28,6 +28,7 @@ public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchIT
     public void testAttachedFileSearch() throws InstantiationException, IllegalAccessException, SolrServerException, IOException, ParseException {
         Document document = createAndSaveNewInformationResource(Document.class, getBasicUser(), _33_CU_314);
         addFileToResource(document, new File(TestConstants.TEST_DOCUMENT_DIR + "test-file.rtf"));
+//        genericService.saveOrUpdate(document);
         searchIndexService.index(document);
         SearchParameters params = new SearchParameters();
         params.getContents().add("fun'");
