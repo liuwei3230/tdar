@@ -303,6 +303,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         irFile.getInformationResourceFileVersions().add(version);
         genericService.save(irFile);
         genericService.save(version);
+        version.setInformationResourceId(ir.getId());
         filestore.store(FilestoreObjectType.RESOURCE, f, version);
         return version;
     }

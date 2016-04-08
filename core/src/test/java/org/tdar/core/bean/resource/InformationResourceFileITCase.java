@@ -39,6 +39,8 @@ import org.tdar.filestore.Filestore;
 import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.utils.jaxb.XMLFilestoreLogger;
 
+import arq.version;
+
 public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
 
     @Autowired
@@ -244,25 +246,26 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
     public void testVersionDeletion() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         InformationResource ir = generateDocumentWithFileAndUseDefaultUser();
         InformationResourceFile irFile = ir.getInformationResourceFiles().iterator().next();
-        InformationResourceFileVersion version = getVersion(irFile, VersionType.WEB_LARGE);
+        InformationResourceFileVersion version = getVersion(ir, irFile, VersionType.WEB_LARGE);
         File file = version.getTransientFile();
         informationResourceFileVersionDao.delete(version, false);
         assertTrue(file.exists());
-        version = getVersion(irFile, VersionType.WEB_MEDIUM);
+        version = getVersion(ir, irFile, VersionType.WEB_MEDIUM);
         file = version.getTransientFile();
         informationResourceFileVersionDao.delete(version, true);
         assertFalse(file.exists());
 
-        version = getVersion(irFile, VersionType.WEB_SMALL);
+        version = getVersion(ir, irFile, VersionType.WEB_SMALL);
         file = version.getTransientFile();
         informationResourceFileVersionDao.delete(version);
         assertTrue(file.exists());
 
     }
 
-    private InformationResourceFileVersion getVersion(InformationResourceFile irFile, VersionType type) throws FileNotFoundException {
+    private InformationResourceFileVersion getVersion(InformationResource ir, InformationResourceFile irFile, VersionType type) throws FileNotFoundException {
         InformationResourceFileVersion version = irFile.getCurrentVersion(type);
         assertNotNull(version);
+        version.setInformationResourceId(ir.getId());
         Filestore filestore = TdarConfiguration.getInstance().getFilestore();
         File file = filestore.retrieveFile(FilestoreObjectType.RESOURCE, version);
         version.setTransientFile(file);
