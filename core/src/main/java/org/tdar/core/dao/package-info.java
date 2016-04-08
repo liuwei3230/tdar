@@ -547,10 +547,10 @@
                 query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col"),
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_VERSION,
-                query = "select from InformationResource ir inner join ir.informationResourceFile as irf inner join irf.informationResourceFileVersion as irfv where irfv.id in (:ids)"),
+                query = "from InformationResource ir inner join ir.informationResourceFiles as irf inner join irf.informationResourceFileVersions as irfv where irfv.id in (:ids)"),
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_FILE,
-                query = "select from InformationResource ir inner join ir.informationResourceFile irf where irf.id in (:ids)")        
+                query = "from InformationResource ir inner join ir.informationResourceFiles irf where irf.id in (:ids)")        
 })
 package org.tdar.core.dao;
 
