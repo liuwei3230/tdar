@@ -39,6 +39,7 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.dao.hibernateEvents.SessionProxy;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.ActivityManager;
@@ -74,6 +75,8 @@ public class SearchIndexService {
 
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
+    @Autowired
+    private InformationResourceDao informationResourceDao;
 
     @Autowired
     private ResourceCollectionService resourceCollectionService;
@@ -168,7 +171,9 @@ public class SearchIndexService {
                 document = AnnotationKeyDocumentConverter.convert((ResourceAnnotationKey) item);
             }
             if (item instanceof InformationResourceFile) {
-                document = ContentDocumentConverter.convert((InformationResourceFile) item);
+                InformationResourceFile file = (InformationResourceFile) item;
+                InformationResource ir = informationResourceDao.findResourceForFile(file);
+                document = ContentDocumentConverter.convert(ir, file);
             }
 
             if (deleteFirst) {
