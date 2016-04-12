@@ -236,6 +236,7 @@ public class SearchIndexService {
      * @throws SolrServerException
      */
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly=true)
     public <C extends Indexable> void index(C... indexable) throws SolrServerException, IOException {
         indexCollection(Arrays.asList(indexable));
     }
@@ -247,6 +248,7 @@ public class SearchIndexService {
      * @throws IOException
      * @throws SolrServerException
      */
+    @Transactional(readOnly=true)
     public <C extends Indexable> boolean indexCollection(Collection<C> indexable) throws SolrServerException, IOException {
         boolean exceptions = false;
 

@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
@@ -20,6 +21,7 @@ import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.query.SearchResult;
 import org.tdar.utils.PersistableUtils;
 
+@Ignore
 public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchITCase {
 
 
