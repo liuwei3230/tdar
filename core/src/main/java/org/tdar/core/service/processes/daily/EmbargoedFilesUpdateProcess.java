@@ -66,12 +66,12 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 		logger.debug("expired: {} toExpire: {}", CollectionUtils.size(expired), CollectionUtils.size(toExpire));
 
 		if (CollectionUtils.isNotEmpty(toExpire)) {
-			Map<TdarUser, Set<InformationResourceFile>> toExpiredMap = createMap(toExpire);
+			Map<TdarUser, Set<FileResourceContainer>> toExpiredMap = createMap(toExpire);
 			sendExpirationNotices(toExpiredMap);
 		}
 
 		if (CollectionUtils.isNotEmpty(expired)) {
-			Map<TdarUser, Set<InformationResourceFile>> expiredMap = createMap(expired);
+			Map<TdarUser, Set<FileResourceContainer>> expiredMap = createMap(expired);
 			expire(expiredMap);
 		}
 
@@ -89,8 +89,8 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 		completed = true;
 	}
 
-	private Map<TdarUser, Set<InformationResourceFile>> createMap(List<InformationResourceFile> expired) {
-		Map<TdarUser, Set<InformationResourceFile>> expiredMap = new HashMap<>();
+	private Map<TdarUser, Set<FileResourceContainer>> createMap(List<InformationResourceFile> expired) {
+		Map<TdarUser, Set<FileResourceContainer>> expiredMap = new HashMap<>();
 		for (InformationResourceFile file : expired) {
             InformationResource r = informationResourceDao.findResourceForFile(file);
 			TdarUser submitter = r.getSubmitter();
@@ -98,16 +98,17 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 				expiredMap.put(submitter, new HashSet<>());
 			}
 			if (r.isActive() || r.isDraft()) {
-			    expiredMap.get(submitter).add(file);
+			    expiredMap.get(submitter).add(new FileResourceContainer(r, file));
 			}
 		}
 		return expiredMap;
 	}
 
-	private void expire(Map<TdarUser, Set<InformationResourceFile>> expiredMap) {
+	private void expire(Map<TdarUser, Set<FileResourceContainer>> expiredMap) {
 		for (TdarUser submitter : expiredMap.keySet()) {
-			Set<InformationResourceFile> expired = expiredMap.get(submitter);
-			for (InformationResourceFile file : expired) {
+			Set<FileResourceContainer> expired = expiredMap.get(submitter);
+			for (FileResourceContainer file_ : expired) {
+			    InformationResourceFile file = file_.getFile();
 				file.setRestriction(FileAccessRestriction.PUBLIC);
 				file.setDateMadePublic(null);
 				genericDao.saveOrUpdate(file);
@@ -116,7 +117,7 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 		}
 	}
 
-	private void sendEmail(TdarUser submitter, Set<InformationResourceFile> files, boolean isExpiration) {
+	private void sendEmail(TdarUser submitter, Set<FileResourceContainer> files, boolean isExpiration) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("files", files);
 		Email email = new Email();
@@ -135,9 +136,9 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
 		}
 	}
 
-	private void sendExpirationNotices(Map<TdarUser, Set<InformationResourceFile>> toExpiredMap) {
+	private void sendExpirationNotices(Map<TdarUser, Set<FileResourceContainer>> toExpiredMap) {
 		for (TdarUser submitter : toExpiredMap.keySet()) {
-			Set<InformationResourceFile> expired = toExpiredMap.get(submitter);
+			Set<FileResourceContainer> expired = toExpiredMap.get(submitter);
 			sendEmail(submitter, expired, false);
 		}
 	}
