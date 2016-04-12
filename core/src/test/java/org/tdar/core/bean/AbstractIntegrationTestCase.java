@@ -353,24 +353,24 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             e.printStackTrace();
             fail(e.getMessage());
         }
-        Long id = ir_.getId();
-        Class<R> pc = (Class<R>) ir_.getClass();
-        genericService.synchronize();
-        genericService.evictFromCache(ir_);
-        ir_ = null;
-        R ir = genericService.find(pc, id);
-//        genericService.refresh(ir);// = genericService.find(ir.getClass(), ir.getId());
-        assertNotEquals(0, ir.getInformationResourceFiles().size());
-        logger.debug("{}", ir.getInformationResourceFiles());
+//        Long id = ir_.getId();
+//        Class<R> pc = (Class<R>) ir_.getClass();
+//        genericService.synchronize();
+//        genericService.evictFromCache(ir_);
+//        ir_ = null;
+//        R ir = genericService.find(pc, id);
+        genericService.refresh(ir_);// = genericService.find(ir.getClass(), ir.getId());
+        assertNotEquals(0, ir_.getInformationResourceFiles().size());
+        logger.debug("{}", ir_.getInformationResourceFiles());
 //        ir.getInformationResourceFiles().add(e)
-        for (InformationResourceFile irf : ir.getInformationResourceFiles()) {
+        for (InformationResourceFile irf : ir_.getInformationResourceFiles()) {
             assertTrue(irf.getId() != null);
             assertNotEquals(0, irf.getInformationResourceFileVersions().size());
                       for (InformationResourceFileVersion irfv : irf.getInformationResourceFileVersions()) {
                 assertTrue(irfv.getId() != null);
             }
         }
-        return ir;
+        return ir_;
     }
 
     

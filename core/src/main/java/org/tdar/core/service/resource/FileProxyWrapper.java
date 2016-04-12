@@ -130,6 +130,9 @@ public class FileProxyWrapper {
         incrementVersionNumber(irFile);
         // genericDao.saveOrUpdate(resource);
 //        irFile.setInformationResource(informationResource);
+        informationResource.getInformationResourceFiles().add(irFile);
+        datasetDao.saveOrUpdate(informationResource);
+        datasetDao.saveOrUpdate(irFile);
         proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(proxy));
         setInformationResourceFileMetadata(proxy);
         for (FileProxy additionalVersion : proxy.getAdditionalVersions()) {
@@ -137,9 +140,6 @@ public class FileProxyWrapper {
             additionalVersion.setInformationResourceFile(proxy.getInformationResourceFile());
             createVersionMetadataAndStore(additionalVersion);
         }
-        informationResource.getInformationResourceFiles().add(irFile);
-        datasetDao.saveOrUpdate(informationResource);
-        datasetDao.saveOrUpdate(irFile);
         logger.debug("all versions for {}", irFile);
     }
 
