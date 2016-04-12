@@ -74,21 +74,21 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
         }
     }
 
-    @Test
-    @Rollback
-    public void findByFilename() throws InstantiationException, IllegalAccessException {
-        InformationResource ir = generateDocumentWithFileAndUseDefaultUser();
-        InformationResourceFile foundFile = informationResourceService.findFileByFilename(ir, TestConstants.TEST_DOCUMENT_NAME);
-        assertNotNull(foundFile);
-        boolean found = false;
-        for (InformationResourceFile file : ir.getInformationResourceFiles()) {
-            if (file.equals(foundFile)) {
-                found = true;
-            }
-        }
-        assertTrue(found);
-
-    }
+//    @Test
+//    @Rollback
+//    public void findByFilename() throws InstantiationException, IllegalAccessException {
+//        InformationResource ir = generateDocumentWithFileAndUseDefaultUser();
+//        InformationResourceFile foundFile = informationResourceService.findFileByFilename(ir, TestConstants.TEST_DOCUMENT_NAME);
+//        assertNotNull(foundFile);
+//        boolean found = false;
+//        for (InformationResourceFile file : ir.getInformationResourceFiles()) {
+//            if (file.equals(foundFile)) {
+//                found = true;
+//            }
+//        }
+//        assertTrue(found);
+//
+//    }
 
     @Test
     @Rollback(true)

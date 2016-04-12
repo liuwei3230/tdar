@@ -178,10 +178,10 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
      * @param filename
      * @return
      */
-    @Transactional(readOnly = true)
-    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
-        return getDao().findFileByFilename(resource, filename);
-    }
+//    @Transactional(readOnly = true)
+//    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
+//        return getDao().findFileByFilename(resource, filename);
+//    }
 
     /**
      * Find a random set of resources to be featured on the homepage ...

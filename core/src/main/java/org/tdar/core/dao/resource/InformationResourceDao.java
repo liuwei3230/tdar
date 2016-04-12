@@ -36,11 +36,11 @@ public class InformationResourceDao extends ResourceDao<InformationResource> {
         super(InformationResource.class);
     }
 
-    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
-        Query query = getCurrentSession().getNamedQuery(QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME);
-        query.setString("filename", filename).setEntity("resource", resource);
-        return (InformationResourceFile) query.uniqueResult();
-    }
+//    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
+//        Query query = getCurrentSession().getNamedQuery(QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME);
+//        query.setString("filename", filename).setEntity("resource", resource);
+//        return (InformationResourceFile) query.uniqueResult();
+//    }
 
     public <E> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults) {
         return findRandomFeaturedResource(restrictToFiles, null, null, maxResults);

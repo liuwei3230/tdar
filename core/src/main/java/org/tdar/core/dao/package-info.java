@@ -126,11 +126,11 @@
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_DATATABLECOLUMN_WITH_DEFAULT_ONTOLOGY,
                 query = "FROM DataTableColumn dtc inner join dtc.defaultCodingSheet as code WHERE dtc.dataTable.dataset.id=:datasetId AND code.defaultOntology IS NOT NULL ORDER BY dtc.id"),
-        @org.hibernate.annotations.NamedQuery(
-                name = TdarNamedQueries.QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME,
-                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.informationResource = :resource and "
-                        + "file=version.informationResourceFile and file.latestVersion=version.version and version.filename = :filename"
-        ),
+//        @org.hibernate.annotations.NamedQuery(
+//                name = TdarNamedQueries.QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME,
+//                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.informationResource = :resource and "
+//                        + "file=version.informationResourceFile and file.latestVersion=version.version and version.filename = :filename"
+//        ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_ONTOLOGYNODE_ALL_CHILDREN_WITH_WILDCARD,
                 query = "from OntologyNode o where o.ontology.id=:ontologyId and index like :indexWildcardString"
@@ -371,7 +371,7 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_INFORMATIONRESOURCES_WITH_FILES,
-                query = "SELECT file.informationResource.id from InformationResourceFile file"
+                query = "SELECT distinct ir.id from InformationResource ir right join ir.informationResourceFiles"
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.INVOICES_FOR_PERSON,
