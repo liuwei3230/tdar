@@ -64,7 +64,8 @@ public class DownloadServiceITCase extends AbstractIntegrationTestCase {
         List<File> files = new ArrayList<>();
         InformationResourceFile irf = new InformationResourceFile();
         Document doc = new Document();
-        irf.setInformationResource(doc);
+//        irf.setInformationResource(doc);
+        doc.getInformationResourceFiles().add(irf);
         InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", doc, irf);
         for (File file : FileUtils.listFiles(ROOT_SRC, null, false)) {
             dto.getDownloads().add(new DownloadFile(file, file.getName(), version));
@@ -91,7 +92,7 @@ public class DownloadServiceITCase extends AbstractIntegrationTestCase {
         List<File> files = new ArrayList<>();
         InformationResourceFile irf = new InformationResourceFile();
         Document doc = new Document();
-        irf.setInformationResource(doc);
+        doc.getInformationResourceFiles().add(irf);
         InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", doc, irf);
         for (File file : FileUtils.listFiles(ROOT_SRC, null, false)) {
             dto.getDownloads().add(new DownloadFile(file, file.getName(), version));

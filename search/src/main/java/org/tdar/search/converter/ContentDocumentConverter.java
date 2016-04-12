@@ -17,7 +17,7 @@ public class ContentDocumentConverter extends AbstractSolrDocumentConverter {
 
     private static final Filestore FILESTORE = TdarConfiguration.getInstance().getFilestore();
 
-    public static SolrInputDocument convert(InformationResourceFile irf) {
+    public static SolrInputDocument convert(InformationResourceFile irf, Long irId) {
         if (irf == null || irf.getIndexableVersion() == null) {
             return null;
         }
@@ -25,7 +25,7 @@ public class ContentDocumentConverter extends AbstractSolrDocumentConverter {
         if (irf.getIndexableVersion() != null && irf.isPublic()) {
             try {
                 InformationResourceFileVersion version = irf.getIndexableVersion();
-                version.setInformationResourceId(irf.getInformationResource().getId());
+                version.setInformationResourceId(irId);
                 File file = FILESTORE.retrieveFile(FilestoreObjectType.RESOURCE, version);
                 doc.setField(QueryFieldNames.CONTENT, FileUtils.readFileToString(file));
             } catch (IOException e) {
@@ -39,8 +39,7 @@ public class ContentDocumentConverter extends AbstractSolrDocumentConverter {
         }
         doc.setField(QueryFieldNames.FILENAME, irf.getFilename());
         doc.setField(QueryFieldNames.DATE, irf.getFileCreatedDate());
-        doc.setField(QueryFieldNames.RESOURCE_ID, irf.getInformationResource()
-                .getId());
+        doc.setField(QueryFieldNames.RESOURCE_ID, irId);
         doc.setField(QueryFieldNames.RESOURCE_ACCESS_TYPE, irf.getRestriction());
 
         return doc;

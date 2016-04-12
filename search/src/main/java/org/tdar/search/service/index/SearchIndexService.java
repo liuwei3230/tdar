@@ -172,9 +172,9 @@ public class SearchIndexService {
             }
             if (item instanceof InformationResourceFile) {
                 InformationResourceFile file = (InformationResourceFile) item;
-//                Long ir = informationResourceDao.findResourceForFile(file).longValue();
+                Long ir = informationResourceDao.findResourceForFile(file).getId();
 //                logger.debug("HI: {}-->{} ",ir,  item.getId());
-                document = ContentDocumentConverter.convert(file);
+                document = ContentDocumentConverter.convert(file,ir);
             }
 
             if (deleteFirst) {

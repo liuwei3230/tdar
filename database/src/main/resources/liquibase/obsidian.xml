@@ -20,5 +20,9 @@
     	<!-- setup for production -->
         <dropUniqueConstraint tableName="information_resource_file_version" constraintName="information_resource_file_vers_information_resource_file_id_key"/>
     </changeSet>
+    <changeSet id="obsidian-4" author="abrin" failOnError="false">
+    	<!-- setup for test -->
+        <dropNotNullConstraint tableName="information_resource_file" columnName="information_resource_id"/>
+    </changeSet>
     
 </databaseChangeLog>
