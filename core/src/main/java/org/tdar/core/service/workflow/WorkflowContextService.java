@@ -154,7 +154,7 @@ public class WorkflowContextService {
                 logger.info("clearing status?: {}", irFile.getStatus());
                 irFile.setStatus(FileStatus.PROCESSED);
                 irFile.setErrorMessage(null);
-                publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, informationResource.getId()));
+                publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, resource.getId()));
             } else {
                 if (ctx.isErrorFatal()) {
                     irFile.setStatus(FileStatus.PROCESSING_ERROR);
