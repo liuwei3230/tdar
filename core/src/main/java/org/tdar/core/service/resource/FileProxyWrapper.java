@@ -129,8 +129,10 @@ public class FileProxyWrapper {
         InformationResourceFile irFile = proxy.getInformationResourceFile();
         incrementVersionNumber(irFile);
         // genericDao.saveOrUpdate(resource);
+//        irFile.setInformationResource(informationResource);
+        informationResource.getInformationResourceFiles().add(irFile);
         datasetDao.saveOrUpdate(informationResource);
-        irFile.setInformationResource(informationResource);
+        datasetDao.saveOrUpdate(irFile);
         proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(proxy));
         setInformationResourceFileMetadata(proxy);
         for (FileProxy additionalVersion : proxy.getAdditionalVersions()) {
@@ -138,8 +140,6 @@ public class FileProxyWrapper {
             additionalVersion.setInformationResourceFile(proxy.getInformationResourceFile());
             createVersionMetadataAndStore(additionalVersion);
         }
-        datasetDao.saveOrUpdate(irFile);
-        informationResource.add(irFile);
         logger.debug("all versions for {}", irFile);
     }
 
@@ -180,7 +180,7 @@ public class FileProxyWrapper {
         if ((file == null) || !file.exists()) {
             throw new TdarRecoverableRuntimeException("fileprocessing.error.not_found", Arrays.asList(originalFilename));
         }
-        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, irFile);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, informationResource, irFile);
         if (irFile.isTransient()) {
             datasetDao.saveOrUpdate(irFile);
         }

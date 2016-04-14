@@ -89,7 +89,7 @@ public class InformationResourceProxy extends ResourceProxy implements Serializa
             ir.setDate(this.getDate());
             for (InformationResourceFileProxy prox : getInformationResourceFileProxies()) {
                 InformationResourceFile irf = prox.generateInformationResourceFile();
-                irf.setInformationResource(ir);
+//                irf.setInformationResource(ir);
                 ir.getInformationResourceFiles().add(irf);
             }
             Project project = Project.NULL;

@@ -16,6 +16,7 @@ import org.tdar.core.bean.resource.file.FileStatus;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.dao.GenericDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.workflow.workflows.Workflow;
@@ -37,6 +38,8 @@ public class MessageService {
 
     @Autowired
     private GenericDao genericDao;
+//    @Autowired
+//    private InformationResourceDao informationResourceDao;
 
     @Autowired
     private SerializationService serializationService;
@@ -68,10 +71,10 @@ public class MessageService {
      * @param workflow2
      * @return Martin: given that at some future date this might be pushing stuff onto a queue, it shouldn't return anything?
      */
-    public <W extends Workflow> boolean sendFileProcessingRequest(Workflow workflow, InformationResourceFileVersion... informationResourceFileVersions) {
-        WorkflowContext ctx = workflowContextService.initializeWorkflowContext(workflow, informationResourceFileVersions);
+    public <W extends Workflow> boolean sendFileProcessingRequest(Workflow workflow, InformationResource ir, InformationResourceFileVersion... informationResourceFileVersions) {
+        WorkflowContext ctx = workflowContextService.initializeWorkflowContext(workflow, ir, informationResourceFileVersions);
         List<Long> irfIds = new ArrayList<>();
-        Set<InformationResource> resources = new HashSet<>();
+//        Set<InformationResource> resources = new HashSet<>(informationResourceDao.findResourcesForVersions(Arrays.asList(informationResourceFileVersions)));
         for (InformationResourceFileVersion version : informationResourceFileVersions) {
             InformationResourceFile irf = version.getInformationResourceFile();
             if (!irfIds.contains(irf.getId())) {
@@ -79,11 +82,10 @@ public class MessageService {
                 genericDao.saveOrUpdate(irf);
                 // FIXME: when we reimplement the message queue, this will need to be adjusted to do a flush here, otherwise, we cannot guarantee that the save
                 // will happen before the evict
-                resources.add(irf.getInformationResource());
             }
         }
         // genericDao.detachFromSession(resources);
-        resources = null;
+//        resources = null;
         try {
             Workflow workflow_ = ctx.getWorkflowClass().newInstance();
             ctx.setSerializationService(serializationService);

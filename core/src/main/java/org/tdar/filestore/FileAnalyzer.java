@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.FileProxy;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.file.FileType;
 import org.tdar.core.bean.resource.file.HasExtension;
@@ -111,7 +112,7 @@ public class FileAnalyzer {
         return wf;
     }
 
-    private boolean processFile(InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
+    private boolean processFile(InformationResource ir, InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
         if (informationResourceFileVersions == null) {
             throw new TdarRecoverableRuntimeException("filestore.file_version_null");
         }
@@ -124,7 +125,7 @@ public class FileAnalyzer {
 
         logger.debug("using workflow: {}", workflow);
         // Martin: if this is ever going to run asynchronously, this should this return anything?
-        return messageService.sendFileProcessingRequest(workflow, informationResourceFileVersions);
+        return messageService.sendFileProcessingRequest(workflow, ir, informationResourceFileVersions);
     }
 
     private void checkFilesExist(InformationResourceFileVersion... informationResourceFileVersions) throws FileNotFoundException, IOException {
@@ -180,20 +181,20 @@ public class FileAnalyzer {
      * Process the files based on whether the @link ResourceType is a composite (like a @link Dataset where all of the files are necessary) or not where each
      * file is processed separately
      */
-    public void processFiles(List<InformationResourceFileVersion> filesToProcess, boolean compositeFilesEnabled) throws FileNotFoundException, IOException {
+    public void processFiles(InformationResource ir, List<InformationResourceFileVersion> filesToProcess, boolean compositeFilesEnabled) throws FileNotFoundException, IOException {
             if (CollectionUtils.isEmpty(filesToProcess)) {
                 return;
             }
 
             if (compositeFilesEnabled) {
-                processFile(filesToProcess.toArray(new InformationResourceFileVersion[0]));
+                processFile(ir, filesToProcess.toArray(new InformationResourceFileVersion[0]));
             } else {
                 for (InformationResourceFileVersion version : filesToProcess) {
                     if ((version.getTransientFile() == null) || (!version.getTransientFile().exists())) {
                         // If we are re-processing, the transient file might not exist.
                         version.setTransientFile(CONFIG.getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version));
                     }
-                    processFile(version);
+                    processFile(ir, version);
                 }
             }
         }

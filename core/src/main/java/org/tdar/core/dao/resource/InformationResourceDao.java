@@ -1,17 +1,23 @@
 package org.tdar.core.dao.resource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.Query;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.cache.BrowseDecadeCountCache;
 import org.tdar.core.cache.BrowseYearCountCache;
+import org.tdar.utils.PersistableUtils;
 
 /**
  * $Id$
@@ -24,15 +30,17 @@ import org.tdar.core.cache.BrowseYearCountCache;
 @Component("informationResourceDao")
 public class InformationResourceDao extends ResourceDao<InformationResource> {
 
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
+    
     public InformationResourceDao() {
         super(InformationResource.class);
     }
 
-    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
-        Query query = getCurrentSession().getNamedQuery(QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME);
-        query.setString("filename", filename).setEntity("resource", resource);
-        return (InformationResourceFile) query.uniqueResult();
-    }
+//    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
+//        Query query = getCurrentSession().getNamedQuery(QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME);
+//        query.setString("filename", filename).setEntity("resource", resource);
+//        return (InformationResourceFile) query.uniqueResult();
+//    }
 
     public <E> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults) {
         return findRandomFeaturedResource(restrictToFiles, null, null, maxResults);
@@ -66,6 +74,25 @@ public class InformationResourceDao extends ResourceDao<InformationResource> {
     public InformationResource findByDoi(String doi) {
         Query query = getCurrentSession().getNamedQuery(QUERY_BY_DOI);
         query.setParameter("doi", doi);
+        return (InformationResource) query.uniqueResult();
+    }
+
+    public Collection<? extends InformationResource> findResourcesForVersions(List<InformationResourceFileVersion> versionsToDownload) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
+        query.setParameterList("ids", PersistableUtils.extractIds(versionsToDownload));
+        return query.list();
+    }
+
+    public InformationResource findResourceForVersion(InformationResourceFileVersion versionsToDownload) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_VERSION);
+        query.setParameterList("ids", Arrays.asList(versionsToDownload.getId()));
+        Object obj = query.uniqueResult();
+        return (InformationResource) obj;
+    }
+
+    public InformationResource findResourceForFile(InformationResourceFile file) {
+        Query query = getCurrentSession().getNamedQuery(QUERY_RESOURCES_BY_FILE);
+        query.setParameterList("ids", Arrays.asList(file.getId()));
         return (InformationResource) query.uniqueResult();
     }
 
