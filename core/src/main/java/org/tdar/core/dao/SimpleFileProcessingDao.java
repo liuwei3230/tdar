@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.HasImage;
 import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
@@ -36,7 +37,7 @@ public class SimpleFileProcessingDao {
         }
         // techincally this should use the proxy version of an IRFV, but it's easier here to hack it
         String filename = LOGO + FilenameUtils.getExtension(fileProxy.getFilename());
-        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.UPLOADED, filename, null);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.UPLOADED, filename, (InformationResource)persistable,  null);
         // this will be the "final" filename
         version.setFilename(filename);
 

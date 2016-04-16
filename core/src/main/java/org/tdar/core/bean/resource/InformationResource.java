@@ -126,7 +126,8 @@ public abstract class InformationResource extends Resource {
     private Long projectId;
 
     // FIXME: cascade "delete" ?
-    @OneToMany(mappedBy = "informationResource", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, orphanRemoval=true)
+    @JoinColumn(nullable = false, updatable = false, name = "information_resource_id")
     @OrderBy("sequenceNumber asc")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.InformationResource.informationResourceFiles")
     private Set<InformationResourceFile> informationResourceFiles = new LinkedHashSet<>();
@@ -437,11 +438,6 @@ public abstract class InformationResource extends Resource {
 
     public void setInformationResourceFiles(Set<InformationResourceFile> informationResourceFiles) {
         this.informationResourceFiles = informationResourceFiles;
-    }
-
-    public void add(InformationResourceFile informationResourceFile) {
-        getInformationResourceFiles().add(informationResourceFile);
-        logger.debug("adding information resource file: {} ({})", informationResourceFile, informationResourceFiles.size());
     }
 
     @XmlTransient

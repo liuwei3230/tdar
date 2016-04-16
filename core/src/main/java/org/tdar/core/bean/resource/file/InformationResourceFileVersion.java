@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Viewable;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.filestore.FileStoreFileProxy;
 import org.tdar.filestore.FilestoreObjectType;
 
@@ -36,9 +37,7 @@ import org.tdar.filestore.FilestoreObjectType;
 // making the assumption formally that there can only be one version of any type
 // of a given file at any moment.
 // That is, only one archival version, translated version, etc...
-@Table(name = "information_resource_file_version", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "information_resource_file_id", "file_version", "internal_type" })
-})
+@Table(name = "information_resource_file_version")
 /**
  * Representation a specific file or derivative version of an InformationResourceFile. Each InformationResouceFile may have multiple versions, eg. web sized imzges (small/med/large) or indexable data, as well as the original file version.
  * 
@@ -147,7 +146,7 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
         setInformationResourceFileId(irFileId);
     }
 
-    public InformationResourceFileVersion(VersionType type, String filename, InformationResourceFile irFile) {
+    public InformationResourceFileVersion(VersionType type, String filename, InformationResource ir, InformationResourceFile irFile) {
         setFileVersionType(type);
         setFilename(filename);
         setExtension(FilenameUtils.getExtension(filename));
@@ -155,7 +154,9 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
             setVersion(irFile.getLatestVersion());
             setInformationResourceFile(irFile);
             setInformationResourceFileId(irFile.getId());
-            setInformationResourceId(irFile.getInformationResource().getId());
+        }
+        if (ir != null) {
+            setInformationResourceId(ir.getId());
         }
         setDateCreated(new Date());
     }
@@ -396,9 +397,6 @@ public class InformationResourceFileVersion extends Persistable.Base implements 
     @XmlAttribute(name = "informationResourceId")
     @Transient
     public Long getInformationResourceId() {
-        if ((informationResourceFile != null) && (informationResourceFile.getInformationResource() != null)) {
-            return informationResourceFile.getInformationResource().getId();
-        }
         return informationResourceId;
     }
 

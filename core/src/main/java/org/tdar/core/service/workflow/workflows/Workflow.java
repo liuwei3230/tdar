@@ -14,6 +14,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.FileProxy;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.file.FileType;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
@@ -52,7 +53,7 @@ public interface Workflow {
 
     Map<String, List<String>> getSuggestedExtensions();
 
-    void initializeWorkflowContext(WorkflowContext ctx, InformationResourceFileVersion[] versions);
+    void initializeWorkflowContext(WorkflowContext ctx, InformationResource ir, InformationResourceFileVersion[] versions);
 
     boolean validateProxyCollection(FileProxy primary);
 
@@ -202,7 +203,7 @@ public interface Workflow {
         }
 
         @Override
-        public void initializeWorkflowContext(WorkflowContext ctx, InformationResourceFileVersion[] version) {
+        public void initializeWorkflowContext(WorkflowContext ctx, InformationResource ir, InformationResourceFileVersion[] version) {
             return;
         }
 

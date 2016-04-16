@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.Persistable.Base;
 import org.tdar.core.bean.collection.DownloadAuthorization;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.InformationResource;
@@ -275,5 +276,4 @@ public class DownloadTransferObject implements Serializable {
     public void setCoverPageLogo(File coverPageLogo) {
         this.coverPageLogo = coverPageLogo;
     }
-
 }
