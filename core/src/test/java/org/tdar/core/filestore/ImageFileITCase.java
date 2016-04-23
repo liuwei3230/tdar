@@ -18,6 +18,7 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.FileProxy;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.bean.resource.file.FileStatus;
 import org.tdar.core.bean.resource.file.FileType;
@@ -25,6 +26,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.WorkflowResult;
@@ -44,7 +46,8 @@ public class ImageFileITCase extends AbstractIntegrationTestCase {
 
     @Autowired
     private FileAnalyzer fileAnalyzer;
-
+    @Autowired 
+    InformationResourceDao informationResourceDao;
     @Autowired
     private MessageService messageService;
 
@@ -110,7 +113,8 @@ public class ImageFileITCase extends AbstractIntegrationTestCase {
         assertEquals(FileType.IMAGE, fileType);
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
         assertEquals(ImageWorkflow.class, workflow.getClass());
-        boolean result = messageService.sendFileProcessingRequest(workflow, originalVersion);
+        InformationResource ir = informationResourceDao.findResourceForVersion(originalVersion);
+        boolean result = messageService.sendFileProcessingRequest(workflow, ir, originalVersion);
         FileProxy proxy = new FileProxy(filename, f, VersionType.UPLOADED);
         proxy.setInformationResourceFileVersion(originalVersion);
         proxy.setInformationResourceFile(originalVersion.getInformationResourceFile());

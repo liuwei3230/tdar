@@ -41,6 +41,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.event.TdarEvent;
@@ -77,6 +78,8 @@ public class SearchIndexService {
 
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
+    @Autowired
+    private InformationResourceDao informationResourceDao;
 
     @Autowired
     private ResourceService resourceService;
@@ -208,7 +211,10 @@ public class SearchIndexService {
                 document = AnnotationKeyDocumentConverter.convert((ResourceAnnotationKey) item);
             }
             if (item instanceof InformationResourceFile) {
-                document = ContentDocumentConverter.convert((InformationResourceFile) item);
+                InformationResourceFile file = (InformationResourceFile) item;
+                Long ir = informationResourceDao.findResourceForFile(file).getId();
+//                logger.debug("HI: {}-->{} ",ir,  item.getId());
+                document = ContentDocumentConverter.convert(file,ir);
             }
 
             if (deleteFirst) {
@@ -270,6 +276,7 @@ public class SearchIndexService {
      * @throws SolrServerException
      */
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly=true)
     public <C extends Indexable> void index(C... indexable) throws SolrServerException, IOException {
         indexCollection(Arrays.asList(indexable));
     }
@@ -281,6 +288,7 @@ public class SearchIndexService {
      * @throws IOException
      * @throws SolrServerException
      */
+    @Transactional(readOnly=true)
     public <C extends Indexable> boolean indexCollection(Collection<C> indexable) throws SolrServerException, IOException {
         boolean exceptions = false;
 

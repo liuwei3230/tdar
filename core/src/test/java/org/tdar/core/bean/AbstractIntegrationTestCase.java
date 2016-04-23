@@ -293,7 +293,8 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             IllegalAccessException, IOException {
         InformationResource ir = createAndSaveNewInformationResource(type, false);
         InformationResourceFile irFile = new InformationResourceFile();
-        irFile.setInformationResource(ir);
+//        irFile.setInformationResource(ir);
+        ir.getInformationResourceFiles().add(irFile);
         irFile.setLatestVersion(1);
         @SuppressWarnings("deprecation")
         InformationResourceFileVersion version = new InformationResourceFileVersion();
@@ -306,6 +307,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         irFile.getInformationResourceFileVersions().add(version);
         genericService.save(irFile);
         genericService.save(version);
+        version.setInformationResourceId(ir.getId());
         filestore.store(FilestoreObjectType.RESOURCE, f, version);
         return version;
     }
@@ -339,12 +341,12 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return addFileToResource(ir, file, FileAccessRestriction.PUBLIC);
     }
 
-    public <R extends InformationResource> R addFileToResource(R ir, File file, FileAccessRestriction restriction) {
+    public <R extends InformationResource> R addFileToResource(R ir_, File file, FileAccessRestriction restriction) {
         try {
             FileProxy proxy = new FileProxy(file.getName(), file, VersionType.UPLOADED, FileAction.ADD);
             proxy.setRestriction(restriction);
             // PersonalFilestore filestore, T resource, List<FileProxy> fileProxiesToProcess, Long ticketId
-            ErrorTransferObject listener = informationResourceService.importFileProxiesAndProcessThroughWorkflow(ir, null, null, Arrays.asList(proxy));
+            ErrorTransferObject listener = informationResourceService.importFileProxiesAndProcessThroughWorkflow(ir_, null, null, Arrays.asList(proxy));
             if (CollectionUtils.isNotEmpty(listener.getActionErrors())) {
                 throw new TdarRecoverableRuntimeException(String.format("errors ocurred while processing file: %s", listener));
             }
@@ -355,14 +357,24 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
             e.printStackTrace();
             fail(e.getMessage());
         }
-        genericService.refresh(ir);// = genericService.find(ir.getClass(), ir.getId());
-        for (InformationResourceFile irf : ir.getInformationResourceFiles()) {
+//        Long id = ir_.getId();
+//        Class<R> pc = (Class<R>) ir_.getClass();
+//        genericService.synchronize();
+//        genericService.evictFromCache(ir_);
+//        ir_ = null;
+//        R ir = genericService.find(pc, id);
+        genericService.refresh(ir_);// = genericService.find(ir.getClass(), ir.getId());
+        assertNotEquals(0, ir_.getInformationResourceFiles().size());
+        logger.debug("{}", ir_.getInformationResourceFiles());
+//        ir.getInformationResourceFiles().add(e)
+        for (InformationResourceFile irf : ir_.getInformationResourceFiles()) {
             assertTrue(irf.getId() != null);
-            for (InformationResourceFileVersion irfv : irf.getInformationResourceFileVersions()) {
+            assertNotEquals(0, irf.getInformationResourceFileVersions().size());
+                      for (InformationResourceFileVersion irfv : irf.getInformationResourceFileVersions()) {
                 assertTrue(irfv.getId() != null);
             }
         }
-        return ir;
+        return ir_;
     }
 
     

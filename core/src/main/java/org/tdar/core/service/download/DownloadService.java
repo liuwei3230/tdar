@@ -25,6 +25,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.statistics.FileDownloadStatistic;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.FileSystemResourceDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.GenericService;
@@ -55,19 +56,18 @@ public class DownloadService {
 
     private final PdfService pdfService;
     private final GenericService genericService;
-
     private final Cache<Long, List<Integer>> downloadLock;
-
     private final AuthorizationService authorizationService;
-
     private final ResourceCollectionDao resourceCollectionDao;
+    private final InformationResourceDao informationResourceDao;
 
     private final FileSystemResourceDao fileSystemResourceDao;
 
     @Autowired
     public DownloadService(PdfService pdfService, GenericService genericService, AuthorizationService authorizationService,
-            ResourceCollectionDao resourceCollectionDao, FileSystemResourceDao fileSystemResourceDao) {
+            ResourceCollectionDao resourceCollectionDao, FileSystemResourceDao fileSystemResourceDao, InformationResourceDao informationResourceDao) {
         this.pdfService = pdfService;
+        this.informationResourceDao = informationResourceDao;
         this.genericService = genericService;
         this.authorizationService = authorizationService;
         this.resourceCollectionDao = resourceCollectionDao;
@@ -101,7 +101,7 @@ public class DownloadService {
             if (!irFileVersion.isDerivative()) {
                 logger.debug("User {} is trying to DOWNLOAD: {} ({}: {})", dto.getAuthenticatedUser(), irFileVersion, TdarConfiguration.getInstance()
                         .getSiteAcronym(),
-                        irFileVersion.getInformationResourceFile().getInformationResource().getId());
+                        dto.getInformationResource().getId());
                 InformationResourceFile irFile = irFileVersion.getInformationResourceFile();
                 addStatistics(dto, irFile);
             }
@@ -112,7 +112,7 @@ public class DownloadService {
     private void addStatistics(DownloadTransferObject dto, InformationResourceFile irFile) {
         // don't count download stats if you're downloading your own stuff
         TdarUser user = dto.getAuthenticatedUser();
-        if (!PersistableUtils.isEqual(irFile.getInformationResource().getSubmitter(), user) && !authorizationService.isEditor(user)) {
+        if (!PersistableUtils.isEqual(dto.getInformationResource().getSubmitter(), user) && !authorizationService.isEditor(user)) {
             FileDownloadStatistic stat = new FileDownloadStatistic(new Date(), irFile);
             dto.getStatistics().add(stat);
         }
@@ -218,7 +218,9 @@ public class DownloadService {
         }
 
         DownloadResult issue = DownloadResult.SUCCESS;
+        List<InformationResource> resources = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(resourceToDownload)) {
+            resources.add(resourceToDownload);
             for (InformationResourceFile irf : resourceToDownload.getInformationResourceFiles()) {
                 if (irf.isDeleted()) {
                     continue;
@@ -227,8 +229,9 @@ public class DownloadService {
                 logger.trace("adding: {}", irf.getLatestUploadedVersion());
             }
         } else if (CollectionUtils.isNotEmpty(versionsToDownload)) {
+            resources.addAll(informationResourceDao.findResourcesForVersions(versionsToDownload));
             // trying to address a casting issue where we're getting a javassist version and not a tdar information resource
-            resourceToDownload = versionsToDownload.get(0).getInformationResourceFile().getInformationResource();
+            resourceToDownload = resources.get(0);
             if (resourceToDownload.getResourceType().isDocument()) {
                 resourceToDownload = genericService.find(Document.class, resourceToDownload.getId());
             }
@@ -237,7 +240,7 @@ public class DownloadService {
         }
 
         File coverLogo = getCoverLogo(resourceToDownload);
-
+        
         DownloadTransferObject dto = new DownloadTransferObject(resourceToDownload, authenticatedUser, textProvider, this, authorization);
         dto.setCoverPageLogo(coverLogo);
         dto.setIncludeCoverPage(includeCoverPage);

@@ -10,11 +10,13 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.service.download.DownloadResult;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.core.service.external.AuthorizationService;
+import org.tdar.core.service.resource.InformationResourceService;
 import org.tdar.struts.interceptor.annotation.HttpOnlyIfUnauthenticated;
 import org.tdar.utils.PersistableUtils;
 
@@ -43,14 +45,16 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
     private transient AuthorizationService authorzationService;
     @Autowired
     private transient DownloadService downloadService;
+    @Autowired
+    private transient InformationResourceService informationResourceService;
 
     private Long informationResourceFileId;
     private InformationResourceFile informationResourceFile;
     private InformationResourceFileVersion fileVersion;
-
+    private InformationResource informationResource;
     @Action(value = "{informationResourceFileId}/{apiKey}")
     public String execute() {
-        getAuthorizationService().applyTransientViewableFlag(fileVersion, getAuthenticatedUser());
+        getAuthorizationService().applyTransientViewableFlag(informationResource, fileVersion, getAuthenticatedUser());
 
         setDownloadTransferObject(downloadService.validateFilterAndSetupDownload(getAuthenticatedUser(),
                 informationResourceFile, isCoverPageIncluded(), this, null, true));
@@ -73,6 +77,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
     public void prepare() {
         super.prepare();
         informationResourceFile = getGenericService().find(InformationResourceFile.class, informationResourceFileId);
+        informationResource = informationResourceService.finResourceForFile(informationResourceFile); 
         if (StringUtils.isBlank(apiKey)) {
             addActionError("hostedDownloadController.api_key_required");
         }
@@ -95,7 +100,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
         }
 
         // Don't allow hosted download for files that belong to deleted resources
-        if (informationResourceFile.getInformationResource().isDeleted()) {
+        if (informationResource.isDeleted()) {
             getLogger().warn("attempt to download file associated with deleted resource: {}", informationResourceFile);
             addActionError("hostedDownloadController.invalid_request");
         }

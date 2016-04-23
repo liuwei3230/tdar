@@ -74,11 +74,11 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
 
     private transient WorkflowContext workflowContext;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    // cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
-    @JoinColumn(name = "information_resource_id", nullable = false, updatable = false)
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-    private InformationResource informationResource;
+//    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+//    // cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+//    @JoinColumn(name = "information_resource_id", nullable = false, updatable = false)
+//    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+//    private InformationResource informationResource;
 
     private transient Long transientDownloadCount;
 
@@ -134,11 +134,15 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
     @Column(length = 32)
     private FileStatus status;
 
-    @XmlElement(name = "informationResourceRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public InformationResource getInformationResource() {
-        return informationResource;
-    }
+//    @XmlElement(name = "informationResourceRef")
+//    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
+//    public InformationResource getInformationResource() {
+//    	return informationResource;
+//    }
+
+//    public void setInformationResource(InformationResource informationResource) {
+//    	this.informationResource = informationResource;
+//    }
 
     private transient boolean viewable = false;
 
@@ -152,9 +156,6 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
         }
     }
 
-    public void setInformationResource(InformationResource informationResource) {
-        this.informationResource = informationResource;
-    }
 
     public FileType getInformationResourceFileType() {
         return informationResourceFileType;
@@ -517,7 +518,7 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
 
     public boolean isHasTranslatedVersion() {
         try {
-            if ((getLatestTranslatedVersion() != null) && getInformationResource().getResourceType().isDataTableSupported()) {
+            if ((getLatestTranslatedVersion() != null)) {
                 return true;
             }
         } catch (Exception e) {

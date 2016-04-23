@@ -52,6 +52,9 @@ public class ResourceCollectionDao extends Dao.HibernateBase<ResourceCollection>
     @Autowired
     AuthorizedUserDao authorizedUserDao;
     
+    @Autowired
+    InformationResourceDao informationResourceDao;
+    
     public ResourceCollectionDao() {
         super(ResourceCollection.class);
     }
@@ -211,7 +214,7 @@ public class ResourceCollectionDao extends Dao.HibernateBase<ResourceCollection>
      */
     public List<DownloadAuthorization> getDownloadAuthorizations(InformationResourceFileVersion informationResourceFileVersion, String apiKey,
             String referrer) {
-        InformationResource ir = informationResourceFileVersion.getInformationResourceFile().getInformationResource();
+        InformationResource ir = informationResourceDao.findResourceForVersion(informationResourceFileVersion);
         Set<Long> sharedCollectionIds = new HashSet<>();
         for (ResourceCollection rc : ir.getSharedResourceCollections()) {
             sharedCollectionIds.add(rc.getId());

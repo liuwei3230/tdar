@@ -60,6 +60,8 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
     @Autowired
     private InformationResourceFileDao informationResourceFileDao;
     @Autowired
+    private InformationResourceDao informationResourceDao;
+    @Autowired
     private DatasetDao datasetDao;
 
     @Autowired
@@ -85,7 +87,7 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
         
         wrapper.processMetadataForFileProxies();
 
-        analyzer.processFiles(wrapper.getFilesToProcess(),  resource.getResourceType().isCompositeFilesEnabled());
+        analyzer.processFiles(resource, wrapper.getFilesToProcess(),  resource.getResourceType().isCompositeFilesEnabled());
 
         /*
          * FIXME: When we move to an asynchronous model, this section and below will need to be moved into their own dedicated method
@@ -133,7 +135,7 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
                 }
             }
         }
-        analyzer.processFiles(latestVersions, ir.getResourceType().isCompositeFilesEnabled());
+        analyzer.processFiles(ir, latestVersions, ir.getResourceType().isCompositeFilesEnabled());
         // this is a known case where we need to purge the session
         // getDao().synchronize();
 
@@ -176,10 +178,10 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
      * @param filename
      * @return
      */
-    @Transactional(readOnly = true)
-    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
-        return getDao().findFileByFilename(resource, filename);
-    }
+//    @Transactional(readOnly = true)
+//    public InformationResourceFile findFileByFilename(InformationResource resource, String filename) {
+//        return getDao().findFileByFilename(resource, filename);
+//    }
 
     /**
      * Find a random set of resources to be featured on the homepage ...
@@ -262,6 +264,17 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
 
     public FileAnalyzer getAnalyzer() {
         return analyzer;
+    }
+
+    @Transactional(readOnly=true)
+    public InformationResource findResourceForVersion(InformationResourceFileVersion informationResourceFileVersion) {
+        return informationResourceDao.findResourceForVersion(informationResourceFileVersion);
+    }
+
+
+    @Transactional(readOnly=true)
+    public InformationResource finResourceForFile(InformationResourceFile informationResourceFile) {
+        return informationResourceDao.findResourceForFile(informationResourceFile);
     }
 
 }
