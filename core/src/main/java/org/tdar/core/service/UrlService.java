@@ -81,15 +81,6 @@ public class UrlService {
         return String.format("%s/%s/%s", StringUtils.stripEnd(getBaseUrl(), "/"), namespace, id);
     }
 
-    /**
-     * Generate a download URL
-     * 
-     * @param version
-     * @return
-     */
-    public static String downloadUrl(InformationResourceFileVersion version) {
-        return downloadUrl(version.getInformationResourceFile().getInformationResource(), version);
-    }
 
     /**
      * Generate a download URL

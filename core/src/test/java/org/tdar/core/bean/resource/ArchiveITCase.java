@@ -26,7 +26,7 @@ public class ArchiveITCase extends AbstractIntegrationTestCase {
         assertTrue(result.getResourceType() == ResourceType.ARCHIVE);
         File file = new File(TestConstants.TEST_ARCHIVE_DIR + archive);
         assertTrue("testing " + TestConstants.FAULTY_ARCHIVE + " doesn't exis?", file.exists());
-        result = (Archive) addFileToResource(result, file); // now take the file through the work flow.
+        result = addFileToResource(result, file); // now take the file through the work flow.
         return result;
     }
 
@@ -37,7 +37,7 @@ public class ArchiveITCase extends AbstractIntegrationTestCase {
         InformationResource ir = generateArchiveFileAndUser(TestConstants.FAULTY_ARCHIVE);
         // Martin: in my scenario, the file results in a processing error.
         final Set<InformationResourceFile> irFiles = ir.getInformationResourceFiles();
-        assertEquals(irFiles.size(), 1);
+        assertEquals( 1,irFiles.size());
 
         InformationResourceFile irFile = irFiles.iterator().next();
         irFile = genericService.find(InformationResourceFile.class, irFile.getId());

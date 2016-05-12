@@ -201,10 +201,10 @@ public abstract class Creator<T extends Creator<?>> implements Persistable, HasN
     @JsonView(JsonLookupFilter.class)
     private String url;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true, targetEntity=Address.class)
     @JoinColumn(nullable = false, updatable = true, name = "creator_id")
     @NotNull
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
+    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL,region = "org.tdar.core.bean.entity.Creator.Address")
     private Set<Address> addresses = new LinkedHashSet<>();
 
     private transient Float score = -1f;

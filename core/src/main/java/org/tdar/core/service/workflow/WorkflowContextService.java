@@ -144,8 +144,7 @@ public class WorkflowContextService {
             // }
             orig.setInformationResourceFile(irFile);
             // genericDao.saveOrUpdate(orig);
-            InformationResource informationResource = genericDao.find(InformationResource.class, ctx.getInformationResourceId());
-			irFile.setInformationResource(informationResource);
+//            irFile.setInformationResource(genericDao.find(InformationResource.class, ctx.getInformationResourceId()));
             irFile.setWorkflowContext(ctx);
 
             // logger.info("end status: {}", irFile.getStatus());
@@ -155,7 +154,7 @@ public class WorkflowContextService {
                 logger.info("clearing status?: {}", irFile.getStatus());
                 irFile.setStatus(FileStatus.PROCESSED);
                 irFile.setErrorMessage(null);
-                publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, informationResource.getId()));
+                publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, resource.getId()));
             } else {
                 if (ctx.isErrorFatal()) {
                     irFile.setStatus(FileStatus.PROCESSING_ERROR);
@@ -178,18 +177,18 @@ public class WorkflowContextService {
     /**
      * given any InformationResourceFileVersion (for an uploaded file) this will create a workflow context
      */
-    public WorkflowContext initializeWorkflowContext(Workflow w, InformationResourceFileVersion... versions) {
+    public WorkflowContext initializeWorkflowContext(Workflow w, InformationResource ir, InformationResourceFileVersion... versions) {
         WorkflowContext ctx = new WorkflowContext();
         ctx.getOriginalFiles().addAll(Arrays.asList(versions));
         ctx.setTargetDatabase(tdarDataImportDatabase);
-        final InformationResource informationResource = versions[0].getInformationResourceFile().getInformationResource();
+        final InformationResource informationResource = ir;
         ctx.setResourceType(informationResource.getResourceType());
         ctx.setTransientResource(informationResource.getTransientCopyForWorkflow());
         ctx.setFilestore(TdarConfiguration.getInstance().getFilestore());
         ctx.setInformationResourceId(versions[0].getInformationResourceId());
         ctx.setWorkflowClass(w.getClass());
         ctx.setSerializationService(serializationService);
-        w.initializeWorkflowContext(ctx, versions); // handle any special bits here
+        w.initializeWorkflowContext(ctx, ir , versions); // handle any special bits here
         try {
             if (logger.isTraceEnabled()) {
                 logger.trace(ctx.toXML());

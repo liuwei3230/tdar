@@ -22,11 +22,14 @@ import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.GenericService;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.utils.AsynchTester;
+
+import riotcmd.infer;
 
 
 /**
@@ -37,6 +40,9 @@ public class WorkflowITCase extends AbstractIntegrationTestCase {
 
     @Autowired
     FileAnalyzer fileAnalyzer;
+    
+    @Autowired
+    InformationResourceDao informationResourceDao;
 
     @Test
     @Rollback(true)
@@ -68,9 +74,9 @@ public class WorkflowITCase extends AbstractIntegrationTestCase {
                                 InformationResourceFileVersion irfv = doc.getLatestUploadedVersion();
                                 genericService.saveOrUpdate(irfv.getInformationResourceFile());
 
-                                InformationResource ir = irfv.getInformationResourceFile().getInformationResource();
+                                InformationResource ir = informationResourceDao.findResourceForVersion(irfv);
                                 ir = gs.merge(ir);
-                                analyzer.processFiles(Arrays.asList(irfv),false);
+                                analyzer.processFiles(ir, Arrays.asList(irfv),false);
                             } catch (Exception e) {
                                 logger.error("exception in workflowITCase", e);
                                 throw new TdarRecoverableRuntimeException("something happened", e);

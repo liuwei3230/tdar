@@ -126,11 +126,11 @@
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_DATATABLECOLUMN_WITH_DEFAULT_ONTOLOGY,
                 query = "FROM DataTableColumn dtc inner join dtc.defaultCodingSheet as code WHERE dtc.dataTable.dataset.id=:datasetId AND code.defaultOntology IS NOT NULL ORDER BY dtc.id"),
-        @org.hibernate.annotations.NamedQuery(
-                name = TdarNamedQueries.QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME,
-                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.informationResource = :resource and "
-                        + "file=version.informationResourceFile and file.latestVersion=version.version and version.filename = :filename"
-        ),
+//        @org.hibernate.annotations.NamedQuery(
+//                name = TdarNamedQueries.QUERY_INFORMATIONRESOURCE_FIND_BY_FILENAME,
+//                query = "SELECT file from InformationResourceFile as file, InformationResourceFileVersion as version where file.informationResource = :resource and "
+//                        + "file=version.informationResourceFile and file.latestVersion=version.version and version.filename = :filename"
+//        ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_ONTOLOGYNODE_ALL_CHILDREN_WITH_WILDCARD,
                 query = "from OntologyNode o where o.ontology.id=:ontologyId and index like :indexWildcardString"
@@ -371,7 +371,7 @@
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.QUERY_INFORMATIONRESOURCES_WITH_FILES,
-                query = "SELECT file.informationResource.id from InformationResourceFile file"
+                query = "SELECT distinct ir.id from InformationResource ir right join ir.informationResourceFiles"
         ),
         @org.hibernate.annotations.NamedQuery(
                 name = TdarNamedQueries.INVOICES_FOR_PERSON,
@@ -544,8 +544,14 @@
                 query = "from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col where :projectId = -1 or project.id=:projectId"),
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.COUNT_MAPPED_RESOURCES,
-                query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col")
-        
+                query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col"),
+        // FIXME: remove distinct
+        @org.hibernate.annotations.NamedQuery(
+                name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_VERSION,
+                query = "select distinct(ir) from InformationResource ir inner join ir.informationResourceFiles as irf inner join irf.informationResourceFileVersions as irfv where irfv.id in (:ids)"),
+        @org.hibernate.annotations.NamedQuery(
+                name=org.tdar.core.dao.TdarNamedQueries.QUERY_RESOURCES_BY_FILE,
+                query = "select distinct(ir) from InformationResource ir inner join ir.informationResourceFiles irf where irf.id in (:ids)")        
 })
 package org.tdar.core.dao;
 
