@@ -84,7 +84,7 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         boolean seen = false;
         for (InformationResourceFileVersion version : informationResourceFile.getLatestVersions()) {
             logger.info("{}", version);
-
+            version.setInformationResourceId(doc.getId());
             if (version.isTranslated()) {
                 String contents = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version));
                 assertTrue(contents.contains("Ark_HM_Headpot_01.txt"));
