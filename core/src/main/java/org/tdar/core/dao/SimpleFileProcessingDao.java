@@ -37,7 +37,7 @@ public class SimpleFileProcessingDao {
         }
         // techincally this should use the proxy version of an IRFV, but it's easier here to hack it
         String filename = LOGO + FilenameUtils.getExtension(fileProxy.getFilename());
-        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.UPLOADED, filename, (InformationResource)persistable,  null);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.UPLOADED, filename, null,  null);
         // this will be the "final" filename
         version.setFilename(filename);
 
