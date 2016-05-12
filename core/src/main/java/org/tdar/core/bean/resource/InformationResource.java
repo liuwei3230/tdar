@@ -127,7 +127,7 @@ public abstract class InformationResource extends Resource {
 
     // FIXME: cascade "delete" ?
     @OneToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, orphanRemoval=true)
-    @JoinColumn(nullable = false, updatable = false, name = "information_resource_id")
+    @JoinColumn(nullable = true, insertable=true, updatable = true, name = "information_resource_id")
     @OrderBy("sequenceNumber asc")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.InformationResource.informationResourceFiles")
     private Set<InformationResourceFile> informationResourceFiles = new LinkedHashSet<>();

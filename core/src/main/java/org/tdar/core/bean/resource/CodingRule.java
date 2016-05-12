@@ -17,8 +17,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 
@@ -36,10 +36,73 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
         @Index(name = "coding_rule_term_index", columnList = "term"),
         @Index(name = "coding_rule_ontology_node_id_idx", columnList = "ontology_node_id")
 })
-public class CodingRule extends Persistable.Base implements Comparable<CodingRule> {
+public class CodingRule extends AbstractPersistable implements Comparable<CodingRule> {
 
     private static final long serialVersionUID = -577936920767925065L;
 
+    public static final CodingRule NULL = new CodingRule() {
+
+        private static final long serialVersionUID = -4642755669423445084L;
+
+        @Override
+        public String getTerm() {
+            return "NULL";
+        }
+        
+        @Override
+        public String getCode() {
+            return "__NULL";
+        }
+
+        public String getFormattedTerm() {
+            return getTerm();
+        }
+
+        
+    };
+
+    public static final CodingRule MISSING = new CodingRule() {
+
+        private static final long serialVersionUID = 7942595387432781223L;
+
+        @Override
+        public String getTerm() {
+            return "MISSING";
+        }
+        
+        @Override
+        public String getCode() {
+            return "__MISSING";
+        }
+        
+        public String getFormattedTerm() {
+            return getTerm();
+        }
+
+        
+    };
+
+    public static final CodingRule UNMAPPED = new CodingRule() {
+
+        private static final long serialVersionUID = -5773650328175904771L;
+
+        @Override
+        public String getTerm() {
+            return "UNMAPPED";
+        }
+        
+        @Override
+        public String getCode() {
+            return "__UNMAPPED";
+        }
+
+        public String getFormattedTerm() {
+            return getTerm();
+        }
+
+    };
+
+    
     @ManyToOne(optional = false)
     @JoinColumn(name = "coding_sheet_id")
     private CodingSheet codingSheet;

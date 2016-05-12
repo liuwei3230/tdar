@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.keyword.CultureKeyword;
+import org.tdar.core.bean.keyword.ExternalKeywordMapping;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
@@ -29,7 +30,9 @@ import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.GenericKeywordDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.transform.jsonld.SchemaOrgKeywordConverter;
 import org.tdar.utils.Pair;
+import org.tdar.utils.PersistableUtils;
 
 /*
  * A generic service to support the majority of keyword functions.
@@ -45,6 +48,9 @@ public class GenericKeywordService {
     @Qualifier("genericKeywordDao")
     private GenericKeywordDao genericKeywordDao;
 
+    @Autowired
+    private SerializationService serializationService;
+
     /**
      * Find all approved keywords without the cache
      * 
@@ -56,7 +62,6 @@ public class GenericKeywordService {
         return genericKeywordDao.findAllByProperty(cls, APPROVED, true);
     }
 
-
     @Deprecated
     /**
      * Find all Approved keywords (controlled) from the keyword cache
@@ -65,7 +70,6 @@ public class GenericKeywordService {
      * @param cls
      * @return
      */
-    @SuppressWarnings("unchecked")
     public synchronized <W extends SuggestedKeyword> List<W> findAllApprovedWithCache(Class<W> cls) {
         return findAllApproved(cls);
     }
@@ -275,10 +279,38 @@ public class GenericKeywordService {
     }
 
     @Transactional(readOnly = false)
-    public void saveKeyword(String label, String description, Keyword keyword) {
-        genericKeywordDao.markUpdatable(keyword);
+    public void saveKeyword(String label, String description, Keyword keyword, List<ExternalKeywordMapping> list) {
         keyword.setLabel(label);
         keyword.setDefinition(description);
+        // FIXME: likely because of the weird-multi-managed relationship on keyword mapping, a manual delete needs to be handled
+        Map<Long, ExternalKeywordMapping> incoming = PersistableUtils.createIdMap(list);
+        for (ExternalKeywordMapping existing : keyword.getAssertions()) {
+            ExternalKeywordMapping in = incoming.get(existing.getId());
+            if (in != null) {
+                logger.debug("updating existing to: {} {} ", in.getRelation(), in.getRelationType());
+                existing.setRelation(in.getRelation());
+                existing.setRelationType(in.getRelationType());
+                genericKeywordDao.saveOrUpdate(existing);
+            } else {
+                logger.debug("deleting: {} ", existing.getId());
+                genericKeywordDao.delete(existing);
+            }
+        }
+        incoming = null;
+        genericKeywordDao.saveOrUpdate(keyword);
+        for (ExternalKeywordMapping map : list) {
+            logger.debug("evaluating: {}", map);
+            if (map != null && PersistableUtils.isNullOrTransient(map.getId())) {
+                if (map.isValidForController()) {
+                    logger.debug("adding: {}", map);
+                    keyword.getAssertions().add(map);
+                    genericKeywordDao.saveOrUpdate(map);
+                } else {
+                    logger.debug("skipping: {}", map);
+                }
+            }
+        }
+        logger.debug("result: {} -- {}", keyword, keyword.getAssertions());
         genericKeywordDao.saveOrUpdate(keyword);
     }
 
@@ -292,9 +324,16 @@ public class GenericKeywordService {
         return genericKeywordDao.countActiveWithStatus(type, null);
     }
 
-    @Transactional(readOnly = true)
-    public Map<Keyword, Integer> getRelatedKeywordCounts(Set<Long> resourceIds) {
-        return genericKeywordDao.getRelatedKeywordCounts(resourceIds);
+    @Transactional(readOnly=true)
+    public String getSchemaOrgJsonLD(Keyword keyword) {
+        try {
+            SchemaOrgKeywordConverter transformer = new SchemaOrgKeywordConverter();
+            return transformer.convert(serializationService, keyword);
+        } catch (Exception e) {
+            logger.error("error converting to json-ld", e);
+        }
+
+        return null;
     }
 
 }

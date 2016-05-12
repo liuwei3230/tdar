@@ -26,8 +26,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.filestore.FileStoreFileProxy;
@@ -46,7 +46,7 @@ import org.tdar.filestore.FilestoreObjectType;
  */
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.InformationResourceFileVersion")
 @Cacheable
-public class InformationResourceFileVersion extends Persistable.Base implements Comparable<InformationResourceFileVersion>, Viewable, HasExtension,
+public class InformationResourceFileVersion extends AbstractPersistable implements Comparable<InformationResourceFileVersion>, Viewable, HasExtension,
         FileStoreFileProxy {
 
     private static final long serialVersionUID = 3768354809654162949L;

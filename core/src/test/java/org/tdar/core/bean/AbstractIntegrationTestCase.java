@@ -75,8 +75,8 @@ import org.tdar.core.bean.billing.BillingActivityModel;
 import org.tdar.core.bean.billing.BillingItem;
 import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.billing.TransactionStatus;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.collection.WhiteLabelCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Institution;
@@ -288,14 +288,15 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return ir;
     }
 
-    public <R extends InformationResource> InformationResourceFileVersion generateAndStoreVersion(Class<R> type, String name, File f, Filestore filestore)
+    public <R extends InformationResource> R generateAndStoreVersion(Class<R> type, String name, File f, Filestore filestore)
             throws InstantiationException,
             IllegalAccessException, IOException {
-        InformationResource ir = createAndSaveNewInformationResource(type, false);
+        R ir = createAndSaveNewInformationResource(type, false);
         InformationResourceFile irFile = new InformationResourceFile();
 //        irFile.setInformationResource(ir);
         ir.getInformationResourceFiles().add(irFile);
         irFile.setLatestVersion(1);
+        irFile.setFilename(name);
         @SuppressWarnings("deprecation")
         InformationResourceFileVersion version = new InformationResourceFileVersion();
         version.setVersion(1);
@@ -303,13 +304,15 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         version.setExtension(FilenameUtils.getExtension(name));
         version.setInformationResourceFile(irFile);
         version.setDateCreated(new Date());
+        version.setInformationResourceFile(irFile);
         version.setFileVersionType(VersionType.UPLOADED);
         irFile.getInformationResourceFileVersions().add(version);
+        ir.getInformationResourceFiles().add(irFile);
         genericService.save(irFile);
         genericService.save(version);
         version.setInformationResourceId(ir.getId());
         filestore.store(FilestoreObjectType.RESOURCE, f, version);
-        return version;
+        return ir;
     }
 
     public Document generateDocumentWithFileAndUseDefaultUser() throws InstantiationException, IllegalAccessException {

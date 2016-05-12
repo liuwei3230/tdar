@@ -21,9 +21,7 @@ import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.DocumentCitationFormatTestCase;
 import org.tdar.core.bean.resource.DocumentType;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
-import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.utils.MessageHelper;
 
@@ -55,9 +53,6 @@ public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
         assertEquals("aeiou",pdfService.transliterate("åéîøü"));
     }
     
-    @Autowired 
-    InformationResourceDao informationResourceDao;
-
     @Test
     @Rollback(true)
     public void testPDFCoversheet() throws Exception {
@@ -65,10 +60,9 @@ public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
         // THIS TEST WILL FAIL IF RUN IN ECLIPSE WITHOUT DOING A VERIFY FIRST (it needs access to includes)
         File f = new File(TestConstants.TEST_DOCUMENT_DIR, "1-01.PDF");
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
-
+        Document document = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
+        InformationResourceFileVersion originalVersion = document.getLatestUploadedVersion();
         // setup document
-        Document document = (Document)informationResourceDao.findResourceForVersion(originalVersion);
         DocumentCitationFormatTestCase.setupDocumentWithAllFields(document, DocumentType.BOOK);
         for (ResourceCreator c : document.getResourceCreators()) {
             genericService.saveOrUpdate(c.getCreator());

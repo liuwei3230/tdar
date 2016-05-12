@@ -9,9 +9,9 @@
     <name>tDAR (web)</name>
 
     <properties>
-        <struts2.version>2.3.28.1</struts2.version>
+        <struts2.version>2.5</struts2.version>
         <servlet.api.version>3.0.1</servlet.api.version>
-        <wro4j.version>1.7.9</wro4j.version>
+        <wro4j.version>1.8.0</wro4j.version>
         <display.port></display.port>
         <skipWebTests>false</skipWebTests>
         <skipSeleniumTests>false</skipSeleniumTests>
@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.tdar</groupId>
         <artifactId>web-base</artifactId>
-        <version>14.1.0-NEOLITHIC-SNAPSHOT</version>
+        <version>15.0.0-OBSIDIAN-SNAPSHOT</version>
         <relativePath>../web-base/pom.xml</relativePath>
     </parent>
 
@@ -53,6 +53,12 @@
             <groupId>org.tdar</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>xwork-core</artifactId>
+            		<groupId>org.apache.struts.xwork</groupId>
+            	</exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.tdar</groupId>
@@ -60,6 +66,12 @@
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>xwork-core</artifactId>
+            		<groupId>org.apache.struts.xwork</groupId>
+            	</exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.tdar</groupId>
@@ -129,8 +141,8 @@
         <dependency>
         <groupId>org.apache.struts</groupId>
         <artifactId>struts2-java8-support-plugin</artifactId>
-        <version>2.3.24.1</version>
-    </dependency>
+        <version>2.5</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-sitemesh-plugin</artifactId>
@@ -389,7 +401,7 @@
                     </systemProperties>
                     <!-- <includes> <include>**/*ITCase.java</include> <include>**/*TestCase.java</include> 
                         </includes> -->
-                    <argLine>${jvm.args} -DenableContextSwitchingConfig=true</argLine>
+                    <argLine>${jvm.args}</argLine>
                     <junitArtifactName>junit:junit-dep</junitArtifactName>
                 </configuration>
             </plugin>
@@ -513,8 +525,7 @@
                     <systemPropertyVariables>
                         <display.port>${display.port}</display.port>
                     </systemPropertyVariables>
-                    <argLine>${jvm.args}
-                        -DenableContextSwitchingConfig=true -Dsolr.data.dir=target/solr-failsafe/</argLine>
+                    <argLine>${jvm.args} -Dsolr.data.dir=target/solr-failsafe/</argLine>
                 </configuration>
             </plugin>
             <plugin>

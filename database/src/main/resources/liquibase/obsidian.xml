@@ -7,7 +7,7 @@
 
     <!-- http://www.liquibase.org/documentation/changes/index.html -->
 
-    <changeSet id="obsidian-1" author="abrin">
+    <changeSet id="obsidian-1" author="abrin" failOnError="false">
         <dropColumn tableName="institution" columnName="merge_creator_id" />
         <dropColumn tableName="person" columnName="merge_creator_id" />
     </changeSet>

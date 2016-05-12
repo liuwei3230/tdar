@@ -20,10 +20,8 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.DocumentType;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
-import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.PdfService;
 import org.tdar.core.service.download.DownloadPdfFile;
 import org.tdar.core.service.download.DownloadService;
@@ -42,9 +40,6 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
     // don't need injection (yet)
     @Autowired
     DownloadService downloadService;
-    @Autowired 
-    InformationResourceDao informationResourceDao;
-
     int COVER_PAGE_WIGGLE_ROOM = 155_000;
 
     @Autowired
@@ -75,12 +70,15 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
         dto.setAuthenticatedUser(getBillingUser());
         List<File> files = new ArrayList<>();
         File file = new File(TestConstants.TEST_DOCUMENT_DIR + "sample_pdf_formats/volume1-encrypted-test.pdf");
-        InformationResourceFileVersion version = generateAndStoreVersion(Document.class, file.getName(), file, filestore);
-        Document document = (Document) informationResourceDao.findResourceForVersion(version);
+        Document document = generateAndStoreVersion(Document.class, file.getName(), file, filestore);
+        InformationResourceFileVersion version = document.getLatestUploadedVersion();
         document.setTitle("test");
         document.setDescription("test");
         document.setDocumentType(DocumentType.BOOK);
         filestore.store(FilestoreObjectType.RESOURCE, file, version);
+        logger.debug("{}", document);
+        logger.debug("{}", version);
+        logger.debug("{}", version.getTransientFile());
         DownloadPdfFile downloadPdfFile = new DownloadPdfFile(document, version, pdfService, getAdminUser(), MessageHelper.getInstance(), null);
         downloadPdfFile.setFile(file);
         dto.getDownloads().add(downloadPdfFile);

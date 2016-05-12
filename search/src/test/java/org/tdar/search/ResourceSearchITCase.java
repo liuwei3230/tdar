@@ -35,8 +35,8 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.SortOption;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
@@ -72,8 +72,8 @@ import org.tdar.junit.TdarAssert;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.index.LookupSource;
-import org.tdar.search.query.LuceneSearchResultHandler;
 import org.tdar.search.query.SearchResult;
+import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.search.service.query.CreatorSearchService;
 import org.tdar.utils.MessageHelper;
@@ -119,7 +119,6 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         Document doc = createAndSaveNewResource(Document.class);
         doc.getSiteNameKeywords().add(snk);
         genericService.saveOrUpdate(doc);
-        searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getSiteNames().add(snk.getLabel());
         SearchResult<Resource> result = doSearch(null,null,sp,null);
@@ -906,7 +905,7 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         genericService.saveOrUpdate(authorDocument);
         searchIndexService.index(hiddenDocument);
 
-        LuceneSearchResultHandler<Resource> result = new SearchResult<>(Integer.MAX_VALUE);
+        FacetedResultHandler<Resource> result = new SearchResult<>(Integer.MAX_VALUE);
         result.setSortField(SortOption.RELEVANCE);
         resourceSearchService.generateQueryForRelatedResources(getAdminUser(), null, result, MessageHelper.getInstance());
         for (Resource r : result.getResults()) {

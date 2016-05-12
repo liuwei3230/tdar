@@ -1,18 +1,19 @@
 package org.tdar.core.service;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -39,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.tdar.core.bean.FileProxies;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.HasStatus;
@@ -47,8 +47,6 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.XmlLoggable;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Creator;
-import org.tdar.core.bean.entity.Institution;
-import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
@@ -56,10 +54,11 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.FilestoreLoggingException;
-import org.tdar.core.exception.TdarRecoverableRuntimeException;
-import org.tdar.core.service.processes.relatedInfoLog.RelatedInfoLog;
-import org.tdar.core.service.processes.relatedInfoLog.RelatedInfoLogPart;
-import org.tdar.filestore.FileStoreFile;
+import org.tdar.core.service.RssService.GeoRssMode;
+import org.tdar.core.service.event.EventBusResourceHolder;
+import org.tdar.core.service.event.EventBusUtils;
+import org.tdar.core.service.event.LoggingObjectContainer;
+import org.tdar.core.service.event.TxMessageBus;
 import org.tdar.filestore.Filestore.StorageMethod;
 import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.utils.MessageHelper;
@@ -76,20 +75,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 
 /*
  * class to help with marshalling and unmarshalling of resources
  */
 @Service
-public class SerializationService {
+public class SerializationService implements TxMessageBus<LoggingObjectContainer>{
 
-    private static final String RDF_KEYWORD_MEDIAN = "/rdf/keywordMedian";
+    private static final TdarConfiguration CONFIG = TdarConfiguration.getInstance();
+	private static final String RDF_KEYWORD_MEDIAN = "/rdf/keywordMedian";
     private static final String RDF_KEYWORD_MEAN = "/rdf/keywordMean";
     private static final String RDF_XML_ABBREV = "RDF/XML-ABBREV";
     private static final String FOAF_XML = ".foaf.xml";
@@ -127,41 +121,46 @@ public class SerializationService {
             return;
         }
 
-        if (!isUseTransactionalEvents() || !TdarConfiguration.getInstance().useTransactionalEvents()) {
-            filestoreLoggingTransactionalEvent(event);
-            return;
-        }
-    }
-
-    @TransactionalEventListener
-    public void filestoreLoggingTransactionalEvent(TdarEvent event) {
-        if (!(event.getRecord() instanceof XmlLoggable)) {
-            return;
-        }
         XmlLoggable record = (XmlLoggable)event.getRecord();
-        
         if (record instanceof Persistable && PersistableUtils.isNullOrTransient((Persistable)record)) {
+        	return;
+        }
+        String id = record.getClass().getSimpleName() + "-" + record.getId().toString();
+
+        try {
+        File file = writeToTempFile(id, record);
+        LoggingObjectContainer container = new LoggingObjectContainer(file, id, event.getType(), FilestoreObjectType.fromClass(record.getClass()), record.getId());
+        if (!isUseTransactionalEvents() || !CONFIG.useTransactionalEvents()) {
+			post(container);
             return;
         }
+        
 
-        logger.debug("FS EVENT: {} {} ({})", event.getType(), event.getRecord().getClass(), ((XmlLoggable)event.getRecord()).getId());
-        // addToSession(event.getSession(), (XmlLoggable) event.getEntity());
-        String xml = "";
-        try {
-            if (record instanceof HasStatus && ((HasStatus) record).getStatus() == Status.DELETED) {
-                XmlLoggable newInstance = (XmlLoggable) record.getClass().newInstance();
-                newInstance.setId(record.getId());
-                ((HasStatus) newInstance).setStatus(Status.DELETED);
-                xml = convertToXML(newInstance);
-            } else {
-                xml = convertToXML(record);
-            }
-            writeToFilestore(FilestoreObjectType.fromClass(record.getClass()), record.getId(), xml);
-            
-        } catch (Exception e) {
-            logger.error("exception converting to XML: {}", e);
+		Optional<EventBusResourceHolder> holder = EventBusUtils.getTransactionalResourceHolder(this);
+		if (holder.isPresent() ) {
+			holder.get().addMessage(container);
+		} else {
+			post(container);
+		}
+        } catch (Throwable t) {
+        	logger.error("error processing XML Log: {}", t,t);
         }
     }
+    
+
+	private File writeToTempFile(String recordId, XmlLoggable record) throws InstantiationException, IllegalAccessException, Exception {
+		File temp =  new File(CONFIG.getTempDirectory(),String.format("%s-%s.xml", recordId, System.nanoTime()));
+		temp.deleteOnExit();
+		if (record instanceof HasStatus && ((HasStatus) record).getStatus() == Status.DELETED) {
+		    XmlLoggable newInstance = (XmlLoggable) record.getClass().newInstance();
+		    newInstance.setId(record.getId());
+		    ((HasStatus) newInstance).setStatus(Status.DELETED);
+		    convertToXML(newInstance, new FileWriter(temp));
+		} else {
+			convertToXML(record, new FileWriter(temp));
+		}
+		return temp;
+	}
 
     
     /**
@@ -190,7 +189,12 @@ public class SerializationService {
 
     
     public <T extends Persistable> void writeToFilestore(FilestoreObjectType filestoreObjectType, Long id, String xml) {
-        @SuppressWarnings("deprecation")
+    	StringInputStream content = new StringInputStream(xml, "UTF-8");
+        writeToFilestore(filestoreObjectType, id, content);
+    }
+
+	private void writeToFilestore(FilestoreObjectType filestoreObjectType, Long id, InputStream content) {
+		@SuppressWarnings("deprecation")
         InformationResourceFileVersion version = new InformationResourceFileVersion();
         version.setFilename("record.xml");
         version.setExtension("xml");
@@ -198,12 +202,12 @@ public class SerializationService {
         version.setInformationResourceId(id);
         try {
             StorageMethod rotate = StorageMethod.DATE;
-            TdarConfiguration.getInstance().getFilestore().storeAndRotate(filestoreObjectType, new StringInputStream(xml, "UTF-8"), version, rotate);
+			CONFIG.getFilestore().storeAndRotate(filestoreObjectType, content, version, rotate);
         } catch (Exception e) {
             logger.error("something happend when converting record to XML:" + filestoreObjectType, e);
             throw new FilestoreLoggingException("serializationService.could_not_save");
         }
-    }
+	}
 
 
     /**
@@ -228,7 +232,7 @@ public class SerializationService {
      * @throws JAXBException
      */
     public File generateSchema() throws IOException, JAXBException {
-        final File tempFile = File.createTempFile(TDAR_SCHEMA, XSD, TdarConfiguration.getInstance().getTempDirectory());
+        final File tempFile = File.createTempFile(TDAR_SCHEMA, XSD, CONFIG.getTempDirectory());
         JAXBContext jc = JAXBContext.newInstance(rootClasses);
 
         // WRITE OUT SCHEMA
@@ -421,123 +425,6 @@ public class SerializationService {
         return toReturn;
     }
 
-    /**
-     * Generate he FOAF RDF/XML
-     * 
-     * @param creator
-     * @param log
-     * @throws IOException
-     */
-    @Transactional(readOnly = true)
-    public void generateFOAF(Creator<?> creator, RelatedInfoLog log) throws IOException {
-        Model model = ModelFactory.createDefaultModel();
-        String baseUrl = TdarConfiguration.getInstance().getBaseUrl();
-        com.hp.hpl.jena.rdf.model.Resource rdf = null;
-        switch (creator.getCreatorType()) {
-            case INSTITUTION:
-                rdf = addInstitution(model, baseUrl, (Institution) creator);
-                break;
-            case PERSON:
-                rdf = addPerson(model, baseUrl, (Person) creator);
-                break;
-        }
-        if (rdf == null) {
-            throw new TdarRecoverableRuntimeException("serializationService.cannot_determine_creator");
-        }
-
-        for (RelatedInfoLogPart part : log.getCollaboratorLogPart()) {
-            com.hp.hpl.jena.rdf.model.Resource res = model.createResource();
-            if (part.getSimpleClassName().equals(INSTITUTION)) {
-                res.addProperty(RDF.type, FOAF.Organization);
-            } else {
-                res.addProperty(RDF.type, FOAF.Person);
-            }
-            res.addLiteral(FOAF.name, part.getName());
-            res.addProperty(RDFS.seeAlso, String.format(S_BROWSE_CREATORS_S_RDF, baseUrl, part.getId()));
-            res.addProperty(ResourceFactory.createProperty(baseUrl + RDF_COUNT), part.getCount().toString());
-            rdf.addProperty(FOAF.knows, res);
-        }
-        rdf.addProperty(ResourceFactory.createProperty(baseUrl + RDF_CREATOR_MEDIAN), log.getCreatorMedian().toString());
-        rdf.addProperty(ResourceFactory.createProperty(baseUrl + RDF_CREATOR_MEAN), log.getCreatorMean().toString());
-        for (RelatedInfoLogPart part : log.getKeywordLogPart()) {
-            com.hp.hpl.jena.rdf.model.Resource res = model.createResource();
-            res.addProperty(RDF.type, part.getSimpleClassName());
-            res.addLiteral(FOAF.name, part.getName());
-            // res.addProperty(RDFS.seeAlso,String.format("%s/browse/creators/%s/rdf", baseUrl, part.getId()));
-            res.addProperty(ResourceFactory.createProperty(baseUrl + RDF_COUNT), part.getCount().toString());
-            rdf.addProperty(FOAF.topic_interest, res);
-        }
-        rdf.addProperty(ResourceFactory.createProperty(baseUrl + RDF_KEYWORD_MEAN), log.getKeywordMean().toString());
-        rdf.addProperty(ResourceFactory.createProperty(baseUrl + RDF_KEYWORD_MEDIAN), log.getKeywordMedian().toString());
-
-        File file = new File(TdarConfiguration.getInstance().getTempDirectory(), creator.getId() + FOAF_XML);
-        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8").newEncoder());
-        model.write(writer, RDF_XML_ABBREV);
-        IOUtils.closeQuietly(writer);
-        FileStoreFile fsf = new FileStoreFile(FilestoreObjectType.CREATOR, VersionType.METADATA, creator.getId(), file.getName());
-        TdarConfiguration.getInstance().getFilestore().store(FilestoreObjectType.CREATOR, file, fsf);
-
-    }
-
-    /**
-     * Add an institution to an RDF Model
-     * 
-     * @param model
-     * @param baseUrl
-     * @param institution
-     * @return
-     */
-    private com.hp.hpl.jena.rdf.model.Resource addInstitution(Model model, String baseUrl, Institution institution) {
-        com.hp.hpl.jena.rdf.model.Resource institution_ = model.createResource();
-        institution_.addProperty(RDF.type, FOAF.Organization);
-        institution_.addLiteral(FOAF.name, institution.getName());
-        institution_.addProperty(RDFS.seeAlso, String.format(S_BROWSE_CREATORS_S_RDF, baseUrl, institution.getId()));
-        return institution_;
-    }
-
-    /**
-     * Add a person to an RDF Model
-     * 
-     * @param model
-     * @param baseUrl
-     * @param person
-     * @return
-     */
-    private com.hp.hpl.jena.rdf.model.Resource addPerson(Model model, String baseUrl, Person person) {
-        com.hp.hpl.jena.rdf.model.Resource person_ = model.createResource(FOAF.NS);
-        person_.addProperty(RDF.type, FOAF.Person);
-        person_.addProperty(FOAF.firstName, person.getFirstName());
-        person_.addProperty(FOAF.family_name, person.getLastName());
-        person_.addProperty(RDFS.seeAlso, String.format(S_BROWSE_CREATORS_S_RDF, baseUrl, person.getId()));
-        Institution institution = person.getInstitution();
-        if (PersistableUtils.isNotNullOrTransient(institution)) {
-            person_.addProperty(FOAF.member, addInstitution(model, baseUrl, institution));
-        }
-        return person_;
-    }
-
-    /**
-     * Stores the CreatorXML Log in the filestore
-     * 
-     * @return
-     * @throws Exception
-     */
-    @Transactional(readOnly = true)
-    public void generateRelatedLog(Persistable creator, RelatedInfoLog log) throws Exception {
-        File file = new File(TdarConfiguration.getInstance().getTempDirectory(), creator.getId() + ".xml");
-        OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), Charset.forName("UTF-8").newEncoder());
-        convertToXML(log, writer);
-        IOUtils.closeQuietly(writer);
-        FilestoreObjectType type = FilestoreObjectType.CREATOR;
-        if (creator instanceof ResourceCollection) {
-            type = FilestoreObjectType.COLLECTION;
-        }
-
-        FileStoreFile fsf = new FileStoreFile(type, VersionType.METADATA, creator.getId(), file.getName());
-        TdarConfiguration.getInstance().getFilestore().store(type, file, fsf);
-
-    }
-
     @Transactional(readOnly = true)
     public <C> void convertToXMLFragment(Class<C> cls, C object, Writer writer) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(cls);
@@ -550,16 +437,18 @@ public class SerializationService {
     }
 
     @Transactional(readOnly = true)
-    public String createGeoJsonFromResourceList(Map<String, Object> result, String resultKey, String rssUrl, Class<?> filter, String callback)
+    public String createGeoJsonFromResourceList(List<Resource> rslts, String rssUrl, Map<String,Object> params, GeoRssMode mode, Class<?> filter, String callback)
             throws IOException {
-        List<Object> rslts = (List<Object>) result.get(resultKey);
         List<LatitudeLongitudeBoxWrapper> wrappers = new ArrayList<>();
         for (Object obj : rslts) {
             if (obj instanceof Resource) {
-                wrappers.add(new LatitudeLongitudeBoxWrapper((Resource) obj, filter));
+                wrappers.add(new LatitudeLongitudeBoxWrapper((Resource) obj, filter, mode));
             }
         }
-        result.put(resultKey, wrappers);
+        Map<String,Object> result = new HashMap<>();
+        result.put("type", "FeatureCollection");
+        result.put("features", wrappers);
+        result.put("properties", params);
         StringWriter writer = new StringWriter();
         logger.debug("filter: {}", filter);
         convertToJson(result, writer, filter, callback);
@@ -573,4 +462,9 @@ public class SerializationService {
     public void setUseTransactionalEvents(boolean useTransactionalEvents) {
         this.useTransactionalEvents = useTransactionalEvents;
     }
+
+	@Override
+	public void post(LoggingObjectContainer o) throws Exception {
+       writeToFilestore(o.getFilestoreObjectType(), o.getPersistableId(), new FileInputStream(o.getDoc()));		
+	}
 }

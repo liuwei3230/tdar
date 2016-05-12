@@ -1,9 +1,12 @@
 package org.tdar.core.bean;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,15 +16,20 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
 import org.tdar.core.bean.keyword.CultureKeyword;
+import org.tdar.core.bean.keyword.ExternalKeywordMapping;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.keyword.TemporalKeyword;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.service.AuthorityManagementService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
 import org.tdar.utils.Pair;
+
 
 public class KeywordITCase extends AbstractIntegrationTestCase {
 
@@ -49,6 +57,62 @@ public class KeywordITCase extends AbstractIntegrationTestCase {
     }
 
     @Test
+    @Rollback
+    public void testAddRelationships() {
+        CultureKeyword historicKeyword = genericKeywordService.findByLabel(CultureKeyword.class, "Historic");
+        Long id = historicKeyword.getId();
+        ExternalKeywordMapping e = new ExternalKeywordMapping();
+        e.setRelation("http://www.wikipedia.org");
+        e.setRelationType(RelationType.DCTERMS_RELATION);
+        historicKeyword.getAssertions().add(e);
+        genericService.saveOrUpdate(historicKeyword);
+        historicKeyword = null;
+        assertNotNull(e.getId());
+        e = null;
+        CultureKeyword cultureKeyword = genericService.find(CultureKeyword.class, id);
+        assertNotEmpty(cultureKeyword.getAssertions());
+
+    }
+
+    @Test
+    @Rollback(false)
+    public void testDeleteRelationships() {
+        CultureKeyword historicKeyword = genericKeywordService.findByLabel(CultureKeyword.class, "Historic");
+        Long id = historicKeyword.getId();
+        ExternalKeywordMapping e = new ExternalKeywordMapping("http://www.wikipedia.org", RelationType.DCTERMS_IS_VERSION_OF);
+//        historicKeyword.getAssertions().add(e);
+        genericKeywordService.saveKeyword(historicKeyword.getLabel(), historicKeyword.getDefinition(), historicKeyword, Arrays.asList(e));
+        historicKeyword = null;
+        assertNotNull(e.getId());
+        e = null;
+        CultureKeyword keyword = genericService.find(CultureKeyword.class, id);
+
+        logger.debug("{} - - {}", keyword, keyword.getAssertions());
+        assertEquals("should have one mapping", 1, keyword.getAssertions().size());
+        ArrayList<ExternalKeywordMapping> list = new ArrayList<ExternalKeywordMapping>();
+        ExternalKeywordMapping e2 = new ExternalKeywordMapping("http://www.wiki.com", RelationType.DCTERMS_RELATION);
+        list.add(e2);
+        genericKeywordService.saveKeyword(keyword.getLabel(), keyword.getDefinition(), keyword, list);
+        evictCache();
+        setVerifyTransactionCallback(new TransactionCallback<CultureKeyword>() {
+
+            @Override
+            public CultureKeyword doInTransaction(TransactionStatus status) {
+                genericService.synchronize();
+                evictCache();
+                CultureKeyword keyword = genericService.find(CultureKeyword.class, id);
+                logger.debug("{} - - {}", keyword, keyword.getAssertions());
+                assertEquals(1, CollectionUtils.size(keyword.getAssertions()));
+                assertEquals(RelationType.DCTERMS_RELATION, keyword.getAssertions().iterator().next().getRelationType());
+                return null;
+            }
+            
+        });
+        
+    }
+
+    @Test
+    @Rollback
     public void testFindAndReconcilePlurals() {
         createAndAddTK("Rock");
         createAndAddTK("Rocks");
@@ -58,10 +122,25 @@ public class KeywordITCase extends AbstractIntegrationTestCase {
         authorityManagementService.findPluralDups(TemporalKeyword.class, getUser(), true);
     }
 
-    private void createAndAddTK(String term) {
+    @Test
+    @Rollback
+    public void findByDupTest() {
+        TemporalKeyword master = createAndAddTK("Rock");
+        TemporalKeyword dup = createAndAddTK("Rocks");
+        genericService.saveOrUpdate(master, dup);
+        dup.setStatus(Status.DUPLICATE);
+        master.getSynonyms().add(dup);
+        genericService.saveOrUpdate(dup, master);
+        genericService.synchronize();
+        assertEquals(master, genericKeywordService.findAuthority(dup));
+
+    }
+
+    private TemporalKeyword createAndAddTK(String term) {
         TemporalKeyword tk2 = new TemporalKeyword();
         tk2.setLabel(term);
         genericService.saveOrUpdate(tk2);
+        return tk2;
     }
 
     // make sure that deleting a hierarchical keyword does not implicitly delete it's parent.
@@ -122,8 +201,7 @@ public class KeywordITCase extends AbstractIntegrationTestCase {
 
     private <K extends Keyword> void testKeywordStats(List<Pair<K, Integer>> stats) {
         assertFalse(CollectionUtils.isEmpty(stats));
-        if (stats.get(0).getFirst() instanceof HierarchicalKeyword)
-        {
+        if (stats.get(0).getFirst() instanceof HierarchicalKeyword) {
             return; // for heirarchical keywords we sort by index then by count
         }
         for (int i = 0; i < (stats.size() - 2); i++) {

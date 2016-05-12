@@ -113,6 +113,7 @@ public class FileProxyWrapper {
             for (InformationResourceFile file : informationResource.getActiveInformationResourceFiles()) {
                 if (!irFiles.contains(file) && !file.isDeleted()) {
                     InformationResourceFileVersion latestUploadedVersion = file.getLatestUploadedVersion();
+                    latestUploadedVersion.setInformationResourceId(informationResource.getId());
                     latestUploadedVersion.setTransientFile(CONFIG.getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, latestUploadedVersion));
                     filesToProcess.add(latestUploadedVersion);
                 }
@@ -130,8 +131,9 @@ public class FileProxyWrapper {
         incrementVersionNumber(irFile);
         // genericDao.saveOrUpdate(resource);
 //        irFile.setInformationResource(informationResource);
-        informationResource.getInformationResourceFiles().add(irFile);
+//        datasetDao.saveOrUpdate(irFile);
         datasetDao.saveOrUpdate(informationResource);
+        informationResource.getInformationResourceFiles().add(irFile);
         datasetDao.saveOrUpdate(irFile);
         proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(proxy));
         setInformationResourceFileMetadata(proxy);

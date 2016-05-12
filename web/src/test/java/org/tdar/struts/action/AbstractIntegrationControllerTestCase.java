@@ -33,8 +33,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -179,7 +179,7 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         // evictCache();
 
         T controller = applicationContext.getBean(controllerClass);
-        if (controller instanceof AuthenticationAware.Base) {
+        if (controller instanceof AbstractAuthenticatableAction) {
             TdarActionSupport tas = (TdarActionSupport) controller;
             tas.setServletRequest(getServletRequest());
             tas.setServletResponse(getServletResponse());

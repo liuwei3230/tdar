@@ -57,9 +57,12 @@
     <#else>
         <#assign submitterId = resource.submitter.id>
     </#if>
-    <@s.form name='metadataForm' id='metadataForm'   cssClass="form-horizontal" method='post' enctype='multipart/form-data' action='save'
-            dynamicAttributes={"data-submitterid":"${submitterId?c}"}
-            >
+    <#assign validExtensions><@edit.join sequence=validFileExtensions![] delimiter="|"/></#assign>
+
+    <@s.form name='metadataForm' id='metadataForm'   cssClass="form-horizontal tdarvalidate" method='post' enctype='multipart/form-data' action='save'
+            dynamicAttributes={"data-submitterid":"${submitterId?c}","data-validate-method":"initBasicForm","data-resource-type","${resource.resourceType.label}",
+            "data-total-files","${resource.totalNumberOfFiles!-1}","data-multiple-upload","${(multipleUpload?string)!'false'}","data-datatable","${(resource.resourceType.dataTableSupported?string)!'false'}",
+            "data-valid-extensions","${validExtensions}","data-type","${resource.resourceType}"} >
         <@common.jsErrorLog />
         <@s.token name='struts.csrf.token' />
         <@s.hidden name="epochTimeUpdated" />
@@ -272,9 +275,18 @@
             <h4>Choose a Project</h4>
 
             <div id="t-project" data-tooltipcontent="#projectTipText" data-tiplabel="Project">
-	                <@s.select title="Please select a project" emptyOption='true' id='projectId' label="Project"  
-	                labelposition="left" name='projectId' listKey='id' listValue='title' list='%{potentialParents}'
-	                truncate="70" value='${_projectId}' required=true  cssClass="required input-xxlarge" />
+            <#if select2Enabled>
+	            <select name="projectId" class="resource-autocomplete" tabindex="-1" aria-hidden="true" style="width:100%"
+	            	data-ajax--url="/lookup/resource?term=Ith&resourceTypes=PROJECT&useSubmitterContext=true" data-minimum-input-length="0">
+	            	<#if resource.project?has_content>
+	            		<option value="${resource.project.id?c}">${resource.project.title}</option>
+	            	</#if>
+	            </select>
+            <#else>
+                <@s.select title="Please select a project" emptyOption='true' id='projectId' label="Project"  
+                labelposition="left" name='projectId' listKey='id' listValue='title' list='%{potentialParents}'
+                truncate="70" value='${_projectId}'  cssClass="input-xxlarge" />
+			</#if>
             </div>
 
             <div class="modal hide fade" id="inheritOverwriteAlert" tabindex="-1" role="dialog" aria-labelledby="inheritOverwriteValidationErrorModalLabel" aria-hidden="true">
@@ -405,10 +417,6 @@
             <#if multipleUpload??>
             multipleUpload : ${multipleUpload?string},
         </#if>
-        <#if validFileExtensions??>
-            validExtensions : "<@edit.join sequence=validFileExtensions delimiter="|"/>",
-            validExtensionsWarning : "Please enter a valid file (<@edit.join sequence=validFileExtensions delimiter=", "/>)",
-        </#if>
         <#if ableToUploadFiles??>
             ableToUpload : ${ableToUploadFiles?string},
         </#if>
@@ -421,7 +429,7 @@
             <@local_.localJavascript />
         </#if>
 
-        <#if test>
+        <#if selenium>
             var $up = $("#fileAsyncUpload");
             $up.css("position", "static");
             $up.css("top", "auto");

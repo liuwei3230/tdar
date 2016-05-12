@@ -38,9 +38,9 @@ import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.Indexable;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.filestore.WorkflowContext;
@@ -65,7 +65,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
         })
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.InformationResourceFile")
 @Cacheable
-public class InformationResourceFile extends Persistable.Sequence<InformationResourceFile> implements Viewable, Indexable {
+public class InformationResourceFile extends AbstractSequenced<InformationResourceFile> implements Viewable, Indexable {
 
     private static final long serialVersionUID = -6957336216505367012L;
 

@@ -20,8 +20,8 @@
 
     <div class="row">
         <div class="span9" id="divRegistrationSection">
-                <@s.form name='registrationForm' id='registrationForm' method="post" cssClass="disableFormNavigate form-condensed"
-                        enctype='multipart/form-data' action="process-request-registration">
+                <@s.form name='registrationForm' id='registrationForm' method="post" cssClass="disableFormNavigate form-condensed tdarvalidate"
+                        enctype='multipart/form-data' action="process-request-registration" dynamicAttributes={"data-validate-method":"initRegForm"}>
                     <@s.token name='struts.csrf.token' />
                         <legend>Register</legend>
                         <div class="authpane">
@@ -46,7 +46,9 @@
                 <div class="authpane">
                     <div class="authfields">
                         <@auth.login showLegend=false>
-					    <@s.hidden name="id" />
+                        <@s.hidden name="id" />
+                        <@s.hidden name="type" />
+                        <@s.hidden name="messageBody" />
 
                     </div>
                     <div class="form-actions">

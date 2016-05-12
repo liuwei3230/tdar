@@ -80,20 +80,12 @@ View freemarker macros
     </#macro>
 
 <#-- Emit a download link for an information resource file -->
-    <#macro createFileLink irfile newline=false showDownloadCount=true showSize=true >
+    <#macro createFileLink irfile irid=-1 newline=false showDownloadCount=true showSize=true >
         <#assign version=irfile />
         <#if version.latestUploadedVersion?? >
             <#assign version=version.latestUploadedVersion />
         </#if>
         <#if (version.viewable)>
-		<#-- refactor ? -->
-		<#local irid = (irfile.informationResource.id)!-1 />
-		<#if !irid?has_content || irid == -1 >
-			<#local irid = id />
-		</#if>
-		<#if !irid?has_content>
-			<#local irid = -1 />
-		</#if>
 
         <#local path>/filestore/download/${irid?c}/${version.id?c}</#local>
         <a href="<@s.url value='${path}'/>"
@@ -165,7 +157,7 @@ View freemarker macros
     <#macro translatedFileSection irfile>
         <#if irfile.hasTranslatedVersion >
         <blockquote>
-            <b>Translated version</b> <@createFileLink irfile.latestTranslatedVersion /></br>
+            <b>Translated version</b> <@createFileLink irfile.latestTranslatedVersion id/></br>
             Data column(s) in this dataset have been associated with coding sheet(s) and translated:
             <#if userAbleToReTranslate>
                 <br>
@@ -214,44 +206,50 @@ View freemarker macros
     file list is truncated if it takes up too much space-->
     <#macro uploadedFileInfo >
         <#local showAll = "">
-    <h3 class="downloads">
-        Downloads
-        <span class="downloadNumber hidden-tablet">${resource.totalNumberOfActiveFiles!0?c}</span>
-    </h3>
-    <div id="fileSummaryContainer">
-        <ul class="downloads media-list">
-            <#if ((resource.totalNumberOfFiles!0) > 0) >
-
-                <#if resource.hasConfidentialFiles()>
-                    <li><@embargoCheck/></li></#if>
-                <@fileInfoSection extended=false; irfile, showAll>
-                    <#local showAll = showAll>
-                    <li class="<#if irfile.deleted>view-deleted-file</#if> ${showAll} media">
-                        <@fileIcon irfile=irfile extraClass="pull-left" />
-                        <div class="media-body"><@createFileLink irfile true /></div>
-                        <@translatedFileSection irfile />
-                    </li>
-                </@fileInfoSection>
-                <#if (resource.totalNumberOfActiveFiles > 1)>
-                    <li class="archiveLink media">
-                        <i class="iconf page-white-zip pull-left"></i>
-
-                        <div class="media-body"><@createArchiveFileLink resource=resource /></div>
-                    </li>
-                </#if>
-
-            </#if>
-            <#if (resource.totalNumberOfFiles == 0)>
-                <li class="citationNote"><b>This resource is a citation only.</b><#if resource.copyLocation?has_content> The information that we have indicates that a copy is located
-                    at ${resource.copyLocation}.</#if></li>
-            </#if>
-        </ul>
-        <#if showAll != ''>
-            <div id="downloadsMoreArea">
-                <a href="#allfiles">show all files</a>
-            </div>
-        </#if>
-    </div>
+	    <#if (resource.totalNumberOfFiles!0) == 0 >
+		    <h3 class="downloads">Find a Copy</h3>
+	        <div id="fileSummaryContainer">
+	    	    <ul class="downloads media-list">
+	                <li class="citationNote"><b>We do not have a copy of this ${resource.resourceType.label?lower_case}, it is a citation.</b><#if resource.copyLocation?has_content><br/><br/> The information that we have indicates that a paper copy may be located
+	                at ${resource.copyLocation}.</#if></li>
+	    		</ul>
+			</div>
+	    <#else>
+		    <h3 class="downloads">
+		        Downloads
+		        <span class="downloadNumber hidden-tablet">${resource.totalNumberOfActiveFiles!0?c}</span>
+		    </h3>
+		    <div id="fileSummaryContainer">
+		        <ul class="downloads media-list">
+		            <#if ((resource.totalNumberOfFiles!0) > 0) >
+		
+		                <#if resource.hasConfidentialFiles()>
+		                    <li><@embargoCheck/></li></#if>
+		                <@fileInfoSection extended=false; irfile, showAll>
+		                    <#local showAll = showAll>
+		                    <li class="<#if irfile.deleted>view-deleted-file</#if> ${showAll} media">
+		                        <@fileIcon irfile=irfile extraClass="pull-left" />
+		                        <div class="media-body"><@createFileLink irfile id true /></div>
+		                        <@translatedFileSection irfile />
+		                    </li>
+		                </@fileInfoSection>
+		                <#if (resource.totalNumberOfActiveFiles > 1)>
+		                    <li class="archiveLink media">
+		                        <i class="iconf page-white-zip pull-left"></i>
+		
+		                        <div class="media-body"><@createArchiveFileLink resource=resource /></div>
+		                    </li>
+		                </#if>
+		
+		            </#if>
+		        </ul>
+		        <#if showAll != ''>
+		            <div id="downloadsMoreArea">
+		                <a href="#allfiles">show all files</a>
+		            </div>
+		        </#if>
+		    </div>
+	    </#if>
     </#macro>
 
 <#macro resourceCitationSection resource>
@@ -307,7 +305,7 @@ View freemarker macros
                             <#local twoRow = (irfile.hasTranslatedVersion || irfile.description?has_content ) />
                         <tr class="${irfile.status!""} ${irfile.deleted?string("DELETED","")}">
                             <td <#if twoRow>rowspan=2</#if>><@fileIcon irfile=irfile /></td>
-                            <td><@createFileLink irfile false false false /></td>
+                            <td><@createFileLink irfile id false false false /></td>
                             <td><@common.convertFileSize version.fileLength /></td>
                             <td><#if irfile.fileCreatedDate??>${(irfile.fileCreatedDate!"")?date}</#if></td>
                             <td>${irfile.latestUploadedVersion.dateCreated} </td>
@@ -570,7 +568,7 @@ View freemarker macros
                                        src="<@s.url value="/files/sm/${irfile.latestThumbnail.id?c}"/>" <#t>
                                    </#if>
                                    onError="this.src = '<@s.url value="/images/image_unavailable_t.gif"/>';" <#t>
-                                   data-url="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
+                                   data-url="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
                                    <#if !irfile.public>data-access-rights="${irfile.restriction.label}"</#if>> <#lt>
                           </span>
                         </div>
@@ -603,7 +601,7 @@ View freemarker macros
                 <div>
             <span id="imageContainer">
             <img id="bigImage" alt="#${irfile_index} - ${irfile.filename!''}" title="#${irfile_index} - ${irfile.filename!''}"
-                 src="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
+                 src="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
             <span id="confidentialLabel"><#if !irfile.public>This file is <em>${irfile.restriction.label}</em>, but you have rights to see it.</#if></span>
                 </div>
                 <div id="downloadText">
@@ -788,7 +786,8 @@ View freemarker macros
         </#if>
     </#macro>
 
-<#macro featured header="Featured Content" span="span12" resourceList=featuredResources>
+<#macro featured header="Featured Content" colspan="12" resourceList=featuredResources>
+<#local span = "span${colspan}">
 <div class="tdar-slider slider ${span}">
     <h3>${header}</h3>
 

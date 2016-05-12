@@ -23,13 +23,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Validatable;
 import org.tdar.core.bean.resource.CategoryVariable;
 import org.tdar.core.bean.resource.CodingRule;
@@ -61,7 +62,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 })
 @XmlRootElement
 @JsonInclude(Include.NON_NULL)
-public class DataTableColumn extends Persistable.Sequence<DataTableColumn> implements Validatable {
+public class DataTableColumn extends AbstractSequenced<DataTableColumn> implements Validatable {
 
     private static final long serialVersionUID = 430090539610139732L;
 
@@ -413,6 +414,21 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
         Set<String> values = new HashSet<>();
         for (CodingRule rule : getDefaultCodingSheet().getCodingRules()) {
             if (Objects.equals(node, rule.getOntologyNode())) {
+                values.add(rule.getTerm());
+            }
+        }
+        return values;
+    }
+
+    @XmlTransient
+    @Transient
+    public Set<String> getUnmappedDataValues() {
+        Set<String> values = new HashSet<>();
+        if (getDefaultCodingSheet() == null || CollectionUtils.isEmpty(getDefaultCodingSheet().getCodingRules())) {
+        	return values;
+        }
+        for (CodingRule rule : getDefaultCodingSheet().getCodingRules()) {
+            if (rule.getOntologyNode() == null) {
                 values.add(rule.getTerm());
             }
         }

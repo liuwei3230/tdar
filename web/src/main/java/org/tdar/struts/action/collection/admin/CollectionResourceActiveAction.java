@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.service.ResourceCollectionService;
-import org.tdar.struts.action.AuthenticationAware.Base;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.interceptor.annotation.PostOnly;
 import org.tdar.struts.interceptor.annotation.RequiresTdarUserGroup;
 import org.tdar.struts.interceptor.annotation.WriteableSession;
@@ -22,7 +22,7 @@ import com.opensymphony.xwork2.Preparable;
 @ParentPackage("secured")
 @RequiresTdarUserGroup(TdarGroup.TDAR_EDITOR)
 @Namespace("/collection/admin")
-public class CollectionResourceActiveAction extends Base implements Preparable {
+public class CollectionResourceActiveAction extends AbstractAuthenticatableAction implements Preparable {
 
     @Autowired
     private ResourceCollectionService resourceCollectionService;
@@ -33,7 +33,7 @@ public class CollectionResourceActiveAction extends Base implements Preparable {
 
     @Override
     public void prepare() throws Exception {
-        collection = resourceCollectionService.find(id);
+        setCollection(resourceCollectionService.find(id));
     }
 
     @Override
@@ -43,7 +43,7 @@ public class CollectionResourceActiveAction extends Base implements Preparable {
             @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "${collection.detailUrl}"),
     })
     public String execute() throws Exception {
-        resourceCollectionService.makeResourcesInCollectionActive(collection, getAuthenticatedUser(), null);
+        resourceCollectionService.makeResourcesInCollectionActive(getCollection(), getAuthenticatedUser(), null);
         return SUCCESS;
     }
     
@@ -53,6 +53,14 @@ public class CollectionResourceActiveAction extends Base implements Preparable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public ResourceCollection getCollection() {
+        return collection;
+    }
+
+    public void setCollection(ResourceCollection collection) {
+        this.collection = collection;
     }
 
 }

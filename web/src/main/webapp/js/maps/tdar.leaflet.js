@@ -39,6 +39,7 @@ TDAR.leaflet = (function(console, $, ctx, L) {
         id: 'abrin.n9j4f56m',
         // config for leaflet.sleep
         sleep: true,
+        sleepOpacity: 1,
         // time(ms) for the map to fall asleep upon mouseout
         sleepTime: 750,
         // time(ms) until map wakes on mouseover
@@ -178,9 +179,13 @@ TDAR.leaflet = (function(console, $, ctx, L) {
             //console.log(minx, maxx, miny, maxy);
             var poly = [[maxy, maxx], [miny, minx]];
             var rectangle = L.rectangle(poly, rectangleSettings).addTo(map);
-            //console.log("fitToBounds:", rectangleSettings.fitToBounds);
+            console.log("fitToBounds:", rectangleSettings.fitToBounds);
+            console.log("fitToBounds (rec):", rectangle.getBounds());
+            console.log("fitToBounds (map):", map.getBounds());
+            
             if (rectangleSettings.fitToBounds) {
-                map.fitBounds(rectangle.getBounds());
+                // Really frustrating race condition whereby map sometimes zoom's wrong, so we need to add a timeout to make this work
+                setTimeout(function() {map.fitBounds(rectangle.getBounds());},1000);
             }
             _initialized = 2;
             return rectangle;

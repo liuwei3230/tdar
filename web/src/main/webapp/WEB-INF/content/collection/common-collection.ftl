@@ -27,6 +27,8 @@
 
         <h3>Child Collections</h3>
         <@common.listCollections collections=collections showOnlyVisible=true />
+
+		<@list.displayWidget />
     </div>
 </#macro>
 
@@ -50,12 +52,14 @@
 </#macro>
 
     <#macro _keywordSection label keywordList searchParam>
-        <#if keywordList?has_content>
+        <#list keywordList>
         <p>
             <strong>${label}</strong><br>
-            <@view.keywordSearch keywordList searchParam false />
+            <#items as item>
+                <a href="${item.url}">${item.label}</a><#sep> &bull;</#sep>
+            </#items>
         </p>
-        </#if>
+        </#list>
     </#macro>
 
 <#macro descriptionSection>
@@ -84,6 +88,7 @@
                 </#if>
             </div>
             <#if keywordSectionVisible>
+            <h5>Common Keywords found within this Collection</h5>
             <div class="row">
                 <div class="span4">
                 <@_keywordSection "Site Name Keywords" facetWrapper.facetResults['activeSiteNameKeywords']![] "query" />
@@ -99,6 +104,7 @@
                 <@_keywordSection "Geographic Keywords" facetWrapper.facetResults['activeGeographicKeywords']![] "query" />
                 </div>
             </div>
+            <hr/>
             </#if>
         </div>
         </#if>
@@ -166,7 +172,7 @@
 
             <#nested />
             <@list.listResources resourcelist=results sortfield=sortField titleTag="h5" listTag="ul" itemTag="li" itemsPerRow=itemsPerRow
-                    orientation=resourceCollection.orientation    mapPosition="top" mapHeight=mapSize />
+                    orientation=orientation    mapPosition="top" mapHeight=mapSize />
         </div>
             <@search.basicPagination "Records" />
         <#else>
@@ -191,6 +197,20 @@
                 <b>Make Whitelabel</b>
                 <form action="/collection/admin/makeWhitelabel/${id?c}" method="POST">
                     <@s.submit cssClass="button btn tdar-button" id="makeWhiteLabelCollection" />
+                </form>
+			 
+			 </li>
+			 <li>
+                <b>Reindex collection contents</b>
+                <form action="/collection/admin/reindex/${id?c}" method="POST">
+                    <@s.submit cssClass="button btn tdar-button" id="reindexCollection" />
+                </form>
+			 
+			 </li>
+			 <li>
+                <b>Make all DRAFT Resources Active</b>
+                <form action="/collection/admin/makeActive/${id?c}" method="POST">
+                    <@s.submit cssClass="button btn tdar-button" id="makeActive" />
                 </form>
 			 
 			 </li>

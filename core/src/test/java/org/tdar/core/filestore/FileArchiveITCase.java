@@ -19,14 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
-import org.tdar.core.bean.resource.InformationResource;
+import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.SensoryData;
 import org.tdar.core.bean.resource.file.FileType;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
-import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.workflow.MessageService;
 import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
 import org.tdar.core.service.workflow.workflows.Workflow;
@@ -42,8 +41,7 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     @Autowired
     private FileAnalyzer fileAnalyzer;
-    @Autowired 
-    InformationResourceDao informationResourceDao;
+
     @Autowired
     private MessageService messageService;
 
@@ -72,13 +70,14 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     public void testArchiveFormat(PairtreeFilestore store, String filename) throws InstantiationException, IllegalAccessException, IOException, Exception {
         File f = new File(TestConstants.TEST_SENSORY_DIR, filename);
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(SensoryData.class, filename, f, store);
+        SensoryData doc = generateAndStoreVersion(SensoryData.class, filename, f, store);
+        InformationResourceFileVersion originalVersion = doc.getLatestUploadedVersion();
+
         FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
         assertEquals(FileType.FILE_ARCHIVE, fileType);
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
         assertEquals(FileArchiveWorkflow.class, workflow.getClass());
-        InformationResource ir = informationResourceDao.findResourceForVersion(originalVersion);
-        messageService.sendFileProcessingRequest(workflow, ir, originalVersion);
+        messageService.sendFileProcessingRequest(workflow, doc, originalVersion);
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
 
@@ -87,7 +86,6 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
             logger.info("{}", version);
 
             if (version.isTranslated()) {
-                version.setInformationResourceId(ir.getId());
                 String contents = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version));
                 assertTrue(contents.contains("Ark_HM_Headpot_01.txt"));
                 assertTrue(contents.contains("Ark_HM_Headpot_mtrx_01.txt"));

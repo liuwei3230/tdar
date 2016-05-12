@@ -62,13 +62,15 @@ public class ModernDataIntegrationWorkbook implements Serializable {
     private ResultSet resultSet;
     private Map<List<OntologyNode>, HashMap<Long, IntContainer>> pivot;
     private ModernIntegrationDataResult result;
+    private String rawIntegration;
 
-    public ModernDataIntegrationWorkbook(TextProvider provider, ModernIntegrationDataResult result) {
+    public ModernDataIntegrationWorkbook(TextProvider provider, ModernIntegrationDataResult result, String rawIntegration) {
         this.result = result;
         result.setWorkbook(this);
         this.context = result.getIntegrationContext();
         this.person = context.getCreator();
         this.provider = provider;
+        this.rawIntegration = rawIntegration;
         setWorkbook(new XSSFWorkbook());
     }
 
@@ -150,10 +152,10 @@ public class ModernDataIntegrationWorkbook implements Serializable {
         sheetProxy.setHeaderLabels(headerLabels);
         sheetProxy.setFreezeRow(1);
         sheetProxy.setStartRow(0);
+        sheetProxy.setAutosizeCols(true);
         Iterable<Object[]> iterator = ResultSetIterator.iterable(resultSet);
         IntegrationResultSetDecorator ird = new IntegrationResultSetDecorator(iterator.iterator(), getContext());
         sheetProxy.setData(ird);
-        sheetProxy.setNoteRow(provider.getText("dataIntegrationWorkbook.data_worksheet_note"));
         result.setPivotData(ird.getPivot());
         workbookWriter.addSheets(sheetProxy);
         List<Object[]> previewData = ird.getPreviewData();
@@ -265,6 +267,7 @@ public class ModernDataIntegrationWorkbook implements Serializable {
             }
         }
 
+        workbookWriter.addDataRow(summarySheet, currentRow + 4, 1,Arrays.asList("JSON:",rawIntegration));
         // auto-sizing columns
         for (int i = 0; i < max; i++) {
             summarySheet.autoSizeColumn(i);

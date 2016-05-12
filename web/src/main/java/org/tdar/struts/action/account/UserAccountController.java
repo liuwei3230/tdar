@@ -24,7 +24,7 @@ import org.tdar.core.service.external.AuthenticationService;
 import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.external.auth.UserRegistration;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.struts.interceptor.annotation.CacheControl;
 import org.tdar.struts.interceptor.annotation.DoNotObfuscate;
@@ -32,7 +32,7 @@ import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts.interceptor.annotation.PostOnly;
 import org.tdar.struts.interceptor.annotation.WriteableSession;
 
-import com.opensymphony.xwork2.ValidationAware;
+import com.opensymphony.xwork2.interceptor.ValidationAware;
 
 /**
  * $Id$
@@ -50,7 +50,7 @@ import com.opensymphony.xwork2.ValidationAware;
 @Scope("prototype")
 @HttpsOnly
 @CacheControl
-public class UserAccountController extends AuthenticationAware.Base implements ValidationAware {
+public class UserAccountController extends AbstractAuthenticatableAction implements ValidationAware {
 
     private static final long serialVersionUID = 1147098995283237748L;
 

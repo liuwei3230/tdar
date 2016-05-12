@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -29,8 +30,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.HasResource;
 import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Person;
@@ -75,8 +76,8 @@ import org.tdar.core.service.SerializationService;
 import org.tdar.search.geosearch.GeoSearchService;
 import org.tdar.search.query.SearchResultHandler;
 import org.tdar.transform.MetaTag;
-import org.tdar.transform.SchemaOrgMetadataTransformer;
 import org.tdar.transform.ScholarMetadataTransformer;
+import org.tdar.transform.jsonld.SchemaOrgResourceTransformer;
 import org.tdar.utils.ImmutableScrollableCollection;
 import org.tdar.utils.PersistableUtils;
 
@@ -277,8 +278,16 @@ public class ResourceService {
 
     
     @Transactional(readOnly=true)
-    public Map<DataTableColumn, String> getMappedDataForInformationResource(InformationResource resource) {
-        return datasetDao.getMappedDataForInformationResource(resource);
+    public Map<DataTableColumn, String> getMappedDataForInformationResource(InformationResource resource, boolean failOnMissing) {
+        try {
+            return datasetDao.getMappedDataForInformationResource(resource);
+        } catch (Throwable t) {
+            logger.error("could not attach additional dataset data to resource", t);
+            if (failOnMissing) {
+                throw t;
+            } 
+            return new HashMap<>();
+        }
     }
 
     /**
@@ -932,7 +941,7 @@ public class ResourceService {
     @Transactional(readOnly=true)
     public String getSchemaOrgJsonLD(Resource resource) {
         try {
-            SchemaOrgMetadataTransformer transformer = new SchemaOrgMetadataTransformer();
+            SchemaOrgResourceTransformer transformer = new SchemaOrgResourceTransformer();
             return transformer.convert(serializationService, resource);
         } catch (Exception e) {
             logger.error("error converting to json-ld", e);

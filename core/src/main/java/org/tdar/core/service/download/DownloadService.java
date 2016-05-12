@@ -265,6 +265,7 @@ public class DownloadService {
 
             File resourceFile = null;
             try {
+                version.setInformationResourceId(resourceToDownload.getId());
                 resourceFile = TdarConfiguration.getInstance().getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version);
                 version.setTransientFile(resourceFile);
             } catch (FileNotFoundException e1) {
