@@ -631,13 +631,8 @@ public class AuthorizationService implements Accessible {
         return canEditResource(authenticatedUser, resource, GeneralPermissions.MODIFY_METADATA);
     }
 
-<<<<<<< mine
     @Transactional(readOnly=true)
     public void applyTransientViewableFlag(InformationResource ir, InformationResourceFileVersion informationResourceFileVersion, TdarUser authenticatedUser) {
-=======
-    @Transactional(readOnly = true)
-    public void applyTransientViewableFlag(InformationResourceFileVersion informationResourceFileVersion, TdarUser authenticatedUser) {
->>>>>>> theirs
         boolean visible = false;
         if (informationResourceFileVersion == null) {
             return;
