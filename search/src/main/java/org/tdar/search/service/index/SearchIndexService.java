@@ -44,6 +44,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.event.EventType;
@@ -86,6 +87,8 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
+    @Autowired
+    private InformationResourceDao informationResourceDao;
 
     @Autowired
     private ResourceService resourceService;
@@ -231,7 +234,11 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             document = AnnotationKeyDocumentConverter.convert((ResourceAnnotationKey) item);
         }
         if (item instanceof InformationResourceFile) {
-            document = ContentDocumentConverter.convert((InformationResourceFile) item);
+            InformationResourceFile file = (InformationResourceFile) item;
+            InformationResource ir = informationResourceDao.findResourceForFile(file);
+            logger.debug("{} | {}", file,ir);
+            Long irid = ir.getId();
+            document = ContentDocumentConverter.convert(file,irid);
         }
         return document;
     }
@@ -283,6 +290,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
      * @throws SolrServerException
      */
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly=true)
     public <C extends Indexable> void index(C... indexable) throws SolrServerException, IOException {
         indexCollection(Arrays.asList(indexable));
     }
@@ -294,8 +302,8 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
      * @throws IOException
      * @throws SolrServerException
      */
-    public <C extends Indexable> boolean indexCollection(Collection<C> indexable)
-            throws SolrServerException, IOException {
+    @Transactional(readOnly=true)
+    public <C extends Indexable> boolean indexCollection(Collection<C> indexable) throws SolrServerException, IOException {
         boolean exceptions = false;
 
         if (CollectionUtils.isNotEmpty(indexable)) {

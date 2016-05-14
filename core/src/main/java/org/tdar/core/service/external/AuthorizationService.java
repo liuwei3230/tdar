@@ -41,6 +41,7 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.dao.entity.InstitutionDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.utils.PersistableUtils;
@@ -69,6 +70,9 @@ public class AuthorizationService implements Accessible {
     @Autowired
     private InstitutionDao institutionDao;
 
+    @Autowired
+    private InformationResourceDao informationResourceDao;
+    
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
 
@@ -467,21 +471,22 @@ public class AuthorizationService implements Accessible {
         if (irFileVersion == null) {
             return false;
         }
-        return canDownload(irFileVersion.getInformationResourceFile(), person);
+        InformationResource ir = informationResourceDao.findResourceForVersion(irFileVersion);
+        return canDownload(ir, irFileVersion.getInformationResourceFile(), person);
     }
 
     /*
      * Checks whether a @link Person has rights to download a given @link InformationResourceFile
      */
-    @Transactional(readOnly = true)
-    public boolean canDownload(InformationResourceFile irFile, TdarUser person) {
+    @Transactional(readOnly=true)
+    public boolean canDownload(InformationResource ir, InformationResourceFile irFile, TdarUser person) {
         if (irFile == null) {
             return false;
         }
         if (irFile.isDeleted() && PersistableUtils.isNullOrTransient(person)) {
             return false;
         }
-        if (!irFile.isPublic() && !canViewConfidentialInformation(person, irFile.getInformationResource())) {
+        if (!irFile.isPublic() && !canViewConfidentialInformation(person, ir)) {
             return false;
         }
         return true;
@@ -581,7 +586,7 @@ public class AuthorizationService implements Accessible {
         Boolean viewable = null;
         for (InformationResourceFile irf : ir.getInformationResourceFiles()) {
             // if (viewable == null) {
-            viewable = canDownload(irf, p);
+            viewable = canDownload(ir, irf, p);
             // }
 
             irf.setViewable(viewable);
@@ -626,14 +631,19 @@ public class AuthorizationService implements Accessible {
         return canEditResource(authenticatedUser, resource, GeneralPermissions.MODIFY_METADATA);
     }
 
+<<<<<<< mine
+    @Transactional(readOnly=true)
+    public void applyTransientViewableFlag(InformationResource ir, InformationResourceFileVersion informationResourceFileVersion, TdarUser authenticatedUser) {
+=======
     @Transactional(readOnly = true)
     public void applyTransientViewableFlag(InformationResourceFileVersion informationResourceFileVersion, TdarUser authenticatedUser) {
+>>>>>>> theirs
         boolean visible = false;
         if (informationResourceFileVersion == null) {
             return;
         }
         InformationResourceFile irFile = informationResourceFileVersion.getInformationResourceFile();
-        if (irFile.isPublic() || canDownload(irFile, authenticatedUser)) {
+        if (irFile.isPublic() || canDownload(ir, irFile, authenticatedUser)) {
             visible = true;
         }
         for (InformationResourceFileVersion vers : irFile.getLatestVersions()) {

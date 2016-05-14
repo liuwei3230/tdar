@@ -63,8 +63,10 @@ public class DownloadServiceITCase extends AbstractIntegrationTestCase {
         dto.setAuthenticatedUser(getBillingUser());
         List<File> files = new ArrayList<>();
         InformationResourceFile irf = new InformationResourceFile();
-        irf.setInformationResource(new Document());
-        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", irf);
+        Document doc = new Document();
+//        irf.setInformationResource(doc);
+        doc.getInformationResourceFiles().add(irf);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", doc, irf);
         for (File file : FileUtils.listFiles(ROOT_SRC, null, false)) {
             dto.getDownloads().add(new DownloadFile(file, file.getName(), version));
             irf.setId(irf.getId() + 1);
@@ -89,8 +91,9 @@ public class DownloadServiceITCase extends AbstractIntegrationTestCase {
         dto.setAuthenticatedUser(getBillingUser());
         List<File> files = new ArrayList<>();
         InformationResourceFile irf = new InformationResourceFile();
-        irf.setInformationResource(new Document());
-        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", irf);
+        Document doc = new Document();
+        doc.getInformationResourceFiles().add(irf);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(VersionType.ARCHIVAL, "test.txt", doc, irf);
         for (File file : FileUtils.listFiles(ROOT_SRC, null, false)) {
             dto.getDownloads().add(new DownloadFile(file, file.getName(), version));
             irf.setId(irf.getId() + 1);

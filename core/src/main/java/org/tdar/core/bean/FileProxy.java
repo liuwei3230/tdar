@@ -17,6 +17,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.FileAction;
 import org.tdar.core.bean.resource.file.HasExtension;
@@ -54,7 +55,6 @@ public class FileProxy implements Serializable, Sequenceable<FileProxy>, HasExte
     private boolean createdByServer = false;
     private InformationResourceFile informationResourceFile;
     private InformationResourceFileVersion informationResourceFileVersion;
-
     private List<FileProxy> additionalVersions = new ArrayList<FileProxy>();
     private List<FileProxy> supportingProxies = new ArrayList<FileProxy>();
 
@@ -287,4 +287,5 @@ public class FileProxy implements Serializable, Sequenceable<FileProxy>, HasExte
         }
         return false;
     }
+
 }

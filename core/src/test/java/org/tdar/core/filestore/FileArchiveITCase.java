@@ -77,14 +77,14 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
         assertEquals(FileType.FILE_ARCHIVE, fileType);
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);
         assertEquals(FileArchiveWorkflow.class, workflow.getClass());
-        messageService.sendFileProcessingRequest(workflow, originalVersion);
+        messageService.sendFileProcessingRequest(workflow, doc, originalVersion);
         InformationResourceFile informationResourceFile = originalVersion.getInformationResourceFile();
         informationResourceFile = genericService.find(InformationResourceFile.class, informationResourceFile.getId());
 
         boolean seen = false;
         for (InformationResourceFileVersion version : informationResourceFile.getLatestVersions()) {
             logger.info("{}", version);
-
+            version.setInformationResourceId(doc.getId());
             if (version.isTranslated()) {
                 String contents = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version));
                 assertTrue(contents.contains("Ark_HM_Headpot_01.txt"));
