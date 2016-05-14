@@ -256,7 +256,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
                     return null;
                 }
                 logger.trace("{} | {}", file, ir.getId());
-                document = ContentDocumentConverter.convert(file, extraId);
+                document = ContentDocumentConverter.convert(file, ir.getId());
             }
         }
         return document;
