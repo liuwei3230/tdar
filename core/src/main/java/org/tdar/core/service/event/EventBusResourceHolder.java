@@ -28,6 +28,9 @@ public class EventBusResourceHolder<T extends ObjectContainer> extends ResourceH
 	 */
 	public void addMessage(T message) {
 		String id = message.getId();
+		if (logger.isTraceEnabled()) {
+		    logger.debug("PRE_PENDING {} EVENT: {} ({})", message.getType(), message.getEventType(), id);
+		}
 		if (pendingMessages.containsKey(id)) {
 			T existing = pendingMessages.get(id);
 			if (existing.getDateAdded() > message.getDateAdded()) {

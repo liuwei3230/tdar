@@ -154,7 +154,6 @@ public class WorkflowContextService {
                 logger.info("clearing status?: {}", irFile.getStatus());
                 irFile.setStatus(FileStatus.PROCESSED);
                 irFile.setErrorMessage(null);
-                publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, resource.getId()));
             } else {
                 if (ctx.isErrorFatal()) {
                     irFile.setStatus(FileStatus.PROCESSING_ERROR);
@@ -163,6 +162,7 @@ public class WorkflowContextService {
                 }
                 irFile.setErrorMessage(ctx.getExceptionAsString());
             }
+            publisher.publishEvent(new TdarEvent(irFile, EventType.CREATE_OR_UPDATE, resource.getId()));
             genericDao.saveOrUpdate(irFile);
         }
         try {

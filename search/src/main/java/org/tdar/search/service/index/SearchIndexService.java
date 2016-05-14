@@ -126,15 +126,23 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             return;
         }
 
+        if (logger.isTraceEnabled()) {
+            logger.trace("INIT {} EVENT: {} ({})", event.getType(), record.getClass().getSimpleName(), record.getId());
+        }
+        
         if (!isUseTransactionalEvents() || !CONFIG.useTransactionalEvents()) {
             index(record);
             return;
         }
 
         Optional<EventBusResourceHolder> holder = EventBusUtils.getTransactionalResourceHolder(this);
-        SolrInputDocument doc = createDocument(record);
-        //
+        SolrInputDocument doc = createDocument(record, event.getExtraId());
         String recordId = generateId(record);
+        if (doc == null) {
+            logger.trace("doc is null for: {}" , recordId);
+            return;
+        }
+        //
         File temp = new File(CONFIG.getTempDirectory(), String.format("%s-%s.xml", recordId, System.nanoTime()));
         temp.deleteOnExit();
 
@@ -214,6 +222,10 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
     }
 
     private SolrInputDocument createDocument(final Indexable item) {
+        return createDocument(item, null);
+    }
+    
+    private SolrInputDocument createDocument(final Indexable item, Long extraId) {
         SolrInputDocument document = null;
         if (item instanceof Person) {
             document = PersonDocumentConverter.convert((Person) item);
@@ -235,10 +247,17 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
         }
         if (item instanceof InformationResourceFile) {
             InformationResourceFile file = (InformationResourceFile) item;
-            InformationResource ir = informationResourceDao.findResourceForFile(file);
-            logger.debug("{} | {}", file,ir);
-            Long irid = ir.getId();
-            document = ContentDocumentConverter.convert(file,irid);
+            if (extraId != null) {
+                logger.trace("{} | {}", file, extraId);
+                document = ContentDocumentConverter.convert(file, extraId);
+            } else {
+                InformationResource ir = informationResourceDao.findResourceForFile(file);
+                if (ir == null) {
+                    return null;
+                }
+                logger.trace("{} | {}", file, ir.getId());
+                document = ContentDocumentConverter.convert(file, extraId);
+            }
         }
         return document;
     }
