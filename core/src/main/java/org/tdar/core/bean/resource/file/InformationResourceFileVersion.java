@@ -152,7 +152,7 @@ public class InformationResourceFileVersion extends AbstractPersistable implemen
         setExtension(FilenameUtils.getExtension(filename));
         if (irFile != null) {
             setVersion(irFile.getLatestVersion());
-//            setInformationResourceFile(irFile);
+            setInformationResourceFile(irFile);
             setInformationResourceFileId(irFile.getId());
         }
         if (ir != null) {
