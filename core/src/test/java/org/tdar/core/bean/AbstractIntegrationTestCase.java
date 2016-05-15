@@ -302,9 +302,9 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         version.setVersion(1);
         version.setFilename(name);
         version.setExtension(FilenameUtils.getExtension(name));
-//        version.setInformationResourceFile(irFile);
+        version.setInformationResourceFile(irFile);
         version.setDateCreated(new Date());
-//        version.setInformationResourceFile(irFile);
+        version.setInformationResourceFile(irFile);
         version.setFileVersionType(VersionType.UPLOADED);
         irFile.getInformationResourceFileVersions().add(version);
         ir.getInformationResourceFiles().add(irFile);

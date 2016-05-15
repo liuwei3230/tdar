@@ -41,8 +41,6 @@ import org.tdar.core.service.resource.ResourceService;
 import org.tdar.filestore.Filestore;
 import org.tdar.filestore.FilestoreObjectType;
 
-import arq.version;
-
 public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
 
     @Autowired
