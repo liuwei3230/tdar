@@ -190,13 +190,14 @@ public class DownloadService {
     private String addFileToDownload(InformationResourceFileVersion irFileVersion, DownloadTransferObject dto) {
         File transientFile = irFileVersion.getTransientFile();
         // setting original filename on file
-        String actualFilename = irFileVersion.getInformationResourceFile().getFilename();
+        InformationResourceFile irf = irFileVersion.getInformationResourceFile();
+        String actualFilename = irf.getFilename();
         DownloadFile resourceFile = new DownloadFile(transientFile, actualFilename, irFileVersion);
 
         // If it's a PDF, add the cover page if we can, if we fail, just send the original file
         if (dto.isIncludeCoverPage() && pdfService.coverPageSupported(irFileVersion)) {
             resourceFile = new DownloadPdfFile((Document) dto.getInformationResource(), irFileVersion, pdfService, dto.getAuthenticatedUser(),
-                    dto.getTextProvider(), dto.getCoverPageLogo());
+                    dto.getTextProvider(), dto.getCoverPageLogo(), irf.getDescription());
         }
 
         if (FileType.IMAGE != irFileVersion.getInformationResourceFile().getInformationResourceFileType()) {
@@ -251,13 +252,15 @@ public class DownloadService {
         Iterator<InformationResourceFileVersion> iter = versionsToDownload.iterator();
         while (iter.hasNext()) {
             InformationResourceFileVersion version = iter.next();
-            if (!authorizationService.canDownload(version, authenticatedUser) && authorization == null) {
+            InformationResourceFile irFile = version.getInformationResourceFile();
+            InformationResource ir = informationResourceDao.findResourceForVersion(version);
+            if (!authorizationService.canDownload(ir,irFile, authenticatedUser) && authorization == null) {
                 logger.warn("thumbail request: resource is confidential/embargoed: {}", version);
                 dto.setResult(DownloadResult.FORBIDDEN);
                 return dto;
             }
 
-            if (version.getInformationResourceFile().isDeleted() && !authorizationService.isEditor(authenticatedUser)) {
+            if (irFile.isDeleted() && !authorizationService.isEditor(authenticatedUser)) {
                 logger.debug("requesting deleted file");
                 iter.remove();
                 continue;

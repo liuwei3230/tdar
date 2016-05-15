@@ -128,7 +128,7 @@ public class AbstractDownloadController extends AbstractAuthenticatableAction im
             if (PersistableUtils.isNotNullOrTransient(getInformationResourceFileVersion())) {
                 informationResource = informationResourceService.findResourceForVersion(getInformationResourceFileVersion());
                 informationResourceId = informationResource.getId();
-                authorizationService.applyTransientViewableFlag(informationResource, informationResourceFileVersion, getAuthenticatedUser());
+                authorizationService.applyTransientViewableFlag(informationResource, informationResourceFileVersion.getInformationResourceFile(), getAuthenticatedUser());
             }
         }
     }

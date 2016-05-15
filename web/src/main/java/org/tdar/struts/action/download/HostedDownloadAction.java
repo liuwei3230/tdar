@@ -54,7 +54,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
     private InformationResource informationResource;
     @Action(value = "{informationResourceFileId}/{apiKey}")
     public String execute() {
-        getAuthorizationService().applyTransientViewableFlag(informationResource, fileVersion, getAuthenticatedUser());
+        getAuthorizationService().applyTransientViewableFlag(informationResource, informationResourceFile, getAuthenticatedUser());
 
         setDownloadTransferObject(downloadService.validateFilterAndSetupDownload(getAuthenticatedUser(),
                 informationResourceFile, isCoverPageIncluded(), this, null, true));
@@ -77,7 +77,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
     public void prepare() {
         super.prepare();
         informationResourceFile = getGenericService().find(InformationResourceFile.class, informationResourceFileId);
-        informationResource = informationResourceService.finResourceForFile(informationResourceFile); 
+        informationResource = informationResourceService.findResourceForFile(informationResourceFile); 
         if (StringUtils.isBlank(apiKey)) {
             addActionError("hostedDownloadController.api_key_required");
         }

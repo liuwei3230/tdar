@@ -192,7 +192,7 @@ public class FileProxyWrapper {
             datasetDao.saveOrUpdate(irFile);
         }
 
-        irFile.addFileVersion(version);
+        irFile.getInformationResourceFileVersions().add(version);
         TdarConfiguration.getInstance().getFilestore().store(FilestoreObjectType.RESOURCE, file, version);
         version.setTransientFile(file);
         datasetDao.save(version);

@@ -463,17 +463,17 @@ public class AuthorizationService implements Accessible {
         return false;
     }
 
-    /*
-     * Checks whether a @link Person has rights to download a given @link InformationResourceFileVersion
-     */
-    @Transactional(readOnly = true)
-    public boolean canDownload(InformationResourceFileVersion irFileVersion, TdarUser person) {
-        if (irFileVersion == null) {
-            return false;
-        }
-        InformationResource ir = informationResourceDao.findResourceForVersion(irFileVersion);
-        return canDownload(ir, irFileVersion.getInformationResourceFile(), person);
-    }
+//    /*
+//     * Checks whether a @link Person has rights to download a given @link InformationResourceFileVersion
+//     */
+//    @Transactional(readOnly = true)
+//    public boolean canDownload(InformationResourceFileVersion irFileVersion, TdarUser person) {
+//        if (irFileVersion == null) {
+//            return false;
+//        }
+//        InformationResource ir = informationResourceDao.findResourceForVersion(irFileVersion);
+//        return canDownload(ir, irFileVersion.getInformationResourceFile(), person);
+//    }
 
     /*
      * Checks whether a @link Person has rights to download a given @link InformationResourceFile
@@ -632,12 +632,11 @@ public class AuthorizationService implements Accessible {
     }
 
     @Transactional(readOnly=true)
-    public void applyTransientViewableFlag(InformationResource ir, InformationResourceFileVersion informationResourceFileVersion, TdarUser authenticatedUser) {
+    public void applyTransientViewableFlag(InformationResource ir, InformationResourceFile irFile, TdarUser authenticatedUser) {
         boolean visible = false;
-        if (informationResourceFileVersion == null) {
+        if (irFile == null) {
             return;
         }
-        InformationResourceFile irFile = informationResourceFileVersion.getInformationResourceFile();
         if (irFile.isPublic() || canDownload(ir, irFile, authenticatedUser)) {
             visible = true;
         }

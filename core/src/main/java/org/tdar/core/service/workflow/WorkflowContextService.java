@@ -130,19 +130,19 @@ public class WorkflowContextService {
             }
             // setting transient context for evaluation
 
-            orig.setInformationResourceFile(irFile);
+//            orig.setInformationResourceFile(irFile);
 
             // Grab the new derivatives from the context and persist them.
             for (InformationResourceFileVersion version : ctx.getVersions()) {
                 // if the derivative's ID is null, we know that it hasn't been persisted yet, so we save.
                 if (version.getInformationResourceFileId().equals(irFile.getId())) {
-                    version.setInformationResourceFile(irFile);
-                    irFile.addFileVersion(version);
+//                    version.setInformationResourceFile(irFile);
+                    irFile.getInformationResourceFileVersions().add(version);
                 }
             }
             logger.debug("irFile: {} ", irFile);
             // }
-            orig.setInformationResourceFile(irFile);
+//            orig.setInformationResourceFile(irFile);
             // genericDao.saveOrUpdate(orig);
 //            irFile.setInformationResource(genericDao.find(InformationResource.class, ctx.getInformationResourceId()));
             irFile.setWorkflowContext(ctx);

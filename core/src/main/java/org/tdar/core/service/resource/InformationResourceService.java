@@ -273,7 +273,7 @@ public class InformationResourceService extends ServiceInterface.TypedDaoBase<In
 
 
     @Transactional(readOnly=true)
-    public InformationResource finResourceForFile(InformationResourceFile informationResourceFile) {
+    public InformationResource findResourceForFile(InformationResourceFile informationResourceFile) {
         return informationResourceDao.findResourceForFile(informationResourceFile);
     }
 
