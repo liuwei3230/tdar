@@ -52,7 +52,7 @@ public class FileProxy implements Serializable, Sequenceable<FileProxy>, HasExte
     private String description;
     private Date fileCreatedDate;
     // used to help distinguish between user managed proxies and those that may have been created to work around an error
-    private boolean createdByServer = false;
+//    private boolean createdByServer = false;
     private InformationResourceFile informationResourceFile;
     private InformationResourceFileVersion informationResourceFileVersion;
     private List<FileProxy> additionalVersions = new ArrayList<FileProxy>();
