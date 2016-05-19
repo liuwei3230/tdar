@@ -18,6 +18,7 @@ import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.service.external.EmailService;
 import org.tdar.core.service.processes.AbstractScheduledProcess;
 import org.tdar.core.service.resource.InformationResourceFileService;
@@ -29,40 +30,43 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
     private static final String SITE_ACRONYM = TdarConfiguration.getInstance().getSiteAcronym();
     private static final String TEMPLATE_ADMIN = "embargo/expiration-admin.ftl";
     private static final String SUBJECT_ADMIN = SITE_ACRONYM + ": Admin Embargo Expiration Warning";
-	private static final String BASE_URL = TdarConfiguration.getInstance().getBaseUrl();
-	
-	private static final long serialVersionUID = 5134091457634096415L;
+    private static final String BASE_URL = TdarConfiguration.getInstance().getBaseUrl();
+    
+    private static final long serialVersionUID = 5134091457634096415L;
 
 
-	private static final String TEMPLATE_WARNING = "embargo/expiration-warning.ftl";
-	private static final String SUBJECT_WARNING = SITE_ACRONYM + ": Embargo about to expire";
-	private static final String TEMPLATE_EXPIRED = "embargo/expiration.ftl";
-	private static final String SUBJECT_EXPIRED = SITE_ACRONYM + ": Embargo Expired";
+    private static final String TEMPLATE_WARNING = "embargo/expiration-warning.ftl";
+    private static final String SUBJECT_WARNING = SITE_ACRONYM + ": Embargo about to expire";
+    private static final String TEMPLATE_EXPIRED = "embargo/expiration.ftl";
+    private static final String SUBJECT_EXPIRED = SITE_ACRONYM + ": Embargo Expired";
 
-	@Autowired
-	private transient EmailService emailService;
-	@Autowired
-	private transient GenericDao genericDao;
+    @Autowired
+    private transient EmailService emailService;
+    @Autowired
+    private transient GenericDao genericDao;
 
-	@Autowired
-	private transient InformationResourceFileService informationResourceFileService;
+    @Autowired
+    private transient InformationResourceFileService informationResourceFileService;
 
-	private boolean completed;
+    @Autowired
+    private transient InformationResourceDao informationResourceDao;
+    
+    private boolean completed;
 
-	@Override
-	public String getDisplayName() {
-		return "Embargoed Files Process";
-	}
+    @Override
+    public String getDisplayName() {
+        return "Embargoed Files Process";
+    }
 
-	@Override
-	public void execute() {
-		List<InformationResourceFile> expired = informationResourceFileService.findAllExpiredEmbargoFiles();
-		List<InformationResourceFile> toExpire = informationResourceFileService.findAllEmbargoFilesExpiringTomorrow();
+    @Override
+    public void execute() {
+        List<InformationResourceFile> expired = informationResourceFileService.findAllExpiredEmbargoFiles();
+        List<InformationResourceFile> toExpire = informationResourceFileService.findAllEmbargoFilesExpiringTomorrow();
 
-		if (CollectionUtils.isEmpty(expired) && CollectionUtils.isEmpty(toExpire)) {
-		    completed = true;
-			return;
-		}
+        if (CollectionUtils.isEmpty(expired) && CollectionUtils.isEmpty(toExpire)) {
+            completed = true;
+            return;
+        }
         logger.debug("expired: {} : {}", CollectionUtils.size(expired), expired);
         logger.debug("expired: {} : {}", CollectionUtils.size(toExpire), toExpire);
 
@@ -70,13 +74,13 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
         
         sendExpirationNotices(toExpire);
 
-		if (CollectionUtils.isNotEmpty(expired)) {
-			Map<TdarUser, Set<InformationResourceFile>> expiredMap = createMap(expired);
-			expire(expiredMap);
-		}
+        if (CollectionUtils.isNotEmpty(expired)) {
+            Map<TdarUser, Set<FileResourceContainer>> expiredMap = createMap(expired);
+            expire(expiredMap);
+        }
 
-		completed = true;
-	}
+        completed = true;
+    }
 
     private void sendAdminEmail(List<InformationResourceFile> expired, List<InformationResourceFile> toExpire) {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -90,71 +94,72 @@ public class EmbargoedFilesUpdateProcess extends AbstractScheduledProcess {
         emailService.queueWithFreemarkerTemplate(TEMPLATE_ADMIN, map, email);
     }
 
-	private Map<TdarUser, Set<InformationResourceFile>> createMap(Collection<InformationResourceFile> toExpire) {
-		Map<TdarUser, Set<InformationResourceFile>> expiredMap = new HashMap<>();
-		for (InformationResourceFile file : toExpire) {
-            InformationResource r = file.getInformationResource();
-			TdarUser submitter = r.getSubmitter();
-			if (!expiredMap.containsKey(submitter)) {
-				expiredMap.put(submitter, new HashSet<>());
-			}
-			if (r.isActive() || r.isDraft()) {
-			    expiredMap.get(submitter).add(file);
-			}
-		}
-		return expiredMap;
-	}
+    private Map<TdarUser, Set<FileResourceContainer>> createMap(List<InformationResourceFile> toExpire) {
+        Map<TdarUser, Set<FileResourceContainer>> expiredMap = new HashMap<>();
+        for (InformationResourceFile file : toExpire) {
+            InformationResource r = informationResourceDao.findResourceForFile(file);
+            TdarUser submitter = r.getSubmitter();
+            if (!expiredMap.containsKey(submitter)) {
+                expiredMap.put(submitter, new HashSet<>());
+            }
+            if (r.isActive() || r.isDraft()) {
+                expiredMap.get(submitter).add(new FileResourceContainer(r, file));
+            }
+        }
+        return expiredMap;
+    }
 
-	private void expire(Map<TdarUser, Set<InformationResourceFile>> expiredMap) {
-		for (TdarUser submitter : expiredMap.keySet()) {
-			Set<InformationResourceFile> expired = expiredMap.get(submitter);
-			for (InformationResourceFile file : expired) {
-				file.setRestriction(FileAccessRestriction.PUBLIC);
-				file.setDateMadePublic(null);
-				genericDao.saveOrUpdate(file);
-			}
-			sendEmail(submitter, expired, SUBJECT_EXPIRED, TEMPLATE_EXPIRED);
-		}
-	}
+    private void expire(Map<TdarUser, Set<FileResourceContainer>> expiredMap) {
+        for (TdarUser submitter : expiredMap.keySet()) {
+            Set<FileResourceContainer> expired = expiredMap.get(submitter);
+            for (FileResourceContainer file_ : expired) {
+                InformationResourceFile file = file_.getFile();
+                file.setRestriction(FileAccessRestriction.PUBLIC);
+                file.setDateMadePublic(null);
+                genericDao.saveOrUpdate(file);
+            }
+            sendEmail(submitter, expired, SUBJECT_EXPIRED, TEMPLATE_EXPIRED);
+        }
+    }
 
-	private void sendEmail(TdarUser submitter, Set<InformationResourceFile> files, String subject, String template) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("files", files);
-		Email email = new Email();
-		map.put("submitter", submitter);
-		map.put("siteAcronym", SITE_ACRONYM);
-		map.put("baseUrl", BASE_URL);
-		email.setTo(submitter.getEmail());
+    private void sendEmail(TdarUser submitter, Set<FileResourceContainer> files, String subject, String template) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("files", files);
+        Email email = new Email();
+        map.put("submitter", submitter);
+        map.put("siteAcronym", SITE_ACRONYM);
+        map.put("baseUrl", BASE_URL);
+        email.setTo(submitter.getEmail());
 
-		email.setUserGenerated(false);
-		email.setSubject(subject);
-		emailService.queueWithFreemarkerTemplate(template, map, email);
-	}
+        email.setUserGenerated(false);
+        email.setSubject(subject);
+        emailService.queueWithFreemarkerTemplate(template, map, email);
+    }
 
-	private void sendExpirationNotices(Collection<InformationResourceFile> toExpire) {
+    private void sendExpirationNotices(List<InformationResourceFile> toExpire) {
         if (CollectionUtils.isEmpty(toExpire)) {
             return;
         }
-        Map<TdarUser, Set<InformationResourceFile>> toExpiredMap = createMap(toExpire);
+        Map<TdarUser, Set<FileResourceContainer>> toExpiredMap = createMap(toExpire);
         for (TdarUser submitter : toExpiredMap.keySet()) {
-			Set<InformationResourceFile> expired = toExpiredMap.get(submitter);
-			sendEmail(submitter, expired, SUBJECT_WARNING, TEMPLATE_WARNING);
-		}
-	}
+            Set<FileResourceContainer> expired = toExpiredMap.get(submitter);
+            sendEmail(submitter, expired, SUBJECT_WARNING, TEMPLATE_WARNING);
+        }
+    }
 
-	@Override
-	public boolean isEnabled() {
-		return true;
-	}
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 
-	@Override
-	public boolean isCompleted() {
-		return completed;
-	}
+    @Override
+    public boolean isCompleted() {
+        return completed;
+    }
 
-	@Override
-	public boolean isSingleRunProcess() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+    @Override
+    public boolean isSingleRunProcess() {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }
