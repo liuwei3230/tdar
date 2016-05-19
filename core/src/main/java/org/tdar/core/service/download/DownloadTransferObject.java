@@ -275,5 +275,4 @@ public class DownloadTransferObject implements Serializable {
     public void setCoverPageLogo(File coverPageLogo) {
         this.coverPageLogo = coverPageLogo;
     }
-
 }

@@ -110,5 +110,4 @@ public class InformationResourceFileService extends ServiceInterface.TypedDaoBas
     public List<InformationResourceFile> findAllEmbargoFilesExpiringTomorrow() {
         return getDao().findAllEmbargoFilesExpiringTomorrow();
     }
-
 }

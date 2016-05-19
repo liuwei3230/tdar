@@ -222,7 +222,7 @@ public class FileProxyITCase extends AbstractResourceControllerITCase {
         controller.setTicketId(newProxyList.getFirst().getId());
         controller.setServletRequest(getServletPostRequest());
         controller.save();
-
+        logger.debug("{}", document.getInformationResourceFiles());
         assertEquals(2, document.getInformationResourceFiles().size());
         for (InformationResourceFile irFile : document.getInformationResourceFiles()) {
             logger.info("{}", irFile);

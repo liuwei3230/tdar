@@ -8,10 +8,12 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.service.download.DownloadResult;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.core.service.external.AuthorizationService;
+import org.tdar.core.service.resource.InformationResourceService;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.Preparable;
@@ -29,7 +31,9 @@ public class ThumbnailDownloadAction extends AbstractDownloadController implemen
     private transient DownloadService downloadService;
     @Autowired
     private transient AuthorizationService authorizationService;
-
+    @Autowired
+    private transient InformationResourceService informationResourceService;
+    
     @Actions(value = {
             @Action(value = "img/thumbnail/{informationResourceFileVersionId}"),
             @Action(value = "img/sm/{informationResourceFileVersionId}"),
@@ -49,7 +53,8 @@ public class ThumbnailDownloadAction extends AbstractDownloadController implemen
             return ERROR;
         }
 
-        if (!authorizationService.canDownload(getInformationResourceFileVersion(), getAuthenticatedUser())) {
+        InformationResource ir = informationResourceService.findResourceForVersion(getInformationResourceFileVersion());
+        if (!authorizationService.canDownload(ir, getInformationResourceFileVersion().getInformationResourceFile(), getAuthenticatedUser())) {
             getLogger().warn("thumbail request: resource is confidential/embargoed: {}", getInformationResourceFileVersionId());
             return FORBIDDEN;
         }

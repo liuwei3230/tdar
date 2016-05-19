@@ -14,7 +14,6 @@
         <tdar:informationResourceFile latestVersion="0" id="690" sequenceNumber="0">
             <tdar:deleted>false</tdar:deleted>
             <tdar:filename>a2008reportchap3.pdf</tdar:filename>
-            <tdar:informationResourceRef>Document:-1</tdar:informationResourceRef>
             <tdar:informationResourceFileType>DOCUMENT</tdar:informationResourceFileType>
             <tdar:informationResourceFileVersions>
                 <tdar:informationResourceFileVersion id="614" informationResourceFileId="690" version="0">

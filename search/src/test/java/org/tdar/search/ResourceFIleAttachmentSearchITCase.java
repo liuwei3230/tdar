@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
@@ -20,6 +21,7 @@ import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.query.SearchResult;
 import org.tdar.utils.PersistableUtils;
 
+@Ignore
 public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchITCase {
 
 
@@ -28,6 +30,7 @@ public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchIT
     public void testAttachedFileSearch() throws InstantiationException, IllegalAccessException, SolrServerException, IOException, ParseException {
         Document document = createAndSaveNewInformationResource(Document.class, getBasicUser(), _33_CU_314);
         addFileToResource(document, new File(TestConstants.TEST_DOCUMENT_DIR + "test-file.rtf"));
+//        genericService.saveOrUpdate(document);
         searchIndexService.index(document);
         SearchParameters params = new SearchParameters();
         params.getContents().add("fun'");
