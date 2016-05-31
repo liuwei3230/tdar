@@ -29,7 +29,6 @@ import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.BookmarkedResourceService;
-import org.tdar.core.service.PersonalFilestoreService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.integration.ColumnType;
@@ -38,7 +37,7 @@ import org.tdar.core.service.integration.IntegrationColumn;
 import org.tdar.core.service.integration.IntegrationContext;
 import org.tdar.core.service.integration.ModernIntegrationDataResult;
 import org.tdar.core.service.resource.ResourceService;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.interceptor.annotation.PostOnly;
 
 import com.opensymphony.xwork2.Preparable;
@@ -55,7 +54,7 @@ import com.opensymphony.xwork2.Preparable;
 @Namespace("/workspace")
 @Component
 @Scope("prototype")
-public class LegacyWorkspaceController extends AuthenticationAware.Base implements Preparable {
+public class LegacyWorkspaceController extends AbstractAuthenticatableAction implements Preparable {
 
     private static final long serialVersionUID = -3538370664425794045L;
     @Autowired
@@ -69,9 +68,6 @@ public class LegacyWorkspaceController extends AuthenticationAware.Base implemen
 
     @Autowired
     private transient ResourceService resourceService;
-
-    @Autowired
-    private transient PersonalFilestoreService filestoreService;
 
     @Autowired
     private transient SerializationService serializationService;

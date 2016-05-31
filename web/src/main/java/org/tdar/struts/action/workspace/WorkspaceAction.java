@@ -21,12 +21,10 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.service.BookmarkedResourceService;
-import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.integration.DataIntegrationService;
 import org.tdar.core.service.integration.IntegrationWorkflowService;
-import org.tdar.core.service.resource.ResourceService;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 
 /**
  * $Id$
@@ -40,7 +38,7 @@ import org.tdar.struts.action.AuthenticationAware;
 @Namespace("/workspace")
 @Component
 @Scope("prototype")
-public class WorkspaceAction extends AuthenticationAware.Base {
+public class WorkspaceAction extends AbstractAuthenticatableAction {
 
     private static final long serialVersionUID = 8232843043333817727L;
 
@@ -54,13 +52,7 @@ public class WorkspaceAction extends AuthenticationAware.Base {
     private transient BookmarkedResourceService bookmarkedResourceService;
 
     @Autowired
-    private transient ResourceService resourceService;
-
-    @Autowired
     private transient IntegrationWorkflowService integrationWorkflowService;
-
-    @Autowired
-    private transient SerializationService serializationService;
 
     private List<Resource> bookmarkedResources;
     private Set<Ontology> sharedOntologies;

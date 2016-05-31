@@ -23,10 +23,10 @@ import com.opensymphony.xwork2.Preparable;
 @Scope("prototype")
 @Namespace("/")
 @ParentPackage("secured")
-public class UserAgreementController extends AuthenticationAware.Base implements Preparable {
+public class UserAgreementController extends AbstractAuthenticatableAction implements Preparable {
 
-    private static final String ACCEPT = "accept";
-    private static final String DECLINE = "decline";
+    public static final String ACCEPT = "accept";
+    public static final String DECLINE = "decline";
     private static final long serialVersionUID = 5992094345280080761L;
     private List<AuthNotice> authNotices = new ArrayList<>();
     private List<AuthNotice> acceptedAuthNotices = new ArrayList<>();
@@ -68,9 +68,9 @@ public class UserAgreementController extends AuthenticationAware.Base implements
 
     @WriteableSession
     @Action(value = "agreement-response", results = {
-            @Result(name = TdarActionSupport.SUCCESS, type = "tdar-redirect", location = "/dashboard"),
-            @Result(name = TdarActionSupport.NONE, type = "tdar-redirect", location = "/logout"),
-            @Result(name = TdarActionSupport.INPUT, type = "tdar-redirect", location = "/show-notices")
+            @Result(name = TdarActionSupport.SUCCESS, type = TDAR_REDIRECT, location = "/dashboard"),
+            @Result(name = TdarActionSupport.NONE, type = TDAR_REDIRECT, location = "/"),
+            @Result(name = TdarActionSupport.INPUT, type = TDAR_REDIRECT, location = "/show-notices")
     })
     @PostOnly
     public String agreementResponse() {
@@ -86,6 +86,7 @@ public class UserAgreementController extends AuthenticationAware.Base implements
             String fmt = getText("userAgreementController.decline_message");
             addActionMessage(String.format(fmt, getSiteAcronym()));
             getLogger().debug("agreements declined,  redirecting to logout page");
+            authenticationService.logout(getSessionData(), getServletRequest(), getServletResponse(), getAuthenticatedUser());
             return NONE;
         }
     }

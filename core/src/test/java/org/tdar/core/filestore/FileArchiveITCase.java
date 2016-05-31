@@ -69,7 +69,9 @@ public class FileArchiveITCase extends AbstractIntegrationTestCase {
 
     public void testArchiveFormat(PairtreeFilestore store, String filename) throws InstantiationException, IllegalAccessException, IOException, Exception {
         File f = new File(TestConstants.TEST_SENSORY_DIR, filename);
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(SensoryData.class, filename, f, store);
+        SensoryData doc = generateAndStoreVersion(SensoryData.class, filename, f, store);
+        InformationResourceFileVersion originalVersion = doc.getLatestUploadedVersion();
+
         FileType fileType = fileAnalyzer.analyzeFile(originalVersion);
         assertEquals(FileType.FILE_ARCHIVE, fileType);
         Workflow workflow = fileAnalyzer.getWorkflow(originalVersion);

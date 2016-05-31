@@ -9,6 +9,8 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     <#import "/${themeDir}/settings.ftl" as settings>
     <#import "navigation-macros.ftl" as nav>
 
+	<#assign useSelect2=select2Enabled!true  />
+
     <#macro basicInformation itemTypeLabel="file" itemPrefix="resource">
 
     </#macro>
@@ -57,16 +59,24 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
             input fields for each element in the list, with the value of the element pre-populated with the keyword.label value
     @param keywordField:string prefix to use when generating the name-attribute for the input fields in this section.
 -->
-    <#macro keywordRows label keywordList keywordField showDelete=true addAnother="add another keyword">
-    <div class="control-group repeatLastRow" id="${keywordField}Repeatable" data-add-another="${addAnother}">
-        <label class="control-label">${label}</label>
-        <#list keywordList as keyword>
-                <@_keywordRow keywordField keyword_index showDelete />
-			<#else>
-	            <@_keywordRow keywordField />
-            </#list>
-    </div>
+    <#macro keywordRows label keywordList keywordField className showDelete=true addAnother="add another keyword">
+    
+		<#if useSelect2>
+                <@select2 label keywordList keywordField className />
+        <#else>
+            <div class="control-group repeatLastRow" id="${keywordField}Repeatable" data-add-another="${addAnother}">
+                <label class="control-label">${label}</label>
+                <#list keywordList as keyword>
+                    <@_keywordRow keywordField keyword_index showDelete />
+                <#else>
+                    <@_keywordRow keywordField />
+                </#list>
+            </div>
+		</#if>
+
+    
     </#macro>
+
     <#macro _keywordRow keywordField keyword_index=0 showDelete=true>
     <div class="controls controls-row" id='${keywordField}Row_${keyword_index}_'>
         <div class="span7">
@@ -76,6 +86,22 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
         </#if>
         </div>
     </div>
+    </#macro>
+
+    <#macro select2 title array prefix type>
+    <div class="control-group">
+        <label class="control-label">${title}</label>
+        <div class="controls">
+            <select class="keyword-autocomplete form-control select2-hidden-accessible input-xxlarge" multiple="multiple" tabindex="-1" aria-hidden="true"
+                name="${prefix}" data-ajax--url="/lookup/keyword?keywordType=${type?url}" id="${prefix}Repeatable" style="width:100%">
+                <#list array![] as term>
+                    <#if term?has_content><option value="${term?xhtml}" data-label="${term?xhtml}" selected="selected">${term}</option></#if>
+                </#list>
+            </select>
+            <span class="help-block">Use  <kbd>&semi;</kbd> or <kbd>|</kbd> to separate multiple keywords.</span>
+        </div>
+    </div>
+
     </#macro>
 
 
@@ -88,18 +114,12 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
 
             <div data-tiplabel="Spatial Terms: Geographic"
                  data-tooltipcontent="Keyword list: Geographic terms relevant to the document, e.g. &quot;Death Valley&quot; or &quot;Kauai&quot;.">
-                <@keywordRows "Geographic Terms" geographicKeywords 'geographicKeywords' />
+                <@keywordRows "Geographic Terms" geographicKeywords 'geographicKeywords' "GeographicKeyword" /> 
             </div>
             <@helptext.geo />
             <h4>Geographic Region</h4>
 
-<!--
-            <div id='editmapv3' class="tdar-map-large google-map"
-                 data-tiplabel="Geographic Coordinates"
-                 data-tooltipcontent="#geoHelpDiv"
-                    ></div>
--->
-        <div id='large-map' style="height:300px" class="leaflet-map-editable span9">
+        <div id='large-map' style="height:300px" class="leaflet-map-editable span9" data-search="true">
             <div id="divManualCoordinateEntry" data-tooltipcontent="#divManualCoordinateEntryTip" class="latlong-fields">
                 <@s.checkbox id="viewCoordinatesCheckbox" name="_tdar.viewCoordinatesCheckbox" onclick="TDAR.common.coordinatesCheckboxClicked(this);" label='Enter / View Coordinates' labelposition='right'  />
                 <div id='explicitCoordinatesDiv' style='text-align:center;'>
@@ -168,7 +188,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
         <div id="divTemporalInformation">
             <div data-tiplabel="Temporal Terms"
                  data-tooltipcontent="Keyword list: Temporal terms relevant to the document, e.g. &quot;Pueblo IV&quot; or &quot;Late Archaic&quot;.">
-                <@keywordRows "Temporal Terms" temporalKeywords 'temporalKeywords' true "add another temporal keyword" />
+                <@keywordRows "Temporal Terms" temporalKeywords 'temporalKeywords' "TemporalKeyword" true "add another temporal keyword" />
             </div>
             <@_coverageDatesSection />
         </div>
@@ -213,7 +233,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
         <h2 id="generalInfoSectionLabel">General Keywords</h2>
         <@_inheritsection checkboxId="cbInheritingOtherInformation" name='resource.inheritingOtherInformation'  showInherited=showInherited sectionId='#divOtherInformation'/>
         <div id="divOtherInformation">
-            <@keywordRows "Keyword" otherKeywords 'otherKeywords' />
+            <@keywordRows "Keyword" otherKeywords 'otherKeywords' "OtherKeyword" />
         </div>
     </div>
     </#macro>
@@ -227,7 +247,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
         <h2 id="siteInfoSectionLabel">${divTitle}</h2>
         <@_inheritsection checkboxId='cbInheritingSiteInformation' name='resource.inheritingSiteInformation'  showInherited=showInherited sectionId='#divSiteInformation'/>
         <div id="divSiteInformation">
-            <@keywordRows "Site Name / Number" siteNameKeywords 'siteNameKeywords' />
+            <@keywordRows "Site Name / Number" siteNameKeywords 'siteNameKeywords' "SiteNameKeyword" />
 
             <div class="control-group">
                 <label class="control-label">Site Type</label>
@@ -237,7 +257,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                 </div>
             </div>
 
-            <@keywordRows "Other" uncontrolledSiteTypeKeywords 'uncontrolledSiteTypeKeywords' />
+            <@keywordRows "Other" uncontrolledSiteTypeKeywords 'uncontrolledSiteTypeKeywords' "SiteTypeKeyword" />
         </div>
     </div>
     </#macro>
@@ -259,7 +279,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
 	            spanClass="span2" numColumns="3" />
     	    </div>
 
-            <@keywordRows "Other" uncontrolledMaterialKeywords 'uncontrolledMaterialKeywords' />
+            <@keywordRows "Other" uncontrolledMaterialKeywords 'uncontrolledMaterialKeywords' "MaterialKeyword" />
 		</div>
     </div>
     </#macro>
@@ -284,7 +304,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                 </div>
             </div>
             <!--"add another cultural term" -->
-            <@keywordRows "Other" uncontrolledCultureKeywords 'uncontrolledCultureKeywords' />
+            <@keywordRows "Other" uncontrolledCultureKeywords 'uncontrolledCultureKeywords'  "CultureKeyword" />
         </div>
     </div>
     </#macro>
@@ -1160,7 +1180,7 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
 
 <#-- emit the copyright holders section -->
     <#macro copyrightHolders sectionTitle copyrightHolderProxies >
-        <#if copyrightMandatory>
+        <#if copyrightMandatory || resource.copyrightHolder?has_content>
             <@helptext.copyrightHoldersTip />
         <div class="" id="copyrightHoldersSection" data-tiplabel="Primary Copyright Holder" data-tooltipcontent="#divCopyrightHoldersTip">
             <h2>${sectionTitle}</h2>
@@ -1379,7 +1399,7 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
 
     <#-- emit a repeatrow table of @registeredUserRow controls -->
     <#macro listMemberUsers >
-        <#local _authorizedUsers=account.authorizedMembers />
+        <#local _authorizedUsers=persistable.authorizedMembers />
         <#if !_authorizedUsers?has_content><#local _authorizedUsers=[blankPerson]></#if>
 
     <div id="accessRightsRecords" class="repeatLastRow" data-addAnother="add another user">

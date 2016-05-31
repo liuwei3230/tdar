@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
-import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.AbstractIntegrationWebTestCase;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -26,7 +26,7 @@ import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.utils.MessageHelper;
 
 
-public class PdfServiceITCase extends AbstractIntegrationTestCase {
+public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
 
     @Autowired
     PdfService pdfService;
@@ -60,10 +60,9 @@ public class PdfServiceITCase extends AbstractIntegrationTestCase {
         // THIS TEST WILL FAIL IF RUN IN ECLIPSE WITHOUT DOING A VERIFY FIRST (it needs access to includes)
         File f = new File(TestConstants.TEST_DOCUMENT_DIR, "1-01.PDF");
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
-        InformationResourceFileVersion originalVersion = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
-
+        Document document = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
+        InformationResourceFileVersion originalVersion = document.getLatestUploadedVersion();
         // setup document
-        Document document = (Document) originalVersion.getInformationResourceFile().getInformationResource();
         DocumentCitationFormatTestCase.setupDocumentWithAllFields(document, DocumentType.BOOK);
         for (ResourceCreator c : document.getResourceCreators()) {
             genericService.saveOrUpdate(c.getCreator());

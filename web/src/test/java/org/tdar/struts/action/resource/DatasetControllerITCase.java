@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
-import org.tdar.MultipleWebTdarConfigurationRunner;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Dataset;
@@ -38,9 +37,9 @@ import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
 import org.tdar.core.bean.resource.datatable.DataTableColumnType;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
-import org.tdar.core.service.download.DownloadService;
 import org.tdar.core.service.resource.DataTableService;
 import org.tdar.db.model.PostgresDatabase;
+import org.tdar.junit.MultipleTdarConfigurationRunner;
 import org.tdar.junit.RunWithTdarConfiguration;
 import org.tdar.struts.action.AbstractDataIntegrationTestCase;
 import org.tdar.struts.action.TdarActionException;
@@ -56,7 +55,7 @@ import org.tdar.struts.action.dataset.TableXMLDownloadAction;
  * @author <a href='mailto:allen.lee@asu.edu'>Allen Lee</a>
  * @version $Rev$
  */
-@RunWith(MultipleWebTdarConfigurationRunner.class)
+@RunWith(MultipleTdarConfigurationRunner.class)
 public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
 
     private static final String PUNDO_FAUNAL_REMAINS_XLS = "Pundo faunal remains.xls";
@@ -69,8 +68,6 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
 
     @Autowired
     private DataTableService dataTableService;
-    @Autowired
-    private DownloadService downloadService;
 
     @Before
     public void setUp() {
@@ -201,6 +198,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
                     if (e instanceof TdarActionException) {
                         TdarActionException exception = (TdarActionException) e;
                         setIgnoreActionErrors(true);
+                        logger.error("{}",exception);
                         // assertNotSame("DatasetController." + method.getName() + "() should not return SUCCESS", com.opensymphony.xwork2.Action.SUCCESS,
                         // exception.getResultName());
                     }
@@ -217,6 +215,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
         dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class, dataset.getId());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback(value = false)
     /**

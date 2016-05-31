@@ -28,7 +28,6 @@ import org.tdar.search.query.builder.ResourceQueryBuilder;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.SpatialQueryPart;
 import org.tdar.search.service.index.SearchIndexService;
-import org.tdar.search.service.query.SearchService;
 import org.tdar.utils.MessageHelper;
 
 public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
@@ -97,6 +96,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
      * @throws IOException
      * @throws ParseException
      */
+    @SuppressWarnings("unused")
     @Test
     @Rollback
     public void testSearchPetra() throws SolrServerException, IOException, ParseException {
@@ -273,6 +273,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         testItemIsFoundByBox(latitudeLongitudeBoxOfItem, latitudLongitudeBoxOfQuery);
     }
 
+    @SuppressWarnings("unused")
     private void testItemIsFoundByBox(LatitudeLongitudeBox latitudeLongitudeBoxOfItem, LatitudeLongitudeBox latitudLongitudeBoxOfQuery)
             throws InstantiationException,
             IllegalAccessException, SolrServerException, IOException, ParseException {

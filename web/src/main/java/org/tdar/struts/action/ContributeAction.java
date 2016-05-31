@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.ResourceType;
-import org.tdar.core.service.resource.ResourceService;
 import org.tdar.filestore.FileAnalyzer;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 
@@ -29,12 +28,9 @@ import org.tdar.struts.interceptor.annotation.HttpsOnly;
 @Component
 @Scope("prototype")
 @HttpsOnly
-public class ContributeAction extends AuthenticationAware.Base {
+public class ContributeAction extends AbstractAuthenticatableAction {
 
     private static final long serialVersionUID = -8040859305171503597L;
-
-    @Autowired
-    private ResourceService resourceService;
 
     @Autowired
     private transient FileAnalyzer analyzer;

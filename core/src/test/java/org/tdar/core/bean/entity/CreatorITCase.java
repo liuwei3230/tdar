@@ -1,6 +1,6 @@
 package org.tdar.core.bean.entity;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,7 @@ public class CreatorITCase extends AbstractIntegrationTestCase {
     private InstitutionDao institutionDao;
 
     
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testInstitutionMerge() {
@@ -37,6 +38,7 @@ public class CreatorITCase extends AbstractIntegrationTestCase {
     }
 
     
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testPersonMerge() {

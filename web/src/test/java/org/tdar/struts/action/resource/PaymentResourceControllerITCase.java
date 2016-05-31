@@ -16,14 +16,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.annotation.Rollback;
-import org.tdar.MultipleWebTdarConfigurationRunner;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.PersonalFilestoreTicket;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.billing.BillingActivityModel;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
@@ -31,6 +30,7 @@ import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.junit.MultipleTdarConfigurationRunner;
 import org.tdar.junit.RunWithTdarConfiguration;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.action.TdarActionSupport;
@@ -42,7 +42,7 @@ import org.tdar.utils.Pair;
 
 import com.opensymphony.xwork2.Action;
 
-@RunWith(MultipleWebTdarConfigurationRunner.class)
+@RunWith(MultipleTdarConfigurationRunner.class)
 @RunWithTdarConfiguration(runWith = { RunWithTdarConfiguration.CREDIT_CARD })
 public class PaymentResourceControllerITCase extends AbstractResourceControllerITCase {
 
@@ -57,6 +57,7 @@ public class PaymentResourceControllerITCase extends AbstractResourceControllerI
         this.controller = controller;
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testSubmitterWithoutAccountRightsAndNoAccount() throws TdarActionException {
@@ -77,6 +78,7 @@ public class PaymentResourceControllerITCase extends AbstractResourceControllerI
         logger.debug("accountId:{}", dc.getAccountId());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testSubmitterWithInheritedRights() throws Exception {
@@ -121,6 +123,7 @@ public class PaymentResourceControllerITCase extends AbstractResourceControllerI
 
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testSubmitterWithoutAccountRightsAndSeparateAccount() throws TdarActionException {
@@ -211,6 +214,7 @@ public class PaymentResourceControllerITCase extends AbstractResourceControllerI
         assertTrue(CollectionUtils.isNotEmpty(controller.getActionErrors()));
     }
 
+    @SuppressWarnings("unused")
     @Test
     @Rollback()
     public void testSecondarySaveWithoutValidAccount() throws Exception {

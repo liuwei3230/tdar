@@ -16,10 +16,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.Length;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Indexable;
-import org.tdar.core.bean.Persistable;
 import org.tdar.utils.json.JsonLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -35,10 +35,9 @@ import com.fasterxml.jackson.annotation.JsonView;
  */
 @Entity
 @Table(name = "resource_annotation_key")
-//@Indexed(index = "AnnotationKey")
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.ResourceAnnotationKey")
 @Cacheable
-public class ResourceAnnotationKey extends Persistable.Base implements Indexable, HasLabel {
+public class ResourceAnnotationKey extends AbstractPersistable implements Indexable, HasLabel {
 
     private static final long serialVersionUID = 6596067112791213904L;
 
@@ -62,7 +61,6 @@ public class ResourceAnnotationKey extends Persistable.Base implements Indexable
     private ResourceAnnotationDataType annotationDataType;
 
     @Column(length = FieldLength.FIELD_LENGTH_128, unique = true, nullable = false)
-    //@Fields({ //@Field(name = "annotationkey_auto", norms = Norms.NO, store = Store.YES, analyzer = //@Analyzer(impl = AutocompleteAnalyzer.class)) })
     @Length(max = FieldLength.FIELD_LENGTH_128)
     @JsonView(JsonLookupFilter.class)
     private String key;

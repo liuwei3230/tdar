@@ -62,8 +62,9 @@ public class WorkflowITCase extends AbstractIntegrationTestCase {
                         public Object doInTransaction(TransactionStatus status) {
 
                             try {
-                                InformationResourceFileVersion irfv = generateAndStoreVersion(Image.class, version.getName(), version, store);
+                                Image doc = generateAndStoreVersion(Image.class, version.getName(), version, store);
                                 // irversions.add(irfv);
+                                InformationResourceFileVersion irfv = doc.getLatestUploadedVersion();
                                 genericService.saveOrUpdate(irfv.getInformationResourceFile());
 
                                 InformationResource ir = irfv.getInformationResourceFile().getInformationResource();

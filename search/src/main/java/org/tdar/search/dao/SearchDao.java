@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -16,28 +15,21 @@ import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.Localizable;
 import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.PluralLocalizable;
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
-import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Addressable;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.IntegratableOptions;
-import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.Status;
-import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.service.ObfuscationService;
@@ -49,8 +41,11 @@ import org.tdar.search.query.SearchResultHandler;
 import org.tdar.search.query.facet.Facet;
 import org.tdar.search.query.facet.FacetWrapper;
 import org.tdar.search.query.facet.FacetedResultHandler;
+import org.tdar.search.util.SolrMapConverter;
 import org.tdar.utils.PersistableUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opensymphony.xwork2.TextProvider;
 
 @Component
@@ -85,8 +80,15 @@ public class SearchDao<I extends Indexable> {
 	public SolrSearchObject<I> search(SolrSearchObject<I> query, LuceneSearchResultHandler<I> resultHandler,
 			TextProvider provider) throws ParseException, SolrServerException, IOException {
 		query.markStartSearch();
-		QueryResponse rsp = template.query(query.getCoreName(), query.getSolrParams());
+		SolrParams solrParams = query.getSolrParams();
+		if (logger.isTraceEnabled()) {
+		    logger.trace(solrParams.toQueryString());
+		}
+        QueryResponse rsp = template.query(query.getCoreName(), solrParams);
 		query.processResults(rsp);
+        if (logger.isTraceEnabled()) {
+            logger.trace(rsp.toString());
+        }
 		convertProjectedResultIntoObjects(resultHandler, query);
 		query.markStartFacetSearch();
 		processFacets(rsp, resultHandler, provider);
@@ -114,7 +116,16 @@ public class SearchDao<I extends Indexable> {
 		FacetedResultHandler facetHandler = (FacetedResultHandler) handler;
 		FacetWrapper wrapper = facetHandler.getFacetWrapper();
 		handleJsonFacetingApi(rsp, facetMap, wrapper);
-
+		SimpleOrderedMap pivot = (SimpleOrderedMap)rsp.getResponse().findRecursive("facet_counts", "facet_pivot");
+		Object map = SolrMapConverter.toMap(pivot);
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+            String writeValueAsString = mapper.writeValueAsString(map);
+            logger.trace(writeValueAsString);
+            wrapper.setFacetPivotJson(writeValueAsString);
+        } catch (JsonProcessingException e) {
+            logger.error("{}",e,e);
+        }
 		Map<String, List<Facet>> facetResults = wrapper.getFacetResults();
 		for (FacetField field : rsp.getFacetFields()) {
 			String fieldName = field.getName();
@@ -131,17 +142,17 @@ public class SearchDao<I extends Indexable> {
 	}
 
 	// http://yonik.com/multi-select-faceting/
-	private void handleJsonFacetingApi(QueryResponse rsp, SimpleOrderedMap facetMap, FacetWrapper wrapper) {
+	private void handleJsonFacetingApi(QueryResponse rsp, SimpleOrderedMap<?> facetMap, FacetWrapper wrapper) {
 		if (facetMap != null) {
 			for (String field : wrapper.getFacetFieldNames()) {
-				SimpleOrderedMap object = (SimpleOrderedMap) facetMap.get(field);
+				SimpleOrderedMap<?> object = (SimpleOrderedMap<?>) facetMap.get(field);
 				if (object == null || object.get("buckets") == null) {
 					continue;
 				}
-				List list = (List) object.get("buckets");
+				List<?> list = (List<?>) object.get("buckets");
 				FacetField fld = new FacetField(field);
 				for (Object obj : list) {
-					SimpleOrderedMap f = (SimpleOrderedMap) obj;
+					SimpleOrderedMap<?> f = (SimpleOrderedMap<?>) obj;
 					fld.add(f.get("val").toString(), ((Number) f.get("count")).longValue());
 
 				}
@@ -150,7 +161,8 @@ public class SearchDao<I extends Indexable> {
 		}
 	}
 
-	protected List<Facet> hydrateEnumFacets(TextProvider provider, FacetField field, Class facetClass) {
+	@SuppressWarnings("rawtypes")
+    protected List<Facet> hydrateEnumFacets(TextProvider provider, FacetField field, Class facetClass) {
 		List<Facet> facet = new ArrayList<>();
 		for (Count c : field.getValues()) {
 			String name = c.getName();
@@ -181,7 +193,8 @@ public class SearchDao<I extends Indexable> {
 		return facet;
 	}
 
-	protected List<Facet> hydratePersistableFacets(FacetField field, Class facetClass) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+    protected List<Facet> hydratePersistableFacets(FacetField field, Class facetClass) {
 		List<Long> ids = new ArrayList<>();
 		List<Facet> facet = new ArrayList<>();
 		for (Count c : field.getValues()) {
@@ -198,7 +211,7 @@ public class SearchDao<I extends Indexable> {
 				logger.trace("  {} - {}", c.getCount(), label);
 				Facet f = new Facet(c.getName(), label, c.getCount(), facetClass);
 				if (persistable instanceof Addressable) {
-					f.setUrl(((Addressable) persistable).getDetailUrl());
+					f.setDetailUrl(((Addressable) persistable).getDetailUrl());
 				}
 				facet.add(f);
 			}
@@ -263,7 +276,6 @@ public class SearchDao<I extends Indexable> {
 					toReturn = processSerialSearch(resultHandler, results);
 				}
 				break;
-			case RESOURCE_PROXY_INVALIDATE_CACHE:
 			case RESOURCE_PROXY:
 				for (I i : (List<I>) datasetDao.findSkeletonsForSearch(false, results.getIdList())) {
 					obfuscateAndMarkViewable(resultHandler, i);
@@ -277,10 +289,11 @@ public class SearchDao<I extends Indexable> {
 		resultHandler.setResults(toReturn);
 	}
 
-	private void hydrateExperimental(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results, List<I> toReturn) {
-		List<Long> submitterIds = new ArrayList<>();
-		List<Long> creatorIds = new ArrayList<>();
-		List<List<Long>> rcIds = new ArrayList<>();
+	@Autowired
+	ProjectionTransformer<I> projectionTransformer;
+	
+	@SuppressWarnings("unchecked")
+    private void hydrateExperimental(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results, List<I> toReturn) {
 		for (SolrDocument doc : results.getDocumentList()) {
 			Long id = (Long) doc.getFieldValue(QueryFieldNames.ID);
 			String cls_ = (String) doc.getFieldValue(QueryFieldNames.CLASS);
@@ -289,51 +302,9 @@ public class SearchDao<I extends Indexable> {
 				I r = cls.newInstance();
 				r.setId(id);
 				if (r instanceof Resource) {
-					Resource r_ = (Resource) r;
-					r_.setStatus(Status.valueOf((String) doc.getFieldValue(QueryFieldNames.STATUS)));
-					r_.setTitle((String) doc.getFieldValue(QueryFieldNames.NAME));
-					r_.setDescription((String) doc.getFieldValue(QueryFieldNames.DESCRIPTION));
-					Collection<Long> collectionIds = (Collection<Long>) (Collection) doc
-							.getFieldValues(QueryFieldNames.RESOURCE_COLLECTION_SHARED_IDS);
-					Long submitterId = (Long) doc.getFieldValue(QueryFieldNames.SUBMITTER_ID);
-					submitterIds.add(submitterId);
-					TdarUser user = datasetDao.find(TdarUser.class, submitterId);
-					r_.setSubmitter(user);
-					
-					Collection<Long> llIds = (Collection<Long>) (Collection)doc.getFieldValues(QueryFieldNames.ACTIVE_LATITUDE_LONGITUDE_BOXES_IDS);
-					List<LatitudeLongitudeBox> findAll = datasetDao.findAll(LatitudeLongitudeBox.class,llIds);
-					if (resultHandler.getOrientation() == DisplayOrientation.MAP) {
-						r_.getLatitudeLongitudeBoxes().addAll(findAll);
-					}
-					Collection<Long> cIds = (Collection<Long>) (Collection)doc.getFieldValues(QueryFieldNames.RESOURCE_CREATOR_ROLE_IDS);
-					if (resultHandler.getOrientation() == DisplayOrientation.LIST_FULL) {
-						r_.getResourceCreators().addAll(datasetDao.findAll(ResourceCreator.class, cIds));
-					}
+					logger.trace("{}",doc);
+					r = projectionTransformer.transformResource(resultHandler, doc, r, obfuscationService);
 
-					if (r_ instanceof InformationResource) {
-						Collection<Long> fileIds = (Collection<Long>) (Collection)doc.getFieldValues(QueryFieldNames.FILE_IDS);
-						InformationResource ir = (InformationResource) r_;
-						if (resultHandler.getOrientation() == DisplayOrientation.GRID) {
-							ir.getInformationResourceFiles().addAll(datasetDao.findAll(InformationResourceFile.class,fileIds));
-						}
-						String ptitle = (String) doc.getFieldValue(QueryFieldNames.PROJECT_TITLE);
-						ir.setDate((Integer)doc.getFieldValue(QueryFieldNames.DATE));
-						if (StringUtils.isNotBlank(ptitle)) {
-							Project project = new Project();
-							project.setTitle(ptitle);
-							project.setId((Long) doc.getFieldValue(QueryFieldNames.PROJECT_ID));
-							ir.setProject(project);
-						}
-						if (ir.isInheritingSpatialInformation()) {
-							ir.getProject().getLatitudeLongitudeBoxes().addAll(findAll);
-						}
-					}
-					obfuscationService.getAuthenticationAndAuthorizationService().applyTransientViewableFlag(r_,
-							resultHandler.getAuthenticatedUser(), collectionIds);
-					if (CONFIG.obfuscationInterceptorDisabled()
-							&& PersistableUtils.isNullOrTransient(resultHandler.getAuthenticatedUser())) {
-						obfuscationService.obfuscate((Obfuscatable) r_, resultHandler.getAuthenticatedUser());
-					}
 				}
 				toReturn.add(r);
 			} catch (ClassNotFoundException e) {
@@ -356,7 +327,8 @@ public class SearchDao<I extends Indexable> {
 				resultHandler.getAuthenticatedUser());
 	}
 
-	private List<I> processSerialSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
+	@SuppressWarnings("unchecked")
+    private List<I> processSerialSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
 		List<I> toReturn = new ArrayList<>();
 		for (SolrDocument doc : results.getDocumentList()) {
 			I obj = null;
@@ -383,10 +355,10 @@ public class SearchDao<I extends Indexable> {
 	 * in a static array (so we don't have to worry about initial order or
 	 * sorting), and return that.
 	 */
-	private List<I> processGroupSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    private List<I> processGroupSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
 		Map<String, List<Long>> coalesce = results.getSearchByMap();
 		List<Long> idList = results.getIdList();
-		@SuppressWarnings("unchecked")
 		Object[] elements = new Object[idList.size()];
 		for (String cls : coalesce.keySet()) {
 			try {

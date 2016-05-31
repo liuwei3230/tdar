@@ -25,19 +25,24 @@ public class LatitudeLongitudeBoxWrapper implements Serializable {
     private Class<?> jsonView = null;
     private boolean spatial;
 
-    public LatitudeLongitudeBoxWrapper(Resource resource, Class<?> filter) {
+    public LatitudeLongitudeBoxWrapper(Resource resource, Class<?> filter, GeoRssMode mode,boolean webObfuscation) {
         this.jsonView = filter;
+        if (mode != null) {
+            this.mode = mode;
+        }
         if (resource != null) {
             this.resource = resource;
             LatitudeLongitudeBox llb = resource.getFirstActiveLatitudeLongitudeBox();
             if (llb != null) {
-                setSpatial(true);
-                this.minLatitude = llb.getMinObfuscatedLatitude();
-                this.minLongitude = llb.getMinObfuscatedLongitude();
-                this.maxLatitude = llb.getMaxObfuscatedLatitude();
-                this.maxLongitude = llb.getMaxObfuscatedLongitude();
-                this.centerLatitude = llb.getCenterLatitude();
-                this.centerLongitude = llb.getCenterLongitude();
+                if (!webObfuscation || resource.isLatLongVisible()) {
+                    setSpatial(true);
+                    this.minLatitude = llb.getMinObfuscatedLatitude();
+                    this.minLongitude = llb.getMinObfuscatedLongitude();
+                    this.maxLatitude = llb.getMaxObfuscatedLatitude();
+                    this.maxLongitude = llb.getMaxObfuscatedLongitude();
+                    this.centerLatitude = llb.getObfuscatedCenterLatitude();
+                    this.centerLongitude = llb.getObfuscatedCenterLongitude();
+                }
             }
         }
     }

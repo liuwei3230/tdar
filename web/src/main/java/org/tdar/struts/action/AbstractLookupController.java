@@ -37,7 +37,6 @@ import org.tdar.search.query.facet.FacetWrapper;
 import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.service.SearchUtils;
 import org.tdar.search.service.query.CreatorSearchService;
-import org.tdar.search.service.query.SearchService;
 import org.tdar.utils.PaginationHelper;
 import org.tdar.utils.json.JsonAdminLookupFilter;
 import org.tdar.utils.json.JsonLookupFilter;
@@ -46,7 +45,7 @@ import org.tdar.utils.json.JsonLookupFilter;
  * @author Adam Brin
  * 
  */
-public abstract class AbstractLookupController<I extends Indexable> extends AuthenticationAware.Base implements FacetedResultHandler<I> {
+public abstract class AbstractLookupController<I extends Indexable> extends AbstractAuthenticatableAction implements FacetedResultHandler<I> {
 
     private static final long serialVersionUID = 2357805482356017885L;
 
@@ -77,9 +76,7 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
     @Autowired
     private transient ResourceService resourceService;
 
-    @Autowired
-    private transient SearchService searchService;
-
+    @SuppressWarnings("rawtypes")
     @Autowired
     private CreatorSearchService creatorSearchService;
 
@@ -184,8 +181,8 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
      * 
      */
     @SuppressWarnings("unchecked")
-    public List<Creator> getCreatorResults() {
-        return (List<Creator>) results;
+    public List<Creator<?>> getCreatorResults() {
+        return (List<Creator<?>>) results;
     }
 
     /**
@@ -327,6 +324,7 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
         getReservedSearchParameters().setResourceTypes(resourceTypes);
     }
 
+    @SuppressWarnings("unchecked")
     public String findPerson(String term, Person person, boolean registered) throws SolrServerException, IOException {
         this.setLookupSource(LookupSource.PERSON);
         // TODO Auto-generated method stub
@@ -377,6 +375,7 @@ public abstract class AbstractLookupController<I extends Indexable> extends Auth
         return getLookupSource().getCollectionName();
     }
 
+    @SuppressWarnings("unchecked")
     public String findInstitution(String institution) throws SolrServerException, IOException {
         this.setLookupSource(LookupSource.INSTITUTION);
         if (SearchUtils.checkMinString(institution, getMinLookupLength())) {

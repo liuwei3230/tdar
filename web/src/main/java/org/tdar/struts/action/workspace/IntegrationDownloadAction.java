@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.service.PersonalFilestoreService;
 import org.tdar.filestore.personal.PersonalFilestoreFile;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -30,7 +30,7 @@ import com.opensymphony.xwork2.Preparable;
 @Namespace("/workspace")
 @Component
 @Scope("prototype")
-public class IntegrationDownloadAction extends AuthenticationAware.Base implements Preparable {
+public class IntegrationDownloadAction extends AbstractAuthenticatableAction implements Preparable {
 
     private static final long serialVersionUID = 8375939717549103423L;
 
@@ -51,7 +51,7 @@ public class IntegrationDownloadAction extends AuthenticationAware.Base implemen
                             "contentDisposition", "attachment;filename=\"${integrationDataResultsFilename}\"",
                             "contentLength", "${integrationDataResultsContentLength}"
                     }),
-            @Result(name = INPUT, type = "tdar-redirect", location = "select-tables")
+            @Result(name = INPUT, type = TDAR_REDIRECT, location = "select-tables")
     })
     public String downloadIntegrationDataResults() {
 

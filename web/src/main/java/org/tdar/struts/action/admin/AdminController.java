@@ -28,18 +28,15 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceRevisionLog;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.statistics.AggregateStatistic.StatisticType;
-import org.tdar.core.service.AuthorityManagementService;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.ScheduledProcessService;
 import org.tdar.core.service.StatisticService;
-import org.tdar.core.service.processes.AccountUsageHistoryLoggingTask;
 import org.tdar.core.service.processes.daily.RebuildHomepageCache;
 import org.tdar.core.service.processes.daily.SitemapGeneratorProcess;
 import org.tdar.core.service.processes.weekly.WeeklyStatisticsLoggingProcess;
 import org.tdar.core.service.resource.ResourceService;
-import org.tdar.search.service.processes.CreatorAnalysisProcess;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.interceptor.annotation.PostOnly;
 import org.tdar.struts.interceptor.annotation.RequiresTdarUserGroup;
 import org.tdar.struts.interceptor.annotation.WriteableSession;
@@ -58,7 +55,7 @@ import org.tdar.utils.Pair;
 @Component
 @Scope("prototype")
 @RequiresTdarUserGroup(TdarGroup.TDAR_EDITOR)
-public class AdminController extends AuthenticationAware.Base {
+public class AdminController extends AbstractAuthenticatableAction {
 
     private static final long serialVersionUID = 4385039298623767568L;
 
@@ -76,9 +73,6 @@ public class AdminController extends AuthenticationAware.Base {
 
     @Autowired
     private transient EntityService entityService;
-
-    @Autowired
-    private transient AuthorityManagementService authorityManagementService;
 
     private List<ResourceRevisionLog> resourceRevisionLogs;
 
@@ -125,7 +119,7 @@ public class AdminController extends AuthenticationAware.Base {
     }
 
     @Action(value = "verifyFilestore", results = {
-            @Result(name = SUCCESS, type = "tdar-redirect", location = "/admin")
+            @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "/admin")
     })
     @PostOnly
     @WriteableSession
@@ -136,7 +130,7 @@ public class AdminController extends AuthenticationAware.Base {
     }
 
     @Action(value = "updateDois", results = {
-            @Result(name = SUCCESS, type = "tdar-redirect", location = "/admin")
+            @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "/admin")
     })
     @PostOnly
     @WriteableSession
@@ -147,7 +141,7 @@ public class AdminController extends AuthenticationAware.Base {
     }
 
     @Action(value = "runWeekly", results = {
-            @Result(name = SUCCESS, type = "tdar-redirect", location = "/admin")
+            @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "/admin")
     })
     @PostOnly
     @WriteableSession
@@ -158,7 +152,7 @@ public class AdminController extends AuthenticationAware.Base {
     }
 
     @Action(value = "rebuildCaches", results = {
-            @Result(name = SUCCESS, type = "tdar-redirect", location = "/admin")
+            @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "/admin")
     })
     @PostOnly
     @WriteableSession
@@ -169,17 +163,6 @@ public class AdminController extends AuthenticationAware.Base {
         return SUCCESS;
     }
 
-
-    @Action(value = "buildCreators", results = {
-            @Result(name = SUCCESS, type = "tdar-redirect", location = "/admin")
-    })
-    @PostOnly
-    @WriteableSession
-    public String buildCreators() {
-        getLogger().debug("manually running 'build creator'");
-        scheduledProcessService.queue(CreatorAnalysisProcess.class);
-        return SUCCESS;
-    }
 
     public List<ResourceRevisionLog> getResourceRevisionLogs() {
         if (resourceRevisionLogs == null) {

@@ -42,6 +42,7 @@ import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.keyword.ControlledKeyword;
 import org.tdar.core.bean.keyword.Keyword;
+import org.tdar.core.bean.keyword.SuggestedKeyword;
 import org.tdar.core.bean.resource.CodingRule;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
@@ -167,7 +168,7 @@ public class ImportService {
     public <R extends InformationResource> R processFileProxies(R incoming_, Collection<FileProxy> proxies, TdarUser authorizedUser) throws APIException,
             IOException {
         for (InformationResourceFile file : incoming_.getInformationResourceFiles()) {
-            InformationResourceFile file2 = genericService.markWritableOnExistingSession(file);
+            genericService.markWritableOnExistingSession(file);
         }
         processFiles(authorizedUser, proxies, incoming_);
         incoming_.markUpdated(authorizedUser);
@@ -216,7 +217,8 @@ public class ImportService {
      * @return
      * @throws APIException
      */
-    private <R extends Resource> boolean reconcileIncomingObjectWithExisting(TdarUser authorizedUser, R incomingResource, boolean created) throws APIException {
+    private <R extends Resource> boolean reconcileIncomingObjectWithExisting(TdarUser authorizedUser, R incomingResource, boolean created_) throws APIException {
+        boolean created = created_;
         if (PersistableUtils.isNotTransient(incomingResource)) {
             @SuppressWarnings("unchecked")
             R existing = (R) genericService.find(incomingResource.getClass(), incomingResource.getId());
@@ -284,7 +286,7 @@ public class ImportService {
                     }
                     Persistable result = processIncoming(p, incomingResource, authorizedUser);
                     if (result instanceof Sequenceable) {
-                        ((Sequenceable) result).setSequenceNumber(count);
+                        ((Sequenceable<?>) result).setSequenceNumber(count);
                     }
                     count++;
                     toAdd.add(result);
@@ -522,7 +524,7 @@ public class ImportService {
         if (PersistableUtils.isNotNullOrTransient(property)) {
             Class<? extends Persistable> cls = property.getClass();
             Long id = property.getId();
-            property = null;
+//            property = null;
             P toReturn = (P) findById(cls, id);
             if (toReturn instanceof ResourceCollection && resource instanceof Resource) {
                 ResourceCollection collection = (ResourceCollection) toReturn;
@@ -537,7 +539,12 @@ public class ImportService {
                     ((Person) toReturn).setInstitution(findById(Institution.class, inst.getId()));
                 }
             }
-            
+            if (toReturn instanceof TdarUser) {
+                Institution inst = ((TdarUser) toReturn).getProxyInstitution();
+                if (PersistableUtils.isNotNullOrTransient(inst) && !genericService.sessionContains(inst)) {
+                    ((TdarUser) toReturn).setProxyInstitution(findById(Institution.class, inst.getId()));
+                }
+            }
             return toReturn;
         }
 
@@ -546,7 +553,7 @@ public class ImportService {
         if (property instanceof Keyword) {
             Class<? extends Keyword> kwdCls = (Class<? extends Keyword>) property.getClass();
 //            logger.debug(":::> {} ({} [{}])", property, kwdCls, property instanceof ControlledKeyword);
-            if (property instanceof ControlledKeyword) {
+            if (property instanceof ControlledKeyword && !(property instanceof SuggestedKeyword)) {
                 Keyword findByLabel = genericKeywordService.findByLabel(kwdCls, ((Keyword) property).getLabel());
                 if (findByLabel == null) {
                     throw new APIException("importService.unsupported_keyword", Arrays.asList(property.getClass().getSimpleName()),
@@ -564,7 +571,7 @@ public class ImportService {
         }
 
         if (property instanceof Creator) {
-            Creator creator = (Creator) property;
+            Creator<?> creator = (Creator<?>) property;
             toReturn = (P) entityService.findOrSaveCreator(creator);
             logger.debug("findOrSaveCreator:{}", creator);
         }
@@ -589,7 +596,7 @@ public class ImportService {
             if (!((Validatable) property).isValidForController()) {
                 if (property instanceof Project) {
                     toReturn = (P) Project.NULL;
-                } else if ((property instanceof Creator) && ((Creator) property).hasNoPersistableValues()) {
+                } else if ((property instanceof Creator) && ((Creator<?>) property).hasNoPersistableValues()) {
                     toReturn = null;
                 } else if ((property instanceof ResourceCollection) && ((ResourceCollection) property).isInternal()) {
                     toReturn = property;
@@ -617,6 +624,7 @@ public class ImportService {
         logger.trace("{} {}", second, id);
         H h = genericService.find(second, id);
         if (h == null) {
+            logger.error("object does not exist: {} ({})", second, id);
             throw new TdarRecoverableRuntimeException("error.object_does_not_exist");
         }
         return h;

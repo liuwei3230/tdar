@@ -45,7 +45,6 @@ import org.tdar.core.dao.TdarNamedQueries;
 @Component
 public class PersonDao extends Dao.HibernateBase<Person> {
 
-    private static final String RESOURCE_IDS = "resourceIds";
     private static final Long TDAR_USER_PRIOR_TO_ASKING_AFFILIATION = 5215L;
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -62,6 +61,7 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         return query.list();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Person> findSimilarPeople(TdarUser user) {
         List<Person> people = new ArrayList<>();
         String initial = user.getFirstName().substring(0, 1).toUpperCase();
@@ -117,7 +117,7 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         return new HashSet<Person>(criteria.list());
     }
 
-    public Person findAuthorityFromDuplicate(Creator dup) {
+    public Person findAuthorityFromDuplicate(Creator<?> dup) {
         Query query = getCurrentSession().createSQLQuery(String.format(QUERY_CREATOR_MERGE_ID, dup.getId()));
         @SuppressWarnings("unchecked")
         List<BigInteger> result = query.list();
@@ -247,7 +247,7 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         return roles;
     }
 
-    public Long getCreatorViewCount(Creator creator) {
+    public Long getCreatorViewCount(Creator<?> creator) {
         Query query = getCurrentSession().getNamedQuery(TdarNamedQueries.CREATOR_VIEW);
         query.setParameter("id", creator.getId());
         Number result = (Number) query.uniqueResult();
@@ -291,51 +291,4 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         return toReturn;
     }
 
-    /**
-     * Creates a temporary table with creator IDs for all resources Ids in list. This is used by the creator analysis process for related creators. It was
-     * initially designed to run in loops but it took too much memory, so using temp tables in the database to generate the logic
-     * 
-     * @param resourceIds
-     * @return
-     */
-    public Map<Creator, Integer> getRelatedCreatorCounts(Set<Long> resourceIds_) {
-        Map<Creator, Integer> results = new HashMap<Creator, Integer>();
-
-        Set<Long> resourceIds = new HashSet<>(resourceIds_);
-        resourceIds.remove(null);
-        if (CollectionUtils.isEmpty(resourceIds)) {
-            return results;
-        }
-
-        String drop = TdarNamedQueries.CREATOR_DROP_TEMP;
-        getCurrentSession().createSQLQuery(drop).executeUpdate();
-
-        String sql = TdarNamedQueries.CREATOR_ANALYSIS_CREATE_TEMP;
-        getCurrentSession().createSQLQuery(sql).executeUpdate();
-        String sql1 = TdarNamedQueries.CREATOR_ANALYSIS_RESOURCE_CREATOR_INSERT;
-        getCurrentSession().createSQLQuery(sql1).setParameterList(RESOURCE_IDS, resourceIds).executeUpdate();
-        String sql11 = TdarNamedQueries.CREATOR_ANALYSIS_SUBMITTER_INSERT;
-        getCurrentSession().createSQLQuery(sql11).setParameterList(RESOURCE_IDS, resourceIds).executeUpdate();
-        String sql12 = TdarNamedQueries.CREATOR_ANALYSIS_PUBLISHER_INSERT;
-        getCurrentSession().createSQLQuery(sql12).setParameterList(RESOURCE_IDS, resourceIds).executeUpdate();
-        String sql2 = TdarNamedQueries.CREATOR_ANALYSIS_INHERITED_CREATORS_INSERT;
-        getCurrentSession().createSQLQuery(sql2).setParameterList(RESOURCE_IDS, resourceIds).executeUpdate();
-        String sql3 = TdarNamedQueries.CREATOR_ANALYSIS__SLECT_COUNTS;
-        for (Object row_ : getCurrentSession().createSQLQuery(sql3).list()) {
-            Object[] row = (Object[]) row_;
-            Integer count = ((BigInteger) row[0]).intValue();
-            Long id = ((BigInteger) row[1]).longValue();
-            Creator creator = find(Creator.class, id);
-
-            if (creator.isDuplicate()) {
-                creator = findAuthorityFromDuplicate(creator);
-            }
-
-            if (results.containsKey(creator)) {
-                count += results.get(creator);
-            }
-            results.put(creator, count);
-        }
-        return results;
-    }
 }

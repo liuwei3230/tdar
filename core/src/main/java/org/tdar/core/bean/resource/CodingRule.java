@@ -17,8 +17,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 
@@ -36,7 +36,7 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
         @Index(name = "coding_rule_term_index", columnList = "term"),
         @Index(name = "coding_rule_ontology_node_id_idx", columnList = "ontology_node_id")
 })
-public class CodingRule extends Persistable.Base implements Comparable<CodingRule> {
+public class CodingRule extends AbstractPersistable implements Comparable<CodingRule> {
 
     private static final long serialVersionUID = -577936920767925065L;
 
@@ -105,7 +105,6 @@ public class CodingRule extends Persistable.Base implements Comparable<CodingRul
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "coding_sheet_id")
-//    @ContainedIn
     private CodingSheet codingSheet;
 
     @Column(nullable = false)
@@ -113,7 +112,6 @@ public class CodingRule extends Persistable.Base implements Comparable<CodingRul
     private String code;
 
     @Column(nullable = false)
-    //@Field
     @Length(max = FieldLength.FIELD_LENGTH_255)
     private String term;
 
@@ -174,7 +172,8 @@ public class CodingRule extends Persistable.Base implements Comparable<CodingRul
     }
 
     // strips leading zeros and trims whitespace from string.
-    private static String sanitize(String string) {
+    private static String sanitize(String string_) {
+        String string = string_;
         if (StringUtils.isEmpty(string)) {
             return null;
         }

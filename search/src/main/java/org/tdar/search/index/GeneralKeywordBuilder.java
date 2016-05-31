@@ -10,7 +10,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.tdar.core.bean.SupportsResource;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.Keyword;
@@ -54,6 +53,7 @@ public class GeneralKeywordBuilder implements Serializable {
         return sb.toString();
     }
 
+    @SuppressWarnings("unchecked")
     public void indexResource(Resource r, StringBuilder sb) {
 //        logger.trace("get keyword contents: {}", r.getId());
         sb.append(r.getTitle()).append(" ").append(r.getDescription()).append(" ").append(" ");
@@ -87,12 +87,6 @@ public class GeneralKeywordBuilder implements Serializable {
         }
         for (ResourceAnnotation ann : r.getActiveResourceAnnotations()) {
             sb.append(ann.getValue()).append(" ");
-        }
-
-        for (ResourceCollection coll : r.getSharedResourceCollections()) {
-            if (!coll.isHidden()) {
-                sb.append(coll.getName()).append(" ");
-            }
         }
 
         for (RelatedComparativeCollection rcc : r.getActiveRelatedComparativeCollections()) {

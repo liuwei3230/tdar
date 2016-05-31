@@ -26,17 +26,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
-import org.tdar.MultipleWebTdarConfigurationRunner;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.PersonalFilestoreTicket;
 import org.tdar.core.bean.citation.Citation;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
-import org.tdar.core.bean.entity.Creator;
+import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
@@ -56,6 +55,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.bulk.BulkUploadTemplate;
+import org.tdar.junit.MultipleTdarConfigurationRunner;
 import org.tdar.junit.RunWithTdarConfiguration;
 import org.tdar.struts.action.AbstractAdminControllerITCase;
 import org.tdar.struts.action.TdarActionException;
@@ -72,7 +72,7 @@ import com.opensymphony.xwork2.Action;
  * @author Adam Brin
  * @version $Rev$
  */
-@RunWith(MultipleWebTdarConfigurationRunner.class)
+@RunWith(MultipleTdarConfigurationRunner.class)
 public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
 
     private static final String OTHER_LICENCE_TYPE_BOILERPLATE = "A long and boring piece of waffle";
@@ -213,6 +213,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         bulkUploadController.getSourceCollections().add(createSourceCollection("sc three"));
     }
 
+    @SuppressWarnings("unused")
     private void assertSourceAndComparitiveCollections(Resource resource) {
         assertTrue(resource.getRelatedComparativeCollections().size() == 3);
         assertTrue(resource.getSourceCollections().size() == 3);
@@ -303,6 +304,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         assertEquals(new Integer(2222), ((InformationResource) resourceService.find(details.get(1).getFirst())).getDate());
     }
 
+    @SuppressWarnings("unused")
     @Test
     @Rollback
     public void testBadBulkUploadNewFormat() throws Exception {
@@ -409,6 +411,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
         return setupBasicBulkUploadTest(manifestName, successAsync, uploadFiles);
     }
 
+    @SuppressWarnings({ "unused" })
     @Test
     @Rollback
     public void testCloneInformationResourceWithNotes() throws Exception {
@@ -543,7 +546,7 @@ public class BulkUploadControllerITCase extends AbstractAdminControllerITCase {
     @RunWithTdarConfiguration(runWith = { RunWithTdarConfiguration.FAIMS })
     public void testCloneImageWithCopyrightEnabled() {
         Image expected = new Image();
-        Creator copyrightHolder = entityService.find(getAdminUserId());
+        Person copyrightHolder = entityService.find(getAdminUserId());
         expected.setCopyrightHolder(copyrightHolder);
         Image image = resourceService.createResourceFrom(expected, expected.getClass());
         assertTrue(copyrightHolder.equals(image.getCopyrightHolder()));

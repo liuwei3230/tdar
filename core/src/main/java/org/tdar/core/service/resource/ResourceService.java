@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -24,12 +25,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.HasResource;
 import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Person;
@@ -63,6 +65,8 @@ import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceTypeStatusInfo;
 import org.tdar.core.dao.resource.stats.DateGranularity;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
+import org.tdar.core.event.EventType;
+import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
 import org.tdar.core.service.DeleteIssue;
@@ -72,8 +76,8 @@ import org.tdar.core.service.SerializationService;
 import org.tdar.search.geosearch.GeoSearchService;
 import org.tdar.search.query.SearchResultHandler;
 import org.tdar.transform.MetaTag;
-import org.tdar.transform.SchemaOrgMetadataTransformer;
 import org.tdar.transform.ScholarMetadataTransformer;
+import org.tdar.transform.jsonld.SchemaOrgResourceTransformer;
 import org.tdar.utils.ImmutableScrollableCollection;
 import org.tdar.utils.PersistableUtils;
 
@@ -85,7 +89,9 @@ public class ResourceService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     public enum ErrorHandling {
         NO_VALIDATION,
         VALIDATE_SKIP_ERRORS,
@@ -272,8 +278,16 @@ public class ResourceService {
 
     
     @Transactional(readOnly=true)
-    public Map<DataTableColumn, String> getMappedDataForInformationResource(InformationResource resource) {
-        return datasetDao.getMappedDataForInformationResource(resource);
+    public Map<DataTableColumn, String> getMappedDataForInformationResource(InformationResource resource, boolean failOnMissing) {
+        try {
+            return datasetDao.getMappedDataForInformationResource(resource);
+        } catch (Throwable t) {
+            logger.error("could not attach additional dataset data to resource", t);
+            if (failOnMissing) {
+                throw t;
+            } 
+            return new HashMap<>();
+        }
     }
 
     /**
@@ -316,8 +330,9 @@ public class ResourceService {
      * @param cls type of the collection elements.
      */
     public <H extends HasResource<R>, R extends Resource> void saveHasResources(R resource, boolean shouldSave, ErrorHandling validateMethod,
-            Collection<H> incoming_,
+            Collection<H> incoming__,
             Set<H> current, Class<H> cls) {
+        Collection<H> incoming_ = incoming__;
         if (CollectionUtils.isEmpty(incoming_) && CollectionUtils.isEmpty(current)) {
             // skip a complete no-op
             return;
@@ -818,7 +833,8 @@ public class ResourceService {
     }
 
     @Transactional(readOnly = false)
-    public void deleteForController(Resource resource, String reason, TdarUser authUser) {
+    public void deleteForController(Resource resource, String reason_, TdarUser authUser) {
+        String reason = reason_;
         if (StringUtils.isNotEmpty(reason)) {
             ResourceNote note = new ResourceNote(ResourceNoteType.ADMIN, reason);
             resource.getResourceNotes().add(note);
@@ -846,6 +862,7 @@ public class ResourceService {
             account = genericDao.markWritableOnExistingSession(account);
             accountDao.updateQuota(account, toEvaluate);
             genericDao.saveOrUpdate(account);
+            publisher.publishEvent(new TdarEvent(resource, EventType.CREATE_OR_UPDATE));
         }
 
     }
@@ -926,7 +943,7 @@ public class ResourceService {
     @Transactional(readOnly=true)
     public String getSchemaOrgJsonLD(Resource resource) {
         try {
-            SchemaOrgMetadataTransformer transformer = new SchemaOrgMetadataTransformer();
+            SchemaOrgResourceTransformer transformer = new SchemaOrgResourceTransformer();
             return transformer.convert(serializationService, resource);
         } catch (Exception e) {
             logger.error("error converting to json-ld", e);

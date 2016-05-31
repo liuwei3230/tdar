@@ -1,0 +1,11 @@
+
+/* workaround for display issue when pasting multiple tokens. For more info: https://github.com/select2/select2/issues/4333 */
+.select2-search--inline:first-child {
+    width: 100%;
+}
+
+.select2-container li.select2-search--inline input {
+    width: 100% !important;
+    height: 100%;
+    margin-top: 0px;
+}

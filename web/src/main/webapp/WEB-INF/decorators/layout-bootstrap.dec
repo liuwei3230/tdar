@@ -7,9 +7,11 @@
 <#import "decorator-macros.ftl" as dec>
 <#import "whitelabel-decorator-macros.ftl" as wdec>
 
+<!-- README - UPDATE BOWER.JSON in lockstep -->
 <#global jquery_version="1.11.3">
 <#global jquery_ui_version="1.11.4">
 <#global jquery_ui_css_version="1.11.4">
+<#global jquery_validate_version="1.13.1" >
 
 <#-- if something bad happened, we're no-longer backed by TdarActionSupport, and thus protocol is not on the stack... switch to static error.
      This is a less-than ideal solution, but seems to be the best that we have. -->
@@ -52,7 +54,6 @@
     <@header.css (webFilePreprocessingEnabled ) />
 
     <script>TDAR_jsErrorDelim = "${javascriptErrorLogDelimiter}?js_string";</script>
-
     <script type="text/javascript" src="${staticHost}/js/tdar.errorutils.js?build${common.tdarBuildId}"></script>
     <script src="${staticHost}/includes/modernizr-custom-2.6.2.min.js"></script>
     <#if useCDN>
@@ -80,6 +81,12 @@ ${head}
     </#if>
     <#if contextPath?has_content>
     <base id="basePath" href="<@s.url value='/'/>">
+    </#if>
+    
+    <#if selenium>
+    	<style>
+    		#sidebar-right #notice, .subnavbar.affix, .subnavbar.affix-top, .popover {display:none;visibility:hidden}
+    	</style>
     </#if>
 </head>
 <body id="${bodyid}" data-spy="scroll" data-target="#subnavbar" class="results ${actionName} <#if !production>not-production</#if>"
@@ -241,8 +248,8 @@ ${head}
     </footer>
 
     <#if useCDN>
-        <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script>
-        <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/additional-methods.min.js"></script>
+        <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/${jquery_validate_version}/jquery.validate.min.js"></script>
+        <script src="//ajax.aspnetcdn.com/ajax/jquery.validate/${jquery_validate_version}/additional-methods.min.js"></script>
         <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
     <#else>
         <script src="${staticHost}/includes/jquery.validate-1.13.1/jquery.validate.js"></script>

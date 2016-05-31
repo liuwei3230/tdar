@@ -32,7 +32,7 @@ import com.opensymphony.xwork2.Preparable;
 @ParentPackage("secured")
 @Namespace("/")
 @Results(@Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.TDAR_REDIRECT, location = TdarActionSupport.UNKNOWN_ERROR))
-public abstract class AbstractDeleteAction<P extends Persistable & Addressable> extends AuthenticationAware.Base implements Preparable {
+public abstract class AbstractDeleteAction<P extends Persistable & Addressable> extends AbstractAuthenticatableAction implements Preparable {
 
     public final static String msg = "%s is %s %s (%s): %s";
     private String delete;
@@ -44,7 +44,6 @@ public abstract class AbstractDeleteAction<P extends Persistable & Addressable> 
     @Autowired
     private transient AuthorizationService authorizationService;
 
-    @SuppressWarnings("unused")
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
     private DeleteIssue deleteIssue;

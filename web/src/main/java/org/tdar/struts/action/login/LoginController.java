@@ -1,7 +1,5 @@
 package org.tdar.struts.action.login;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.common.util.UrlUtils;
 import org.apache.struts2.ServletActionContext;
@@ -24,7 +22,7 @@ import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.external.auth.UserLogin;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.struts.interceptor.annotation.CacheControl;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -48,7 +46,7 @@ import com.opensymphony.xwork2.Validateable;
 @Results({
         @Result(name = TdarActionSupport.AUTHENTICATED, type = TdarActionSupport.TDAR_REDIRECT, location = URLConstants.DASHBOARD) })
 @CacheControl
-public class LoginController extends AuthenticationAware.Base implements Validateable {
+public class LoginController extends AbstractAuthenticatableAction implements Validateable {
 
     private static final long serialVersionUID = -1219398494032484272L;
 
@@ -81,17 +79,18 @@ public class LoginController extends AuthenticationAware.Base implements Validat
 
     @Action(value = "logout",
             results = {
-                    @Result(name = SUCCESS, type = "tdar-redirect", location = "/")
+                    @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "/")
             })
+    @PostOnly
     @SkipValidation
     public String logout() {
-        // manually handle SSO TOken
-        HttpServletRequest request = ServletActionContext.getRequest();
-        String token = authenticationService.getSsoTokenFromRequest(request);
-        getLogger().trace("token:{}", token);
-        // login if SSO Token is set (logout will then remove it)
-        authenticationService.checkToken((String) token, getSessionData(), request);
+    	// manually handle SSO TOken
+        String token = authenticationService.getSsoTokenFromRequest(ServletActionContext.getRequest());
+        getLogger().debug("token:{}", token);
+        @SuppressWarnings("unused")
+        AuthenticationResult result = authenticationService.checkToken((String) token, getSessionData(), ServletActionContext.getRequest());
 
+    	getLogger().debug("is authenticated? {}", getSessionData().isAuthenticated());
         if (getSessionData().isAuthenticated()) {
             authenticationService.logout(getSessionData(), getServletRequest(), getServletResponse(), getAuthenticatedUser());
         }
@@ -203,7 +202,7 @@ public class LoginController extends AuthenticationAware.Base implements Validat
         ErrorTransferObject errors = userLogin.validate(authorizationService, recaptchaService, getServletRequest().getRemoteHost());
         processErrorObject(errors);
 
-        if (!isPostRequest() || errors.isNotEmpty()) {
+        if (errors.isNotEmpty()) {
             getLogger().warn("Returning INPUT because login requested via GET request for user:{}", userLogin.getLoginUsername());
         }
     }

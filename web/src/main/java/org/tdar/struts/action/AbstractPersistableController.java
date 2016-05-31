@@ -16,8 +16,10 @@ import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
+import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Updatable;
 import org.tdar.core.bean.Validatable;
@@ -27,6 +29,8 @@ import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
+import org.tdar.core.event.EventType;
+import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.external.AuthorizationService;
@@ -51,15 +55,20 @@ import com.opensymphony.xwork2.Preparable;
  * @author Adam Brin, <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Revision$
  */
-public abstract class AbstractPersistableController<P extends Persistable & Updatable> extends AuthenticationAware.Base implements Preparable, PersistableLoadingAction<P> {
+public abstract class AbstractPersistableController<P extends Persistable & Updatable> extends AbstractAuthenticatableAction implements Preparable, PersistableLoadingAction<P> {
 
     public static final String SAVE_SUCCESS_PATH = "/${saveSuccessPath}/${persistable.id}${saveSuccessSuffix}";
     public static final String DRAFT = "draft";
     protected long epochTimeUpdated = 0L;
 
+    @SuppressWarnings("unused")
     @Autowired
     private transient RecaptchaService recaptchaService;
 
+    @Autowired
+    private transient ApplicationEventPublisher publisher;
+
+    
     private AntiSpamHelper h = new AntiSpamHelper();
     private static final long serialVersionUID = -559340771608580602L;
     private Long startTime = -1L;
@@ -153,47 +162,40 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     @PostOnly
     @HttpsOnly
     public String save() throws TdarActionException {
-        // checkSession();
-        // genericService.setCacheModeForCurrentSession(CacheMode.REFRESH);
         String actionReturnStatus = SUCCESS;
         logAction("SAVING");
         long currentTimeMillis = System.currentTimeMillis();
         boolean isNew = false;
         try {
-            if (isPostRequest()) {
-                if (isNullOrNew()) {
-                    isNew = true;
-                }
-                preSaveCallback();
-                determineAndUpdateStatus();
+            if (isNullOrNew()) {
+                isNew = true;
+            }
+            preSaveCallback();
+            determineAndUpdateStatus();
 
-                if (persistable instanceof Updatable) {
-                    ((Updatable) persistable).markUpdated(getAuthenticatedUser());
-                }
+            if (persistable instanceof Updatable) {
+                ((Updatable) persistable).markUpdated(getAuthenticatedUser());
+            }
 
-                actionReturnStatus = save(persistable);
+            actionReturnStatus = save(persistable);
 
-                try {
-                    postSaveCallback(actionReturnStatus);
-                } catch (TdarRecoverableRuntimeException tex) {
-                    addActionErrorWithException(tex.getMessage(), tex);
-                }
+            try {
+                postSaveCallback(actionReturnStatus);
+            } catch (TdarRecoverableRuntimeException tex) {
+                addActionErrorWithException(tex.getMessage(), tex);
+            }
 
-                // should there not be "one" save at all? I think this should be here
-                if (shouldSaveResource()) {
-                    getGenericService().saveOrUpdate(persistable);
-                }
+            // should there not be "one" save at all? I think this should be here
+            if (shouldSaveResource()) {
+                getGenericService().saveOrUpdate(persistable);
+            }
 
-//                SessionProxy.getInstance().registerSessionClose(getGenericService().getCurrentSessionHashCode());
-                indexPersistable();
-                // who cares what the save implementation says. if there's errors return INPUT
-                if (!getActionErrors().isEmpty()) {
-                    getLogger().debug("Action errors found {}; Replacing return status of {} with {}", getActionErrors(), actionReturnStatus, INPUT);
-                    // FIXME: if INPUT -- should I just "return"?
-                    actionReturnStatus = INPUT;
-                }
-            } else {
-                throw new TdarActionException(StatusCode.BAD_REQUEST, getText("abstractPersistableController.bad_request"));
+            indexPersistable();
+            // who cares what the save implementation says. if there's errors return INPUT
+            if (!getActionErrors().isEmpty()) {
+                getLogger().debug("Action errors found {}; Replacing return status of {} with {}", getActionErrors(), actionReturnStatus, INPUT);
+                // FIXME: if INPUT -- should I just "return"?
+                actionReturnStatus = INPUT;
             }
         } catch (TdarActionException exception) {
             throw exception;
@@ -233,9 +235,9 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     }
 
     protected void indexPersistable() throws SolrServerException, IOException {
-//        if (persistable instanceof Indexable) {
-//            searchIndexService.index((Indexable) persistable);
-//        }
+    	if (getPersistable() instanceof Indexable) {
+    		publisher.publishEvent(new TdarEvent((Indexable)getPersistable(), EventType.CREATE_OR_UPDATE));
+    	}
     }
 
     private void logAction(String action_) {
@@ -390,9 +392,13 @@ public abstract class AbstractPersistableController<P extends Persistable & Upda
     @Override
     public void prepare() throws TdarActionException {
         RequestType type = RequestType.EDIT;
-        if (getId() == null && (getCurrentUrl().contains("/add") || StringUtils.isBlank(getCurrentUrl()))) {
+
+        if (getId() == null && (getCurrentUrl().contains("/add") || 
+        		(getTdarConfiguration().isTest() && StringUtils.isBlank(getCurrentUrl())))) {
             getLogger().debug("setting persistable");
-            setPersistable(createPersistable());
+            if (getPersistable() == null) {
+            	setPersistable(createPersistable());
+            }
             type = RequestType.CREATE;
         }
         prepareAndLoad(this, type);

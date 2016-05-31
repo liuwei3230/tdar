@@ -2,6 +2,7 @@
 <#import "/WEB-INF/macros/resource/common.ftl" as common>
 <#import "/WEB-INF/macros/resource/list-macros.ftl" as list>
 <#import "/WEB-INF/macros/resource/navigation-macros.ftl" as nav>
+<#import "/WEB-INF/macros/resource/view-macros.ftl" as view>
 <#import "/WEB-INF/macros/search/search-macros.ftl" as search>
 
 
@@ -26,6 +27,8 @@
 
         <h3>Child Collections</h3>
         <@common.listCollections collections=collections showOnlyVisible=true />
+
+		<@list.displayWidget />
     </div>
 </#macro>
 
@@ -47,6 +50,17 @@
     <@view.pageStatusCallout />
 
 </#macro>
+
+    <#macro _keywordSection label keywordList searchParam>
+        <#list keywordList>
+        <p>
+            <strong>${label}</strong><br>
+            <#items as item>
+                <a href="${item.url}">${item.label}</a><#sep> &bull;</#sep>
+            </#items>
+        </p>
+        </#list>
+    </#macro>
 
 <#macro descriptionSection>
         <#if resourceCollection.parent?? || resourceCollection.description??  || resourceCollection.formattedDescription?? || collections??>
@@ -73,6 +87,25 @@
                     </p>
                 </#if>
             </div>
+            <#if keywordSectionVisible>
+            <h5>Common Keywords found within this Collection</h5>
+            <div class="row">
+                <div class="span4">
+                <@_keywordSection "Site Name Keywords" facetWrapper.facetResults['activeSiteNameKeywords']![] "query" />
+                <@_keywordSection "Site Type Keywords" facetWrapper.facetResults['activeSiteTypeKeywords']![] "query" />
+                <@_keywordSection "Other Keywords" facetWrapper.facetResults['activeOtherKeywords']![] "query" />
+                <@_keywordSection "Culture Keywords" facetWrapper.facetResults['activeCultureKeywords']![] "query" />
+                </div>
+
+                <div class="span4">
+                <@_keywordSection "Investigation Types" facetWrapper.facetResults['activeInvestigationTypes']![] "query" />
+                <@_keywordSection "Material Types" facetWrapper.facetResults['activeMaterialKeywords']![] "query" />
+                <@_keywordSection "Temporal Keywords" facetWrapper.facetResults['activeTemporalKeywords']![] "query" />
+                <@_keywordSection "Geographic Keywords" facetWrapper.facetResults['activeGeographicKeywords']![] "query" />
+                </div>
+            </div>
+            <hr/>
+            </#if>
         </div>
         </#if>
 </#macro>
@@ -139,7 +172,7 @@
 
             <#nested />
             <@list.listResources resourcelist=results sortfield=sortField titleTag="h5" listTag="ul" itemTag="li" itemsPerRow=itemsPerRow
-                    orientation=resourceCollection.orientation    mapPosition="top" mapHeight=mapSize />
+                    orientation=orientation    mapPosition="top" mapHeight=mapSize />
         </div>
             <@search.basicPagination "Records" />
         <#else>
@@ -157,8 +190,31 @@
 		  <div class="span6">
 			<p><b>Admin Tools</b>
 			<ul>
-			 <li> <a href="<@s.url value="/collection/report/${resourceCollection.id?c}"/>">Admin Metadata Report</a></li>
+             <li> <a href="<@s.url value="/collection/report/${resourceCollection.id?c}"/>">Admin Metadata Report</a></li>
 			 <li> <a href="<@s.url value="/search/download?collectionId=${resourceCollection.id?c}"/>">Export to Excel</a></li>
+			 <#if administrator && !whiteLabelCollection>
+			 <li>
+                <b>Make Whitelabel</b>
+                <form action="/collection/admin/makeWhitelabel/${id?c}" method="POST">
+                    <@s.submit cssClass="button btn tdar-button" id="makeWhiteLabelCollection" />
+                </form>
+			 
+			 </li>
+            </#if>
+			 <li>
+                <b>Reindex collection contents</b>
+                <form action="/collection/admin/reindex/${id?c}" method="POST">
+                    <@s.submit cssClass="button btn tdar-button" id="reindexCollection" />
+                </form>
+			 
+			 </li>
+			 <li>
+                <b>Make all DRAFT Resources Active</b>
+                <form action="/collection/admin/makeActive/${id?c}" method="POST">
+                    <@s.submit cssClass="button btn tdar-button" id="makeActive" />
+                </form>
+			 
+			 </li>
          </ul>
             </div>
             </div>

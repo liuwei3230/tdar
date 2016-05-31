@@ -29,8 +29,8 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Validatable;
 import org.tdar.core.bean.resource.CategoryVariable;
 import org.tdar.core.bean.resource.CodingRule;
@@ -62,7 +62,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 })
 @XmlRootElement
 @JsonInclude(Include.NON_NULL)
-public class DataTableColumn extends Persistable.Sequence<DataTableColumn> implements Validatable {
+public class DataTableColumn extends AbstractSequenced<DataTableColumn> implements Validatable {
 
     private static final long serialVersionUID = 430090539610139732L;
 
@@ -111,8 +111,6 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
     private String name;
 
     @Column(nullable = false, name = "display_name")
-    //@Field
-    //@Analyzer(impl = TdarCaseSensitiveStandardAnalyzer.class)
     @Length(max = FieldLength.FIELD_LENGTH_255)
     private String displayName;
 
@@ -349,6 +347,7 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
         return true;
     }
 
+    @SuppressWarnings("incomplete-switch")
     @Override
     public boolean isValid() {
         List<Object> keys = new ArrayList<>();
@@ -488,4 +487,9 @@ public class DataTableColumn extends Persistable.Sequence<DataTableColumn> imple
         this.transientOntology = transientOntology;
     }
 
+    @Transient
+    @XmlTransient
+    public boolean isFilenameColumn() {
+        return this.getColumnEncodingType().isFilename();
+    }
 }

@@ -39,7 +39,9 @@ import org.tdar.utils.PersistableUtils;
  */
 public class PairtreeFilestore extends BaseFilestore {
 
-    private static final String SUPPORT = "support";
+    private static final String V = "v";
+	private static final String XML = "xml";
+	private static final String SUPPORT = "support";
     public static final String CONTAINER_NAME = "rec";
     public static final String DERIV = "deriv";
     public static final String ARCHIVAL = "archival";
@@ -127,7 +129,8 @@ public class PairtreeFilestore extends BaseFilestore {
         }
     }
 
-    private File rotateFileIfNeeded(StorageMethod rotate, File outFile) {
+    private File rotateFileIfNeeded(StorageMethod rotate, File outFile_) {
+        File outFile = outFile_;
         if (outFile.exists() && (rotate.getRotations() > 0)) {
             rotate(outFile, rotate);
         }
@@ -249,7 +252,7 @@ public class PairtreeFilestore extends BaseFilestore {
         if (version.getType() == FilestoreObjectType.RESOURCE) {
             if (PersistableUtils.isNotNullOrTransient(version.getInformationResourceFileId())) {
                 append(base, version.getInformationResourceFileId());
-                append(base, "v" + version.getVersion());
+                append(base, V + version.getVersion());
                 if (version.getVersionType().isArchival()) {
                     append(base, ARCHIVAL);
                 } else if (!version.getVersionType().isUploaded()) {
@@ -257,7 +260,7 @@ public class PairtreeFilestore extends BaseFilestore {
                 }
             }
         } else {
-            if (version.getVersionType() == VersionType.METADATA && "xml".equalsIgnoreCase(version.getExtension())) {
+            if (version.getVersionType() == VersionType.METADATA && XML.equalsIgnoreCase(version.getExtension())) {
                 append(base, SUPPORT);
             }
         }
@@ -359,5 +362,10 @@ public class PairtreeFilestore extends BaseFilestore {
             }
         }
     }
+
+	@Override
+	public File getDirectory(FilestoreObjectType type, Long persistableId) {
+		return new File(getResourceDirPath(type, persistableId));
+	}
 
 }

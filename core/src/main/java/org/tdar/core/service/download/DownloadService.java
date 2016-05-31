@@ -210,8 +210,9 @@ public class DownloadService {
 
     @Transactional(readOnly = false)
     public DownloadTransferObject validateFilterAndSetupDownload(TdarUser authenticatedUser, InformationResourceFileVersion versionToDownload,
-            InformationResource resourceToDownload, boolean includeCoverPage, TextProvider textProvider, DownloadAuthorization authorization,
+            InformationResource resourceToDownload_, boolean includeCoverPage, TextProvider textProvider, DownloadAuthorization authorization,
             boolean countDownload) {
+        InformationResource resourceToDownload = resourceToDownload_;
         List<InformationResourceFileVersion> versionsToDownload = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(versionToDownload)) {
             versionsToDownload.add(versionToDownload);
@@ -321,7 +322,7 @@ public class DownloadService {
                 logger.error("FILE NOT FOUND: {} [{}]", version, path, e1);
             }
         } else {
-            logger.warn("FileNotFound (FilestoreConfigured?):: {}");
+            logger.warn("FileNotFound (FilestoreConfigured?):: {} ",path);
         }
     }
 

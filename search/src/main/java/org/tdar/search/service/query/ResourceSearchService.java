@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.Keyword;
@@ -39,6 +39,7 @@ import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.builder.QueryBuilder;
 import org.tdar.search.query.builder.ResourceCollectionQueryBuilder;
 import org.tdar.search.query.builder.ResourceQueryBuilder;
+import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.query.part.CategoryTermQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.GeneralSearchResourceQueryPart;
@@ -238,7 +239,7 @@ public class ResourceSearchService extends AbstractSearchService {
      * @throws ParseException 
      */
     @Transactional(readOnly=true)
-    public LuceneSearchResultHandler<Resource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, LuceneSearchResultHandler<Resource> result, TextProvider provider) throws ParseException, SolrServerException, IOException {
+    public LuceneSearchResultHandler<Resource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, FacetedResultHandler<Resource> result, TextProvider provider) throws ParseException, SolrServerException, IOException {
         QueryBuilder queryBuilder = new ResourceQueryBuilder();
 //        result.setRecordsPerPage(MAX_FTQ_RESULTS);
         queryBuilder.setOperator(Operator.AND);

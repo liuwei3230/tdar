@@ -27,18 +27,20 @@ import org.hibernate.stat.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.event.EventType;
+import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.utils.PersistableUtils;
 
@@ -70,6 +72,8 @@ public class GenericDao {
     }
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     @Autowired
     private transient SessionFactory sessionFactory;
@@ -139,12 +143,7 @@ public class GenericDao {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Number countActive(Class<? extends HasStatus> persistentClass) {
-        Class cls = persistentClass;
-        if (persistentClass.isAssignableFrom(Creator.class)) {
-            cls = Creator.class;
-        }
         return (Number) getCurrentSession().createQuery(String.format(TdarNamedQueries.COUNT_ACTIVE_PERSISTABLE_BY_ID, persistentClass.getName()))
                 .uniqueResult();
     }
@@ -435,6 +434,7 @@ public class GenericDao {
             throw new TdarRecoverableRuntimeException(String.format("trying to save an obfuscated object %s ", entity));
         }
         session.save(entity);
+    	publisher.publishEvent(new TdarEvent(entity, EventType.CREATE_OR_UPDATE));
     }
 
     public <T> void saveOrUpdate(T entity) {
@@ -443,6 +443,7 @@ public class GenericDao {
             throw new TdarRecoverableRuntimeException(String.format("trying to save an obfuscated object %s ", entity));
         }
         session.saveOrUpdate(entity);
+        fireEvent(entity);
     }
 
     public <T> void update(T entity) {
@@ -451,6 +452,7 @@ public class GenericDao {
             throw new TdarRecoverableRuntimeException(String.format("trying to update an obfuscated object %s ", entity));
         }
         session.update(entity);
+        fireEvent(entity);
     }
 
     @SuppressWarnings("unchecked")
@@ -475,8 +477,11 @@ public class GenericDao {
         if (entity instanceof HasStatus) {
             ((HasStatus) entity).setStatus(Status.DELETED);
             saveOrUpdate(entity);
+            fireEvent(entity);
+
             return;
         }
+        publisher.publishEvent(new TdarEvent(entity, EventType.DELETE));
 
         if (entity instanceof InformationResourceFileVersion) {
             if (((InformationResourceFileVersion) entity).isUploadedOrArchival()) {
@@ -485,6 +490,10 @@ public class GenericDao {
         }
 
         forceDelete(entity);
+    }
+
+    private <T> void fireEvent(T entity) {
+        	publisher.publishEvent(new TdarEvent(entity, EventType.CREATE_OR_UPDATE));
     }
 
     public <T> void forceDelete(T entity) {

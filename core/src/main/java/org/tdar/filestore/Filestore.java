@@ -11,6 +11,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -31,14 +32,14 @@ import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
 import org.tdar.utils.MessageHelper;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+
 public interface Filestore {
 
     static final String FILENAME_SANITIZE_REGEX = "([\\W&&[^\\s\\-\\+\\.]])";
 
     public enum StorageMethod {
-        NO_ROTATION,
-        ROTATE,
-        DATE;
+        NO_ROTATION, ROTATE, DATE;
         private int rotations = 5;
 
         public int getRotations() {
@@ -51,9 +52,7 @@ public interface Filestore {
     }
 
     public enum LogType {
-        FILESTORE_VERIFICATION("verify"),
-        AUTHORITY_MANAGEMENT("authmgmt"),
-        OTHER("other");
+        FILESTORE_VERIFICATION("verify"), AUTHORITY_MANAGEMENT("authmgmt"), OTHER("other");
         private String dir;
 
         private LogType(String dir) {
@@ -68,11 +67,17 @@ public interface Filestore {
     /**
      * Write content to the filestore.
      * 
-     * @param {@link InputStream} The content to be stored.
+     * @param {@link
+     *            InputStream} The content to be stored.
      * @return {@link String} the fileId assigned to the content
-     * @throws {@link IOException}
+     * @throws {@link
+     *             IOException}
      */
     String store(FilestoreObjectType type, InputStream content, FileStoreFileProxy object) throws IOException;
+
+    File getXmlRecordFile(FilestoreObjectType type, Long persistableId, String filename);
+
+    Collection<File> listXmlRecordFiles(FilestoreObjectType type, Long persistableId);
 
     long getSizeInBytes();
 
@@ -85,18 +90,22 @@ public interface Filestore {
     /**
      * Write content to the filestore.
      * 
-     * @param {@link InputStream} The content to be stored.
+     * @param {@link
+     *            InputStream} The content to be stored.
      * @return {@link String} the fileId assigned to the content
-     * @throws {@link IOException}
+     * @throws {@link
+     *             IOException}
      */
     String storeAndRotate(FilestoreObjectType type, InputStream content, FileStoreFileProxy object, StorageMethod rotation) throws IOException;
 
     /**
      * Write a file to the filestore.
      * 
-     * @param {@link File} The file to be stored in the filestore.
+     * @param {@link
+     *            File} The file to be stored in the filestore.
      * @return {@link String} the fileId assigned to the content
-     * @throws {@link IOException}
+     * @throws {@link
+     *             IOException}
      */
     String store(FilestoreObjectType type, File content, FileStoreFileProxy version) throws IOException;
 
@@ -110,7 +119,8 @@ public interface Filestore {
      * @param fileId
      *            file identifier
      * @return {@link File} associated with the given ID.
-     * @throws {@link FileNotFoundException }
+     * @throws {@link
+     *             FileNotFoundException }
      */
     File retrieveFile(FilestoreObjectType type, FileStoreFileProxy object) throws FileNotFoundException;
 
@@ -119,7 +129,8 @@ public interface Filestore {
      * 
      * @param fileId
      *            file identifier
-     * @throws {@link IOException }
+     * @throws {@link
+     *             IOException }
      */
     void purge(FilestoreObjectType type, FileStoreFileProxy object) throws IOException;
 
@@ -176,9 +187,11 @@ public interface Filestore {
             Metadata md = new Metadata();
             md.set(TikaMetadataKeys.RESOURCE_NAME_KEY, file.getName());
             Detector detector = new DefaultDetector(TikaConfig.getDefaultConfig().getMimeRepository());
-            try {
-                FileInputStream fis = new FileInputStream(file);
-                mediaType = detector.detect(new BufferedInputStream(fis), md); // bufferedStream so we can move
+            try (
+                    FileInputStream fis = new FileInputStream(file);
+                    BufferedInputStream bis = new BufferedInputStream(fis)) {
+
+                mediaType = detector.detect(bis, md); // bufferedStream so we can move
                 fis.close();
             } catch (IOException ioe) {
                 logger.debug("error", ioe);
@@ -255,6 +268,22 @@ public interface Filestore {
             }
             File logDir = new File(FilenameUtils.concat(getFilestoreLocation(), subdir));
             return Arrays.asList(logDir.listFiles());
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Collection<File> listXmlRecordFiles(FilestoreObjectType type, Long persistableId) {
+            File dir = getDirectory(type, persistableId);
+            if (dir.exists()) {
+                return FileUtils.listFiles(dir, new String[] { "xml" }, false);
+            }
+            return Collections.emptyList();
+        }
+
+        @Override
+        public File getXmlRecordFile(FilestoreObjectType type, Long persistableId, String filename) {
+            File dir = getDirectory(type, persistableId);
+            return new File(dir, filename);
         }
 
         @Override
@@ -361,4 +390,6 @@ public interface Filestore {
     }
 
     void markReadOnly(FilestoreObjectType type, List<FileStoreFileProxy> filesToProcess);
+
+    File getDirectory(FilestoreObjectType type, Long persistableId);
 }

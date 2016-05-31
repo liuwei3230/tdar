@@ -22,13 +22,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
-import org.tdar.MultipleWebTdarConfigurationRunner;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.entity.Person;
@@ -53,6 +52,7 @@ import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.resource.ResourceService;
+import org.tdar.junit.MultipleTdarConfigurationRunner;
 import org.tdar.junit.RunWithTdarConfiguration;
 import org.tdar.struts.action.api.ingest.APIController;
 import org.tdar.utils.TestConfiguration;
@@ -63,7 +63,7 @@ import com.opensymphony.xwork2.Action;
  * @author Adam Brin
  * 
  */
-@RunWith(MultipleWebTdarConfigurationRunner.class)
+@RunWith(MultipleTdarConfigurationRunner.class)
 public class APIControllerITCase extends AbstractAdminControllerITCase {
 
     @Autowired
@@ -178,6 +178,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void setupFakeRecord(Document fake) {
         addAuthorizedUser(fake, getUser(), GeneralPermissions.MODIFY_RECORD);
         // setup a fake record, with some new fields off the session
@@ -340,6 +341,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase {
         assertEquals(StatusCode.CREATED, controller.getStatus());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testReplaceRecord() throws Exception {
@@ -379,7 +381,6 @@ public class APIControllerITCase extends AbstractAdminControllerITCase {
         return docXml;
     }
 
-    @SuppressWarnings("null")
     @Test
     @Rollback(true)
     public void testInvalidFileType() throws Exception {
@@ -420,7 +421,6 @@ public class APIControllerITCase extends AbstractAdminControllerITCase {
     public void testInvalidInvestigationType() throws Exception {
         APIController controller = generateNewInitializedController(APIController.class);
         Resource doc = findAResource(Document.class);
-        @SuppressWarnings("null")
         Long docid = doc.getId();
         genericService.markReadOnly(doc);
         InvestigationType bad = new InvestigationType();
@@ -445,6 +445,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase {
         return null;
     }
 
+    @SuppressWarnings("unused")
     @Test
     @Rollback(true)
     public void testBadEnum() throws Exception {

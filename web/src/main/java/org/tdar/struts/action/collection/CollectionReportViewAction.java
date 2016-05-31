@@ -17,6 +17,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.keyword.CultureKeyword;
+import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
 import org.tdar.core.bean.keyword.MaterialKeyword;
 import org.tdar.core.bean.keyword.OtherKeyword;
@@ -33,8 +34,8 @@ import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.facet.FacetWrapper;
 import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.service.query.ResourceSearchService;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
-import org.tdar.struts.action.AuthenticationAware;
 import org.tdar.struts.action.PersistableLoadingAction;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -46,7 +47,7 @@ import com.opensymphony.xwork2.Preparable;
 @ParentPackage("secured")
 @Namespace("/collection/report")
 @HttpsOnly
-public class CollectionReportViewAction extends AuthenticationAware.Base
+public class CollectionReportViewAction extends AbstractAuthenticatableAction
         implements FacetedResultHandler<Resource>, PersistableLoadingAction<ResourceCollection>, Preparable {
 
     private static final long serialVersionUID = 5515399574166871914L;
@@ -71,6 +72,7 @@ public class CollectionReportViewAction extends AuthenticationAware.Base
         getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_MATERIAL_KEYWORDS, MaterialKeyword.class);
         getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_TEMPORAL_KEYWORDS, TemporalKeyword.class);
         getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_OTHER_KEYWORDS, OtherKeyword.class);
+        getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_GEOGRAPHIC_KEYWORDS, GeographicKeyword.class);
         getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_SITE_TYPE_KEYWORDS, SiteTypeKeyword.class);
         getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_SITE_NAME_KEYWORDS, SiteNameKeyword.class);
         for (ResourceCreatorRole role : ResourceCreatorRole.values()) {

@@ -54,6 +54,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.DeHydratable;
 import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.FieldLength;
@@ -62,7 +63,6 @@ import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasSubmitter;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.OaiDcProvider;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.SimpleSearch;
 import org.tdar.core.bean.Slugable;
 import org.tdar.core.bean.SortOption;
@@ -73,12 +73,10 @@ import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.XmlLoggable;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Addressable;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.util.UrlUtils;
-import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 import org.tdar.utils.json.JsonLookupFilter;
 
@@ -112,7 +110,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.collection.ResourceCollection")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class ResourceCollection extends Persistable.Base implements HasName, Updatable, Indexable, Validatable, Addressable, Comparable<ResourceCollection>,
+public class ResourceCollection extends AbstractPersistable implements HasName, Updatable, Indexable, Validatable, Addressable, Comparable<ResourceCollection>,
         SimpleSearch, Sortable, Viewable, DeHydratable, HasSubmitter, XmlLoggable, HasImage, Slugable, OaiDcProvider {
 
     @Transient
@@ -122,20 +120,6 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
     private transient Integer maxHeight;
     private transient Integer maxWidth;
     private transient VersionType maxSize;
-
-    public enum CollectionType {
-        INTERNAL("Internal"), SHARED("Shared"), PUBLIC("Public");
-
-        private String label;
-
-        private CollectionType(String label) {
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return this.label;
-        }
-    }
 
     private static final long serialVersionUID = -5308517783896369040L;
     public static final SortOption DEFAULT_SORT_OPTION = SortOption.TITLE;
@@ -301,8 +285,6 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
         this.type = type;
     }
 
-    // FIXME: want to serialize these out, but cannot properly obfuscate them because they're in a "managed" set
-    // if you do, and try and obfsucate by removing, you end up in a situation of completely removing the object
     @XmlTransient
     public Set<AuthorizedUser> getAuthorizedUsers() {
         return authorizedUsers;
@@ -347,22 +329,6 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
 
     public void setHidden(boolean visible) {
         this.hidden = visible;
-    }
-
-    /*
-     * Convenience Method that provides a list of users that match the permission
-     */
-    public Set<TdarUser> getUsersWhoCan(GeneralPermissions permission, boolean recurse) {
-        Set<TdarUser> people = new HashSet<>();
-        for (AuthorizedUser user : authorizedUsers) {
-            if (user.getEffectiveGeneralPermission() >= permission.getEffectivePermissions()) {
-                people.add(user.getUser());
-            }
-        }
-        if ((getParent() != null) && recurse) {
-            people.addAll(getParent().getUsersWhoCan(permission, recurse));
-        }
-        return people;
     }
 
     /*
@@ -446,40 +412,6 @@ public class ResourceCollection extends Persistable.Base implements HasName, Upd
         return getParent().getId();
     }
 
-    /*
-     * used for populating the Lucene Index with users that have appropriate rights to modify things in the collection
-     */
-    @Transient
-    @ElementCollection
-    public List<Long> getUsersWhoCanModify() {
-        return toUserList(GeneralPermissions.MODIFY_RECORD);
-    }
-
-    private List<Long> toUserList(GeneralPermissions permission) {
-        ArrayList<Long> users = new ArrayList<>();
-        HashSet<TdarUser> writable = new HashSet<>();
-        writable.add(getOwner());
-        writable.addAll(getUsersWhoCan(permission, true));
-        for (TdarUser p : writable) {
-            if (PersistableUtils.isNullOrTransient(p)) {
-                continue;
-            }
-            users.add(p.getId());
-        }
-        return users;
-    }
-
-    @Transient
-    @ElementCollection
-    public List<Long> getUsersWhoCanAdminister() {
-        return toUserList(GeneralPermissions.ADMINISTER_GROUP);
-    }
-
-    @Transient
-    @ElementCollection
-    public List<Long> getUsersWhoCanView() {
-        return toUserList(GeneralPermissions.VIEW_ALL);
-    }
 
     /*
      * Default to sorting by name, but grouping by parentId, used for sorting int he tree

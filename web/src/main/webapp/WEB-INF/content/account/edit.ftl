@@ -10,13 +10,14 @@
 
 <h1>${siteAcronym} Registration</h1>
 
-<@s.form id="accountForm" method="post" action="/account/register" cssClass="">
-<@s.token name='struts.csrf.token' />
+<@s.form id="accountForm" method="post" action="/account/register"  
+	cssClass="tdarvalidate"
+    dynamicAttributes={
+        "data-validate-method":"initRegForm",
+        "data-validate-errorLabelContainer": "#error"
+    } >
+	<@s.token name='struts.csrf.token' />
 
-<div class="alert alert-block alert-error" style="display:none" id="error">
-    <h4>Please correct the following issues with this submission</h4>
-    <ul id="errorList"></ul>
-</div>
     <input type="hidden" name="url" value="${Parameters.url!''}"/>
     <div class="well">
     <div class="pull-right">

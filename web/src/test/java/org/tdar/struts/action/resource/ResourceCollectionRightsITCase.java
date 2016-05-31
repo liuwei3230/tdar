@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -272,6 +272,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
                 authenticationAndAuthorizationService.canEditResource(testPerson, generateInformationResourceWithFile, GeneralPermissions.MODIFY_METADATA));
     }
 
+    @SuppressWarnings("unused")
     private Long setupResource(TdarUser testPerson, List<AuthorizedUser> users) throws Exception {
         String name = "test collection";
         String description = "test description";
@@ -456,6 +457,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         assertWeFailedToSave(cc);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     @Rollback
     public void testRightsEscalationUserUpsParent() throws Exception {
@@ -501,6 +503,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
     }
 
     
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     @Ignore("duplicated by web test; fails because of transactional issue that I belive is related to the test setup, web test passes")
@@ -532,7 +535,6 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         result = controller.save();
         genericService.evictFromCache(controller.getResourceCollection());
         controller = null;
-        searchIndexService.flushToIndexes();
         genericService.synchronize();
         ResourceCollection collection = genericService.find(ResourceCollection.class, rcid);
         logger.debug("AU:{}", collection.getAuthorizedUsers());
@@ -560,6 +562,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         genericService.delete(genericService.find(ResourceCollection.class, rcid));
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testResourceCollectionRightsRevokingHier() throws TdarActionException {
         TdarUser registeredUser = createAndSaveNewPerson("testDraftResourceVisibleByAuthuser", "foo");
@@ -578,11 +581,12 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         Long rcid = controller.getPersistable().getId();
 
         controller = generateNewInitializedController(CollectionController.class, getUser());
+        controller.setParentId(rcid);
+
         controller.prepare();
         ResourceCollection rcChild = controller.getPersistable();
         // project = null;
         // Long pid = project.getId();
-        controller.setParentId(rcid);
         controller.getPersistable().setName("test child");
         controller.getPersistable().setDescription("description");
         controller.setServletRequest(getServletPostRequest());
@@ -617,6 +621,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         assertTrue(seen);
     }
 
+    @SuppressWarnings("unused")
     @Test
     public void testResourceCollectionRightsRevokingHierOwnerFails() throws TdarActionException {
         TdarUser registeredUser = createAndSaveNewPerson("testDraftResourceVisibleByAuthuser", "foo");
@@ -635,11 +640,11 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         Long rcid = controller.getPersistable().getId();
 
         controller = generateNewInitializedController(CollectionController.class, getUser());
+        controller.setParentId(rcid);
         controller.prepare();
-        ResourceCollection rcChild = controller.getPersistable();
         // project = null;
         // Long pid = project.getId();
-        controller.setParentId(rcid);
+        ResourceCollection rcChild = controller.getPersistable();
         controller.getPersistable().setName("test child");
         controller.getPersistable().setDescription("description");
         controller.setServletRequest(getServletPostRequest());

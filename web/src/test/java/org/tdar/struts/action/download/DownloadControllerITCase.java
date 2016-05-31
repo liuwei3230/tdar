@@ -35,7 +35,7 @@ import com.opensymphony.xwork2.Action;
 
 public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
     private static final File ROOT_DEST = new File("target/test/download-service-it-case");
-    private static final File ROOT_SRC = new File(TestConstants.TEST_ROOT_DIR);
+//    private static final File ROOT_SRC = new File(TestConstants.TEST_ROOT_DIR);
 
     // don't need injection (yet)
     @Autowired
@@ -63,6 +63,7 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
 
 
     // get some files from the test dir and put them into an archive stream
+    @SuppressWarnings("unused")
     @Test
     @Rollback
     public void testDownloadPdf() throws Exception {
@@ -70,12 +71,15 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
         dto.setAuthenticatedUser(getBillingUser());
         List<File> files = new ArrayList<>();
         File file = new File(TestConstants.TEST_DOCUMENT_DIR + "sample_pdf_formats/volume1-encrypted-test.pdf");
-        InformationResourceFileVersion version = generateAndStoreVersion(Document.class, file.getName(), file, filestore);
-        Document document = (Document) version.getInformationResourceFile().getInformationResource();
+        Document document = generateAndStoreVersion(Document.class, file.getName(), file, filestore);
+        InformationResourceFileVersion version = document.getLatestUploadedVersion();
         document.setTitle("test");
         document.setDescription("test");
         document.setDocumentType(DocumentType.BOOK);
         filestore.store(FilestoreObjectType.RESOURCE, file, version);
+        logger.debug("{}", document);
+        logger.debug("{}", version);
+        logger.debug("{}", version.getTransientFile());
         DownloadPdfFile downloadPdfFile = new DownloadPdfFile(document, version, pdfService, getAdminUser(), MessageHelper.getInstance(), null);
         downloadPdfFile.setFile(file);
         dto.getDownloads().add(downloadPdfFile);

@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.tdar</groupId>
         <artifactId>parent</artifactId>
-        <version>14.1.0-NEOLITHIC-SNAPSHOT</version>
+        <version>15.0.0-OBSIDIAN-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -111,6 +111,9 @@
 					<!-- Welcome to Maven World, where 'no' means 'yes' and 'yes' means 
 						'no'! More info: https://jira.codehaus.org/browse/MCOMPILER-205 http://jira.codehaus.org/browse/MCOMPILER-209 -->
 					<useIncrementalCompilation>false</useIncrementalCompilation>
+					 <compilerArgs>
+                <arg>-Xlint:all</arg>
+                </compilerArgs>
 				</configuration>
 			</plugin>
 
@@ -219,7 +222,7 @@
     								<pluginExecutionFilter>
     									<groupId>org.codehaus.mojo</groupId>
     									<artifactId>properties-maven-plugin</artifactId>
-    									<versionRange>[1.0-alpha-2,)</versionRange>
+    									<versionRange>[1.0.0,)</versionRange>
     									<goals>
     										<goal>read-project-properties</goal>
     									</goals>
@@ -611,7 +614,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>properties-maven-plugin</artifactId>
-                        <version>1.0-alpha-2</version>
+                        <version>1.0.0</version>
                         <executions>
                             <execution>
                                 <phase>initialize</phase>
@@ -621,6 +624,7 @@
                                 <configuration>
                                     <files>
                                         <file>${basedir}/src/main/resources/hibernate.properties</file>
+                                        <file>target/hg.properties</file>
                                     </files>
                                 </configuration>
                             </execution>

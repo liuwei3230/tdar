@@ -141,6 +141,7 @@ public interface TdarNamedQueries {
     String QUERY_INTEGRATION_ONTOLOGY = "query.integration_ontology";
     String CAN_EDIT_INSTITUTION = "query.authorize_edit_institution";
     String WORKFLOWS_BY_USER = "query.workflow_by_user";
+    String WORKFLOWS_BY_USER_ADMIN = "query.workflow_by_user_admin";
     String AGREEMENT_COUNTS = "query.agreementCounts";
     String AFFILIATION_COUNTS = "query.affiliationCounts";
     String AFFILIATION_COUNTS_CONTRIBUTOR = "query.affiliationCounts.contributor";
@@ -182,6 +183,9 @@ public interface TdarNamedQueries {
             + "(select count(distinct information_resource_id) from information_resource_file irf join resource rr on (rr.id = irf.information_resource_id) where rr.resource_type = rt.resource_type and rr.status = 'ACTIVE' and irf.restriction = 'CONFIDENTIAL') as with_conf "
             + "from (select distinct resource_type from resource) as rt";
 
+    String QUERY_SQL_CONVERT_WHITELABEL_TO_COLLECTION = "delete from whitelabel_collection where id = :id";
+    String QUERY_SQL_CONVERT_COLLECTION_TO_WHITELABEL = "insert into whitelabel_collection(id) values(:id)";
+
     // generated HQL formats
     String QUERY_CREATOR_MERGE_ID = "select merge_creator_id from creator where id=%1$s";
 
@@ -197,9 +201,6 @@ public interface TdarNamedQueries {
 
     String QUERY_HQL_COUNT_MANY_TO_MANY_REFERENCES_MAP = "select new map(ck.id as id, count(*) as referenceCount) from %1$s r2 inner join r2.%2$s ck where ck.id in (:idlist) group by ck.id";
     String QUERY_HQL_COUNT_MANY_TO_ONE_REFERENCES_MAP = "select new map(%2$s.id as id, count(*) as referenceCount) from %1$s r1 where %2$s.id in (:idlist) group by %2$s.id";
-
-    String QUERY_HQL_UPDATE_MANY_TO_MANY_REFERENCES = ""; // TODO: //Not possible, I think.
-    String QUERY_HQL_UPDATE_MANY_TO_ONE_REFERENCES = ""; // TODO: use many_to_one_count in exists clause.
 
     String HQL_EDITABLE_RESOURCE_SUFFIX = " FROM Resource as res  where "
             +
@@ -289,5 +290,6 @@ public interface TdarNamedQueries {
     String CREATOR_ANALYSIS_KWD_INHERIT_INSERT = "insert into temp_kwd (kwd_id) select %s from %s tp, %s kwd, information_resource where kwd.id=tp.%s and status in ('ACTIVE', 'DUPLICATE')  and resource_id=project_id and information_resource.id in :resourceIds";
 
     String HOMEPAGE_GEOGRAPHIC = "select code, resource_type, sum(count), id from ( ( select code, count(*), r.resource_type, gk.id from geographic_keyword gk join resource_managed_geographic_keyword rgk on gk.id = rgk.geographic_keyword_id join resource r on r.id = rgk.resource_id left join information_resource ir on (ir.id = r.id and ir.inheriting_spatial_information = false) where (code !='') and r.status = 'ACTIVE' group by code, r.resource_type, gk.id ) union all select code, count(*), irr.resource_type, gk.id from geographic_keyword gk join resource_managed_geographic_keyword rgk on gk.id = rgk.geographic_keyword_id join resource p on p.id = rgk.resource_id join information_resource ir on (ir.project_id = p.id and ir.inheriting_spatial_information = true) join resource irr on (irr.id = ir.id) where (code !='') and irr.status = 'ACTIVE' group by code, irr.resource_type, gk.id ) as allrecs group by code, resource_type, id order by 1, 2";
+    
 
 }

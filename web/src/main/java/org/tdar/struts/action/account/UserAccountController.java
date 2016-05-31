@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Actions;
+import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
@@ -24,7 +25,7 @@ import org.tdar.core.service.external.AuthenticationService;
 import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.external.auth.UserRegistration;
-import org.tdar.struts.action.AuthenticationAware;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.struts.interceptor.annotation.CacheControl;
 import org.tdar.struts.interceptor.annotation.DoNotObfuscate;
@@ -32,7 +33,7 @@ import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts.interceptor.annotation.PostOnly;
 import org.tdar.struts.interceptor.annotation.WriteableSession;
 
-import com.opensymphony.xwork2.ValidationAware;
+import com.opensymphony.xwork2.interceptor.ValidationAware;
 
 /**
  * $Id$
@@ -50,7 +51,7 @@ import com.opensymphony.xwork2.ValidationAware;
 @Scope("prototype")
 @HttpsOnly
 @CacheControl
-public class UserAccountController extends AuthenticationAware.Base implements ValidationAware {
+public class UserAccountController extends AbstractAuthenticatableAction implements ValidationAware {
 
     private static final long serialVersionUID = 1147098995283237748L;
 
@@ -84,10 +85,12 @@ public class UserAccountController extends AuthenticationAware.Base implements V
 
     @Actions(value = {
             @Action(value = "new",
+                    interceptorRefs = { @InterceptorRef("tdarDefaultStack") },
                     results = {
                             @Result(name = SUCCESS, location = "edit.ftl"),
                             @Result(name = AUTHENTICATED, type = TdarActionSupport.TDAR_REDIRECT, location = URLConstants.DASHBOARD) }),
             @Action(value = "add",
+                    interceptorRefs = { @InterceptorRef("tdarDefaultStack") },
                     results = {
                             @Result(name = SUCCESS, location = "edit.ftl"),
                             @Result(name = AUTHENTICATED, type = TdarActionSupport.TDAR_REDIRECT, location = URLConstants.DASHBOARD) })
@@ -108,6 +111,7 @@ public class UserAccountController extends AuthenticationAware.Base implements V
     }
 
     @Action(value = "recover",
+            interceptorRefs = { @InterceptorRef("tdarDefaultStack") },
             results = { @Result(name = SUCCESS, type = TdarActionSupport.TDAR_REDIRECT, location = "${passwordResetURL}") })
     @SkipValidation
     @HttpsOnly
@@ -127,8 +131,9 @@ public class UserAccountController extends AuthenticationAware.Base implements V
     }
 
     // FIXME: not implemented yet.
-    @Action(value = "reminder"
-            , results = { @Result(name = SUCCESS, location = "recover.ftl"), @Result(name = "input", location = "recover.ftl") })
+    @Action(value = "reminder",
+            interceptorRefs = { @InterceptorRef("tdarDefaultStack") },
+            results = { @Result(name = SUCCESS, location = "recover.ftl"), @Result(name = "input", location = "recover.ftl") })
     @SkipValidation
     @HttpsOnly
     public String sendNewPassword() {
@@ -143,6 +148,7 @@ public class UserAccountController extends AuthenticationAware.Base implements V
 
     @Actions({
             @Action(value = "register",
+                    interceptorRefs = { @InterceptorRef("tdarDefaultStack") },
                     results = { @Result(name = SUCCESS, type = TdarActionSupport.TDAR_REDIRECT, location = URLConstants.DASHBOARD),
                             @Result(name = ADD, type = TdarActionSupport.TDAR_REDIRECT, location = "/account/add"),
                             @Result(name = INPUT, location = "edit.ftl") })
@@ -152,7 +158,7 @@ public class UserAccountController extends AuthenticationAware.Base implements V
     @WriteableSession
     @DoNotObfuscate(reason = "getPerson() may have not been set on the session before sent to obfuscator, so don't want to wipe email")
     public String create() {
-        if (registration == null || registration.getPerson() == null || !isPostRequest()) {
+        if (registration == null || registration.getPerson() == null) {
             return INPUT;
         }
         try {
@@ -170,13 +176,11 @@ public class UserAccountController extends AuthenticationAware.Base implements V
         return TdarActionSupport.INPUT;
     }
 
-    public String getPasswordResetURL()
-    {
+    public String getPasswordResetURL() {
         return passwordResetURL;
     }
 
-    public void setPasswordResetURL(String url)
-    {
+    public void setPasswordResetURL(String url) {
         this.passwordResetURL = url;
     }
 
@@ -229,12 +233,12 @@ public class UserAccountController extends AuthenticationAware.Base implements V
         processErrorObject(errors);
     }
 
-	public List<UserAffiliation> getAffiliations() {
-		return affiliations;
-	}
+    public List<UserAffiliation> getAffiliations() {
+        return affiliations;
+    }
 
-	public void setAffiliations(List<UserAffiliation> affiliations) {
-		this.affiliations = affiliations;
-	}
+    public void setAffiliations(List<UserAffiliation> affiliations) {
+        this.affiliations = affiliations;
+    }
 
 }

@@ -63,6 +63,10 @@ navigation freemarker macros
                     <@makeLink namespace "delete?id=${persistable.id}" "delete" "delete" current true _deleteable />
                     <#local _large = (persistable.resources?size &gt; 50000) />
                     <@makeLink namespace "usage/${persistable.id?c}" "usage" "stats" current true _large />
+
+             <#if administrator && whiteLabelCollection>
+                        <@makeLink namespace "admin/${persistable.id?c}/edit" "Whitelabel" "Private Label Settings" current false />             
+             </#if>
         </#if>
         <#nested>
 			</ul>
@@ -218,10 +222,10 @@ navigation freemarker macros
 	        <#if includeResourceId>
 	            <@s.param name="id" value="${_id?c}" />
 	        </#if>
-	        </@s.url></#compress>">
+	        </@s.url></#compress>" class="toolbar-${name}">
         </#if>
         <i class="tdar-icon-${action_}<#if state?has_content>-${state}</#if>"></i>
-        <#nested> ${label}<#if disabled></span><#else></a></#if>
+        <#nested>${label}<#if disabled></span><#else></a></#if>
     </li>
     </#macro>
 

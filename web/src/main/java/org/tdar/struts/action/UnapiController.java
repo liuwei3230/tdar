@@ -45,9 +45,6 @@ public class UnapiController extends TdarActionSupport {
     @Autowired
     private transient ResourceService resourceService;
 
-    @Autowired
-    private transient UrlService urlService;
-
     private String formatUrl;
     private Long id;
     private String format;
@@ -60,7 +57,7 @@ public class UnapiController extends TdarActionSupport {
                             location = "unapi-formatlist.ftl",
                             type = FREEMARKER,
                             params = { "contentType", "application/xml", "status", "300" }),
-                    @Result(name = ASFORMAT, location = "${formatUrl}", type = "tdar-redirect"),
+                    @Result(name = ASFORMAT, location = "${formatUrl}", type = TDAR_REDIRECT),
                     @Result(name = NOFORMAT, type = HTTPHEADER, params = { "status", "406" })
             }
             )

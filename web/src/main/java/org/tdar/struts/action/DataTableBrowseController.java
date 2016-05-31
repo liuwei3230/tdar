@@ -13,7 +13,6 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.datatable.DataTable;
-import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.DatasetService;
 import org.tdar.core.service.resource.dataset.ResultMetadataWrapper;
@@ -24,7 +23,7 @@ import org.tdar.utils.PersistableUtils;
 @Component
 @Scope("prototype")
 @Namespace("/datatable")
-public class DataTableBrowseController extends AuthenticationAware.Base {
+public class DataTableBrowseController extends AbstractAuthenticatableAction {
 
     private static final long serialVersionUID = -2570627983412022974L;
 
@@ -41,9 +40,6 @@ public class DataTableBrowseController extends AuthenticationAware.Base {
 
     @Autowired
     private transient DatasetService datasetService;
-
-    @Autowired
-    private transient SerializationService serializationService;
 
     @Action(value = "browse",
             interceptorRefs = { @InterceptorRef("unauthenticatedStack") }, results = {

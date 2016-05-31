@@ -1,9 +1,11 @@
 <#setting url_escaping_charset="UTF-8">
+<#global angular_version="1.5.5">
+
 <head>
     <title>Dataset Integration: Edit</title>
 </head>
 <body>
-<div id="divIntegrationMain" ng-controller="IntegrationController as ctrl">
+<div id="divIntegrationMain" ng-controller="IntegrationController as ctrl" data-read-only="${(!editable)?string}">
     <div id="divIntegrationHeader">
         <h1 class="compact">Dataset Integration</h1>
     </div>
@@ -19,13 +21,13 @@
                        Integration Name
                    </label>
                    <div class="controls">
-                       <input type="text" class="input-block-level" name="integration.title" ng-model="ctrl.integration.title">
+                       <input type="text" class="input-block-level" name="integration.title" ng-model="ctrl.integration.title" ng-disabled="isReadOnly()">
                    </div>
                </div>
                <div class="control-group">
                    <label class="control-label">Description</label>
                    <div class="controls">
-                       <textarea name="integration.description" class="input-block-level" cols="80" rows="2"
+                       <textarea name="integration.description" class="input-block-level" cols="80" rows="2" ng-disabled="isReadOnly()"
                                  ng-model="ctrl.integration.description"></textarea>
                    </div>
                </div>
@@ -37,7 +39,7 @@
                 <!-- re enable ignore-ng-disabled when TDAR-4367 is fixed -->
                 <!-- Split button -->
                 <div class="btn-group">
-                  <button type="button" class="btn" ignore-ng-disabled="!isMinimallyValid()" ng-disabled="!isValid()"  id="btnSave" ng-click="ctrl.saveClicked()">Save</button>
+                  <button type="button" class="btn" ignore-ng-disabled="!isMinimallyValid()" ng-disabled="isReadOnly() || !isValid()"  id="btnSave" ng-click="ctrl.saveClicked()">Save</button>
                   <#--
                   <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                     <span class="caret"></span>
@@ -68,10 +70,10 @@
                                 
 <div class="controls controls-row">
                                 <div class="btn-group">
-                                    <button type="button" class="btn"  id="btnAddDataset"
+                                    <button type="button" class="btn"  id="btnAddDataset" ng-disabled="isReadOnly()"
                                             ng-click="ctrl.addDatasetsClicked()">Add Datasets...</button>
                                     
-                                    <button type="button" class="btn" id="rmDatasetBtn" 
+                                    <button type="button" class="btn" id="rmDatasetBtn"  ng-disabled="isReadOnly()"
                                             ng-click="ctrl.removeSelectedDatasetClicked()" ng-disabled="ctrl.integration.dataTables.length === 0">Remove selected dataset</button>
                                 </div>
                         </div>
@@ -418,7 +420,7 @@ ${allResourceCollectionsJson}
 <script type="application/json" id="allCategories">
 ${categoriesJson}
 </script>
-<script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0/angular.min.js'></script>
+<script src='https://ajax.googleapis.com/ajax/libs/angularjs/${angular_version}/angular.min.js'></script>
 
 <#-- fixme: hack: /workspace/integrate#addDatasets  -->
 <script>

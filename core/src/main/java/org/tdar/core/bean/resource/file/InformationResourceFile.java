@@ -38,9 +38,9 @@ import org.hibernate.annotations.SortNatural;
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.Indexable;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.filestore.WorkflowContext;
@@ -65,7 +65,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
         })
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.InformationResourceFile")
 @Cacheable
-public class InformationResourceFile extends Persistable.Sequence<InformationResourceFile> implements Viewable, Indexable {
+public class InformationResourceFile extends AbstractSequenced<InformationResourceFile> implements Viewable, Indexable {
 
     private static final long serialVersionUID = -6957336216505367012L;
 
@@ -285,7 +285,8 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
     }
 
     // FIXME: improve efficiency
-    public InformationResourceFileVersion getVersion(Integer versionNumber, VersionType... types) {
+    public InformationResourceFileVersion getVersion(Integer versionNumber_, VersionType... types) {
+        Integer versionNumber = versionNumber_;
         int currentVersionNumber = -1;
         Set<InformationResourceFileVersion> versions = getInformationResourceFileVersions();
         if ((versionNumber == null) || (versionNumber == -1)) {
@@ -526,7 +527,6 @@ public class InformationResourceFile extends Persistable.Sequence<InformationRes
         return false;
     }
 
-    //@Field(name = QueryFieldNames.FILENAME, analyzer = //@Analyzer(impl = NonTokenizingLowercaseKeywordAnalyzer.class))
     public String getFilename() {
         return filename;
     }

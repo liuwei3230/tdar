@@ -89,7 +89,7 @@
             The resources you can access are listed below. To create a <a href="<@s.url value="/resource/add"/>">new resource</a> or
             <a href="<@s.url value="/project/add"/>">project</a>, or <a href="<@s.url value="/collection/add"/>">collection</a>, click on the "upload" button
             above.
-        <p><strong>Jump To:</strong><a href="#project-list">Browse Resources</a> | <a href="#collection-section">Collections</a> | <a href="#divAccountInfo">Profile</a>
+        <p><strong>Jump To:</strong> <a href="#project-list">Browse Resources</a> | <a href="#collection-section">Collections</a> | <a href="#divAccountInfo">Profile</a>
             <#if payPerIngestEnabled>| <a href="#billing">Billing Accounts</a></#if>
             | <a href="#boomkarks">Bookmarks</a>
         </p>
@@ -114,7 +114,7 @@
     <#if featuredResources?has_content  >
     <hr/>
     <div class="row">
-        <@view.featured span="span9" header="Featured and Recent Content"/>
+        <@view.featured colspan="9" header="Featured and Recent Content"/>
     </div>
     </#if>
     </#if>
@@ -277,7 +277,8 @@
             <#if authenticatedUser.penultimateLogin??>
                 <strong>Last Login: </strong>${authenticatedUser.penultimateLogin?datetime}<br>
             </#if>
-            <a href="<@s.url value='/entity/user/edit?id=${authenticatedUser.id?c}'/>">edit your profile</a>
+            <a href="<@s.url value='/entity/user/edit?id=${authenticatedUser.id?c}'/>">edit your profile</a><br>
+            <a href="<@s.url value='/export/request'/>">Export</a>
         </div>
 
         <div class="span5" id="billing">

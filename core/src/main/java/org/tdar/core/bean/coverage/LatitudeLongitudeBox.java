@@ -19,9 +19,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.HasResource;
 import org.tdar.core.bean.Obfuscatable;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
@@ -48,7 +48,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlRootElement
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.coverage.LatitudeLongitudeBox")
-public class LatitudeLongitudeBox extends Persistable.Base implements HasResource<Resource>, Obfuscatable {
+public class LatitudeLongitudeBox extends AbstractPersistable implements HasResource<Resource>, Obfuscatable {
 
     private static final long serialVersionUID = 2605563277326422859L;
 
@@ -82,24 +82,16 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
     private Double maxObfuscatedLongitude = null;
 
     // ranges from -90 (South) to +90 (North)
-    //@Field
-    //@NumericField(precisionStep = 6)
     @Column(nullable = false, name = "minimum_latitude")
     private Double minimumLatitude;
 
-    //@Field
-    //@NumericField(precisionStep = 6)
     @Column(nullable = false, name = "maximum_latitude")
     private Double maximumLatitude;
 
     // ranges from -180 (West) to +180 (East)
-    //@Field
-    //@NumericField(precisionStep = 6)
     @Column(nullable = false, name = "minimum_longitude")
     private Double minimumLongitude;
 
-    //@Field
-    //@NumericField(precisionStep = 6)
     @Column(nullable = false, name = "maximum_longitude")
     private Double maximumLongitude;
 
@@ -124,12 +116,22 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
         return minimumLatitude;
     }
 
-    public Double getCenterLatitude() {
+    public Double getObfuscatedCenterLatitude() {
         return (getMaxObfuscatedLatitude() + getMinObfuscatedLatitude()) / 2.0;
     }
 
-    public Double getCenterLongitude() {
+    public Double getObfuscatedCenterLongitude() {
         return (getMaxObfuscatedLongitude() + getMinObfuscatedLongitude()) / 2.0;
+    }
+
+    @Deprecated
+    public Double getCenterLatitude() {
+        return (getMaximumLatitude() + getMinimumLatitude()) / 2.0;
+    }
+
+    @Deprecated
+    public Double getCenterLongitude() {
+        return (getMaximumLongitude() + getMinimumLongitude()) / 2.0;
     }
 
     /**
@@ -149,14 +151,14 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
         if (!isOkayToShowExactLocation && isObfuscatedObjectDifferent()) {
             return null;
         }
-        return getCenterLatitude();
+        return getObfuscatedCenterLatitude();
     }
 
     public Double getCenterLongitudeIfNotObfuscated() {
         if (!isOkayToShowExactLocation && isObfuscatedObjectDifferent()) {
             return null;
         }
-        return getCenterLongitude();
+        return getObfuscatedCenterLongitude();
     }
 
     /**
@@ -441,7 +443,8 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
     }
 
     // this logic assumes no span greater than 180°, and that zero-length span is invalid.
-    private boolean isValidLongitudeSpan(double min, double max) {
+    private boolean isValidLongitudeSpan(double min, double max_) {
+        double max = max_;
         if (max < 0 && min > 0) {
             // when spanning IDL, pretend that flat map repeats as it extends past 180°E, e.g. 170°W is now 190°E
             max += 360;
@@ -462,8 +465,16 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
         setMaximumLongitude(otherBox.maximumLongitude);
     }
 
-    public double getArea() {
-        return getAbsoluteLatLength() * getAbsoluteLongLength();
+    public double getObfuscatedArea() {
+        return getObfuscatedAbsoluteLatLength() * getObfuscatedAbsoluteLongLength();
+    }
+
+    public double getObfuscatedAbsoluteLatLength() {
+        return Math.abs(getMaxObfuscatedLatitude() - getMinObfuscatedLatitude());
+    }
+
+    public double getObfuscatedAbsoluteLongLength() {
+        return Math.abs(getMaxObfuscatedLongitude() - getMinObfuscatedLongitude());
     }
 
     public double getAbsoluteLatLength() {
@@ -473,6 +484,11 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
     public double getAbsoluteLongLength() {
         return Math.abs(getMaxObfuscatedLongitude() - getMinObfuscatedLongitude());
     }
+
+    public double getArea() {
+        return getObfuscatedAbsoluteLatLength() * getObfuscatedAbsoluteLongLength();
+    }
+
 
     /**
      * @return
@@ -587,8 +603,6 @@ public class LatitudeLongitudeBox extends Persistable.Base implements HasResourc
      * the relative scale of the bounding box. The smaller the scale the smaller the bounding region
      * the more regional the search.
      */
-    //@FieldBridge(impl = TdarPaddedNumberBridge.class)
-    //@Field(norms = Norms.NO, store = Store.YES, analyze = Analyze.NO)
     @Transient
     @JsonView(JsonLookupFilter.class)
     public Integer getScale() {

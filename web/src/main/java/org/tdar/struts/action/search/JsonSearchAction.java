@@ -1,6 +1,8 @@
 package org.tdar.struts.action.search;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -13,14 +15,12 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.service.RssService.GeoRssMode;
 import org.tdar.core.service.SerializationService;
 import org.tdar.struts.action.TdarActionException;
-import org.tdar.struts.interceptor.annotation.HttpOnlyIfUnauthenticated;
 import org.tdar.utils.json.JsonLookupFilter;
 
 @Namespace("/search")
 @Component
 @Scope("prototype")
 @ParentPackage("default")
-@HttpOnlyIfUnauthenticated
 public class JsonSearchAction extends AbstractAdvancedSearchController {
 
     private static final long serialVersionUID = -7606256523280755196L;
@@ -29,6 +29,7 @@ public class JsonSearchAction extends AbstractAdvancedSearchController {
     private transient SerializationService serializationService;
 
     private GeoRssMode geoMode = GeoRssMode.POINT;
+    private boolean webObfuscation =  false;
 
     @Action(value = "json", results = {
             @Result(name = SUCCESS, type = JSONRESULT, params = { "stream", "jsonInputStream" }) })
@@ -55,7 +56,14 @@ public class JsonSearchAction extends AbstractAdvancedSearchController {
         String ex = "";
         if (!isReindexing()) {
             try {
-                ex = serializationService.createGeoJsonFromResourceList(getResult(),getResultsKey(), getRssUrl(), filter,getCallback());
+            	Map<String,Object> params = new HashMap<>();
+            	params.put(	"recordsPerPage", this.getRecordsPerPage());
+            	params.put(	"totalRecords", this.getTotalRecords());
+            	params.put(	"startRecord", this.getStartRecord());
+            	params.put(	"description", this.getSearchDescription());
+            	params.put(	"title", this.getSearchTitle());
+            	params.put(	"url", this.getRssUrl());
+                ex = serializationService.createGeoJsonFromResourceList(getResults(), getRssUrl(), params, getGeoMode(),webObfuscation, filter, getCallback());
             } catch (Exception e) {
                 getLogger().error("error creating json", e);
             }
@@ -69,6 +77,14 @@ public class JsonSearchAction extends AbstractAdvancedSearchController {
 
     public void setGeoMode(GeoRssMode geoMode) {
         this.geoMode = geoMode;
+    }
+
+    public boolean isWebObfuscation() {
+        return webObfuscation;
+    }
+
+    public void setWebObfuscation(boolean webObfuscation) {
+        this.webObfuscation = webObfuscation;
     }
 
 }

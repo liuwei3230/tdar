@@ -19,14 +19,14 @@ import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.URLConstants;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.Persistable.Sequence;
 import org.tdar.core.bean.Sequenceable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
@@ -53,6 +53,7 @@ import org.tdar.core.bean.resource.ResourceNoteType;
 import org.tdar.core.bean.resource.ResourceRelationship;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao.FindOptions;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.service.GenericKeywordService;
@@ -65,7 +66,9 @@ import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.core.service.resource.ResourceService.ErrorHandling;
-import org.tdar.struts.action.*;
+import org.tdar.struts.action.AbstractPersistableController;
+import org.tdar.struts.action.TdarActionException;
+import org.tdar.struts.action.TdarActionSupport;
 import org.tdar.struts.data.KeywordNode;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts.interceptor.annotation.PostOnly;
@@ -93,7 +96,8 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     public static final String RESOURCE_EDIT_TEMPLATE = "../resource/edit-template.ftl";
 
     private static final long serialVersionUID = 8620875853247755760L;
-
+    private boolean select2Enabled = TdarConfiguration.getInstance().isSelect2Enabled();
+    private boolean select2SingleEnabled = TdarConfiguration.getInstance().isSelect2SingleEnabled();
     private List<MaterialKeyword> allMaterialKeywords;
     private List<InvestigationType> allInvestigationTypes;
     private List<EmailMessageType> emailTypes = EmailMessageType.valuesWithoutConfidentialFiles();
@@ -251,7 +255,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     @Action(value = SAVE,
             interceptorRefs = { @InterceptorRef("editAuthenticatedStack") },
             results = {
-                    @Result(name = SUCCESS, type = TdarActionSupport.TDAR_REDIRECT, location = SAVE_SUCCESS_PATH),
+                    @Result(name = SUCCESS, type = TdarActionSupport.REDIRECT, location = SAVE_SUCCESS_PATH),
                     @Result(name = SUCCESS_ASYNC, location = "view-async.ftl"),
                     @Result(name = INPUT, location = RESOURCE_EDIT_TEMPLATE)
             })
@@ -568,7 +572,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
             return;
         }
         list.removeAll(Collections.singletonList(null));
-        Sequence.applySequence(list);
+        AbstractSequenced.applySequence(list);
     }
 
     protected void logModification(String message) {
@@ -733,7 +737,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
 
     public List<InvestigationType> getAllInvestigationTypes() {
         if (CollectionUtils.isEmpty(allInvestigationTypes)) {
-            allInvestigationTypes = genericService.findAllWithCache(InvestigationType.class);
+            allInvestigationTypes = genericService.findAll(InvestigationType.class);
             Collections.sort(allInvestigationTypes);
         }
         return allInvestigationTypes;
@@ -748,14 +752,14 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
 
     public KeywordNode<SiteTypeKeyword> getApprovedSiteTypeKeywords() {
         if (approvedSiteTypeKeywords == null) {
-            approvedSiteTypeKeywords = KeywordNode.organizeKeywords(genericKeywordService.findAllApprovedWithCache(SiteTypeKeyword.class));
+            approvedSiteTypeKeywords = KeywordNode.organizeKeywords(genericKeywordService.findAllApproved(SiteTypeKeyword.class));
         }
         return approvedSiteTypeKeywords;
     }
 
     public KeywordNode<CultureKeyword> getApprovedCultureKeywords() {
         if (approvedCultureKeywords == null) {
-            approvedCultureKeywords = KeywordNode.organizeKeywords(genericKeywordService.findAllApprovedWithCache(CultureKeyword.class));
+            approvedCultureKeywords = KeywordNode.organizeKeywords(genericKeywordService.findAllApproved(CultureKeyword.class));
         }
         return approvedCultureKeywords;
     }
@@ -822,8 +826,6 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     }
 
     public List<ResourceCreatorRole> getAllResourceCreatorRoles() {
-        // FIXME: move impl to service
-        // FIXME: change to SortedSet
         return ResourceCreatorRole.getAll();
     }
 
@@ -1125,4 +1127,19 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         this.submitterProperName = submitterProperName;
     }
 
+    public boolean isSelect2Enabled() {
+        return select2Enabled;
+    }
+
+    public void setSelect2Enabled(boolean select2Enabled) {
+        this.select2Enabled = select2Enabled;
+    }
+
+    public boolean isSelect2SingleEnabled() {
+        return select2SingleEnabled;
+    }
+
+    public void setSelect2SingleEnabled(boolean select2SingleEnabled) {
+        this.select2SingleEnabled = select2SingleEnabled;
+    }
 }

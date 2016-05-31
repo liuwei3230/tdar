@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
@@ -40,6 +40,7 @@ import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.ResourceNoteType;
 import org.tdar.core.service.ResourceCollectionService;
 import org.tdar.core.service.ResourceCreatorProxy;
+import org.tdar.search.converter.ResourceRightsExtractor;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.action.project.ProjectController;
 import org.tdar.struts.action.sensoryData.SensoryDataController;
@@ -77,6 +78,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         assertTrue(projectAsJson.contains("key23123"));
     }
 
+    @SuppressWarnings("unused")
     @Test
     @Rollback
     @Ignore
@@ -121,7 +123,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
 
         Project project = controller.getProject();
         project = genericService.merge(project);
-        List<Creator> people = new ArrayList<Creator>();
+        List<Creator<?>> people = new ArrayList<>();
         for (ResourceCreator creator : project.getResourceCreators()) {
             logger.info("{}", creator);
             people.add(creator.getCreator());
@@ -153,7 +155,8 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         Long id = project.getId();
         project = null;
         Project project_ = genericService.find(Project.class, id);
-        assertTrue(project_.getUsersWhoCanModify().contains(getBasicUser().getId()));
+        ResourceRightsExtractor extractor = new ResourceRightsExtractor(project_);
+        assertTrue(extractor.getUsersWhoCanModify().contains(getBasicUser().getId()));
         assertNotNull(project_.getInternalResourceCollection());
         Set<AuthorizedUser> authorizedUsers = project_.getInternalResourceCollection().getAuthorizedUsers();
 
@@ -186,7 +189,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         users2.addAll(Arrays.asList(new AuthorizedUser(testModify, GeneralPermissions.MODIFY_RECORD), new AuthorizedUser(testView,
                 GeneralPermissions.VIEW_ALL),
                 new AuthorizedUser(testAdmin, GeneralPermissions.ADMINISTER_GROUP)));
-        resourceCollectionService.saveAuthorizedUsersForResourceCollection(project_, testCollection, users, true, (TdarUser) testCollection.getOwner());
+        resourceCollectionService.saveAuthorizedUsersForResourceCollection(project_, testCollection, users, true, getBasicUser());
         genericService.saveOrUpdate(testCollection);
 
         logger.info("u:{}, r:{}", testModify.getId(), testResource.getId());

@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.SortOption;
+import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator.CreatorType;
@@ -57,6 +58,7 @@ import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.data.KeywordNode;
 import org.tdar.struts.interceptor.annotation.DoNotObfuscate;
 import org.tdar.struts.interceptor.annotation.HttpOnlyIfUnauthenticated;
+import org.tdar.struts.interceptor.annotation.RequiresTdarUserGroup;
 
 /**
  * Eventual replacement for LuceneSearchController. extending
@@ -114,6 +116,11 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         // FIME: for whatever reason this is not being processed by the SessionSecurityInterceptor and thus
         // needs manual care, but, when the TdarActionException is processed, it returns a blank page instead of
         // not_found
+        
+        if (getProjectionModel() == null) {
+        	setProjectionModel(ProjectionModel.LUCENE_EXPERIMENTAL);
+        }
+        
         try {
             getFacetWrapper().facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
             getFacetWrapper().facetBy(QueryFieldNames.INTEGRATABLE, IntegratableOptions.class);
@@ -143,7 +150,6 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         return result;
     }
 
-    @SuppressWarnings("unchecked")
     private void searchCollectionsToo() throws SolrServerException, IOException {
 
         try {
@@ -185,6 +191,14 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     public void setMap(LatitudeLongitudeBox box) {
         getReservedSearchParameters().getLatitudeLongitudeBoxes().clear();
         getReservedSearchParameters().getLatitudeLongitudeBoxes().add(box);
+    }
+    
+    
+    @Action(value = "map", results = { @Result(name = SUCCESS, location = "map.ftl") })
+    @RequiresTdarUserGroup(TdarGroup.TDAR_EDITOR)
+    public String map() {
+        searchBoxVisible = false;
+        return SUCCESS;
     }
 
     @Actions({
@@ -273,15 +287,15 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     }
 
     public List<InvestigationType> getAllInvestigationTypes() {
-        return genericService.findAllWithCache(InvestigationType.class);
+        return genericService.findAll(InvestigationType.class);
     }
 
     public KeywordNode<CultureKeyword> getAllApprovedCultureKeywords() {
-        return KeywordNode.organizeKeywords(genericKeywordService.findAllApprovedWithCache(CultureKeyword.class));
+        return KeywordNode.organizeKeywords(genericKeywordService.findAllApproved(CultureKeyword.class));
     }
 
     public KeywordNode<SiteTypeKeyword> getAllApprovedSiteTypeKeywords() {
-        return KeywordNode.organizeKeywords(genericKeywordService.findAllApprovedWithCache(SiteTypeKeyword.class));
+        return KeywordNode.organizeKeywords(genericKeywordService.findAllApproved(SiteTypeKeyword.class));
     }
 
     List<MaterialKeyword> allMaterialKeywords;
@@ -292,7 +306,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     public List<MaterialKeyword> getAllMaterialKeywords() {
 
         if (CollectionUtils.isEmpty(allMaterialKeywords)) {
-            allMaterialKeywords = genericKeywordService.findAllApprovedWithCache(MaterialKeyword.class);
+            allMaterialKeywords = genericKeywordService.findAllApproved(MaterialKeyword.class);
             Collections.sort(allMaterialKeywords);
         }
         return allMaterialKeywords;
@@ -436,4 +450,5 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     public void setFacetWrapper(FacetWrapper facetWrapper) {
         this.facetWrapper = facetWrapper;
     }
+
 }

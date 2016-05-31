@@ -1,5 +1,6 @@
 package org.tdar.core.service;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.FileProxy;
@@ -28,6 +30,9 @@ import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.dao.entity.InstitutionDao;
 import org.tdar.core.dao.entity.PersonDao;
 import org.tdar.core.dao.resource.BookmarkedResourceDao;
+import org.tdar.core.event.EventType;
+import org.tdar.core.event.TdarEvent;
+import org.tdar.transform.jsonld.SchemaOrgCreatorTransformer;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -50,7 +55,11 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
     @Autowired
     private transient AuthorizedUserDao authorizedUserDao;
     @Autowired
+    private transient SerializationService serializationService;
+    @Autowired
     private transient SimpleFileProcessingDao simpleFileProcessingDao;
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     @Autowired
     private transient BookmarkedResourceDao bookmarkedResourceDao;
@@ -211,7 +220,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
      */
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = false)
-    public <C extends Creator> C findOrSaveCreator(C transientCreator) {
+    public <C extends Creator<?>> C findOrSaveCreator(C transientCreator) {
         C creatorToReturn = null;
 
         if (transientCreator instanceof Person) {
@@ -238,10 +247,16 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
         Person blessedPerson = findPerson(transientPerson);
         // still didn't find anything? Fair enough, let's save it
         if (blessedPerson == null) {
-            getDao().save(transientPerson);
             if (transientPerson.getInstitution() != null) {
-                getDao().saveOrUpdate(transientPerson.getInstitution());
+                Institution findOrSaveInstitution = findOrSaveInstitution(transientPerson.getInstitution());
+                transientPerson.setInstitution(findOrSaveInstitution);;
             }
+            if (transientPerson instanceof TdarUser && ((TdarUser) transientPerson).getProxyInstitution() != null) {
+                TdarUser transientUser = ((TdarUser) transientPerson);
+                Institution findOrSaveInstitution = findOrSaveInstitution(transientUser.getProxyInstitution());
+                transientUser.setProxyInstitution(findOrSaveInstitution);
+            }
+            getDao().save(transientPerson);
             blessedPerson = transientPerson;
         }
         return blessedPerson;
@@ -269,6 +284,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
         }
 
         Person blessedPerson = null;
+        String email = transientPerson.getEmail();
         if (StringUtils.isNotBlank(transientPerson.getEmail())) {
             blessedPerson = findByEmail(transientPerson.getEmail());
         } else {
@@ -293,6 +309,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
                 blessedPerson = people.iterator().next();
             }
         }
+        transientPerson.setEmail(email);
         return blessedPerson;
     }
 
@@ -400,7 +417,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
      * @return
      */
     @Transactional(readOnly = true)
-    public Creator findAuthorityFromDuplicate(Creator dup) {
+    public Creator<?> findAuthorityFromDuplicate(Creator<?> dup) {
         if (PersistableUtils.isNullOrTransient(dup) || !dup.isDuplicate()) {
             return null;
         }
@@ -437,7 +454,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
      * @return
      */
     @Transactional(readOnly = true)
-    public Long getCreatorViewCount(Creator creator) {
+    public Long getCreatorViewCount(Creator<?> creator) {
         if (PersistableUtils.isNullOrTransient(creator)) {
             return 0L;
         }
@@ -446,7 +463,7 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
 
     @Transactional(readOnly = true)
     public void findResourceCreator(ResourceCreator creator) {
-        Creator incomingCreator = creator.getCreator();
+        Creator<?> incomingCreator = creator.getCreator();
         if (incomingCreator instanceof Person) {
             incomingCreator = findPerson((Person) incomingCreator);
         }
@@ -462,21 +479,22 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
     }
 
     @Transactional(readOnly = false)
-    public void deleteForController(Creator collection, String deletionReason, TdarUser authenticatedUser) {
-        // TODO Auto-generated method stub
-
+    public void deleteForController(Creator<?> creator, String deletionReason, TdarUser authenticatedUser) {
+    	creator.setStatus(Status.DELETED);
+    	getDao().saveOrUpdate(creator);
+        publisher.publishEvent(new TdarEvent(creator, EventType.CREATE_OR_UPDATE));
     }
 
     @Transactional(readOnly = true)
-    public DeleteIssue getDeletionIssues(TextProvider textProvider, Creator persistable) {
-        // TODO Auto-generated method stub
+    public DeleteIssue getDeletionIssues(TextProvider textProvider, Creator<?> persistable) {
         return null;
     }
 
     @Transactional(readOnly = false)
-    public void saveInstitutionForController(Institution persistable, String name, FileProxy fileProxy) {
+    public void saveInstitutionForController(Institution persistable, String name, String email, FileProxy fileProxy) {
         // name has a unique key; so we need to be careful with it
         persistable.setName(name);
+        persistable.setEmail(email);
         getDao().saveOrUpdate(persistable);
         if (fileProxy != null) {
             simpleFileProcessingDao.processFileProxyForCreatorOrCollection(persistable, fileProxy);
@@ -520,14 +538,14 @@ public class EntityService extends ServiceInterface.TypedDaoBase<Person, PersonD
         return getDao().getAffiliationCounts(false);
     }
 
-    @Transactional(readOnly = true)
-    public Map<Creator, Integer> getRelatedCreatorCounts(Set<Long> resourceIds) {
-        return getDao().getRelatedCreatorCounts(resourceIds);
-    }
-
     @Transactional(readOnly=true)
     public Map<UserAffiliation, Long> getAffiliationCounts(boolean b) {
         return getDao().getAffiliationCounts(true);
+    }
+
+    public String createSchemaOrgJson(Creator<?> creator, String logoUrl) throws IOException {
+        SchemaOrgCreatorTransformer transformer = new SchemaOrgCreatorTransformer();
+        return transformer.convert(serializationService, creator, logoUrl);
     }
 
 }

@@ -274,6 +274,7 @@ public class TdarConfiguration extends AbstractConfigurationFile {
     }
 
     // FIXME: change to use + encorpearate sitemap (TDAR-4703)
+    @SuppressWarnings("unused")
     private void initFilestorePath(String location) {
         if (personalFilestorePathInitialized) {
             return;
@@ -928,13 +929,8 @@ public class TdarConfiguration extends AbstractConfigurationFile {
 		return Arrays.asList(assistant.getStringArray("tdar.colors", defaultColors));
 	}
 
-	
-	public boolean useSeparateContentsIndexForSearching() {
-	    return assistant.getBooleanProperty("indexing.separate_contents", true);
-	}
-
-    public boolean useSeparateLinkedDataIndexForSearching() {
-        return assistant.getBooleanProperty("indexing.separate_linked", true);
+    public boolean useTransactionalEvents() {
+        return assistant.getBooleanProperty("transactional.events",true);
     }
 
     public List<Long> getSaaCollectionIds() {
@@ -954,7 +950,23 @@ public class TdarConfiguration extends AbstractConfigurationFile {
         return assistant.getLongProperty("saa.contact_id", getAdminUserId());
     }
 
+	public boolean isSelenium() {
+		return assistant.getBooleanProperty("is.selenium", false);
+	}
+
     public boolean includeSpecialCodingRules() {
         return assistant.getBooleanProperty("integration.special_coding_rules", true);
+    }
+
+    public boolean isSelect2Enabled() {
+        return assistant.getBooleanProperty("select2.enabled", false);
+    }
+
+    public boolean isSelect2SingleEnabled() {
+        return assistant.getBooleanProperty("select2.single.enabled", false);
+    }
+
+    public boolean shouldShowExactLocationToThoseWhoCanEdit() {
+        return assistant.getBooleanProperty("show.exact.location.to.editable", false);
     }
 }

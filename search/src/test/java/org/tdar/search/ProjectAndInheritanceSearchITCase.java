@@ -29,10 +29,10 @@ public class ProjectAndInheritanceSearchITCase extends AbstractResourceSearchITC
     @Test
     @Rollback(true)
     public void testForInheritedCulturalInformationFromProject() throws ParseException, SolrServerException, IOException {
-        searchIndexService.indexAll(getAdminUser(), LookupSource.RESOURCE);
+        searchIndexService.indexAll(new QuietIndexReciever(),Arrays.asList( LookupSource.RESOURCE), getAdminUser());
         ReservedSearchParameters rparams = new ReservedSearchParameters();
         rparams.setResourceTypes(Arrays.asList(ResourceType.DOCUMENT, ResourceType.IMAGE));
-        SearchResult result = doSearch("Archaic",null,null,rparams);
+        SearchResult<Resource> result = doSearch("Archaic",null,null,rparams);
         assertTrue("'Archaic' defined inparent project should be found in information resource", resultsContainId(result,DOCUMENT_INHERITING_CULTURE_ID));
         assertFalse("A child document that inherits nothing from parent project should not appear in results", resultsContainId(result,DOCUMENT_INHERITING_NOTHING_ID));
     }
@@ -53,7 +53,7 @@ public class ProjectAndInheritanceSearchITCase extends AbstractResourceSearchITC
         rparams.getApprovedCultureKeywordIdLists().add(new ArrayList<String>());
         rparams.getApprovedCultureKeywordIdLists().get(0).add(ck.getId().toString());
         rparams.setResourceTypes(Arrays.asList(ResourceType.PROJECT));
-        SearchResult result = doSearch(null,null,rparams, null);
+        SearchResult<Resource> result = doSearch(null,null,rparams, null);
         assertTrue(result.getResults().contains(project));
     }
 

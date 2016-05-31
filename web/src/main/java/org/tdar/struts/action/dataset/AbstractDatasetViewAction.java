@@ -10,11 +10,11 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.core.bean.resource.Dataset;
+import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.resource.DataTableService;
-import org.tdar.core.service.resource.DatasetService;
 import org.tdar.struts.action.TdarActionException;
 import org.tdar.struts.action.resource.AbstractResourceViewAction;
 import org.tdar.utils.PersistableUtils;
@@ -26,9 +26,6 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
     private InputStream xmlStream;
     private DataTable dataTable;
     private String dataTableColumnJson;
-
-    @Autowired
-    private transient DatasetService datasetService;
 
     @Autowired
     private transient DataTableService dataTableService;
@@ -106,4 +103,21 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
         this.dataTableColumnJson = dataTableColumnJson;
     }
 
+    
+    public boolean isMappingFeatureEnabled() {
+        if (PersistableUtils.isNullOrTransient(getPersistable())) {
+            return false;
+        }
+
+        if (getPersistable().getProject() == Project.NULL) {
+            return false;
+        }
+        
+        for (DataTable dt : getPersistable().getDataTables()) {
+            if (!CollectionUtils.isEmpty(dt.getFilenameColumns())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

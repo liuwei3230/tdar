@@ -19,7 +19,7 @@ import org.apache.struts2.convention.annotation.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.Persistable.Sequence;
+import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.Sequenceable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.collection.ResourceCollection;
@@ -42,7 +42,6 @@ import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ResourceCollectionService;
 import org.tdar.core.service.ResourceCreatorProxy;
-import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.InformationResourceFileService;
@@ -91,9 +90,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     private transient InformationResourceFileService informationResourceFileService;
 
     private boolean hasDeletedFiles = false;
-
-    @Autowired
-    private SerializationService serializationService;
 
     @Autowired
     private BookmarkedResourceService bookmarkedResourceService;
@@ -235,7 +231,7 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
             return;
         }
         list.removeAll(Collections.singletonList(null));
-        Sequence.applySequence(list);
+        AbstractSequenced.applySequence(list);
     }
 
     public void loadBasicViewMetadata() {
@@ -395,11 +391,11 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     protected void loadCustomViewMetadata() throws TdarActionException {
         if (getResource() instanceof InformationResource) {
             InformationResource informationResource = (InformationResource) getResource();
-            try {
-                setMappedData(resourceService.getMappedDataForInformationResource(informationResource));
-            } catch (Exception e) {
-                getLogger().error("could not attach additional dataset data to resource", e);
+            boolean fail = false;
+            if (getTdarConfiguration().isProductionEnvironment()) {
+                fail = true;
             }
+            setMappedData(resourceService.getMappedDataForInformationResource(informationResource, fail));
             setTransientViewableStatus(informationResource, getAuthenticatedUser());
         }
 

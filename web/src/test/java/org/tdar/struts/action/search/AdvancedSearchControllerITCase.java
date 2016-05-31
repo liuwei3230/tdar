@@ -20,8 +20,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.SortOption;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.collection.WhiteLabelCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator;
@@ -58,9 +58,9 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
 
     private static final String USAF_TITLE_CASE = "US Air Force Archaeology and Cultural Resources Archive";
 
-    private static final String CONSTANTINOPLE = "Constantinople";
+    public static final String CONSTANTINOPLE = "Constantinople";
 
-    private static final String ISTANBUL = "Istanbul";
+    public static final String ISTANBUL = "Istanbul";
 
     @Autowired
     SearchIndexService searchIndexService;
@@ -364,6 +364,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
     public void testPersonSearchWithoutAutocomplete() throws SolrServerException, IOException {
         String lastName = "Watts";
         Person person = new Person(null, lastName, null);
+        controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         lookForCreatorNameInResult(lastName, person);
     }
 
@@ -371,6 +372,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
     @Test
     @Rollback
     public void testInstitutionSearchWithoutAutocomplete() throws SolrServerException, IOException {
+        controller.setProjectionModel(ProjectionModel.HIBERNATE_DEFAULT);
         String name = "Digital Antiquity";
         Institution institution = new Institution(name);
         lookForCreatorNameInResult(name, institution);
@@ -389,7 +391,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
     }
 
 
-    private void lookForCreatorNameInResult(String namePart, Creator creator_) {
+    private void lookForCreatorNameInResult(String namePart, Creator<?> creator_) {
         firstGroup().getResourceCreatorProxies().add(new ResourceCreatorProxy(new ResourceCreator(creator_, null)));
         doSearch();
         assertFalse("we should get back at least one hit", controller.getResults().isEmpty());
@@ -433,6 +435,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
 
 
 
+    @SuppressWarnings("deprecation")
     @Test
     @Rollback(true)
     public void testSynonymPersonSearch() throws SolrServerException, IOException {
@@ -464,7 +467,6 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
 
         genericService.synchronize();
         // flush, detach (important for test), setup
-        searchIndexService.flushToIndexes();
         searchIndexService.index(image);
         genericService.detachFromSession(person);
         genericService.detachFromSession(dup);

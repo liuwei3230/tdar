@@ -26,8 +26,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
+import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 import org.tdar.utils.json.JsonIntegrationDetailsFilter;
@@ -47,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Entity
 @Table(name = "data_table")
 @XmlRootElement
-public class DataTable extends Persistable.Base {
+public class DataTable extends AbstractPersistable {
 
     private static final long serialVersionUID = -4875482933981074863L;
 
@@ -58,8 +58,6 @@ public class DataTable extends Persistable.Base {
     @Length(max = FieldLength.FIELD_LENGTH_255)
     private String name;
 
-    //@Field
-    //@Analyzer(impl = TdarCaseSensitiveStandardAnalyzer.class)
     @Column(name = "display_name")
     @Length(max = FieldLength.FIELD_LENGTH_255)
     private String displayName;
@@ -69,7 +67,6 @@ public class DataTable extends Persistable.Base {
     private String description;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataTable")
-    //@IndexedEmbedded
     private List<DataTableColumn> dataTableColumns = new ArrayList<DataTableColumn>();
 
     private transient Map<String, DataTableColumn> nameToColumnMap;
@@ -313,6 +310,17 @@ public class DataTable extends Persistable.Base {
         List<DataTableColumn> columns = new ArrayList<>();
         for (DataTableColumn column : getDataTableColumns()) {
             if (column.getMappedOntology() != null) {
+                columns.add(column);
+            }
+        }
+        return columns;
+    }
+
+    @Transient
+    public List<DataTableColumn> getFilenameColumns() {
+        List<DataTableColumn> columns = new ArrayList<>();
+        for (DataTableColumn column : getDataTableColumns()) {
+            if (column.isFilenameColumn()) {
                 columns.add(column);
             }
         }

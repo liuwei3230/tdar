@@ -17,8 +17,8 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -91,6 +91,7 @@ public class UserPermissionsITCase extends AbstractResourceControllerITCase {
      * tests that a user with MODIFY_METADATA Permissions has limited rights -- specifically cannot modify collection assignments or authorized users
      * @throws Exception
      */
+    @SuppressWarnings("unused")
     @Test
     @Rollback
     public void testUserRemovingCollectionWithTheirRights() throws Exception {

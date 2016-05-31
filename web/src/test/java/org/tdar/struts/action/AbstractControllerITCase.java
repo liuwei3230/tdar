@@ -1,7 +1,7 @@
 package org.tdar.struts.action;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -26,8 +26,8 @@ import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.billing.BillingItem;
 import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.billing.TransactionStatus;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.ResourceCollection.CollectionType;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Person;
@@ -100,7 +100,8 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationContro
         return invoice;
     }
 
-    public void bookmarkResource(Resource r, boolean ajax, TdarUser user) throws Exception {
+    public void bookmarkResource(Resource r_, boolean ajax, TdarUser user) throws Exception {
+        Resource r = r_;
         BookmarkResourceController bookmarkController = generateNewInitializedController(BookmarkResourceController.class);
         logger.info("bookmarking " + r.getTitle() + " (" + r.getId() + ")");
         bookmarkController.setResourceId(r.getId());
@@ -122,7 +123,9 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationContro
         Assert.assertTrue("should have seen resource in bookmark list", seen);
     }
 
-    public void removeBookmark(Resource r, boolean ajax, TdarUser user) throws Exception {
+    @SuppressWarnings("deprecation")
+    public void removeBookmark(Resource r, boolean ajax, TdarUser user_) throws Exception {
+        TdarUser user = user_;
         BookmarkResourceController bookmarkController = generateNewInitializedController(BookmarkResourceController.class);
         boolean seen = false;
         for (BookmarkedResource b : entityService.getBookmarkedResourcesForUser(user)) {
@@ -157,23 +160,28 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationContro
         return generateResourceCollection(name, description, type, visible, users, getUser(), resources, parentId);
     }
 
+    @SuppressWarnings("deprecation")
     public ResourceCollection generateResourceCollection(String name, String description, CollectionType type, boolean visible, List<AuthorizedUser> users,
             TdarUser owner, List<? extends Resource> resources, Long parentId) throws Exception {
         CollectionController controller = generateNewInitializedController(CollectionController.class, owner);
         controller.setServletRequest(getServletPostRequest());
-        controller.prepare();
+        
         // controller.setSessionData(getSessionData());
         logger.info("{}", getUser());
         assertEquals(owner, controller.getAuthenticatedUser());
         ResourceCollection resourceCollection = controller.getResourceCollection();
         resourceCollection.setName(name);
-        controller.setParentId(parentId);
+        	
         resourceCollection.setType(type);
         controller.setAsync(false);
         resourceCollection.setHidden(!visible);
         resourceCollection.setDescription(description);
         if (resources != null) {
             controller.getToAdd().addAll(PersistableUtils.extractIds(resources));
+        }
+        
+        if (parentId != null) {
+        	controller.setParentId(parentId);
         }
 
         if (users != null) {
@@ -189,19 +197,20 @@ public abstract class AbstractControllerITCase extends AbstractIntegrationContro
 
         //FIXME: remove actionError checks from controller.execute() methods (they are implicitly performed by struts and/or our test runner),
         //FIXME: improve generateResourceCollection() so that it constructs valid resources (vis a vis  validator.validate() and dao.enforceValidation())
-        //controller.prepare();
-        //controller.validate();
+        controller.prepare();
+        controller.validate();
 
         String save = controller.save();
         assertTrue(save.equals(Action.SUCCESS));
         genericService.synchronize();
         Long id = resourceCollection.getId();
+        genericService.evictFromCache(resourceCollection);
         resourceCollection = null;
         resourceCollection = genericService.find(ResourceCollection.class, id);
         logger.debug("parentId: {}", parentId);
         logger.debug("Resources: {}", resources);
         if (PersistableUtils.isNotNullOrTransient(parentId)) {
-            assertThat(resourceCollection.getParent(), hasProperty("id", equalTo(parentId)));
+            assertEquals(parentId, resourceCollection.getParent().getId());
         }
         if (CollectionUtils.isNotEmpty(resources)) {
             assertThat(resourceCollection.getResources(), containsInAnyOrder(resources.toArray()));

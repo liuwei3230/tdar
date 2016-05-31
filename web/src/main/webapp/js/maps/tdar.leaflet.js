@@ -39,6 +39,7 @@ TDAR.leaflet = (function(console, $, ctx, L) {
         id: 'abrin.n9j4f56m',
         // config for leaflet.sleep
         sleep: true,
+        sleepOpacity: 1,
         // time(ms) for the map to fall asleep upon mouseout
         sleepTime: 750,
         // time(ms) until map wakes on mouseover
@@ -106,7 +107,9 @@ TDAR.leaflet = (function(console, $, ctx, L) {
 
             _fitTo(map, glayer);
         }
-        
+        if (settings.search) {
+            L.Control.geocoder({}).addTo(map);
+        }
         return map;
     }
 
@@ -114,32 +117,90 @@ TDAR.leaflet = (function(console, $, ctx, L) {
         $(".leaflet-map-results").each(function() {
             var $el = $(this);
             var map = _initMap(this);
-            var markers = new L.MarkerClusterGroup();
+            var markers = new L.MarkerClusterGroup({maxClusterRadius:150, removeOutsideVisibleBounds:true, chunkedLoading: true});
+            $el.data("markers", markers);
+
             var recDefaults = $.extend(_rectangleDefaults, {
                 fillOpacity: 0.08,
                 fitToBounds: true
             });
             _initFromDataAttr($el, map, recDefaults);
             var hasBounds = false;
-            $(".resource-list.MAP .listItem").each(function() {
-                var $t = $(this);
-                var title = $(".resourceLink", $t);
-                var lat = $t.data("lat");
-                var lng = $t.data("long");
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    hasBounds = true;
-                    var marker = L.marker(new L.LatLng(lat, lng), {title: title.text().trim()});
-                    marker.bindPopup(title.html() + "<br><a href='" + title.attr('href') + "'>view</a>");
-                    markers.addLayer(marker);
+            var allPoints = new Array();
+            var infiniteUrl = $el.data("infinite-url");
+            if (infiniteUrl) {
+                _dynamicUpdateMap($el, infiniteUrl,0);
+            } else {
+                $(".resource-list.MAP .listItem").each(function() {
+                    var $t = $(this);
+                    var title = $(".resourceLink", $t);
+                    var lat = $t.data("lat");
+                    var lng = $t.data("long");
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        hasBounds = true;
+                        var marker = L.marker(new L.LatLng(lat, lng), {title: title.text().trim()});
+                        marker.bindPopup(title.html() + "<br><a href='" + title.attr('href') + "'>view</a>");
+                        allPoints.push(marker);
+    
+                    }
+                });
+                markers.clearLayers();
+                markers.addLayers(allPoints);
+                if (hasBounds) {
+                    _fitTo(map, markers);
                 }
-            });
-            if (hasBounds) {
-                _fitTo(map, markers);
             }
             map.addLayer(markers);
         });
     }
 
+    function _dynamicUpdateMap($el, baseUrl, startRecord_) {
+        var startRecord = startRecord_;
+        if (!startRecord) {
+            startRecord = 0;
+        }
+        $.ajax({
+        dataType: "json",
+        url: baseUrl + "&startRecord="+startRecord,
+        success: function(data) {
+            _update($el, data,startRecord);
+            var nextPage = data.properties.startRecord + data.properties.recordsPerPage;
+            if (data.properties && (nextPage) < data.properties.totalRecords) {
+                _dynamicUpdateMap($el, baseUrl, nextPage);
+            }    
+        }
+        }).error(function() {});
+    
+    }
+    
+    function _update($el, data,startRecord) {
+        var layers = new Array();
+        $(data.features).each(function(key, data_) {
+            if (data_.geometry.type) {
+                var title = data_.properties.title;
+                var c = data_.geometry.coordinates;
+                var marker = L.marker(new L.LatLng(c[1],c[0]), {title: title.trim()});
+                marker.bindPopup(title + "<br><a href='" + data_.properties.detailUrl + "'>view</a>");
+                layers.push(marker);
+            }
+        });
+        var markers = $el.data("markers");
+        if (startRecord == 0) {
+            markers.clearLayers();
+        }
+        markers.addLayers(layers);
+        // if we fit to bounds...
+        if ($el.data("fit-bounds")) {
+            var map = $el.data("map");
+            if (markers.getBounds().lat) {
+                map.fitBounds(markers.getBounds());
+            }
+            // only zoom out on the first call
+            if (startRecord == 0) {
+                $el.data("map");
+            }
+        }
+    }
     
     function _fitTo(map, layer) {
         map.fitBounds(layer.getBounds());
@@ -176,9 +237,13 @@ TDAR.leaflet = (function(console, $, ctx, L) {
             //console.log(minx, maxx, miny, maxy);
             var poly = [[maxy, maxx], [miny, minx]];
             var rectangle = L.rectangle(poly, rectangleSettings).addTo(map);
-            //console.log("fitToBounds:", rectangleSettings.fitToBounds);
+            console.log("fitToBounds:", rectangleSettings.fitToBounds);
+            console.log("fitToBounds (rec):", rectangle.getBounds());
+            console.log("fitToBounds (map):", map.getBounds());
+            
             if (rectangleSettings.fitToBounds) {
-                map.fitBounds(rectangle.getBounds());
+                // Really frustrating race condition whereby map sometimes zoom's wrong, so we need to add a timeout to make this work
+                setTimeout(function() {map.fitBounds(rectangle.getBounds());},1000);
             }
             _initialized = 2;
             return rectangle;
@@ -423,6 +488,7 @@ TDAR.leaflet = (function(console, $, ctx, L) {
         initResultsMaps: _initResultsMaps,
         initialized: _isIntialized,
         defaults: _defaults,
+        dynamicUpdateMap: _dynamicUpdateMap,
         getMaps : _getMaps
     }
 })(console, jQuery, window, L);
