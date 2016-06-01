@@ -36,19 +36,23 @@ public class ExcelTemplateProcessor {
         exporter.gridExport(headers, data, joinedNames, xlsStream);
     }
 
-
-    public void process(File template, Map<String, Object> data, OutputStream xlsStream) throws IOException {
-        Context context = new Context(data);
-        try(InputStream inputStream = new FileInputStream(template)){
-            JxlsHelper.getInstance().processTemplate(inputStream, xlsStream, context);
-        }
-    }
-
-
     public void process(File template, Map<String, Object> data, File outfile) throws IOException {
         try(OutputStream os = new FileOutputStream(outfile)) {
             process(template, data, os);
         }
     }
+
+    public void process(File template, Map<String, Object> data, OutputStream xlsStream) throws IOException {
+        try(InputStream inputStream = new FileInputStream(template)){
+            process(inputStream, data, xlsStream);
+        }
+    }
+
+    public void process(InputStream template, Map<String, Object> data, OutputStream xlsStream) throws IOException {
+        Context context = new Context(data);
+        JxlsHelper.getInstance().processTemplate(template, xlsStream, context);
+    }
+
+
 
 }
