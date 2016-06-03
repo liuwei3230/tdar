@@ -9,7 +9,7 @@
     <name>tDAR (core)</name>
 
     <properties>
-        <poi.version>3.14</poi.version>
+        <poi.version>3.13</poi.version>
         <!-- see http://tomcat.apache.org/whichversion.html for compatibility 
             with tomcat ; jetty: http://wiki.eclipse.org/Jetty/Starting/Jetty_Version_Comparison_Table -->
         <jena.version>2.13.0</jena.version>
