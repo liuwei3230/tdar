@@ -45,8 +45,10 @@ public class MessageBusResourceSynchronization<T extends ObjectContainer>
 		if (status == TransactionSynchronization.STATUS_COMMITTED) {
 			logger.debug("COMMITTING EVENTS {}", holder.getPendingMessages().size());
 			for (Object o : holder.getPendingMessages()) {
+			    ObjectContainer oc = (ObjectContainer)o;
 				try {
-					messageBus.post((ObjectContainer) o);
+				    logger.debug("{} ({} {})", oc.getId(), oc.getType(), oc.getEventType());
+					messageBus.post(oc);
 				} catch (Exception e) {
 					logger.error("exception in post-transaction procesisng", e);
 				}

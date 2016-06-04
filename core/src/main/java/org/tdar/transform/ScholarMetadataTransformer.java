@@ -30,7 +30,7 @@ public class ScholarMetadataTransformer implements Serializable {
 
             for (InformationResourceFile file : ir.getInformationResourceFiles()) {
                 if (file.getLatestPDF() != null && file.isViewable()) {
-                    addMetaTag(toReturn, "citation_pdf_url", UrlService.downloadUrl(file.getLatestPDF()));
+                    addMetaTag(toReturn, "citation_pdf_url", UrlService.downloadUrl(ir, file.getLatestPDF()));
                 }
             }
             SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
