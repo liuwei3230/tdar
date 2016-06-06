@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
@@ -66,8 +67,10 @@ public class FileProxyWrapper {
                     break;
                 case REPLACE:
                     // explicit fall through to ADD after loading the existing irFile to be replaced.
+                    addInformationResourceFile(proxy,false);
+                    break;
                 case ADD:
-                    addInformationResourceFile(proxy);
+                    addInformationResourceFile(proxy,true);
                     break;
                 case ADD_DERIVATIVE:
                     createVersionMetadataAndStore(proxy);
@@ -113,6 +116,7 @@ public class FileProxyWrapper {
             for (InformationResourceFile file : informationResource.getActiveInformationResourceFiles()) {
                 if (!irFiles.contains(file) && !file.isDeleted()) {
                     InformationResourceFileVersion latestUploadedVersion = file.getLatestUploadedVersion();
+                    latestUploadedVersion.setInformationResourceId(informationResource.getId());
                     latestUploadedVersion.setTransientFile(CONFIG.getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, latestUploadedVersion));
                     filesToProcess.add(latestUploadedVersion);
                 }
@@ -124,15 +128,20 @@ public class FileProxyWrapper {
      * Adds a @link InformationResourceFile to a resource given a file proxy. This method handles the full process of creating the metadata and
      * InformationResourceFileVersions to a file when processing it
      */
-    public void addInformationResourceFile(FileProxy proxy) throws IOException {
+    public void addInformationResourceFile(FileProxy proxy, boolean add) throws IOException {
         // always set the download/version info and persist the relationships between the InformationResource and its IRFile.
         InformationResourceFile irFile = proxy.getInformationResourceFile();
         incrementVersionNumber(irFile);
-        // genericDao.saveOrUpdate(resource);
+
         if (informationResource.isTransient()) {
             datasetDao.saveOrUpdate(informationResource);
         }
-        irFile.setInformationResource(informationResource);
+        // somethign weird with hashCode that contains is not working even though the ID is already 
+        // set, and the object is itself via the earlier "find"
+        if (add) {
+            informationResource.getInformationResourceFiles().add(irFile);
+        }
+        datasetDao.saveOrUpdate(irFile);
         proxy.setInformationResourceFileVersion(createVersionMetadataAndStore(proxy));
         setInformationResourceFileMetadata(proxy);
         for (FileProxy additionalVersion : proxy.getAdditionalVersions()) {
@@ -140,8 +149,6 @@ public class FileProxyWrapper {
             additionalVersion.setInformationResourceFile(proxy.getInformationResourceFile());
             createVersionMetadataAndStore(additionalVersion);
         }
-        datasetDao.saveOrUpdate(irFile);
-        informationResource.add(irFile);
         logger.debug("all versions for {}", irFile);
     }
 
@@ -182,12 +189,12 @@ public class FileProxyWrapper {
         if ((file == null) || !file.exists()) {
             throw new TdarRecoverableRuntimeException("fileprocessing.error.not_found", Arrays.asList(originalFilename));
         }
-        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, irFile);
+        InformationResourceFileVersion version = new InformationResourceFileVersion(proxy.getVersionType(), filename, informationResource, irFile);
         if (irFile.isTransient()) {
             datasetDao.saveOrUpdate(irFile);
         }
 
-        irFile.addFileVersion(version);
+        irFile.getInformationResourceFileVersions().add(version);
         TdarConfiguration.getInstance().getFilestore().store(FilestoreObjectType.RESOURCE, file, version);
         version.setTransientFile(file);
         datasetDao.save(version);
@@ -311,6 +318,11 @@ public class FileProxyWrapper {
      * Finds an @link InformationResourceFile based on the file id information associated with the @link FileProxy
      */
     private InformationResourceFile findInformationResourceFile(FileProxy proxy) {
+        for (InformationResourceFile irf : informationResource.getInformationResourceFiles()) {
+            if (Objects.equals(irf.getId(), proxy.getFileId())) {
+                return irf;
+            }
+        }
         InformationResourceFile irFile = datasetDao.find(InformationResourceFile.class, proxy.getFileId());
         if (irFile == null) {
             logger.error("{} had no findable InformationResourceFile.id set on it", proxy);
