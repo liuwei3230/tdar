@@ -12,6 +12,7 @@ import org.tdar.search.query.SearchResultHandler;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
@@ -79,7 +80,8 @@ public class SearchSpreadsheetGeneratorTest {
         SearchResultHandler<Resource> mockResults = generateMockSearchResults();
 
         try( FileOutputStream fos = new FileOutputStream(outputFile)) {
-            generator.generate(mockResults, fos);
+            InputStream template = generator.getSearchResultsTemplate();
+            generator.generate(mockResults, template, fos, "http://core.tdar.org/search/results");
         }
 
         assertThat(outputFile.exists(), is( true));
