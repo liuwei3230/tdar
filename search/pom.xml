@@ -20,6 +20,7 @@
     </parent>
     <!-- 3rd party dependencies and libraries -->
     <dependencies>
+
         <dependency>
             <artifactId>solr-solrj</artifactId>
             <groupId>org.apache.solr</groupId>
@@ -88,6 +89,12 @@
             <artifactId>core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.fluttercode.datafactory</groupId>
+            <artifactId>datafactory</artifactId>
+            <version>0.8</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
