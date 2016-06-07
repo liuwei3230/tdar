@@ -21,7 +21,9 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.tdar.TestConstants.TEST_JXLS_TEMPLATE_DIR;
 import static org.tdar.core.service.excel.Employee.randomEmployee;
-
+import static org.tdar.utils.MapUtils.entry;
+import static org.tdar.utils.MapUtils.generateItems;
+import static org.tdar.utils.MapUtils.newMap;
 
 /**
  * Tests for basic template processor
@@ -31,7 +33,7 @@ public class ExcelTemplateProcessorTest {
 
     Logger logger = LoggerFactory.getLogger(getClass());
     File targetDir = Paths.get(System.getProperty("xlsdir", TestConstants.TEST_JXLS_DEST_DIR)).toFile();
-    File templateDir = Paths.get(System.getProperty("xlstemplatedir", TEST_JXLS_TEMPLATE_DIR)).toFile();;
+    File templateDir = Paths.get(System.getProperty("xlstemplatedir", TEST_JXLS_TEMPLATE_DIR)).toFile();
     ExcelTemplateProcessor templateProcessor = new ExcelTemplateProcessor();
 
     // Use constant seed for "random" data to be repeatable across tests.
@@ -45,27 +47,12 @@ public class ExcelTemplateProcessorTest {
         }
     }
 
-    //todo: this map initializer is handy.   consider promoting, at least to other tests
-    // return a Map.Entry
-    static <K, V> Map.Entry<K, V> entry(K key, V value) {
-        return new AbstractMap.SimpleEntry<>(key, value);
-    }
-
-    // return immutable map from an array of Map.Entry objects (do not insert nulls, okay?).
-    static <K, U> Map<K, U> newMap(Map.Entry<K, U>... entries) {
-        //return Stream.of(entries).collect(Collectors.toMap((e) -> e.getKey(), (e) -> e.getValue()));
-        Map<K, U> map = new HashMap<>();
-        for(Map.Entry<K, U> entry : entries) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return map;
-    }
-
 
     @Before
     public void beforeEach() {
         mkdirs(targetDir);
         mkdirs(templateDir);
+        logger.debug("Current directory is: {}", Paths.get(".").toFile().getAbsolutePath());
     }
 
 
@@ -124,27 +111,6 @@ public class ExcelTemplateProcessorTest {
 
         templateProcessor.process(template, data, outfile);
     }
-
-    /**
-     * Generate list of pseudorandom size.
-     * @param minSize
-     * @param maxSize
-     * @param supplier
-     * @param <T>
-     * @return
-     */
-    public <T> Iterable<T> generateItems(int minSize, int maxSize, Supplier<T> supplier ) {
-        List<T> list = new ArrayList<>();
-        int length = minSize;
-        if(minSize < maxSize) {
-            length = (random.nextInt() % (maxSize - minSize)) + minSize;
-        }
-        for(int i = 0; i < length; i++) {
-            list.add(supplier.get());
-        }
-        return list;
-    }
-
 
     public Map<String, Object> generateSearchResult() {
         String resourceType = dataFactory.getItem(asList("docuement", "dataset", "coding-sheet", "image", "ontology", "taco"));
