@@ -110,9 +110,10 @@ public class SearchSpreadsheetGenerator {
 
     // Return list of files as single string (truncates list if too many files)
     private String getResourceFiles(InformationResource ir) {
-        int maxFileListSize = 5;
+        int maxFileListSize = 10;
         String files =ir.getLatestUploadedVersions().stream()
                 .map( (irfv) -> irfv.getFilename())
+                .sorted(Comparator.comparing(String::toLowerCase))
                 .limit(maxFileListSize)
                 .collect(Collectors.joining(", "));
         if(ir.getTotalNumberOfFiles() > maxFileListSize) {
