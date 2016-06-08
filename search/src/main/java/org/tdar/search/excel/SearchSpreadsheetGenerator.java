@@ -6,6 +6,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.LazyDynaBean;
 import org.apache.commons.beanutils.WrapDynaBean;
 import org.apache.commons.lang3.StringUtils;
+import org.tdar.core.bean.Sequenceable;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.configuration.TdarConfiguration;
@@ -104,6 +105,7 @@ public class SearchSpreadsheetGenerator {
     // Return list of authors as single string.
     private String getResourceAuthors(Resource r) {
         return r.getPrimaryCreators().stream()
+                .sorted(Comparator.comparing(Sequenceable::getSequenceNumber))
                 .map((resourceCreator) -> resourceCreator.getCreator().getProperName())
                 .collect(Collectors.joining(", "));
     }
