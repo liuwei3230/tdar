@@ -87,7 +87,7 @@ public class ExcelTemplateProcessorTest {
         File template = new File(templateDir, "search_results_template.xls");
         File outfile = new File(targetDir, "search_results_output.xls");
         Map<String, Object> data = newMap(
-                entry("employees", generateItems(20, 20, () -> randomEmployee())),
+                entry("results", generateItems(20, 20, () -> randomEmployee())),
                 entry("info", newMap(
                         entry("dateCreated", new Date(0)),
                         entry("url", "http://www.tdar.org"),
