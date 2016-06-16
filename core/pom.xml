@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.tdar</groupId>
         <artifactId>base</artifactId>
-        <version>15.5.0-OBSIDIAN-MULTI-CORE-SEARCH-SNAPSHOT</version>
+        <version>15.0.0-OBSIDIAN-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
@@ -498,17 +498,17 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-commons</artifactId>
-            <version>5.1</version>
+            <version>${asm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>5.1</version>
+            <version>${asm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm-debug-all</artifactId>
-            <version>5.1</version>
+            <version>${asm.version}</version>
         </dependency>
 
         <!-- freemarker -->

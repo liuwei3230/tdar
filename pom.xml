@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.tdar</groupId>
     <artifactId>parent</artifactId>
-    <version>15.5.0-OBSIDIAN-MULTI-CORE-SEARCH-SNAPSHOT</version>
+    <version>15.0.0-OBSIDIAN-SNAPSHOT</version>
     <name>parent</name>
     <packaging>pom</packaging>
     <modules>
@@ -50,6 +50,8 @@
         <skipUpgradeLiquibase>true</skipUpgradeLiquibase>
         <skipMavenMercurialSetup>false</skipMavenMercurialSetup>
         <indexDir>${basedir}/target</indexDir>
+        <asm.version>5.1</asm.version>
+        
         <clover.licenseDir>/home/bamboo</clover.licenseDir>
         <!-- Following points to the profile directory to use for filtering 
             resources -->
