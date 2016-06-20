@@ -80,7 +80,7 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
         logger.debug("{}", document);
         logger.debug("{}", version);
         logger.debug("{}", version.getTransientFile());
-        DownloadPdfFile downloadPdfFile = new DownloadPdfFile(document, version, pdfService, getAdminUser(), MessageHelper.getInstance(), null);
+        DownloadPdfFile downloadPdfFile = new DownloadPdfFile(document, version, pdfService, getAdminUser(), MessageHelper.getInstance(), null,version.getInformationResourceFile().getDescription());
         downloadPdfFile.setFile(file);
         dto.getDownloads().add(downloadPdfFile);
 

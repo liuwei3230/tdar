@@ -74,12 +74,6 @@ public class InformationResourceFile extends AbstractSequenced<InformationResour
 
     private transient WorkflowContext workflowContext;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    // cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
-    @JoinColumn(name = "information_resource_id", nullable = false, updatable = false)
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-    private InformationResource informationResource;
-
     private transient Long transientDownloadCount;
 
     @Lob
@@ -134,12 +128,6 @@ public class InformationResourceFile extends AbstractSequenced<InformationResour
     @Column(length = 32)
     private FileStatus status;
 
-    @XmlElement(name = "informationResourceRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public InformationResource getInformationResource() {
-        return informationResource;
-    }
-
     private transient boolean viewable = false;
 
     public InformationResourceFile() {
@@ -152,9 +140,6 @@ public class InformationResourceFile extends AbstractSequenced<InformationResour
         }
     }
 
-    public void setInformationResource(InformationResource informationResource) {
-        this.informationResource = informationResource;
-    }
 
     public FileType getInformationResourceFileType() {
         return informationResourceFileType;
@@ -194,10 +179,6 @@ public class InformationResourceFile extends AbstractSequenced<InformationResour
     @XmlTransient
     public InformationResourceFileVersion getIndexableVersion() {
         return getVersion(getLatestVersion(), VersionType.INDEXABLE_TEXT);
-    }
-
-    public void addFileVersion(InformationResourceFileVersion version) {
-        getInformationResourceFileVersions().add(version);
     }
 
     public void incrementVersionNumber() {
@@ -518,7 +499,7 @@ public class InformationResourceFile extends AbstractSequenced<InformationResour
 
     public boolean isHasTranslatedVersion() {
         try {
-            if ((getLatestTranslatedVersion() != null) && getInformationResource().getResourceType().isDataTableSupported()) {
+            if ((getLatestTranslatedVersion() != null)) {
                 return true;
             }
         } catch (Exception e) {

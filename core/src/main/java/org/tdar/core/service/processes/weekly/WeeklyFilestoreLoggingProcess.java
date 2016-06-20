@@ -93,7 +93,8 @@ public class WeeklyFilestoreLoggingProcess extends AbstractScheduledProcess {
         InformationResourceFileVersion version = versionProxy.generateInformationResourceFileVersion();
         version.setInformationResourceFileId(irfId);
         version.setInformationResourceId(irId);
-        version.setInformationResourceFile(irf);
+        irf.getInformationResourceFileVersions().add(version);
+//        version.setInformationResourceFile(irf);
         return version;
     }
 
