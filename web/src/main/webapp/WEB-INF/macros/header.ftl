@@ -14,6 +14,7 @@
 <#macro outdatedBrowserWarning>
 <#-- If browser is obsolete (ie8 or lower), show warning w/ upgrade link at top of page -->
 <#-- This script also works for detecting obsolete versions of other browsers, but for now we limit to IE -->
+<#if production>
 <!--[if !IE 8]><!-->
 <script>
     var $buoop = {vs:{i:8,f:50,o:12.1,s:7},c:2, reminder:0};
@@ -27,6 +28,7 @@
     catch(e){window.attachEvent("onload", $buo_f)}
 </script>
 <!--<![endif]-->
+</#if>
 </#macro>
 
 

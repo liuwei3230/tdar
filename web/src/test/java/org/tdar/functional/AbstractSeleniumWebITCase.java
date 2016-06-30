@@ -69,6 +69,8 @@ import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
@@ -301,7 +303,7 @@ public abstract class AbstractSeleniumWebITCase {
     }
 
     protected enum Browser {
-        FIREFOX, CHROME, SAFARI, IE;
+        FIREFOX, CHROME, SAFARI, IE, PHANTOMJS;
     }
 
     @Before
@@ -316,7 +318,7 @@ public abstract class AbstractSeleniumWebITCase {
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_TYPEKIT);
         getJavascriptIgnorePatterns().add(TestConstants.REGEX_GOOGLE_ANALYTICS);
         WebDriver driver = null;
-        Browser browser = Browser.CHROME;
+        Browser browser = Browser.PHANTOMJS;
         String xvfbPort = System.getProperty("display.port");
         String browser_ = System.getProperty("browser");
         if (StringUtils.isNotBlank(browser_)) {
@@ -389,6 +391,26 @@ public abstract class AbstractSeleniumWebITCase {
                 driver = new ChromeDriver(service, copts);
                 
                 service.start();
+                break;
+            case PHANTOMJS:
+                Capabilities pcaps = DesiredCapabilities.phantomjs();
+                ((DesiredCapabilities) pcaps).setJavascriptEnabled(true);                
+                ((DesiredCapabilities) pcaps).setCapability("takesScreenshot", true);
+                ArrayList<String> cliArgsCap = new ArrayList<String>();
+                cliArgsCap.add("--web-security=false");
+                cliArgsCap.add("--ssl-protocol=any");
+                cliArgsCap.add("--ignore-ssl-errors=true");
+                ((DesiredCapabilities) pcaps).setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
+                String phantomPath = "node_modules/phantomjs/bin/phantomjs";
+                File phantom = new File(phantomPath);
+                if (!phantom.exists()) {
+                    phantom = new File("web", phantomPath);
+                }
+                ((DesiredCapabilities) pcaps).setCapability(
+                        PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
+                        phantom.getAbsolutePath()
+                    );
+                driver = new  PhantomJSDriver(pcaps);
                 break;
             case IE:
                 System.setProperty("webdriver.ie.driver", CONFIG.getIEDriverPath());
