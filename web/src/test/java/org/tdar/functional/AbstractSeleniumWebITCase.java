@@ -401,7 +401,7 @@ public abstract class AbstractSeleniumWebITCase {
                 cliArgsCap.add("--ssl-protocol=any");
                 cliArgsCap.add("--ignore-ssl-errors=true");
                 ((DesiredCapabilities) pcaps).setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgsCap);
-                String phantomPath = "node_modules/phantomjs/bin/phantomjs";
+                String phantomPath = "node_modules/phantomjs-prebuilt/lib/phantom/bin/phantomjs";
                 File phantom = new File(phantomPath);
                 if (!phantom.exists()) {
                     phantom = new File("web", phantomPath);
