@@ -463,7 +463,6 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
      * @throws SolrServerException
      */
     public boolean indexProject(Project project) throws SolrServerException, IOException {
-        setupProjectForIndexing(project);
         index(project);
         logger.debug("reindexing project contents");
         ScrollableResults scrollableResults = projectDao.findAllResourcesInProject(project);
@@ -471,12 +470,6 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
         batch.indexScrollable(0L, Resource.class, scrollableResults);
         logger.debug("completed reindexing project contents");
         return false;
-    }
-
-    private void setupProjectForIndexing(Project project) {
-        Collection<InformationResource> irs = new ImmutableScrollableCollection<InformationResource>(
-                projectDao.findAllResourcesInProject(project, Status.ACTIVE, Status.DRAFT));
-        project.setCachedInformationResources(irs);
     }
 
     /**
@@ -612,7 +605,32 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
     @Transactional(readOnly=true)
     @Async
     public void partialIndexAllResourcesInCollectionSubTreeAsync(ResourceCollection persistable) {
-        partialIndexAllResourcesInCollectionSubTree(persistable);
+        indexAllResourcesInCollectionSubTree(persistable);
+    }
+
+    public void partialIndexProject() {
+        ScrollableResults results = datasetDao.findAllResourceWithProjectsScrollable();
+        int numProcessed =0;
+        String coreName = LookupSource.RESOURCE.getCoreName();
+        while (results.next()) {
+            InformationResource r  = (InformationResource) results.get(0);
+            SolrInputDocument doc = ResourceDocumentConverter.replaceProjectFields(r);
+            try {
+                template.add(LookupSource.RESOURCE.getCoreName(), doc);
+            } catch (SolrServerException | IOException e1) {
+                logger.error("error adding: {}", e1);
+            }
+            if ((numProcessed  % FLUSH_EVERY) == 0) {
+                logger.debug("flushing search index - partial: {}", numProcessed);
+                commitAndClearSession(coreName);
+                logger.trace("flushed search index");
+            }
+            numProcessed++;
+
+        }
+        commitAndClearSession(coreName);
+        logger.debug("completed partial indexing of projectTitle");
+        
     }
 
 }
