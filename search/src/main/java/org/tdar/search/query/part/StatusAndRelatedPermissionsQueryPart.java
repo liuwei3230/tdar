@@ -12,6 +12,7 @@ import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.search.index.LookupSource;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.utils.PersistableUtils;
 
@@ -34,12 +35,13 @@ public class StatusAndRelatedPermissionsQueryPart extends FieldQueryPart<Status>
         QueryPartGroup draftSubgroup = new QueryPartGroup(Operator.AND);
         if (PersistableUtils.isNotNullOrTransient(getPerson()) && localStatuses.contains(Status.DRAFT)) {
             draftSubgroup.append(new FieldQueryPart<Status>(QueryFieldNames.STATUS, Status.DRAFT));
-            QueryPartGroup permissionsSubgroup = new QueryPartGroup(Operator.OR);
             draftSubgroup.setOperator(Operator.AND);
             if (!ArrayUtils.contains(InternalTdarRights.SEARCH_FOR_DRAFT_RECORDS.getPermittedGroups(), getTdarGroup())) {
+                QueryPartGroup permissionsSubgroup = new QueryPartGroup(Operator.OR);
                 permissionsSubgroup.append(new FieldQueryPart<Long>(QueryFieldNames.RESOURCE_USERS_WHO_CAN_MODIFY, person.getId()));
                 permissionsSubgroup.append(new FieldQueryPart<Long>(QueryFieldNames.RESOURCE_USERS_WHO_CAN_VIEW, person.getId()));
-                draftSubgroup.append(permissionsSubgroup);
+                CrossCoreFieldJoinQueryPart<FieldQueryPart<Long>> fqp = new CrossCoreFieldJoinQueryPart(QueryFieldNames.ID, QueryFieldNames.ID, permissionsSubgroup, LookupSource.RIGHTS.getCoreName());
+                draftSubgroup.append(fqp);
             }
         }
 

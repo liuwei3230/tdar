@@ -10,5 +10,6 @@ public interface CoreNames {
     String ANNOTATION_KEY = "annotationKeys";
     String CONTENTS = "contents";
     String DATA_MAPPINGS = "dataMappings";
+    String RIGHTS = "rights";
 
 }

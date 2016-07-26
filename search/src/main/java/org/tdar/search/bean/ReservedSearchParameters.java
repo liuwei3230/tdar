@@ -8,7 +8,9 @@ import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.search.index.LookupSource;
 import org.tdar.search.query.QueryFieldNames;
+import org.tdar.search.query.part.CrossCoreFieldJoinQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.QueryPartGroup;
 import org.tdar.search.query.part.StatusAndRelatedPermissionsQueryPart;
@@ -49,8 +51,9 @@ public class ReservedSearchParameters extends SearchParameters {
             if (PersistableUtils.isNullOrTransient(getAuthenticatedUser())) {
                 throw new TdarRecoverableRuntimeException(support.getText("reservedSearchParameter.logged_in"));
             }
-            FieldQueryPart<Long> fqp = new FieldQueryPart<Long>(QueryFieldNames.RESOURCE_USERS_WHO_CAN_MODIFY, getAuthenticatedUser().getId());
-            fqp.setDisplayName("User Id");
+            FieldQueryPart<Long> fqp_ = new FieldQueryPart<Long>(QueryFieldNames.RESOURCE_USERS_WHO_CAN_MODIFY, getAuthenticatedUser().getId());
+            fqp_.setDisplayName("User Id");
+            CrossCoreFieldJoinQueryPart<FieldQueryPart<Long>> fqp = new CrossCoreFieldJoinQueryPart<FieldQueryPart<Long>>(QueryFieldNames.ID, QueryFieldNames.ID, fqp_, LookupSource.RIGHTS.getCoreName());
             queryPartGroup.append(fqp);
         }
 

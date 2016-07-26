@@ -80,6 +80,9 @@ public class BatchIndexer implements Serializable {
             		totals.put(DataTableRow.class,count);
             		continue;
             	}
+            	if (src == LookupSource.RIGHTS) {
+            	    continue;
+            	}
 	            for (Class<? extends Indexable> toIndex : src.getClasses()) {
 	                Long count = genericDao.count(toIndex).longValue();
 					total += count;
@@ -95,6 +98,8 @@ public class BatchIndexer implements Serializable {
 	                ScrollableResults scrollableResults = null;
 	                if ( src == LookupSource.DATA) {
 	                	scrollableResults = datasetDao.findMappedResources(null);
+	                } else if (src == LookupSource.RIGHTS) {
+	                    continue;
 	                } else {
 	                	scrollableResults = genericDao.findAllScrollable(toIndex);
 	                }
@@ -161,6 +166,9 @@ public class BatchIndexer implements Serializable {
                 logger.trace("flushing search index");
                 try {
                     searchIndexService.commit(coreForClass);
+                    if (src == LookupSource.RESOURCE) {
+                        searchIndexService.commit(LookupSource.RIGHTS.getCoreName());
+                    }
                 } catch (SolrServerException | IOException e) {
                     logger.error("error committing: {}", e);
                 }

@@ -36,6 +36,7 @@ import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.ResourceLookupObject;
 import org.tdar.search.bean.SearchParameters;
+import org.tdar.search.index.LookupSource;
 import org.tdar.search.query.LuceneSearchResultHandler;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.builder.QueryBuilder;
@@ -43,6 +44,7 @@ import org.tdar.search.query.builder.ResourceCollectionQueryBuilder;
 import org.tdar.search.query.builder.ResourceQueryBuilder;
 import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.query.part.CategoryTermQueryPart;
+import org.tdar.search.query.part.CrossCoreFieldJoinQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.GeneralSearchResourceQueryPart;
 import org.tdar.search.query.part.HydrateableKeywordQueryPart;
@@ -157,9 +159,11 @@ public class ResourceSearchService extends AbstractSearchService {
                 filtered.add(cid);
             }
         }
-        ;
 
-        q.append(new FieldQueryPart<Long>(colQueryField, Operator.OR, filtered));
+        FieldQueryPart<Long> fqp_ =  new FieldQueryPart<Long>(colQueryField, Operator.OR, filtered);
+        CrossCoreFieldJoinQueryPart<FieldQueryPart<Long>> fqp = new CrossCoreFieldJoinQueryPart<FieldQueryPart<Long>>(QueryFieldNames.ID, QueryFieldNames.ID, fqp_, LookupSource.RIGHTS.getCoreName());
+
+        q.append(fqp);
 
         ReservedSearchParameters reservedSearchParameters = look.getReservedSearchParameters();
         reservedSearchParameters.setUseSubmitterContext(look.isUseSubmitterContext());

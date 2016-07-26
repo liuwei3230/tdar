@@ -7,12 +7,6 @@
     <copyField source="name" dest="name_autocomplete" />
     <copyField source="name" dest="name_phrase" />
 
-    <field name="resourceCollections.name" type="text_en" indexed="true" stored="true" multiValued="true" />
-    <field name="resourceCollections.name_autocomplete" type="autocomplete" indexed="true" stored="true" multiValued="true" />
-    <field name="resourceCollections.name_phrase" type="text_general" indexed="true" stored="true" multiValued="true" />
-    <copyField source="resourceCollections.name" dest="resourceCollections.name_autocomplete" />
-    <copyField source="resourceCollections.name" dest="resourceCollections.name_phrase" />
-
     <field name="description" type="text_en" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="description_phrase" type="text_general" indexed="true" stored="false" required="false" multiValued="false" />
     <copyField source="description" dest="description_phrase" />
@@ -58,14 +52,6 @@
     <field name="activeResourceCreators.role" type="strings" indexed="true" stored="false" required="false" multiValued="true" />
     <field name="crid" type="strings" indexed="true" stored="false" required="false" multiValued="true" />
     <field name="bookmarkedResource.person.id" type="longs" indexed="true" stored="false" required="false" multiValued="true" />
-    <field name="collectionIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="allCollectionIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="directSharedCollectionIds" type="longs" indexed="true" stored="false" required="false" multiValued="true" />
-    <field name="sharedCollectionIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />
-
-    <field name="usersWhoCanModify" type="longs" indexed="true" stored="false" required="false" multiValued="true" />
-    <field name="usersWhoCanView" type="longs" indexed="true" stored="false" required="false" multiValued="true" />
-
 	
     <field name="rcroleIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="CONTACT" type="longs" indexed="true" stored="false" required="false" multiValued="true" />

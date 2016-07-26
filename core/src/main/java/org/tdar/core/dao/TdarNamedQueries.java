@@ -125,6 +125,8 @@ public interface TdarNamedQueries {
     String QUERY_SPARSE_COLLECTION_RESOURCES = "query.sparse.collection.resources";
     String COLLECTION_VIEW = "collection.views";
     String CREATOR_VIEW = "creator.views";
+    String COLLECTION_TREE_FOR_RESOURCE = "collection.parentTree";
+
     String QUERY_COLLECTION_CHILDREN = "resourceCollection.allChildren";
     String QUERY_COLLECTION_CHILDREN_RESOURCES = "resourceCollection.allChildrenResources";
     String QUERY_COLLECTION_CHILDREN_RESOURCES_COUNT = "resourceCollection.allChildrenResources_count";
@@ -292,5 +294,4 @@ public interface TdarNamedQueries {
 
     String HOMEPAGE_GEOGRAPHIC = "select code, resource_type, sum(count), id from ( ( select code, count(*), r.resource_type, gk.id from geographic_keyword gk join resource_managed_geographic_keyword rgk on gk.id = rgk.geographic_keyword_id join resource r on r.id = rgk.resource_id left join information_resource ir on (ir.id = r.id and ir.inheriting_spatial_information = false) where (code !='') and r.status = 'ACTIVE' group by code, r.resource_type, gk.id ) union all select code, count(*), irr.resource_type, gk.id from geographic_keyword gk join resource_managed_geographic_keyword rgk on gk.id = rgk.geographic_keyword_id join resource p on p.id = rgk.resource_id join information_resource ir on (ir.project_id = p.id and ir.inheriting_spatial_information = true) join resource irr on (irr.id = ir.id) where (code !='') and irr.status = 'ACTIVE' group by code, irr.resource_type, gk.id ) as allrecs group by code, resource_type, id order by 1, 2";
     
-
 }

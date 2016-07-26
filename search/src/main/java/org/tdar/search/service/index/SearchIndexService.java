@@ -39,7 +39,6 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotationKey;
-import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
@@ -62,11 +61,11 @@ import org.tdar.search.converter.InstitutionDocumentConverter;
 import org.tdar.search.converter.KeywordDocumentConverter;
 import org.tdar.search.converter.PersonDocumentConverter;
 import org.tdar.search.converter.ResourceDocumentConverter;
+import org.tdar.search.converter.RightsDocumentConverter;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.service.CoreNames;
 import org.tdar.search.service.SearchUtils;
-import org.tdar.utils.ImmutableScrollableCollection;
 import org.tdar.utils.PersistableUtils;
 
 @Service
@@ -131,8 +130,14 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
         Optional<EventBusResourceHolder> holder = EventBusUtils.getTransactionalResourceHolder(this);
         SolrInputDocument doc = createDocument(record);
-        //
+        SolrInputDocument doc_r = null;
         String recordId = generateId(record);
+
+        if (record instanceof Resource) {
+            doc_r = RightsDocumentConverter.convert((Resource) record);
+            index(LookupSource.RIGHTS.getCoreName(), recordId, doc_r);
+        }
+
         File tempDirectory = CONFIG.getTempDirectory();
         File dir = new File(tempDirectory,"index");
         if (!dir.exists()) {
@@ -187,7 +192,15 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
         }
         try {
             String core = LookupSource.getCoreForClass(item.getClass());
-
+            SolrInputDocument rightsDoc = null;
+            if (src == LookupSource.RIGHTS || src == LookupSource.RESOURCE) {
+                rightsDoc = RightsDocumentConverter.convert((Resource) item);
+            }
+            
+            if (src == LookupSource.RIGHTS) {
+                index(LookupSource.RIGHTS.getCoreName(), generateId(item), rightsDoc);
+                return rightsDoc;
+            }
             SolrInputDocument document = createDocument(item);
 
             if (Objects.equals(src, LookupSource.DATA)) {
@@ -200,6 +213,10 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
                 return null;
             }
 
+            if (rightsDoc != null) {
+                logger.debug("{}->{}", generateId(item), rightsDoc);
+                index(LookupSource.RIGHTS.getCoreName(), generateId(item), rightsDoc);
+            }
             if (document == null) {
                 return null;
             }
@@ -549,12 +566,12 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
         logger.debug("partially indexing {} resources from {} ({})", total, persistable.getName(), persistable.getId());
         ScrollableResults results = resourceCollectionDao.findAllResourcesInCollectionAndSubCollectionScrollable(persistable);
         int numProcessed =0;
-        String coreName = LookupSource.RESOURCE.getCoreName();
+        String coreName = LookupSource.RIGHTS.getCoreName();
         while (results.next()) {
             Resource r  = (Resource) results.get(0);
-            SolrInputDocument doc = ResourceDocumentConverter.replaceCollectionFields(r);
+            SolrInputDocument doc = RightsDocumentConverter.convert(r);
             try {
-                template.add(LookupSource.RESOURCE.getCoreName(), doc);
+                template.add(LookupSource.RIGHTS.getCoreName(), doc);
             } catch (SolrServerException | IOException e1) {
                 logger.error("error adding: {}", e1);
             }

@@ -32,7 +32,8 @@ public enum LookupSource implements HasLabel,Localizable {
 			OtherKeyword.class, TemporalKeyword.class, SiteNameKeyword.class,
 			SiteTypeKeyword.class), 
 	RESOURCE("resources", Resource.class), 
-	COLLECTION("collections",ResourceCollection.class), 
+    COLLECTION("collections",ResourceCollection.class), 
+    RIGHTS("rights",RightsContainer.class), 
 	RESOURCE_ANNOTATION_KEY("annotationKeys", ResourceAnnotationKey.class),
 	CONTENTS("content",InformationResourceFile.class),
 	DATA("data",DataTableRow.class);
@@ -77,8 +78,10 @@ public enum LookupSource implements HasLabel,Localizable {
 				return CoreNames.KEYWORDS;
 			case PERSON:
 				return CoreNames.PEOPLE;
-			case RESOURCE:
-				return CoreNames.RESOURCES;
+            case RESOURCE:
+                return CoreNames.RESOURCES;
+            case RIGHTS:
+                return CoreNames.RIGHTS;
 			case RESOURCE_ANNOTATION_KEY:
 				return CoreNames.ANNOTATION_KEY;
 			case CONTENTS:

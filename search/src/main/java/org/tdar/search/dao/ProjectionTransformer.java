@@ -6,12 +6,13 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.solr.common.SolrDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.Obfuscatable;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
@@ -23,6 +24,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.service.ObfuscationService;
 import org.tdar.search.bean.SolrSearchObject;
 import org.tdar.search.query.QueryFieldNames;
@@ -33,10 +35,14 @@ import org.tdar.utils.PersistableUtils;
 public class ProjectionTransformer<I extends Indexable> {
 
 	private static final TdarConfiguration CONFIG = TdarConfiguration.getInstance();
-	
-	@Autowired
-	private DatasetDao datasetDao;
-	
+    private final transient Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private DatasetDao datasetDao;
+
+    @Autowired
+    private ResourceCollectionDao collectionDao;
+
 	public boolean isProjected(SolrSearchObject<I> results) {
 	    if (CollectionUtils.isEmpty(results.getDocumentList())) {
 	        return true;
@@ -58,11 +64,11 @@ public class ProjectionTransformer<I extends Indexable> {
 		r_.setStatus(Status.valueOf((String) doc.getFieldValue(QueryFieldNames.STATUS)));
 		r_.setTitle((String) doc.getFieldValue(QueryFieldNames.NAME));
 		r_.setDescription((String) doc.getFieldValue(QueryFieldNames.DESCRIPTION));
-
 		// set collections
-		Collection<Long> collectionIds = (Collection<Long>) (Collection) doc.getFieldValues(QueryFieldNames.RESOURCE_COLLECTION_IDS);
-		r_.getResourceCollections().addAll(datasetDao.findAll(ResourceCollection.class,collectionIds));
-
+		r_.getResourceCollections().addAll(collectionDao.findSharedCollectionHiearchy(r_.getId()));
+		Collection<Long> collectionIds = PersistableUtils.extractIds(r_.getResourceCollections());
+		logger.debug("{} {}", r_.getId(), collectionIds);
+		
 		// handle submitter
 		Long submitterId = (Long) doc.getFieldValue(QueryFieldNames.SUBMITTER_ID);
 		r_.setSubmitter(datasetDao.find(TdarUser.class, submitterId));

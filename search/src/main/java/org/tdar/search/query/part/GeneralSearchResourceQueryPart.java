@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.search.index.LookupSource;
 import org.tdar.search.index.analyzer.SiteCodeExtractor;
 import org.tdar.search.query.QueryFieldNames;
 
@@ -63,7 +64,9 @@ public class GeneralSearchResourceQueryPart extends GeneralSearchQueryPart {
         }
 
         FieldQueryPart<String> creatorPart = new FieldQueryPart<String>(QueryFieldNames.RESOURCE_CREATORS_PROPER_NAME, cleanedQueryString);
-        FieldQueryPart<String> collectionNamesContent = new FieldQueryPart<String>(QueryFieldNames.RESOURCE_COLLECTION_NAME, cleanedQueryString);
+        FieldQueryPart<String> collectionNamesContent_ = new FieldQueryPart<String>(QueryFieldNames.RESOURCE_COLLECTION_NAME, cleanedQueryString);
+        CrossCoreFieldJoinQueryPart<FieldQueryPart<String>> collectionNamesContent = new CrossCoreFieldJoinQueryPart(QueryFieldNames.ID, QueryFieldNames.ID, collectionNamesContent_, LookupSource.RIGHTS.getCoreName());
+
         queryPart.append(collectionNamesContent);
         
         if (cleanedQueryString.contains(" ") && isUseProximity()) {

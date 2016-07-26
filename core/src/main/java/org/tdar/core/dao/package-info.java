@@ -550,8 +550,10 @@
                 query = "from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col where :projectId = -1 or project.id=:projectId"),
         @org.hibernate.annotations.NamedQuery(
                 name=org.tdar.core.dao.TdarNamedQueries.COUNT_MAPPED_RESOURCES,
-                query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col")
-        
+                query = "select count(ir.id) from InformationResource ir inner join ir.project as project inner join ir.mappedDataKeyColumn as col"),
+        @org.hibernate.annotations.NamedQuery(
+                name=org.tdar.core.dao.TdarNamedQueries.COLLECTION_TREE_FOR_RESOURCE,
+                query = "from ResourceCollection sc where sc in (from ResourceCollection sc_ inner join sc_.resources res where res.id=:resourceId) or sc.id in (select parentId from ResourceCollection sc_ left join sc_.parentIds parentId join sc_.resources res inner join sc_.resources res where res.id=:resourceId)")
 })
 package org.tdar.core.dao;
 

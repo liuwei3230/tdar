@@ -59,8 +59,6 @@ public class ResourceDocumentConverter extends AbstractSolrDocumentConverter {
         doc.setField(QueryFieldNames.SUBMITTER_ID, resource.getSubmitter().getId());
         doc.setField(QueryFieldNames.DESCRIPTION, resource.getDescription());
         indexCreatorInformation(doc, resource);
-        Map<String, Object> indexCollectionInformation = indexCollectionInformation(doc, resource);
-        indexAll(doc, indexCollectionInformation);
         indexTemporalInformation(doc, resource);
         Map<DataTableColumn, String> data = null;
         if (resource instanceof Project) {
@@ -345,32 +343,6 @@ public class ResourceDocumentConverter extends AbstractSolrDocumentConverter {
 
     }
     
-    public static Map<String,Object> indexCollectionInformation(SolrInputDocument doc, Resource resource) {
-        Map<String, Object> map = new HashMap<>();
-        ResourceRightsExtractor rightsExtractor = new ResourceRightsExtractor(resource);
-        map.put(QueryFieldNames.RESOURCE_USERS_WHO_CAN_MODIFY, rightsExtractor.getUsersWhoCanModify());
-        map.put(QueryFieldNames.RESOURCE_USERS_WHO_CAN_VIEW, rightsExtractor.getUsersWhoCanView());
-
-        map.put(QueryFieldNames.RESOURCE_COLLECTION_DIRECT_SHARED_IDS, rightsExtractor.getDirectCollectionIds());
-        map.put(QueryFieldNames.RESOURCE_COLLECTION_SHARED_IDS, rightsExtractor.getCollectionIds());
-        map.put(QueryFieldNames.RESOURCE_COLLECTION_IDS, rightsExtractor.getAllCollectionIds());
-        map.put(QueryFieldNames.RESOURCE_COLLECTION_NAME, rightsExtractor.getCollectionNames());
-        return map;
-    }
-
-
-    public static SolrInputDocument replaceCollectionFields(Resource r) {
-        SolrInputDocument doc = ResourceDocumentConverter.convertPersistable(r);
-        Map<String, Object> map = ResourceDocumentConverter.indexCollectionInformation(doc, r);
-        addRequiredField(r, doc);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_COLLECTION_DIRECT_SHARED_IDS);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_COLLECTION_SHARED_IDS);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_COLLECTION_IDS);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_COLLECTION_NAME);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_USERS_WHO_CAN_MODIFY);
-        replaceField(doc, map, QueryFieldNames.RESOURCE_USERS_WHO_CAN_VIEW);
-        return doc;
-    }
 
     private static void replaceField(SolrInputDocument doc, Map<String,Object> map, String fieldName) {
         Map<String, Object> partialUpdate = new HashMap<>();
