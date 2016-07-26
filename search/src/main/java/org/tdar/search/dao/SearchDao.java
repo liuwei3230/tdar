@@ -84,6 +84,7 @@ public class SearchDao<I extends Indexable> {
         if (logger.isTraceEnabled()) {
             logger.trace(solrParams.toQueryString());
         }
+        logger.debug(solrParams.toQueryString());
         QueryResponse rsp = template.query(query.getCoreName(), solrParams);
         query.processResults(rsp);
         if (logger.isTraceEnabled()) {

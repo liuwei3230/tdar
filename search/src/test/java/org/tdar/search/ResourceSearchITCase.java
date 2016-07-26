@@ -23,7 +23,12 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest.METHOD;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.params.SolrParams;
 import org.joda.time.DateMidnight;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -971,6 +976,8 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         assertTrue(result.getResults().contains(ownerDocument));
     }
 
+    @Autowired
+    private SolrClient template;
 
 
     @Test
@@ -985,13 +992,35 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         genericService.saveOrUpdate(collection);
         ont.getResourceCollections().add(collection);
         genericService.saveOrUpdate(ont);
-        searchIndexService.indexAll(new QuietIndexReciever(),Arrays.asList( LookupSource.RESOURCE), getAdminUser());
+        genericService.synchronize();
         ReservedSearchParameters params = new ReservedSearchParameters();
         params.setResourceTypes(Arrays.asList(ResourceType.ONTOLOGY));
+        SolrQuery params_ = new SolrQuery();
+//        template.commit(LookupSource.RIGHTS.getCoreName());
+        searchIndexService.indexAll(new QuietIndexReciever(),Arrays.asList( LookupSource.RESOURCE), getAdminUser());
+        params_.setQuery("directSharedCollectionIds:" +collection.getId());
+        QueryResponse query = template.query(LookupSource.RIGHTS.getCoreName(), params_ , METHOD.POST);
+        logger.debug("{}", query);
         SearchResult<Resource> result = performSearch("", null, collection.getId(), null, null, null, params, 100);
         assertFalse(result.getResults().isEmpty());
         assertTrue(result.getResults().contains(ont));
     }
+    
+    @Test
+    @Rollback
+    public void testRights() throws SolrServerException, IOException {
+        Document d = createAndSaveNewInformationResource(Document.class);
+        ResourceCollection rc = createAndSaveNewResourceCollection("test");
+        d.getResourceCollections().add(rc);
+        genericService.saveOrUpdate(d);
+        searchIndexService.index(d);
+        SolrQuery params_ = new SolrQuery();
+        template.commit(LookupSource.RIGHTS.getCoreName());
+        params_.setQuery("sharedCollectionIds:"+rc.getId());
+        QueryResponse query = template.query(LookupSource.RIGHTS.getCoreName(), params_ , METHOD.POST);
+        logger.debug("{}", query);
+    }
+
     
     @Override
     public void reindex() {

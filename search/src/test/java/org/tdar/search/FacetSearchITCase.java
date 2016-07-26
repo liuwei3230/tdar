@@ -11,7 +11,9 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
+import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.keyword.CultureKeyword;
+import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
@@ -23,6 +25,7 @@ import org.tdar.utils.MessageHelper;
 
 public class FacetSearchITCase extends AbstractResourceSearchITCase {
 
+    
     @Test
     @Rollback
     public void testFacetPivotStats() throws SolrServerException, IOException, ParseException {

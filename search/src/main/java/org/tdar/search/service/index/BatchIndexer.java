@@ -142,7 +142,7 @@ public class BatchIndexer implements Serializable {
         String MIDDLE = " of " + count.getSubTotal() + " " + toIndex.getSimpleName() + "(s) ";
         Long prevId = 0L;
         Long currentId = 0L;
-        String coreForClass = LookupSource.getCoreForClass(toIndex);
+        String coreForClass = LookupSource.getCoreForClass(toIndex).getCoreName();
         while (scrollableResults.next()) {
             Indexable item = (Indexable) scrollableResults.get(0);
             currentId = item.getId();
@@ -166,9 +166,6 @@ public class BatchIndexer implements Serializable {
                 logger.trace("flushing search index");
                 try {
                     searchIndexService.commit(coreForClass);
-                    if (src == LookupSource.RESOURCE) {
-                        searchIndexService.commit(LookupSource.RIGHTS.getCoreName());
-                    }
                 } catch (SolrServerException | IOException e) {
                     logger.error("error committing: {}", e);
                 }

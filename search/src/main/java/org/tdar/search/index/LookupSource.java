@@ -92,31 +92,34 @@ public enum LookupSource implements HasLabel,Localizable {
 		return null;
 	}
 
-	public static String getCoreForClass(Class<? extends Indexable> item) {
+	public static LookupSource getCoreForClass(Class<? extends Indexable> item) {
 		if (Person.class.isAssignableFrom(item)) {
-			return CoreNames.PEOPLE;
+			return PERSON;
 		}
 		if (Institution.class.isAssignableFrom(item)) {
-			return CoreNames.INSTITUTIONS;
+			return INSTITUTION;
 		}
 		if (Resource.class.isAssignableFrom(item)) {
-			return CoreNames.RESOURCES;
+			return RESOURCE;
 		}
 		if (ResourceCollection.class.isAssignableFrom(item)) {
-			return CoreNames.COLLECTIONS;
+			return COLLECTION;
 		}
 		if (Keyword.class.isAssignableFrom(item)) {
-			return CoreNames.KEYWORDS;
+			return KEYWORD;
 		}
 		if (ResourceAnnotationKey.class.isAssignableFrom(item)) {
-			return CoreNames.ANNOTATION_KEY;
+			return RESOURCE_ANNOTATION_KEY;
 		}
 		if (InformationResourceFile.class.isAssignableFrom(item)) {
-			return CoreNames.CONTENTS;
+			return CONTENTS;
 		}
-		if (DataTableRow.class.isAssignableFrom(item)) {
-			return CoreNames.DATA_MAPPINGS;
-		}
+        if (DataTableRow.class.isAssignableFrom(item)) {
+            return DATA;
+        }
+        if (RightsContainer.class.isAssignableFrom(item)) {
+            return RIGHTS;
+        }
 		return null;
 	}
 

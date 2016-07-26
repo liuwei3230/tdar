@@ -147,7 +147,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
         temp.deleteOnExit();
 
         SerializationUtils.serialize(doc, new FileOutputStream(temp));
-        SolrDocumentContainer container = new SolrDocumentContainer(temp, recordId, event.getType(), LookupSource.getCoreForClass(record.getClass()));
+        SolrDocumentContainer container = new SolrDocumentContainer(temp, recordId, event.getType(), LookupSource.getCoreForClass(record.getClass()).getCoreName());
 
         if (holder.isPresent()) {
             holder.get().addMessage(container);
@@ -191,7 +191,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             return null;
         }
         try {
-            String core = LookupSource.getCoreForClass(item.getClass());
+            String core = LookupSource.getCoreForClass(item.getClass()).getCoreName();
             SolrInputDocument rightsDoc = null;
             if (src == LookupSource.RIGHTS || src == LookupSource.RESOURCE) {
                 rightsDoc = RightsDocumentConverter.convert((Resource) item);
@@ -215,6 +215,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
             if (rightsDoc != null) {
                 logger.debug("{}->{}", generateId(item), rightsDoc);
+                template.deleteByQuery(LookupSource.RIGHTS.getCoreName(), "id:" + item.getId());
                 index(LookupSource.RIGHTS.getCoreName(), generateId(item), rightsDoc);
             }
             if (document == null) {
@@ -327,7 +328,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             }
             // FullTextSession fullTextSession = getFullTextSession();
             int count = 0;
-            String core = "";
+            LookupSource core = null;
             for (C toIndex : indexable) {
                 count++;
                 core = LookupSource.getCoreForClass(toIndex.getClass());
@@ -337,9 +338,9 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
                     // purge them from the session and merge w/ transient object
                     // to get it back on the session before indexing.
                     if (genericDao.sessionContains(toIndex)) {
-                        index(null, toIndex, true);
+                        index(core, toIndex, true);
                     } else {
-                        index(null, genericDao.merge(toIndex), true);
+                        index(core, genericDao.merge(toIndex), true);
                     }
                     if (count % FLUSH_EVERY == 0) {
                         logger.debug("indexing: {}", toIndex);
@@ -356,7 +357,10 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             }
             logger.trace("begin flushing");
             // fullTextSession.flushToIndexes();
-            commit(core);
+            commit(core.getCoreName());
+            if (core == LookupSource.RESOURCE) {
+                commit(LookupSource.RIGHTS.getCoreName());
+            }
             // processBatch(docs);
         }
 
@@ -368,6 +372,10 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
     void commit(String core) throws SolrServerException, IOException {
         UpdateResponse commit = template.commit(core);
+        if (LookupSource.RESOURCE.getCoreName().equals(core)) {
+            commit(LookupSource.RIGHTS.getCoreName());
+        }
+
         logger.trace("response: {}", commit.getResponseHeader());
     }
 
@@ -420,7 +428,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
     public void purgeAll(LookupSource... sources) {
         for (LookupSource src : sources) {
             for (Class<? extends Indexable> clss : src.getClasses()) {
-                purgeCore(LookupSource.getCoreForClass(clss));
+                purgeCore(LookupSource.getCoreForClass(clss).getCoreName());
             }
         }
     }
@@ -441,7 +449,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
     public void optimizeAll() {
         for (Class<? extends Indexable> toIndex : getDefaultClassesToIndex()) {
             logger.info("optimizing {}", toIndex.getSimpleName());
-            String core = LookupSource.getCoreForClass(toIndex);
+            String core = LookupSource.getCoreForClass(toIndex).getCoreName();
             try {
                 template.optimize(core);
             } catch (SolrServerException | IOException e) {
@@ -510,7 +518,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
     @Transactional(readOnly = true)
     public void purge(Indexable entity) throws SolrServerException, IOException {
-        String core = LookupSource.getCoreForClass(entity.getClass());
+        String core = LookupSource.getCoreForClass(entity.getClass()).getCoreName();
         purge(core, generateId(entity));
     }
 

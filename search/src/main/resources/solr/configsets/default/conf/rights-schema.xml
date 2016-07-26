@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<schema name="keywords" version="1.5">
+<schema name="rights" version="1.5">
     
     <field name="collectionIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="allCollectionIds" type="longs" indexed="true" stored="true" required="false" multiValued="true" />

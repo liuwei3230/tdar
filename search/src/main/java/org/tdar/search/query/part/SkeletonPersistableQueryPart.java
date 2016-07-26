@@ -73,7 +73,7 @@ public class SkeletonPersistableQueryPart<P extends Persistable> extends Abstrac
             sb.append(transientFieldQueryPart.generateQueryString());
             sb.append(")");
         }
-
+        logger.debug(sb.toString());
         return sb.toString();
     }
 

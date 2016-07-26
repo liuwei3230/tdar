@@ -27,15 +27,18 @@ import org.tdar.core.bean.resource.ResourceAccessType;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.ResourceCreatorProxy;
+import org.tdar.search.index.LookupSource;
 import org.tdar.search.index.analyzer.SiteCodeExtractor;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.part.ContentQueryPart;
 import org.tdar.search.query.part.CreatorOwnerQueryPart;
 import org.tdar.search.query.part.CreatorQueryPart;
+import org.tdar.search.query.part.CrossCoreFieldJoinQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.GeneralSearchResourceQueryPart;
 import org.tdar.search.query.part.HydrateableKeywordQueryPart;
 import org.tdar.search.query.part.PhraseFormatter;
+import org.tdar.search.query.part.QueryPart;
 import org.tdar.search.query.part.QueryPartGroup;
 import org.tdar.search.query.part.RangeQueryPart;
 import org.tdar.search.query.part.SkeletonPersistableQueryPart;
@@ -412,8 +415,12 @@ public class SearchParameters {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private <P extends Persistable> SkeletonPersistableQueryPart constructSkeletonQueryPart(String fieldName, String label, String prefix, Class<P> cls,
+    private <P extends Persistable> QueryPart constructSkeletonQueryPart(String fieldName, String label, String prefix, Class<P> cls,
             Operator operator, List<P> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            return null;
+        }
+
         SkeletonPersistableQueryPart q = new SkeletonPersistableQueryPart(fieldName, label, cls, values);
         if (HasName.class.isAssignableFrom(cls) && StringUtils.isNotBlank(prefix)) {
             TitleQueryPart tqp = new TitleQueryPart();
@@ -426,6 +433,10 @@ public class SearchParameters {
             }
             q.setTransientFieldQueryPart(tqp);
             setOperator(operator);
+        }
+        if (StringUtils.containsIgnoreCase(fieldName, "collection")) {
+            CrossCoreFieldJoinQueryPart<FieldQueryPart<String>> collectionNamesContent = new CrossCoreFieldJoinQueryPart(QueryFieldNames.ID, QueryFieldNames.ID, q, LookupSource.RIGHTS.getCoreName());
+            return collectionNamesContent;
         }
         return q;
     }
