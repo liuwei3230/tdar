@@ -103,7 +103,7 @@ public class CodingSheetService extends ServiceInterface.TypedDaoBase<CodingShee
             ctx.getExceptions().add(e2);
             ctx.setErrorFatal(true);
             ctx.setProcessedSuccessfully(false);
-            getDao().saveOrUpdate(toProcess.getInformationResourceFile());
+            getDao().saveOrUpdate(codingSheet.getFirstInformationResourceFile());
         }
 
     }

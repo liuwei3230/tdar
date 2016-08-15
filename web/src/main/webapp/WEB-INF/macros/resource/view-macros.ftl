@@ -80,20 +80,12 @@ View freemarker macros
     </#macro>
 
 <#-- Emit a download link for an information resource file -->
-    <#macro createFileLink irfile newline=false showDownloadCount=true showSize=true >
+    <#macro createFileLink irfile irid=-1 newline=false showDownloadCount=true showSize=true >
         <#assign version=irfile />
         <#if version.latestUploadedVersion?? >
             <#assign version=version.latestUploadedVersion />
         </#if>
         <#if (version.viewable)>
-		<#-- refactor ? -->
-		<#local irid = (irfile.informationResource.id)!-1 />
-		<#if !irid?has_content || irid == -1 >
-			<#local irid = id />
-		</#if>
-		<#if !irid?has_content>
-			<#local irid = -1 />
-		</#if>
 
         <#local path>/filestore/download/${irid?c}/${version.id?c}</#local>
         <a href="<@s.url value='${path}'/>"
@@ -165,7 +157,7 @@ View freemarker macros
     <#macro translatedFileSection irfile>
         <#if irfile.hasTranslatedVersion >
         <blockquote>
-            <b>Translated version</b> <@createFileLink irfile.latestTranslatedVersion /></br>
+            <b>Translated version</b> <@createFileLink irfile.latestTranslatedVersion id/></br>
             Data column(s) in this dataset have been associated with coding sheet(s) and translated:
             <#if userAbleToReTranslate>
                 <br>
@@ -237,7 +229,7 @@ View freemarker macros
 		                    <#local showAll = showAll>
 		                    <li class="<#if irfile.deleted>view-deleted-file</#if> ${showAll} media">
 		                        <@fileIcon irfile=irfile extraClass="pull-left" />
-		                        <div class="media-body"><@createFileLink irfile true /></div>
+		                        <div class="media-body"><@createFileLink irfile id true /></div>
 		                        <@translatedFileSection irfile />
 		                    </li>
 		                </@fileInfoSection>
@@ -313,7 +305,7 @@ View freemarker macros
                             <#local twoRow = (irfile.hasTranslatedVersion || irfile.description?has_content ) />
                         <tr class="${irfile.status!""} ${irfile.deleted?string("DELETED","")}">
                             <td <#if twoRow>rowspan=2</#if>><@fileIcon irfile=irfile /></td>
-                            <td><@createFileLink irfile false false false /></td>
+                            <td><@createFileLink irfile id false false false /></td>
                             <td><@common.convertFileSize version.fileLength /></td>
                             <td><#if irfile.fileCreatedDate??>${(irfile.fileCreatedDate!"")?date}</#if></td>
                             <td>${irfile.latestUploadedVersion.dateCreated} </td>
@@ -576,7 +568,7 @@ View freemarker macros
                                        src="<@s.url value="/files/sm/${irfile.latestThumbnail.id?c}"/>" <#t>
                                    </#if>
                                    onError="this.src = '<@s.url value="/images/image_unavailable_t.gif"/>';" <#t>
-                                   data-url="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
+                                   data-url="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
                                    <#if !irfile.public>data-access-rights="${irfile.restriction.label}"</#if>> <#lt>
                           </span>
                         </div>
@@ -609,7 +601,7 @@ View freemarker macros
                 <div>
             <span id="imageContainer">
             <img id="bigImage" alt="#${irfile_index} - ${irfile.filename!''}" title="#${irfile_index} - ${irfile.filename!''}"
-                 src="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
+                 src="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
             <span id="confidentialLabel"><#if !irfile.public>This file is <em>${irfile.restriction.label}</em>, but you have rights to see it.</#if></span>
                 </div>
                 <div id="downloadText">

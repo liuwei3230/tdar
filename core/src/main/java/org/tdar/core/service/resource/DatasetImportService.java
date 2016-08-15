@@ -78,7 +78,7 @@ public class DatasetImportService {
             }
         }
         datasetFile.setStatus(FileStatus.PROCESSED);
-        datasetFile.setInformationResource(dataset);
+//        datasetFile.setInformationResource(dataset);
         transientDatasetToPersist = null;
 
         dataset = datasetDao.merge(dataset);

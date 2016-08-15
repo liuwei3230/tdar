@@ -44,6 +44,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.GenericDao;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.event.EventType;
@@ -86,6 +87,8 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
 
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
+    @Autowired
+    private InformationResourceDao informationResourceDao;
 
     @Autowired
     private ResourceService resourceService;
@@ -124,21 +127,24 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             return;
         }
 
+        if (logger.isTraceEnabled()) {
+            logger.trace("INIT {} EVENT: {} ({})", event.getType(), record.getClass().getSimpleName(), record.getId());
+        }
+        
         if (!isUseTransactionalEvents() || !CONFIG.useTransactionalEvents()) {
             index(record);
             return;
         }
 
         Optional<EventBusResourceHolder> holder = EventBusUtils.getTransactionalResourceHolder(this);
-        SolrInputDocument doc = createDocument(record);
-        //
+        SolrInputDocument doc = createDocument(record, event.getExtraId());
         String recordId = generateId(record);
-        File tempDirectory = CONFIG.getTempDirectory();
-        File dir = new File(tempDirectory,"index");
-        if (!dir.exists()) {
-            dir.mkdir();
+        if (doc == null) {
+            logger.trace("doc is null for: {}" , recordId);
+            return;
         }
-        File temp = new File(dir, String.format("%s-%s.xml", recordId, System.nanoTime()));
+        //
+        File temp = new File(CONFIG.getTempDirectory(), String.format("%s-%s.xml", recordId, System.nanoTime()));
         temp.deleteOnExit();
 
         SerializationUtils.serialize(doc, new FileOutputStream(temp));
@@ -217,6 +223,10 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
     }
 
     private SolrInputDocument createDocument(final Indexable item) {
+        return createDocument(item, null);
+    }
+    
+    private SolrInputDocument createDocument(final Indexable item, Long extraId) {
         SolrInputDocument document = null;
         if (item instanceof Person) {
             document = PersonDocumentConverter.convert((Person) item);
@@ -237,7 +247,18 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
             document = AnnotationKeyDocumentConverter.convert((ResourceAnnotationKey) item);
         }
         if (item instanceof InformationResourceFile) {
-            document = ContentDocumentConverter.convert((InformationResourceFile) item);
+            InformationResourceFile file = (InformationResourceFile) item;
+            if (extraId != null) {
+                logger.trace("{} | {}", file, extraId);
+                document = ContentDocumentConverter.convert(file, extraId);
+            } else {
+                InformationResource ir = informationResourceDao.findResourceForFile(file);
+                if (ir == null) {
+                    return null;
+                }
+                logger.trace("{} | {}", file, ir.getId());
+                document = ContentDocumentConverter.convert(file, ir.getId());
+            }
         }
         return document;
     }
@@ -289,6 +310,7 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
      * @throws SolrServerException
      */
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly=true)
     public <C extends Indexable> void index(C... indexable) throws SolrServerException, IOException {
         indexCollection(Arrays.asList(indexable));
     }
@@ -300,8 +322,8 @@ public class SearchIndexService implements TxMessageBus<SolrDocumentContainer> {
      * @throws IOException
      * @throws SolrServerException
      */
-    public <C extends Indexable> boolean indexCollection(Collection<C> indexable)
-            throws SolrServerException, IOException {
+    @Transactional(readOnly=true)
+    public <C extends Indexable> boolean indexCollection(Collection<C> indexable) throws SolrServerException, IOException {
         boolean exceptions = false;
 
         if (CollectionUtils.isNotEmpty(indexable)) {

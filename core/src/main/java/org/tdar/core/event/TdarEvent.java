@@ -2,6 +2,8 @@ package org.tdar.core.event;
 
 import java.io.Serializable;
 
+import org.tdar.core.bean.resource.file.InformationResourceFile;
+
 /**
  * A basic tDAR Event object. It maintains a reference to the object that needs to be processed, the Type of event, and an extra ID
  * if needed.  This is useful for InformationResourceFiles to track the parent (InformationResource ID)
@@ -15,7 +17,7 @@ public class TdarEvent implements Serializable {
 	private Object indexable;
 	private Long extraId;
 
-	public TdarEvent(Object irFile, EventType type, Long extraId) {
+	public TdarEvent(InformationResourceFile irFile, EventType type, Long extraId) {
 		this(irFile, type);
 		this.setExtraId(extraId);
 	}
