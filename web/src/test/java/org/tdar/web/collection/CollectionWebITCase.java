@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -20,6 +21,12 @@ import org.tdar.core.exception.StatusCode;
 import org.tdar.web.AbstractAdminAuthenticatedWebTestCase;
 
 public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
+    private void gotoEdit(String url_) {
+        String url = url_;
+        url = url.substring(0, url.lastIndexOf("/"));
+        String id = org.apache.commons.lang3.StringUtils.substringAfterLast(url, "/");
+        gotoPage("/collection/"+ id +"/edit");
+    }
 
     @Test
     // crate a collection with some resources, then edit it by adding some authorized users and removing a few resources
@@ -30,7 +37,7 @@ public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         someResources.add(createDocument());
         someResources.add(createDocument());
         someResources.add(createDocument());
-        createTestCollection(name, desc, someResources);
+        createTestCollection(CollectionType.LIST, name, desc, someResources);
         assertTextPresent(name);
         assertTextPresent(desc);
         logger.trace(getHtmlPage().asText());
@@ -44,7 +51,7 @@ public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
 
         // now go back to the edit page, add some users and remove some of the resources
         List<TdarUser> registeredUsers = getSomeUsers();
-        clickLinkWithText("edit");
+        gotoEdit(currentUrlPath);
         logger.debug("adding users: {}" , registeredUsers);
         int i = 1; // start at row '2' of the authorized user list, leaving the first entry blank.
         for (Person user : registeredUsers) {
@@ -112,12 +119,15 @@ public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         String name = "my fancy collection: " + System.currentTimeMillis();
         String desc = "description goes here: " + System.currentTimeMillis();
         List<? extends Resource> someResources = getSomeResources();
-        createTestCollection(name, desc, someResources);
+        createTestCollection(CollectionType.LIST, name, desc, someResources);
         assertTextPresent(name);
         assertTextPresent(desc);
         logger.trace(getHtmlPage().asText());
         String currentUrlPath = getCurrentUrlPath();
         logger.debug(currentUrlPath);
+        if (getPageText().contains("is either empty ")) {
+            gotoPage(currentUrlPath);
+        }
         for (Resource resource : someResources) {
             assertTextPresent(resource.getTitle());
         }
@@ -273,7 +283,7 @@ public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         login(CONFIG.getUsername(), CONFIG.getPassword());
         gotoPage(url);
         assertTextPresent("my fancy collection");
-        clickLinkWithText("rights");
+        clickLinkWithText("Rights");
         assertTextPresent("my fancy collection");
         removeElementsByName(String.format(FMT_AUTHUSERS_ID, 0));
         removeElementsByName(String.format(FMT_AUTHUSERS_PERMISSION, 0));

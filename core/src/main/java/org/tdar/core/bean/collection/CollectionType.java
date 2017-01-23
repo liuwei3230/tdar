@@ -51,4 +51,10 @@ public enum CollectionType implements Localizable, PluralLocalizable {
         }
         return null;
     }
+
+
+    public String getUrlNamespace() {
+        if(this==INTERNAL) {return "invalid";}
+        return this == SHARED ? "share" : "collection";
+    }
 }

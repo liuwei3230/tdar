@@ -18,20 +18,22 @@
 </div>
 <div class="row">
     <div class="span2">
-    <@dash.sidebar current="share" />
+    <@dash.sidebar current="rights" />
     </div>
     <div class="span10">
         <h5>Users you've shared with</h5>
         <div class="row">
-        <#list findUsersSharedWith?chunk(findUsersSharedWith?size /4 ) as row>
-        <div  class="span2">
-            <#list row>
-            <ul>
-            <#items as item>
-                <li><a href="/entity/user/rights/${item.id?c}">${item.properName}</a></li>
-            </#items>
-            </ul>
-            </#list>
+            <#assign listGroups = [findUsersSharedWith]>
+            <#if (findUsersSharedWith?size > 4)><#assign listGroups =  findUsersSharedWith?chunk(findUsersSharedWith?size /4 )> </#if>
+            <#list listGroups as row>
+            <div  class="span2">
+                <#list row>
+                <ul>
+                <#items as item>
+                    <li><a href="/entity/user/rights/${item.id?c}">${item.properName}</a></li>
+                </#items>
+                </ul>
+                </#list>
             </div>
         </#list>
         </div>
@@ -74,23 +76,23 @@
 
         <table class="table" id="allResources">
             <thead>
-            	<tr>
+                <tr>
                 <th>Name</th>
                 <th># of users</th>
                 <th>action</th>
-			</tr>
+            </tr>
             </thead>
             <tbody>
             <#list internalCollections![] as collection>
                 <#if (collection.resources?size > 0 )>
-					<#list collection.resources as resource>
+                    <#list collection.resources as resource>
                         <tr>
                         <td><a href="${resource.detailUrl}">${resource.title}</a></td>
                         <td>${collection.authorizedUsers?size}</td>
                         <td>
-		                    <div class="btn-group">
-		                      <a class="btn btn-mini" href="/${resource.urlNamespace}/${resource.id?c}/edit">Edit</a>
-		                    </div>
+                            <div class="btn-group">
+                              <a class="btn btn-mini" href="/${resource.urlNamespace}/${resource.id?c}/edit">Edit</a>
+                            </div>
                         </td>
                         </tr>
                     </#list>

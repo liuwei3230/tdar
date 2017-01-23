@@ -564,7 +564,8 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
      */
     @Transactional(readOnly = true)
     public <C extends HierarchicalCollection<C>> List<C> buildCollectionTreeForController(C collection, TdarUser authenticatedUser, Class<C> cls) {
-        List<C> allChildren = getAllChildCollections(collection, cls);
+        List<C> allChildren = new ArrayList<>();
+        allChildren.addAll(getAllChildCollections(collection, cls));
         // FIXME: iterate over all children to reconcile tree
         Iterator<C> iter = allChildren.iterator();
         while (iter.hasNext()) {
@@ -576,6 +577,14 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
                 iter.remove();
             }
         }
+        // second pass - sort all children lists (we add root into "allchildren" so we can sort the top level)
+        allChildren.add(collection);
+        allChildren.forEach(child -> {
+            if (child != null && CollectionUtils.isNotEmpty(child.getTransientChildren() )) {
+                child.getTransientChildren().sort(VisibleCollection.TITLE_COMPARATOR);
+                logger.trace("new list: {}", child.getTransientChildren());
+            }
+        });
         return allChildren;
     }
 
@@ -889,13 +898,24 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
     }
 
     @Transactional(readOnly = false)
-    public void deleteForController(SharedCollection persistable, String deletionReason, TdarUser authenticatedUser) {
+    public void deleteForController(VisibleCollection persistable, String deletionReason, TdarUser authenticatedUser) {
         // should I do something special?
-        for (Resource resource : persistable.getResources()) {
-            removeFromCollection(resource, persistable);
-            getDao().saveOrUpdate(resource);
-            publisher.publishEvent(new TdarEvent(resource, EventType.CREATE_OR_UPDATE));
+        if (persistable instanceof SharedCollection) {
+            for (Resource resource : ((RightsBasedResourceCollection) persistable).getResources()) {
+                removeFromCollection(resource, persistable);
+                getDao().saveOrUpdate(resource);
+                publisher.publishEvent(new TdarEvent(resource, EventType.CREATE_OR_UPDATE));
+            }
         }
+        if (persistable instanceof ListCollection) {
+            ListCollection listCollection = (ListCollection)persistable;
+            for (Resource resource : listCollection.getUnmanagedResources()) {
+                removeFromCollection(resource, listCollection);
+                getDao().saveOrUpdate(resource);
+                publisher.publishEvent(new TdarEvent(resource, EventType.CREATE_OR_UPDATE));
+            }
+        }
+        
         getDao().delete(persistable.getAuthorizedUsers());
         getDao().deleteDownloadAuthorizations(persistable);
         // FIXME: need to handle parents and children
@@ -1245,10 +1265,6 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
 
     @Transactional(readOnly=true)
     public List<TdarUser> findUsersSharedWith(TdarUser authenticatedUser)  {
-        boolean admin = false;
-        if (authorizationService.isEditor(authenticatedUser)) {
-            admin = true;
-        }
-        return getDao().findUsersSharedWith(authenticatedUser, admin);
+        return getDao().findUsersSharedWith(authenticatedUser);
     }
 }

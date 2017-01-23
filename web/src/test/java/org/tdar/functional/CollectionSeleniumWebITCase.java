@@ -1,5 +1,7 @@
 package org.tdar.functional;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -26,6 +28,13 @@ import org.tdar.utils.TestConfiguration;
 
 public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase {
 
+    //safeguard to avoid confusion when passing boolean arguments
+    private enum CollectionVisibility {
+        VISIBLE,
+        HIDDEN;
+        boolean isHidden(){return this == HIDDEN;}
+    }
+
     private static final String _139 = "139";
     private static final String TITLE = "Selenium Collection Test";
     private static final String DESCRIPTION = "This is a simple description of a page....";
@@ -40,7 +49,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @Test
     public void testCollectionPermissionsAndVisible() {
         // setup a collection with 3 resources in it
-        String url = setupCollectionForTest(TITLE + " (permissions visible)",titles, true, CollectionType.SHARED);
+        String url = setupCollectionForTest(TITLE + " (permissions visible)",titles, CollectionVisibility.HIDDEN);
         logger.debug("URL: {}", url);
         logout();
         // make sure basic user cannot see restricted page
@@ -51,6 +60,8 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         registration.setRequestingContributorAccess(true);
         registration.setContributorReason("beacuse");
         fillOutRegistration(registration);
+        //fixme: it would be better to execute a javascript snippet that deducts the timecheck by 5000 millis;
+        waitFor(5);
         submitForm();
 //        login(person.getUsername(), registration.getPassword());
         setIgnorePageErrorChecks(true);
@@ -63,7 +74,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         gotoEdit(url, CollectionType.SHARED);
         applyEditPageHacks();
         submitForm();
-        find(By.partialLinkText("rights")).click();
+        find(".toolbar-rights").click();
         addUserWithRights(person.getProperName(), person.getUsername(),  person.getId(), GeneralPermissions.VIEW_ALL);
         submitForm();
 
@@ -81,7 +92,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         loginAdmin();
         gotoEdit(url, CollectionType.SHARED);
         applyEditPageHacks();
-        setFieldByName("resourceCollection.hidden", "false");
+        find(By.name("resourceCollection.hidden")).val(true);
         submitForm();
         logout();
         // check that anonymous user can see
@@ -94,6 +105,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         WebElementSelection addAnother = find(By.id("accessRightsRecordsAddAnotherButton"));
         addAnother.click();
         addAnother.click();
+        waitFor(By.name("authorizedUsersFullNames[2]"));
         addAuthuser("authorizedUsersFullNames[2]", "authorizedUsers[2].generalPermission", name, username, "person-" + userId, permissions);
     }
 
@@ -101,7 +113,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @Test
     public void testCollectionRemoveElement() {
         TestConfiguration config = TestConfiguration.getInstance();
-        String url = setupCollectionForTest(TITLE + " (remove edit)",titles, true, CollectionType.LIST);
+        String url = setupListForTest(TITLE + " (remove edit)",titles, CollectionVisibility.VISIBLE);
         gotoEdit(url, CollectionType.LIST);
         applyEditPageHacks();
 
@@ -124,11 +136,11 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         takeScreenshot();
         submitForm();
         try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         Assert.assertFalse(getText().contains(TAG_FAUNAL_WORKSHOP));
         Assert.assertTrue(getText().contains(HARP_FAUNA_SPECIES_CODING_SHEET));
         Assert.assertTrue(getText().contains(_2008_NEW_PHILADELPHIA_ARCHAEOLOGY_REPORT));
@@ -138,10 +150,12 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @Test
     public void testCollectionRetain() {
         TestConfiguration config = TestConfiguration.getInstance();
-        String url = setupCollectionForTest(TITLE + " (collection retain)",titles, false, CollectionType.SHARED);
+        String url = setupCollectionForTest(TITLE + " (collection retain)",titles, CollectionVisibility.HIDDEN);
         gotoEdit(url, CollectionType.SHARED);
         submitForm();
-        find(By.partialLinkText("rights")).click();
+        find(".toolbar-rights").click();
+        waitForPageload();
+
         addUserWithRights("test user", config.getUsername(), config.getUserId(), GeneralPermissions.ADMINISTER_SHARE);
         submitForm();
 
@@ -173,17 +187,15 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @Test
     public void testCollectionInGeneralSearch() {
         List<String> titles = Arrays.asList(HARP_FAUNA_SPECIES_CODING_SHEET);
-        String url = setupCollectionForTest(TITLE + " (general search)", titles, false, CollectionType.LIST);
+        String url = setupListForTest(TITLE + " (general search)", titles, CollectionVisibility.VISIBLE);
         logout();
         gotoPage(url);
-        Assert.assertTrue(getText().contains(TITLE));
+        assertThat(getText(), containsString(TITLE));
         gotoPage("/");
         find(".searchbox").val("Selenium").sendKeys(Keys.RETURN);
         waitForPageload();
         clearPageCache();
-        logger.debug(getText());
-        Assert.assertTrue(getText().contains(TITLE));
-
+        assertThat(getText(), containsString(TITLE));
     }
 
     @Test
@@ -231,16 +243,11 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         Assert.assertEquals("should see every title on each page: "+titles+"", titles.size(), seen);
     }
 
-    private String setupCollectionForTest(String title_, List<String> titles, Boolean visible, CollectionType type) {
+    //fixme:  probably better to just accept a transient collection object
+    private String setupListForTest(String title_, List<String> titles, CollectionVisibility visibility) {
         gotoPage("/dashboard");
-        find(By.linkText("UPLOAD")).click();
-        waitForPageload();
-        if (type == CollectionType.LIST) {
-            find(By.linkText("Collection")).click();
-        } else {
-            gotoPage("/share/add");
-        }
-        waitForPageload();
+        gotoPage("/collection/add");
+
         applyEditPageHacks();
         TestConfiguration config = TestConfiguration.getInstance();
 
@@ -248,11 +255,8 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         setFieldByName("resourceCollection.name", title_);
         setFieldByName("resourceCollection.description", DESCRIPTION);
 
-        setFieldByName("resourceCollection.hidden", visible.toString().toLowerCase());
-        GeneralPermissions permission = GeneralPermissions.MODIFY_RECORD;
-        if (type == CollectionType.LIST) {
-            permission = GeneralPermissions.REMOVE_FROM_COLLECTION;
-        }
+        find(By.name("resourceCollection.hidden")).val(visibility.isHidden());
+        GeneralPermissions permission = GeneralPermissions.REMOVE_FROM_COLLECTION;
         addResourceToCollection(_139);
         for (String title : titles) {
             addResourceToCollection(title);
@@ -265,10 +269,47 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         addAnother.click();
         addAnother.click();
 
-        addAuthuser("authorizedUsersFullNames[1]", "authorizedUsers[1].generalPermission", "editor user", config.getEditorUsername(), 
-        		"person-"+ config.getEditorUserId(), permission);
+        addAuthuser("authorizedUsersFullNames[1]", "authorizedUsers[1].generalPermission", "editor user", config.getEditorUsername(),
+                "person-"+ config.getEditorUserId(), permission);
         addAuthuser("authorizedUsersFullNames[0]", "authorizedUsers[0].generalPermission",
-        		"michelle elliott",  "Michelle Elliott", "person-121", permission);
+                "michelle elliott",  "Michelle Elliott", "person-121", permission);
+        submitForm();
+        return url;
+    }
+
+
+    //fixme:  probably better to just accept a transient collection object
+    private String setupCollectionForTest(String title_, List<String> resourceTitles, CollectionVisibility visibility) {
+        gotoPage("/dashboard");
+        find(By.linkText("UPLOAD")).click();
+        waitForPageload();
+        gotoPage("/share/add");
+        waitForPageload();
+        applyEditPageHacks();
+        TestConfiguration config = TestConfiguration.getInstance();
+
+        Assert.assertTrue(find(By.tagName("h1")).getText().contains("New Collection"));
+        setFieldByName("resourceCollection.name", title_);
+        setFieldByName("resourceCollection.description", DESCRIPTION);
+
+        find(By.name("resourceCollection.hidden")).val(visibility.isHidden());
+        GeneralPermissions permission = GeneralPermissions.MODIFY_RECORD;
+        addResourceToCollection(_139);
+        for (String title : resourceTitles) {
+            addResourceToCollection(title);
+        }
+        submitForm();
+        assertPageViewable(resourceTitles);
+        String url = getCurrentUrl();
+        find(By.partialLinkText("RIGHTS")).click();
+        WebElementSelection addAnother = find(By.id("accessRightsRecordsAddAnotherButton"));
+        addAnother.click();
+        addAnother.click();
+
+        addAuthuser("authorizedUsersFullNames[1]", "authorizedUsers[1].generalPermission", "editor user", config.getEditorUsername(), 
+                "person-"+ config.getEditorUserId(), permission);
+        addAuthuser("authorizedUsersFullNames[0]", "authorizedUsers[0].generalPermission",
+                "michelle elliott",  "Michelle Elliott", "person-121", permission);
         submitForm();
         return url;
     }
@@ -416,10 +457,10 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
         logger.debug(id);
         Assert.assertTrue("should have found at least one remove button with matching title: " + title, found);
         if (StringUtils.isNotBlank(id)) {
-        	if (rows.find(By.id(id)).isSelected()) {
-        		rows.find(By.id(id)).click();
-        	}
-        	Assert.assertFalse(rows.find(By.id(id)).isSelected());
+            if (rows.find(By.id(id)).isSelected()) {
+                rows.find(By.id(id)).click();
+            }
+            Assert.assertFalse(rows.find(By.id(id)).isSelected());
         }
     }
 
