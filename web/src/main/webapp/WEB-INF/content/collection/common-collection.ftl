@@ -45,7 +45,7 @@
         </#if>
 		<@list.displayWidget />
 
-        <#if true > 
+        <#if true >
             <hr/>
             <ul class="inline">
             <li class="media"><i class="icon-envelope pull-left"></i>
@@ -62,7 +62,7 @@
         </ul>
         </#if>
             <hr/>
-            
+
             <ul class="unstyled-list">
             <li>
                 <strong>Owner</strong><br>
@@ -72,7 +72,7 @@
             <strong>tDAR ID</strong><br>${id?c}
         </li>
     </ul>
-                
+
     </div>
 </#macro>
 
@@ -80,7 +80,9 @@
     <#if editable>
     <#local path="collection"/>
     <#if resourceCollection.type == 'SHARED'>
-        <#local path="share"/>
+        <#local path="collection"/>
+    <#else>
+        <#local path="listcollection"/>    
     </#if>
         <@nav.collectionToolbar "collection" "view">
             <@nav.makeLink
@@ -122,7 +124,7 @@
 
     <#macro _keywordSection label keywordList searchParam>
         <#list keywordList>
-        <p>
+        <p class="break-word">
             <strong>${label}</strong><br>
             <#items as item>
                 <a href="${item.detailUrl}">${item.label}</a><#sep> &bull;</#sep>
@@ -238,7 +240,7 @@
             <#assign itemsPerRow = 5 />
         <#if ((rightSidebar!false) || (leftSidebar!false)) >
             <#assign itemsPerRow = 4 />
-		</#if>	
+        </#if>
 
 
 
