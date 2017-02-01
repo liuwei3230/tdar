@@ -1,4 +1,4 @@
-package org.tdar.struts.action.collection;
+package org.tdar.struts.action.share;
 
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.Namespaces;
@@ -11,7 +11,7 @@ import org.tdar.struts.action.AbstractCollectionRightsController;
 @Component
 @Scope("prototype")
 @ParentPackage("secured")
-@Namespaces(value={@Namespace("/share"), @Namespace("/collection")})
+@Namespace("/share")
 public class ShareCollectionRightsController extends AbstractCollectionRightsController<SharedCollection> {
 
 

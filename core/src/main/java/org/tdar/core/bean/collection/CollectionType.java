@@ -55,9 +55,9 @@ public enum CollectionType implements Localizable, PluralLocalizable {
     public String getUrlNamespace() {
         switch (this) {
             case LIST:
-                return "listcollection";
-            case SHARED:
                 return "collection";
+            case SHARED:
+                return "share";
             default:
                 return "invalid";
         }

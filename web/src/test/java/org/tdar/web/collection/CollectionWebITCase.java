@@ -21,15 +21,14 @@ import org.tdar.core.exception.StatusCode;
 import org.tdar.web.AbstractAdminAuthenticatedWebTestCase;
 
 public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
-
-    private static final String LISTCOLLECTION = "/listcollection/";
+    private static final String LISTCOLLECTION = "/collection/";
 
 
     private void gotoEdit(String url_) {
         String url = url_;
         url = url.substring(0, url.lastIndexOf("/"));
         String id = org.apache.commons.lang3.StringUtils.substringAfterLast(url, "/");
-        gotoPage(LISTCOLLECTION + id +"/edit");
+        gotoPage(LISTCOLLECTION+ id +"/edit");
     }
 
     @Test
@@ -159,7 +158,7 @@ public class CollectionWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         loginAdmin();
         Long parentId = 1575L;
 
-        gotoPage(LISTCOLLECTION + "add");
+        gotoPage(LISTCOLLECTION + "/add");
         String name = "testCreateChildCollection";
         String desc = "lame child colllection";
 

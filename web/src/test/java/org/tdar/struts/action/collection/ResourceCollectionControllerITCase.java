@@ -61,6 +61,7 @@ import org.tdar.struts.action.document.DocumentController;
 import org.tdar.struts.action.project.ProjectController;
 import org.tdar.struts.action.resource.AbstractResourceControllerITCase;
 import org.tdar.struts.action.resource.ResourceDeleteAction;
+import org.tdar.struts.action.share.ShareCollectionController;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.Action;

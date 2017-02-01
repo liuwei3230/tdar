@@ -1,4 +1,4 @@
-package org.tdar.struts.action.collection;
+package org.tdar.struts.action.share;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import org.tdar.struts.action.DataTableResourceDisplay;
 @Component
 @Scope("prototype")
 @ParentPackage("secured")
-@Namespaces(value={@Namespace("/share"), @Namespace("/collection")})
+@Namespace("/share")
 public class ShareCollectionController extends AbstractCollectionController<SharedCollection> implements DataTableResourceDisplay {
 
     private static final long serialVersionUID = 1169442990022630650L;
