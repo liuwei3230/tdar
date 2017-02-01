@@ -28,8 +28,8 @@ import org.tdar.utils.TestConfiguration;
 
 public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase {
 
-    private static final String SHARE = "/collection/";
-    private static final String LISTCOLLECTION = "/listcollection/";
+    private static final String SHARE = "/share/";
+    private static final String LISTCOLLECTION = "/collection/";
 
     //safeguard to avoid confusion when passing boolean arguments
     private enum CollectionVisibility {

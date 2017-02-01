@@ -19,7 +19,7 @@ import org.tdar.utils.PersistableUtils;
 @Component
 @Scope("prototype")
 @ParentPackage("secured")
-@Namespace("/listcollection")
+@Namespace("/collection")
 public class ListCollectionController extends AbstractCollectionController<ListCollection> implements DataTableResourceDisplay {
 
     private static final long serialVersionUID = -8283085022665254507L;

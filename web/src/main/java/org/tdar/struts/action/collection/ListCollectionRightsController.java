@@ -10,7 +10,7 @@ import org.tdar.struts.action.AbstractCollectionRightsController;
 @Component
 @Scope("prototype")
 @ParentPackage("secured")
-@Namespace("/listcollection")
+@Namespace("/collection")
 public class ListCollectionRightsController extends AbstractCollectionRightsController<ListCollection> {
 
 
