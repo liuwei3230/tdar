@@ -1,5 +1,5 @@
 <div class="row screen footer-links">
-    <div class="span3"> 
+    <div class="col-xs-3">
         <h4>About</h4> 
             <ul> 
                 <li><a class="external" href="http://www.fedarch.org/wordpress/?cat=3">News</a></li>
@@ -9,7 +9,7 @@
                 <li><a class="external" href="http://www.fedarch.org/wordpress/?page_id=655">Software</a></li>
             </ul> 
     </div> 
-    <div class="span3">
+    <div class="col-xs-3">
         <h4>Use</h4> 
             <ul> 
                 <li><a class="external" href='http://www.guidestogoodpractice.org/'>Guides to Good Practice</a></li>
@@ -19,14 +19,14 @@
                 <li><a class="external" href="http://www.fedarch.org/wordpress/?page_id=659">Pricing</a></li> 
             </ul> 
     </div> 
-    <div class="span3"> 
+    <div class="col-xs-3">
         <h4>Contact</h4> 
             <ul>
                 <li><a href="mailto:${contactEmail}?subject=FAIMS%20comments">Email: ${contactEmail}</a></li>
                 <li><a class="external" href="http://www.fedarch.org/wordpress/?page_id=84">Other contacts</a></li>
             </ul> 
      </div>
-     <div class="span3">
+     <div class="col-xs-3">
         <h4>Start Digging</h4>
         <ul>
             <li><a href="<@s.url value="/search/results"/>">Browse</a></li>

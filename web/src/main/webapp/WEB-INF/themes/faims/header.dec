@@ -1,4 +1,4 @@
-<div class="span3 logosection">
+<div class="col-xs-3 logosection">
     <p><a href="/"><img class="faimslogo" src="<@s.url value="/${themeDir}/images/faims_logo.png" />" alt="FAIMS" title="FAIMS" /></a>
     <#if !production>
         <strong>${serverEnvironmentStatus}</strong>
