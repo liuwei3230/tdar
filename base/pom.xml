@@ -623,7 +623,7 @@
                                 <configuration>
                                     <files>
                                         <file>${basedir}/src/main/resources/hibernate.properties</file>
-                                        <file>target/hg.properties</file>
+                                        <file>target/git.properties</file>
                                     </files>
                                 </configuration>
                             </execution>

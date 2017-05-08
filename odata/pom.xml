@@ -229,14 +229,14 @@
 				<version>2.5</version>
 				<configuration>
 					<!-- <webappDirectory>${webapp.deploy.dir}</webappDirectory> -->
-                    <!-- <outputDirectory>${webapp.deploy.dir}</outputDirectory> -->
+                    <!-- <outputDirectory>${webapp.deploy.dir}</outputDirectory> 
 					<webResources>
 						<resource>
 							<directory>target/generated/webapp</directory>
 							<targetPath>/</targetPath>
 							<filtering>false</filtering>
 						</resource>
-					</webResources>
+					</webResources>-->
 					<!--<webXml>${webXmlPath}</webXml> -->
 				</configuration>
 			</plugin>
