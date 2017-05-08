@@ -1,0 +1,5 @@
+.*/target/.*
+jetty-ssl.keystore
+*/node_modules/
+*/target/
+webservice/*/target/
