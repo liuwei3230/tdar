@@ -232,7 +232,6 @@ public class AccessDatabaseConverter extends DatasetConverter.Base {
 
         setRelationships(extractRelationships(dataTableNameMap, linked));
         getDatabase().getQueries().forEach(q -> {
-            try {
             logger.debug("{} {} {} | {} {}", q.getName(), q.getType(), q.getParameters(), q.getClass(), q.getOwnerAccessType());
             if (q instanceof BaseSelectQuery) {
                 BaseSelectQuery query = (BaseSelectQuery) q;
@@ -240,9 +239,6 @@ public class AccessDatabaseConverter extends DatasetConverter.Base {
                 
             }
             logger.debug("\t\t--> {} ", q.toSQLString());
-            } catch (Throwable t) {
-                logger.error("{}",t,t);
-            }
         });
     }
     
