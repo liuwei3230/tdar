@@ -34,7 +34,6 @@ import com.healthmarketscience.jackcess.PropertyMap;
 import com.healthmarketscience.jackcess.Relationship;
 import com.healthmarketscience.jackcess.Table;
 import com.healthmarketscience.jackcess.query.BaseSelectQuery;
-import com.healthmarketscience.jackcess.query.Query;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKBReader;
 
@@ -238,7 +237,29 @@ public class AccessDatabaseConverter extends DatasetConverter.Base {
                 logger.debug("from:{}",query.getFromTables());
                 
             }
-            logger.debug("\t\t--> {} ", q.toSQLString());
+            String sql = q.toSQLString(); 
+            for (DataTable table : getDataTables()) {
+                sql = StringUtils.replace(sql, String.format(" [%s] ", table.getDisplayName()), " " + table.getName() + " " );
+                sql = StringUtils.replace(sql, String.format(" [%s].", table.getDisplayName()), " " + table.getName() + "." );
+                sql = StringUtils.replace(sql, String.format(" JOIN (%s ", table.getDisplayName()), " JOIN (" + table.getName() + " " );
+                sql = StringUtils.replace(sql, String.format(" FROM (%s ", table.getDisplayName()), " FROM (" + table.getName() + " " );
+                sql = StringUtils.replace(sql, String.format("\nFROM (%s ", table.getDisplayName()), "\n FROM (" + table.getName() + " " );
+                sql = StringUtils.replace(sql, String.format("%s.", table.getDisplayName()), table.getName() +".");
+                sql = StringUtils.replace(sql, String.format(" %s ", table.getDisplayName()), " " + table.getName() +" ");
+            }
+            for (DataTable table : getDataTables()) {
+                for (DataTableColumn col : table.getSortedDataTableColumns()) {
+                    sql = StringUtils.replace(sql, String.format(".[%s]", col.getDisplayName()), "." + col.getName());
+                    sql = StringUtils.replace(sql, String.format("[%s],", col.getDisplayName()), col.getName()+ ",");
+                    sql = StringUtils.replace(sql, String.format(" BY [%s]\n", col.getDisplayName()), " BY " + col.getName()+"\n");
+                    sql = StringUtils.replace(sql, String.format("\nPIVOT [%s]", col.getDisplayName()), "\n PIVOT " + col.getName());
+                    sql = StringUtils.replace(sql, String.format("([%s])", col.getDisplayName()), "(" + col.getName()+")");
+                    sql = StringUtils.replace(sql, String.format(".%s", col.getDisplayName()),  "."+ col.getName());
+                    sql = StringUtils.replace(sql, String.format("(%s", col.getDisplayName()), "(" + col.getName());
+                    sql = StringUtils.replace(sql, String.format(" %s ", col.getDisplayName()), " " + col.getName() +" ");
+                }
+            }
+            logger.debug("\t\t--> {} ", sql);
         });
     }
     
