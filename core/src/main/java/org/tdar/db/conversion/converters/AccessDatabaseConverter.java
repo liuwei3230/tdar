@@ -3,6 +3,11 @@ package org.tdar.db.conversion.converters;
 import java.io.File;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -230,36 +235,65 @@ public class AccessDatabaseConverter extends DatasetConverter.Base {
         }
 
         setRelationships(extractRelationships(dataTableNameMap, linked));
+        
+        Class.forName("net.ucanaccess.jdbc.UcanaccessDriver"); /* often not required for Java 6 and later (JDBC 4.x) */
+        Connection conn=DriverManager.getConnection("jdbc:ucanaccess://" + getInformationResourceFileVersion().getTransientFile().getAbsolutePath());
+        
         getDatabase().getQueries().forEach(q -> {
             logger.debug("{} {} {} | {} {}", q.getName(), q.getType(), q.getParameters(), q.getClass(), q.getOwnerAccessType());
-            if (q instanceof BaseSelectQuery) {
-                BaseSelectQuery query = (BaseSelectQuery) q;
-                logger.debug("from:{}",query.getFromTables());
-                
+            try {
+                logger.debug( q.toSQLString()); 
+            } catch (Throwable t) {
+                logger.error("{}",t,t);
             }
-            String sql = q.toSQLString(); 
-            for (DataTable table : getDataTables()) {
-                sql = StringUtils.replace(sql, String.format(" [%s] ", table.getDisplayName()), " " + table.getName() + " " );
-                sql = StringUtils.replace(sql, String.format(" [%s].", table.getDisplayName()), " " + table.getName() + "." );
-                sql = StringUtils.replace(sql, String.format(" JOIN (%s ", table.getDisplayName()), " JOIN (" + table.getName() + " " );
-                sql = StringUtils.replace(sql, String.format(" FROM (%s ", table.getDisplayName()), " FROM (" + table.getName() + " " );
-                sql = StringUtils.replace(sql, String.format("\nFROM (%s ", table.getDisplayName()), "\n FROM (" + table.getName() + " " );
-                sql = StringUtils.replace(sql, String.format("%s.", table.getDisplayName()), table.getName() +".");
-                sql = StringUtils.replace(sql, String.format(" %s ", table.getDisplayName()), " " + table.getName() +" ");
-            }
-            for (DataTable table : getDataTables()) {
-                for (DataTableColumn col : table.getSortedDataTableColumns()) {
-                    sql = StringUtils.replace(sql, String.format(".[%s]", col.getDisplayName()), "." + col.getName());
-                    sql = StringUtils.replace(sql, String.format("[%s],", col.getDisplayName()), col.getName()+ ",");
-                    sql = StringUtils.replace(sql, String.format(" BY [%s]\n", col.getDisplayName()), " BY " + col.getName()+"\n");
-                    sql = StringUtils.replace(sql, String.format("\nPIVOT [%s]", col.getDisplayName()), "\n PIVOT " + col.getName());
-                    sql = StringUtils.replace(sql, String.format("([%s])", col.getDisplayName()), "(" + col.getName()+")");
-                    sql = StringUtils.replace(sql, String.format(".%s", col.getDisplayName()),  "."+ col.getName());
-                    sql = StringUtils.replace(sql, String.format("(%s", col.getDisplayName()), "(" + col.getName());
-                    sql = StringUtils.replace(sql, String.format(" %s ", col.getDisplayName()), " " + col.getName() +" ");
+            try {
+                ResultSet executeQuery = conn.createStatement().executeQuery(q.toSQLString());
+                int c = 0;
+                while (executeQuery.next()) {
+                    ResultSetMetaData metaData = executeQuery.getMetaData();
+                    if (c == 0) {
+                        logger.debug("# cols: {}", metaData.getColumnCount());
+                        for (int i =1; i<= metaData.getColumnCount(); i++ ) {
+                            logger.debug("  {} - {} ", metaData.getColumnTypeName(i) ,  metaData.getColumnLabel(i));
+                        }
+                        
+                    }
+                    c++;
+                    List<Object> row = new ArrayList<>();
+                    for (int i =1; i<= metaData.getColumnCount(); i++ ) {
+                        row.add(executeQuery.getObject(i));
+                    }
+                    logger.debug("{}", row);
                 }
+            } catch (Throwable e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            logger.debug("\t\t--> {} ", sql);
+//            try{ 
+//            String sql = q.toSQLString(); 
+//            for (DataTable table : getDataTables()) {
+//                sql = StringUtils.replace(sql, String.format(" [%s] ", table.getDisplayName()), " " + table.getName() + " " );
+//                sql = StringUtils.replace(sql, String.format(" [%s].", table.getDisplayName()), " " + table.getName() + "." );
+//                sql = StringUtils.replace(sql, String.format(" JOIN (%s ", table.getDisplayName()), " JOIN (" + table.getName() + " " );
+//                sql = StringUtils.replace(sql, String.format(" FROM (%s ", table.getDisplayName()), " FROM (" + table.getName() + " " );
+//                sql = StringUtils.replace(sql, String.format("\nFROM (%s ", table.getDisplayName()), "\n FROM (" + table.getName() + " " );
+//                sql = StringUtils.replace(sql, String.format("%s.", table.getDisplayName()), table.getName() +".");
+//                sql = StringUtils.replace(sql, String.format(" %s ", table.getDisplayName()), " " + table.getName() +" ");
+//            }
+//            for (DataTable table : getDataTables()) {
+//                for (DataTableColumn col : table.getSortedDataTableColumns()) {
+//                    sql = StringUtils.replace(sql, String.format(".[%s]", col.getDisplayName()), "." + col.getName());
+//                    sql = StringUtils.replace(sql, String.format("[%s],", col.getDisplayName()), col.getName()+ ",");
+//                    sql = StringUtils.replace(sql, String.format(" BY [%s]\n", col.getDisplayName()), " BY " + col.getName()+"\n");
+//                    sql = StringUtils.replace(sql, String.format("\nPIVOT [%s]", col.getDisplayName()), "\n PIVOT " + col.getName());
+//                    sql = StringUtils.replace(sql, String.format("([%s])", col.getDisplayName()), "(" + col.getName()+")");
+//                    sql = StringUtils.replace(sql, String.format(".%s", col.getDisplayName()),  "."+ col.getName());
+//                    sql = StringUtils.replace(sql, String.format("(%s", col.getDisplayName()), "(" + col.getName());
+//                    sql = StringUtils.replace(sql, String.format(" %s ", col.getDisplayName()), " " + col.getName() +" ");
+//                }
+//            }
+//            logger.debug("\t\t--> {} ", sql);
+//            } catch (Throwable t) {}
         });
     }
     

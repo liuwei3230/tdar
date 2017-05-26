@@ -785,6 +785,14 @@
             <version>${batik.version}</version>
             <!-- LICENSE: APACHE 2.0 -->
         </dependency>
+        <!-- https://mvnrepository.com/artifact/net.sf.ucanaccess/ucanaccess -->
+        <dependency>
+            <groupId>net.sf.ucanaccess</groupId>
+            <artifactId>ucanaccess</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        
+        
         <dependency>
             <groupId>batik</groupId>
             <artifactId>batik-anim</artifactId>
