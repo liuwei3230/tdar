@@ -1,5 +1,6 @@
 <#escape _untrusted as _untrusted?html>
-    <#import "/WEB-INF/macros/resource/common.ftl" as common>
+    <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
+    <#import "/WEB-INF/macros/common.ftl" as common>
 
     <#macro uploadForm>
         <#if editor>
@@ -47,7 +48,7 @@
             <div class="span5">
                 <@s.textfield cssClass="input-xlarge ${(person.registered??)?string('registered', '')}"  label="Email"   name="email"  maxlength="255"  title="An email is required" />
     
-                <#if privacyControlsEnabled>
+                <#if config.privacyControlsEnabled>
                     <@s.checkbox label='Make email public?' name="person.emailPublic" id="email-public"  />
                     <p class="field"><em><b>NOTE:</b> Making your email address public will display it to anyone who visits ${siteAcronym}, this includes search
                         engines, spammers, and visitors who are not logged in.</em></p>
@@ -67,7 +68,7 @@
                     <a href="http://orcid.org/about/what-is-orcid">About ORCID</a>                
                 </div>
                 <div class="span5">
-                    <#if RPAEnabled>
+                    <#if config.RPAEnabled>
                     <@s.textfield  cssClass="input-xlarge" label="RPA Number" name="person.rpaNumber"  maxlength=255 />
                     <a href="http://rpanet.org/">About RPA</a>                
                     </#if>
@@ -84,14 +85,14 @@
                 <h2 id="contact">Contact</h2>
                     <@s.textfield  label="Phone" cssClass="phoneUS input-xlarge" name="person.phone"  maxlength=255 />
         
-                    <#if privacyControlsEnabled>
+                    <#if config.privacyControlsEnabled>
                         <@s.checkbox label='Make phone public?' name="person.phonePublic" id="phone-public" />
                         <p class="field"><em><b>NOTE:</b> Making your phone # public will display it to anyone who visits ${siteAcronym}, this includes search engines,
                             and visitors who are not logged in.</em></p>
                     </#if>
         
             <h3>Address List</h3>
-                <@common.listAddresses person />
+                <@commonr.listAddresses person />
         </div>
 
     </#macro>

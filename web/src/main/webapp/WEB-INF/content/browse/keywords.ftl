@@ -1,9 +1,9 @@
 <#escape _untrusted as _untrusted?html>
     <#import "/WEB-INF/macros/resource/view-macros.ftl" as view>
-    <#import "/WEB-INF/macros/resource/common.ftl" as common>
+    <#import "/WEB-INF/macros/resource/common-resource.ftl" as common>
     <#import "/WEB-INF/macros/navigation-macros.ftl" as nav>
     <#import "/WEB-INF/macros/resource/list-macros.ftl" as list>
-    <#import "/WEB-INF/macros/search/search-macros.ftl" as search>
+    <#import "/WEB-INF/macros/search-macros.ftl" as search>
     
 <head>
     
@@ -49,7 +49,7 @@
     <p><#list keyword.synonyms![] as synonym><#if synonym_index !=0>, </#if>${synonym.label} </#list></p>
     </#if>
     <#if keyword.parent?has_content>
-    <p><b>Parent:</b><@common.searchFor keyword.parent false /></p>
+    <p><b>Parent:</b><@search.searchFor keyword.parent false /></p>
     </#if>
     
     <p>${keyword.definition!''}</p>

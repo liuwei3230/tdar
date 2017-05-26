@@ -5,7 +5,9 @@ $Id$
 View freemarker macros
 -->
 <#-- include navigation menu in edit and view macros -->
-    <#import "common.ftl" as common>
+    <#import "common-resource.ftl" as commonr>
+    <#import "../common.ftl" as common>
+    <#import "../search-macros.ftl" as searchm>
     <#import "../navigation-macros.ftl" as nav>
     <#import "../common-rights.ftl" as rights>
     <#setting url_escaping_charset='UTF-8'>
@@ -396,7 +398,7 @@ View freemarker macros
     <#macro keywordSearch _keywords fieldName="query" quoted=true>
         <#list _keywords.toArray()?sort_by("label") as _keyword><#t>
             <#if !_keyword.deleted>
-                <@common.searchFor keyword=_keyword asList=false showOccurrence=false />
+                <@searchm.searchFor keyword=_keyword asList=false showOccurrence=false />
                 <#sep>&bull;</#sep> 
             </#if>
         </#list>
@@ -746,7 +748,7 @@ View freemarker macros
                 </div>
             <div class="span4">
                 <#if resource.firstActiveLatitudeLongitudeBox?has_content>
-                    <img title="map" alt="map" class="" src="${_staticGoogleMapUrl(resource.firstActiveLatitudeLongitudeBox, googleMapsApiKey)}"/>
+                    <img title="map" alt="map" class="" src="${_staticGoogleMapUrl(resource.firstActiveLatitudeLongitudeBox, config.googleMapsApiKey)}"/>
                 <#else>
                     <a href="${url}" target="_top"><@firstThumbnail resource true /></a>
                 </#if>
@@ -764,7 +766,7 @@ View freemarker macros
         <#local height=235>
         <#local uri>geojson({"type":"Feature","properties":{"stroke-width":4,"stroke":"#7a1501","stroke-opacity":0.5,"fill-opacity":0.15},"geometry":{"type":"Polygon","coordinates":[${bbvals}]}})</#local>
 
-        <#return "//api.mapbox.com/v4/${mapId}/${uri?url}/auto/${width}x${height}.png?access_token=${leafletApiKey}">
+        <#return "//api.mapbox.com/v4/${mapId}/${uri?url}/auto/${width}x${height}.png?access_token=${config.leafletApiKey}">
     </#function>
 
 

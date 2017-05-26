@@ -1,4 +1,4 @@
-package org.tdar.struts.action;
+package org.tdar.struts.action.collection;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,6 +29,8 @@ import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ProjectService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.service.index.SearchIndexService;
+import org.tdar.struts.action.AbstractPersistableController;
+import org.tdar.struts.action.DataTableResourceDisplay;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.utils.PersistableUtils;
 
@@ -156,7 +158,7 @@ public abstract class AbstractCollectionController<C extends HierarchicalCollect
         
         // FIXME: this section smells like validation.  Consider overriding validate() and moving it there.
         if (PersistableUtils.isNotNullOrTransient(_incomingParent) && PersistableUtils.isNotNullOrTransient(_currentParent)
-                && (_incomingParent.getParentIds().contains(_incomingParent.getId()) || _currentParent.getId().equals(_incomingParent.getId()))) {
+                && (_incomingParent.getParentIds().contains(_incomingParent.getId()) || getPersistable().getId().equals(_incomingParent.getId()))) {
             addActionError(getText("collectionController.cannot_set_self_parent"));
         }
         return _parentId;

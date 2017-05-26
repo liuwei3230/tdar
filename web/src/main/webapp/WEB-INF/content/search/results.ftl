@@ -1,6 +1,6 @@
 <#escape _untrusted as _untrusted?html>
     <#import "/WEB-INF/macros/resource/list-macros.ftl" as rlist />
-    <#import "/WEB-INF/macros/search/search-macros.ftl" as search />
+    <#import "/WEB-INF/macros/search-macros.ftl" as search />
 <head>
     <title>Search Results: <#if searchSubtitle??>${searchSubtitle?html}</#if></title>
     <@search.headerLinks includeRss=(actionName=="results") />
@@ -96,7 +96,7 @@
                 <li>Bookmark datasets you'd like to integrate</li>
                 <li>Visit your workspace to begin the integration process</li>
             </ol>
-            <a href="${integrationDocumentationUrl}">visit ${siteAcronym} documentation for more details</a>
+            <a href="${config.integrationDocumentationUrl}">visit ${siteAcronym} documentation for more details</a>
         </div>
         </#if>
 

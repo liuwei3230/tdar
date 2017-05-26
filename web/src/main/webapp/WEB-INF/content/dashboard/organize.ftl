@@ -1,11 +1,11 @@
 <#escape _untrusted as _untrusted?html>
 <#import "/WEB-INF/macros/resource/list-macros.ftl" as rlist>
-<#import "dashboard-common.ftl" as dash />
+<#import "dashboard-resource.ftl" as dash />
 <#import "/WEB-INF/macros/resource/edit-macros.ftl" as edit>
 <#import "/WEB-INF/macros/resource/view-macros.ftl" as view>
-<#import "/WEB-INF/macros/search/search-macros.ftl" as search>
-<#import "/WEB-INF/macros/resource/common.ftl" as common>
-<#import "/${themeDir}/settings.ftl" as settings>
+<#import "/WEB-INF/macros/search-macros.ftl" as search>
+<#import "/WEB-INF/macros/resource/common-resource.ftl" as common>
+<#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
     <title>${authenticatedUser.properName}'s Dashboard</title>

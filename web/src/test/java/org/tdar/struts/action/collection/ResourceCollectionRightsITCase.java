@@ -31,7 +31,6 @@ import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.collection.ResourceCollectionService;
-import org.tdar.struts.action.AbstractCollectionRightsController;
 import org.tdar.struts.action.AbstractPersistableController;
 import org.tdar.struts.action.document.DocumentController;
 import org.tdar.struts.action.resource.AbstractResourceControllerITCase;
@@ -673,7 +672,6 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         // confirm resource is viewable by author of collection
         logger.debug("--------- clearing parent ----------");
         controller = generateNewInitializedController(ShareCollectionController.class, registeredUser);
-
         controller.setId(rcid2);
         controller.prepare();
         controller.edit();

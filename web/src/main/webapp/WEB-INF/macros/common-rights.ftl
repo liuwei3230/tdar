@@ -12,21 +12,21 @@
 	                <div class="controls-row" >
 	                	<div class="span2"><b>First Name</b></div>
 	                    <div class="span4">
-	                        <@s.textfield name="invites[0].firstName" cssClass="span4" />
+	                        <@s.textfield name="invites[0].firstName" cssClass="span4 inviteForm" id="firstName" />
 	                    </div>
 	                </div>
                     
 	                <div class="controls-row" >
 	                	<div class="span2"><b>Last Name</b></div>
     	                <div class="span4">
-        	                <@s.textfield name="invites[0].lastName" cssClass="span4" />
+        	                <@s.textfield name="invites[0].lastName" cssClass="span4 inviteForm" id="lastName" />
             	        </div>
 	                </div>
                     
 	                <div class="controls-row" >
 	                	<div class="span2"><b>Email</b></div>
 	                    <div class="span4">
-	                        <@s.textfield name="invites[0].email" cssClass="span4" />
+	                        <@s.textfield name="invites[0].email" cssClass="span4 inviteForm" id="email" />
 	                    </div>
 	                </div>
                     
@@ -102,7 +102,7 @@
                                     <#if proxy.inviteId?has_content>
                                         <input type="hidden" name="proxies[${proxy_index}].inviteId" value="${(proxy.inviteId!-1)?c}">
                                             <input type="text" name="proxies[${proxy_index}].displayName" maxlength="255" 
-                                            	value="${proxy.displayName!''}" disabled=true class="span6 ">
+                                            	value="${proxy.displayName!''} (invite)" disabled=true class="span6 ">
                                    <#else>
                                         <input type="hidden" name="proxies[${proxy_index}].id" value="${(proxy.id!-1)?c}" id="authorizedUsersId__id_${proxy_index}_p" autocompleteparentelement="#authorizedUsersRow_${proxy_index}_p">
                                             <input type="text" name="proxies[${proxy_index}].displayName" maxlength="255" value="${proxy.displayName!''}" id="metadataForm_authorizedUsersFullNames_${proxy_index}_"

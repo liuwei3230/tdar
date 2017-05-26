@@ -1,7 +1,7 @@
 <#escape _untrusted as _untrusted?html>
     <#import "/WEB-INF/macros/resource/edit-macros.ftl" as edit>
     <#import "/WEB-INF/macros/common-rights.ftl" as rights>
-    <#import "/${themeDir}/settings.ftl" as settings>
+    <#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
     <title>${authenticatedUser.properName}'s Dashboard</title>
@@ -12,7 +12,7 @@
 <div id="titlebar" parse="true">
     <h1>Sharing: <span class="red">${persistable.title}</span></h1>
 </div>
-    <@s.form class="form-horizontal tdarvalidate" action="save" method="POST">
+    <@s.form class="form-horizontal tdarvalidate" action="save" method="POST" dynamicAttributes={"data-validate-method":"initRightsForm"}>
 <div class="row">
     <div class="span12">
     <p><b>This resource is shared with ${proxies?size} people and is in ${persistable.sharedCollections?size} collections.</b></p>

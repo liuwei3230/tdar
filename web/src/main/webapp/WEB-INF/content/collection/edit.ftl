@@ -1,6 +1,7 @@
 <#escape _untrusted as _untrusted?html>
     <#import "/WEB-INF/macros/resource/edit-macros.ftl" as edit>
-    <#import "/WEB-INF/macros/resource/common.ftl" as common>
+    <#import "/WEB-INF/macros/common.ftl" as common>
+    <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
     <#import "../collection/common-collection.ftl" as commonCollection>
     <#import "/WEB-INF/macros/navigation-macros.ftl" as nav>
     <#import "/WEB-INF/macros/resource/view-macros.ftl" as view>
@@ -66,7 +67,11 @@
                 </div>
             </div>
 
-                <#if editor>
+        <@s.textarea rows="4" labelposition='top' label='Collection Description' name='resourceCollection.description'  cols="80" 
+            cssClass='resizable input-xxlarge trim' title="Please enter the description " />
+
+        <#if editor>
+            <h4>Admin Options</h4>
             <div class="control-group" id="divSubmitter">
                 <label class="control-label">Owner</label>
 
@@ -83,7 +88,6 @@
             
             <div id="altParentIdContainer" class="control-group">
                 <label class="control-label">Secondary Parent Collection (No rights)</label>
-
                 <div class="controls">
                     <@s.hidden name="alternateParentId"  id="hdnAltParentId" cssClass=""
                     autocompleteParentElement="#altParentIdContainer"  />
@@ -94,10 +98,25 @@
                 </div>
             </div>
 
-        </#if>
 
             <@s.textarea rows="4" labelposition='top' label='Collection Description' name='resourceCollection.description'  cols="80" 
             cssClass='resizable input-xxlarge' title="Please enter the description " />
+
+            <#if administrator>
+                <@s.textarea rows="4" labelposition='top' label='Collection Description (allows html)' name='resourceCollection.formattedDescription' cols="80" 
+                cssClass='resizable input-xxlarge' title="Please enter the description " />
+            </#if>
+
+            <div class="control-group">
+                <label class="control-label">Associate an Image/Logo with this Collection</label>
+                <div class="controls">
+                    <@s.file theme="simple" name='file' cssClass="input-xxlarge profileImage" id="fileUploadField"
+                    labelposition='left' size='40' dynamicAttributes={
+                        "data-rule-extension":"jpg,tiff,jpeg,png"
+                    }/>
+                </div>
+            </div>
+        </#if>
 
         </div>
 
@@ -118,9 +137,9 @@
 
                 <div class="controls">
                     <label for="rdoVisibleTrue" class="radio inline"><input type="radio" id="rdoVisibleTrue" name="resourceCollection.hidden"
-                                                                            value="true" <@common.checkedif resourceCollection.hidden true /> />Yes</label>
+                                                                            value="true" <@commonr.checkedif resourceCollection.hidden true /> />Yes</label>
                     <label for="rdoVisibleFalse" class="radio inline"><input type="radio" id="rdoVisibleFalse" name="resourceCollection.hidden"
-                                                                             value="false" <@common.checkedif resourceCollection.hidden false /> />No</label>
+                                                                             value="false" <@commonr.checkedif resourceCollection.hidden false /> />No</label>
                 </div>
             </div>
     

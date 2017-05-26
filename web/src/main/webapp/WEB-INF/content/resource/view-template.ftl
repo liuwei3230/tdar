@@ -5,13 +5,14 @@
     <#import "/WEB-INF/macros/navigation-macros.ftl" as nav>
     <#import "/WEB-INF/macros/common-rights.ftl" as rights>
     <#import "/WEB-INF/macros/resource/list-macros.ftl" as list>
-    <#import "/WEB-INF/macros/resource/common.ftl" as common>
+    <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
+    <#import "/WEB-INF/macros/common.ftl" as common>
 
 <head>
     <title>${resource.title}</title>
     <meta name="lastModifiedDate" content="$Date$"/>
     <#if includeRssAndSearchLinks??>
-        <#import "/WEB-INF/macros/search/search-macros.ftl" as search>
+        <#import "/WEB-INF/macros/search-macros.ftl" as search>
         <#assign rssUrl = "/api/search/rss?groups[0].fieldTypes[0]=PROJECT&groups[0].projects[0].id=${resource.id?c}&groups[0].projects[0].name=${(resource.name!'untitled')?url}">
         <@search.rssUrlTag url=rssUrl />
         <@search.headerLinks includeRss=false />
@@ -82,7 +83,7 @@
         <@view.kvp key="Year" val=resource.date?c />
     </#if>
 
-    <#if copyrightMandatory && resource.copyrightHolder?? || resource.copyrightHolder?has_content >
+    <#if config.copyrightMandatory && resource.copyrightHolder?? || resource.copyrightHolder?has_content >
         <strong>Primary Copyright Holder:</strong>
         <@view.browse resource.copyrightHolder "copyrightHolder" />
     </p>
@@ -158,7 +159,7 @@
                            class="dataTable table tableFormat table-striped table-bordered"></table>
                 </div>
             </div>
-                <#if tdarConfiguration.xmlExportEnabled>
+                <#if config.xmlExportEnabled>
                 <p class="faims_xml_logo"><a href="<@s.url value="/dataset/xml?dataTableId=${dataTable.id?c}"/>" target="_blank">XML</a></p>
                 </#if>
             <#else>
@@ -289,7 +290,7 @@
         <@view.categoryVariables />
     </#if>
     <#if !resource.resourceType.project >
-        <#if licensesEnabled?? &&  licensesEnabled || resource.licenseType?has_content >
+        <#if config.licensesEnabled?? &&  config.licensesEnabled || resource.licenseType?has_content >
             <@view.license />
         </#if>
     </#if>
