@@ -19,7 +19,6 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,6 +43,7 @@ public class AccessConverterITCase extends AbstractIntegrationTestCase {
     @Rollback(true)
 //    @Ignore
     public void testDatabase() throws FileNotFoundException, IOException {
+        //"///Users/abrin/Dropbox (ASU)/"
         DatasetConverter converter = convertDatabase(new File(getTestFilePath(),"rpms_corrected.mdb"), 1224L);
         for (DataTable table : converter.getDataTables()) {
             logger.info("{}", table);
