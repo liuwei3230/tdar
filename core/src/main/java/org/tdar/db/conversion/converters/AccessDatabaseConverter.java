@@ -247,7 +247,7 @@ public class AccessDatabaseConverter extends DatasetConverter.Base {
                 logger.error("{}",t,t);
             }
             try {
-                ResultSet executeQuery = conn.createStatement().executeQuery(q.toSQLString());
+                ResultSet executeQuery = conn.createStatement().executeQuery(String.format("SELECT * FROM [%s]", q.getName()));
                 int c = 0;
                 while (executeQuery.next()) {
                     ResultSetMetaData metaData = executeQuery.getMetaData();
