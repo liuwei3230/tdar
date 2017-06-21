@@ -3,6 +3,7 @@ package org.tdar.struts.interceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,8 @@ public class HttpsInterceptor implements Interceptor {
          * If we're not secured or user is authenticated, just go on as usual, otherwise, force unauthenticated users to HTTP
          * this means you google.
          */
-        if (request.isSecure() && (invocation.getAction() instanceof AuthenticationAware) && !((AuthenticationAware) invocation.getAction()).isAuthenticated()) {
+        if (request.isSecure() && (invocation.getAction() instanceof AuthenticationAware) &&
+                !((AuthenticationAware) invocation.getAction()).isAuthenticated()) {
             String baseUrl = changeUrlProtocol("http", request);
             response.sendRedirect(baseUrl);
             return null;
@@ -78,10 +80,12 @@ public class HttpsInterceptor implements Interceptor {
         HttpServletRequest request = ServletActionContext.getRequest();
         HttpServletResponse response = ServletActionContext.getResponse();
         response.setHeader("Frame-Options:", "DENY");
-        if (request.isSecure() || !TdarConfiguration.getInstance().isHttpsEnabled()) {
+
+        if (request.isSecure() || !TdarConfiguration.getInstance().isHttpsEnabled() || StringUtils.startsWithIgnoreCase(request.getRequestURL().toString(), "https:")) {
             return invocation.invoke();
         }
-
+        logger.debug(" :: url : {}", request.getQueryString());
+        
         if (request.getMethod().equalsIgnoreCase("get") || request.getMethod().equalsIgnoreCase("head")) {
             response.sendRedirect(changeUrlProtocol("https", request));
             return null;
