@@ -103,10 +103,9 @@ public class SitemapGeneratorProcess extends AbstractScheduledProcess {
             total += totalCreator;
 
             ScrollableResults activeCollections = genericService.findAllScrollable(SharedCollection.class);
-            int totalCollections = 0;
             total += processCollections(wsg, activeCollections);
-            activeCollections = genericService.findAllScrollable(ListCollection.class);
-            total += processCollections(wsg, activeCollections);
+//            activeCollections = genericService.findAllScrollable(ListCollection.class);
+//            total += processCollections(wsg, activeCollections);
 
             if (total > 0) {
                 wsg.write();

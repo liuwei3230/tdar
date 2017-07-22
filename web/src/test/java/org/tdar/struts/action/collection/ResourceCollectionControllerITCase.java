@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -306,7 +307,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         assertFalse("user should not be able to delete collection", resourceCollection == null);
 
         for (SharedCollection child : resourceCollectionService.findDirectChildCollections(rcid, null, SharedCollection.class)) {
-//            ((SharedCollection) child).setParent(null);
+            ((SharedCollection) child).setParent(null);
             genericService.saveOrUpdate(child);
         }
         // evictCache();
@@ -483,6 +484,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
     @SuppressWarnings("deprecation")
     @Test
     @Rollback
+    // note this was a ListCollectionTest
     public void testBrowseControllerVisibleCollections() throws Exception {
         genericService.synchronize();
         logger.debug("------------------------------------------------------------------------------------------------------------------");
@@ -539,8 +541,8 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         collection2 = null;
 //        assertFalse(collections.contains(collection1Id));
         assertFalse(collections.contains(collection2Id));
-        assertEquals(0, testFile.getRightsBasedResourceCollections().size());
-        assertEquals(1, testFile.getUnmanagedResourceCollections().size());
+        assertEquals(1, testFile.getRightsBasedResourceCollections().size());
+        assertEquals(0, testFile.getUnmanagedResourceCollections().size());
         parentCollection = genericService.find(SharedCollection.class, id);
         assertTrue(!parentCollection.isHidden());
         assertTrue(parentCollection.isTopLevel());
@@ -559,7 +561,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setId(id);
         vc.setSlug(slug);
         vc.prepare();
-        assertEquals(CollectionViewAction.SUCCESS, vc.view());
+        assertEquals(CollectionViewAction.SUCCESS_SHARE, vc.view());
         collections = PersistableUtils.extractIds(vc.getCollections());
         assertTrue(collections.contains(childCollectionId));
         assertFalse(collections.contains(childCollectionHiddenId));
@@ -572,7 +574,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setId(id);
         vc.setSlug(slug);
         vc.prepare();
-        assertEquals(CollectionViewAction.SUCCESS, vc.view());
+        assertEquals(CollectionViewAction.SUCCESS_SHARE, vc.view());
         collections = PersistableUtils.extractIds(vc.getCollections());
         assertEquals(2, collections.size());
         assertTrue(collections.contains(childCollectionId));
@@ -1135,14 +1137,18 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         // is brittle. A better idea would be to create our own sample data.
         List<SharedCollection> allCollections = genericService.findAll(SharedCollection.class);
         assertThat("sample data set size", allCollections.size(), greaterThan(1));
-
-        for (RightsBasedResourceCollection collection : allCollections) {
+        for (SharedCollection collection : allCollections) {
+            logger.debug("collection: {} ({} - [})", collection, collection.getStatus(), collection.isHidden());
+            logger.debug(" resources: {}", collection.getResources());
+            if (!collection.isActive()) {
+                continue;
+            }
             // get map of persisted resources
             Map<Long, Resource> persistedResourceMap = PersistableUtils.createIdMap(collection.getResources());
 
             // get list of sparse resources, make sure it has same size & contents as the persisted resource list.
             List<Resource> sparseResources = resourceCollectionService.findCollectionSparseResources(collection.getId());
-            assertThat(collection.getResources(), hasSize(sparseResources.size()));
+            assertEquals(CollectionUtils.size(collection.getResources()), sparseResources.size());
 
             for (Resource sparseResource : sparseResources) {
                 logger.trace("evaluating resource:{}", sparseResource);

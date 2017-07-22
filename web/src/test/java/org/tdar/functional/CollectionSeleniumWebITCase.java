@@ -121,8 +121,8 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @SuppressWarnings("unused")
     @Test
     public void testCollectionRemoveElement() {
-        String url = setupListForTest(TITLE + " (remove edit)",titles, CollectionVisibility.VISIBLE);
-        gotoEdit(url, CollectionType.LIST);
+        String url = setupCollectionForTest(TITLE + " (remove edit)",titles, CollectionVisibility.VISIBLE);
+        gotoEdit(url, CollectionType.SHARED);
         applyEditPageHacks();
 
         WebElementSelection select = find(id("collection-selector"));
@@ -194,7 +194,7 @@ public class CollectionSeleniumWebITCase extends AbstractEditorSeleniumWebITCase
     @Test
     public void testCollectionInGeneralSearch() {
         List<String> titles = Arrays.asList(HARP_FAUNA_SPECIES_CODING_SHEET);
-        String url = setupListForTest(TITLE + " (general search)", titles, CollectionVisibility.VISIBLE);
+        String url = setupCollectionForTest(TITLE + " (general search)", titles, CollectionVisibility.VISIBLE);
         logout();
         gotoPage(url);
         assertThat(getText(), containsString(TITLE));

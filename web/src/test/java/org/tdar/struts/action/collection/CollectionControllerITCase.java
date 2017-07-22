@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
@@ -58,6 +59,7 @@ public class CollectionControllerITCase extends AbstractControllerITCase impleme
     @SuppressWarnings("unused")
     @Test
     @Rollback(true)
+    @Ignore("was a ListCollection test")
     public void testPublicCollection() throws Exception {
         String email = "a243@basda.com";
         entityService.delete(entityService.findByEmail(email));
@@ -74,7 +76,7 @@ public class CollectionControllerITCase extends AbstractControllerITCase impleme
         genericService.saveOrUpdate(draft);
         List<AuthorizedUser> users = new ArrayList<>(Arrays.asList(
                 new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.ADMINISTER_GROUP),
-                new AuthorizedUser(getAdminUser(),getAdminUser(), GeneralPermissions.ADD_TO_COLLECTION)));
+                new AuthorizedUser(getAdminUser(),getAdminUser(), GeneralPermissions.ADD_TO_SHARE)));
         List<Resource> resources = new ArrayList<Resource>(Arrays.asList(normal, draft));
         SharedCollection collection = generateResourceCollection(name, description, false, users, testPerson, resources, null, 
                 ShareCollectionController.class, SharedCollection.class);
