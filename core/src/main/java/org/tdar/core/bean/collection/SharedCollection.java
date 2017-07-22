@@ -80,11 +80,11 @@ public class SharedCollection extends CustomizableCollection<SharedCollection>
 
 
 
-    @ManyToOne
+    @ManyToOne(targetEntity=SharedCollection.class)
     @JoinColumn(name = "parent_id")
     private SharedCollection parent;
 
-    @ManyToOne
+    @ManyToOne(targetEntity=SharedCollection.class)
     @JoinColumn(name = "alternate_parent_id")
     private SharedCollection alternateParent;
     

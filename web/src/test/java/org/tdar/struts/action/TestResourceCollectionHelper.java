@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.collection.CustomizableCollection;
 import org.tdar.core.bean.collection.HierarchicalCollection;
-import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
@@ -25,8 +24,6 @@ import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.service.GenericService;
 import org.tdar.struts.action.collection.AbstractCollectionController;
 import org.tdar.struts.action.collection.AbstractCollectionRightsController;
-import org.tdar.struts.action.collection.ListCollectionController;
-import org.tdar.struts.action.collection.ListCollectionRightsController;
 import org.tdar.struts.action.collection.ShareCollectionController;
 import org.tdar.struts.action.collection.ShareCollectionRightsController;
 import org.tdar.utils.PersistableUtils;
@@ -73,9 +70,9 @@ public interface TestResourceCollectionHelper {
             if (controller instanceof ShareCollectionController) {
                 ((ShareCollectionController) controller).getToAdd().addAll(PersistableUtils.extractIds(resources));
             }
-            if (controller instanceof ListCollectionController) {
-                ((ListCollectionController) controller).getToAdd().addAll(PersistableUtils.extractIds(resources));
-            }
+//            if (controller instanceof ListCollectionController) {
+//                ((ListCollectionController) controller).getToAdd().addAll(PersistableUtils.extractIds(resources));
+//            }
         }
 
         if (parentId != null) {
@@ -105,9 +102,9 @@ public interface TestResourceCollectionHelper {
 
         if (users != null) {
             AbstractCollectionRightsController sc = generateNewInitializedController(ShareCollectionRightsController.class, owner);
-            if (controller instanceof ListCollectionController) {
-                sc = generateNewInitializedController(ListCollectionRightsController.class, owner);
-            }
+//            if (controller instanceof ListCollectionController) {
+//                sc = generateNewInitializedController(ListCollectionRightsController.class, owner);
+//            }
             sc.setId(id);
             sc.prepare();
             sc.edit();
@@ -136,9 +133,9 @@ public interface TestResourceCollectionHelper {
             if (resourceCollection instanceof SharedCollection) {
                 assertThat(((SharedCollection) resourceCollection).getResources(), containsInAnyOrder(resources.toArray()));
             }
-            if (resourceCollection instanceof ListCollection) {
-                assertThat(((ListCollection) resourceCollection).getUnmanagedResources(), containsInAnyOrder(resources.toArray()));
-            }
+//            if (resourceCollection instanceof ListCollection) {
+//                assertThat(((ListCollection) resourceCollection).getUnmanagedResources(), containsInAnyOrder(resources.toArray()));
+//            }
         }
         return resourceCollection;
     }

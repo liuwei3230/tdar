@@ -337,7 +337,7 @@ public abstract class ResourceCollection extends AbstractPersistable
             ((RightsBasedResourceCollection)this).getResources().addAll(((RightsBasedResourceCollection) resource).getResources());
         }
         if (resource instanceof HierarchicalCollection && this instanceof HierarchicalCollection) {
-            ((HierarchicalCollection)this).setParent(((HierarchicalCollection) resource).getParent());
+//            ((HierarchicalCollection)this).setParent(((HierarchicalCollection) resource).getParent());
         }
         if (resource instanceof ListCollection && this instanceof ListCollection) {
             ((ListCollection)this).getUnmanagedResources().addAll(((ListCollection) resource).getUnmanagedResources());

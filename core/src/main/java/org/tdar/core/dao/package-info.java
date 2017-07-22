@@ -209,10 +209,10 @@
                 name = TdarNamedQueries.QUERY_SHARED_COLLECTION_BY_PARENT,
                 query = "from SharedCollection as col where (col.parent.id=:parent or (col.parent.id is NULL AND :parent is NULL))  and (hidden=:visible or :visible is NULL) and col.status='ACTIVE' "
         ),
-        @NamedQuery(
-                name = TdarNamedQueries.QUERY_LIST_COLLECTION_BY_PARENT,
-                query = "from ListCollection as col where (col.parent.id=:parent or (col.parent.id is NULL AND :parent is NULL)) and (hidden=:visible or :visible is NULL) and col.status='ACTIVE' "
-        ),
+//        @NamedQuery(
+//                name = TdarNamedQueries.QUERY_LIST_COLLECTION_BY_PARENT,
+//                query = "from ListCollection as col where (col.parent.id=:parent or (col.parent.id is NULL AND :parent is NULL)) and (hidden=:visible or :visible is NULL) and col.status='ACTIVE' "
+//        ),
         @NamedQuery(
                 name = TdarNamedQueries.QUERY_COLLECTIONS_PUBLIC_ACTIVE,
                 query = "SELECT id from ResourceCollection as col where col.type not in ('INTERNAL') and col.hidden is false and col.status='ACTIVE'"
@@ -480,9 +480,9 @@
         @NamedQuery(
                 name = TdarNamedQueries.QUERY_SHARED_COLLECTION_CHILDREN_RESOURCES,
                 query = "select distinct res from SharedCollection rc left join rc.parentIds parentId join rc.resources res where (parentId IN (:id) or rc.id=:id) and rc.status='ACTIVE' order by res.id asc"),
-        @NamedQuery(
-                name = TdarNamedQueries.QUERY_LIST_COLLECTION_CHILDREN_RESOURCES,
-                query = "select distinct res from ListCollection rc left join rc.parentIds parentId join rc.unmanagedResources res where (parentId IN (:id) or rc.id=:id) and rc.status='ACTIVE' order by res.id asc"),
+//        @NamedQuery(
+//                name = TdarNamedQueries.QUERY_LIST_COLLECTION_CHILDREN_RESOURCES,
+//                query = "select distinct res from ListCollection rc left join rc.parentIds parentId join rc.unmanagedResources res where (parentId IN (:id) or rc.id=:id) and rc.status='ACTIVE' order by res.id asc"),
         @NamedQuery(
                 name = TdarNamedQueries.QUERY_COLLECTION_CHILDREN_RESOURCES_COUNT,
                 query = "select count(distinct res.id) from SharedCollection rc left join rc.parentIds parentId join rc.resources res where (parentId IN (:id) or rc.id=:id) and rc.status='ACTIVE' "),

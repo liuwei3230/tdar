@@ -148,9 +148,6 @@ public class CollectionViewAction<C extends HierarchicalCollection> extends Abst
 
     private Class<C> getActualClass() {
         Class cls = SharedCollection.class;
-        if (getPersistable() instanceof ListCollection) {
-            cls = ListCollection.class;
-        }
         return (Class<C>) cls;
     }
 
@@ -279,8 +276,8 @@ public class CollectionViewAction<C extends HierarchicalCollection> extends Abst
         setSortField(((Sortable) getPersistable()).getSortBy());
         if (getSortField() != SortOption.RELEVANCE) {
             setSecondarySortField(SortOption.TITLE);
-            if (getPersistable() instanceof CustomizableCollection && ((CustomizableCollection<ListCollection>) getPersistable()).getSecondarySortBy() != null) {
-                setSecondarySortField(((CustomizableCollection<ListCollection>) getPersistable()).getSecondarySortBy());
+            if (getPersistable() instanceof CustomizableCollection && ((CustomizableCollection<SharedCollection>) getPersistable()).getSecondarySortBy() != null) {
+                setSecondarySortField(((CustomizableCollection<SharedCollection>) getPersistable()).getSecondarySortBy());
             }
         }
 
@@ -458,11 +455,11 @@ public class CollectionViewAction<C extends HierarchicalCollection> extends Abst
      * @return
      */
     public boolean isBigCollection() {
-        if (getPersistable() instanceof SharedCollection) {
-            return (((SharedCollection) getPersistable()).getResources().size() + getAuthorizedUsers().size()) > BIG_COLLECTION_CHILDREN_COUNT;
-        } else {
-            return (((ListCollection) getPersistable()).getUnmanagedResources().size() + getAuthorizedUsers().size()) > BIG_COLLECTION_CHILDREN_COUNT;
-        }
+        return (((SharedCollection) getPersistable()).getResources().size() + getAuthorizedUsers().size()) > BIG_COLLECTION_CHILDREN_COUNT;
+//        if (getPersistable() instanceof SharedCollection) {
+//        } else {
+//            return (((ListCollection) getPersistable()).getUnmanagedResources().size() + getAuthorizedUsers().size()) > BIG_COLLECTION_CHILDREN_COUNT;
+//        }
     }
 
     public Long getViewCount() {
@@ -590,7 +587,7 @@ public class CollectionViewAction<C extends HierarchicalCollection> extends Abst
     public DisplayOrientation getOrientation() {
         if (orientation == null) {
             if (getPersistable() instanceof CustomizableCollection) {
-                return ((CustomizableCollection<ListCollection>) getPersistable()).getOrientation();
+                return ((CustomizableCollection<SharedCollection>) getPersistable()).getOrientation();
             }
             return DisplayOrientation.LIST;
         }

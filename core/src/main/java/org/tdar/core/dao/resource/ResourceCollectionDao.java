@@ -76,9 +76,9 @@ public class ResourceCollectionDao extends HibernateBase<ResourceCollection> {
      */
     public <C extends HierarchicalCollection> List<C> findCollectionsOfParent(Long parent, Boolean visible, Class<C> cls) {
         String q = TdarNamedQueries.QUERY_SHARED_COLLECTION_BY_PARENT;
-        if (CollectionType.getTypeForClass(cls) == CollectionType.LIST) {
-            q = TdarNamedQueries.QUERY_LIST_COLLECTION_BY_PARENT;
-        }
+//        if (CollectionType.getTypeForClass(cls) == CollectionType.LIST) {
+//            q = TdarNamedQueries.QUERY_LIST_COLLECTION_BY_PARENT;
+//        }
         Query<C> namedQuery = getCurrentSession().createNamedQuery(q, cls);
         namedQuery.setParameter("parent", parent);
         namedQuery.setParameter("visible", visible);
@@ -181,10 +181,10 @@ public class ResourceCollectionDao extends HibernateBase<ResourceCollection> {
                 List<SharedCollection> find = findAllChildCollectionsOnly((SharedCollection) rc, SharedCollection.class);
                 allCollections.addAll((Collection<? extends C>) find);
             }
-            if (rc instanceof ListCollection) {
-                List<ListCollection> find = findAllChildCollectionsOnly((ListCollection) rc, ListCollection.class);
-                allCollections.addAll((Collection<? extends C>) find);
-            }
+//            if (rc instanceof ListCollection) {
+//                List<ListCollection> find = findAllChildCollectionsOnly((ListCollection) rc, ListCollection.class);
+//                allCollections.addAll((Collection<? extends C>) find);
+//            }
             allCollections.add(rc);
         }
 
@@ -257,9 +257,9 @@ public class ResourceCollectionDao extends HibernateBase<ResourceCollection> {
             return null;
         }
         String q = TdarNamedQueries.QUERY_SHARED_COLLECTION_CHILDREN_RESOURCES;
-        if (persistable instanceof ListCollection) {
-            q = TdarNamedQueries.QUERY_LIST_COLLECTION_CHILDREN_RESOURCES;
-        }
+//        if (persistable instanceof ListCollection) {
+//            q = TdarNamedQueries.QUERY_LIST_COLLECTION_CHILDREN_RESOURCES;
+//        }
         Query<Resource> query = getCurrentSession().createNamedQuery(q, Resource.class);
         query.setParameter("id", persistable.getId());
         return query.scroll();
@@ -303,7 +303,7 @@ public class ResourceCollectionDao extends HibernateBase<ResourceCollection> {
     public CustomizableCollection<?> getWhiteLabelCollectionForResource(Resource resource) {
         Set<CustomizableCollection<?>> resourceCollections = new HashSet<>();
         if (TdarConfiguration.getInstance().isListCollectionsEnabled()) {
-            resourceCollections.addAll(resource.getUnmanagedResourceCollections());
+//            resourceCollections.addAll(resource.getUnmanagedResourceCollections());
         } else {
             resourceCollections.addAll(resource.getSharedCollections());
         }

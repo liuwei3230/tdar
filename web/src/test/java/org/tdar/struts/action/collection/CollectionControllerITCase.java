@@ -41,13 +41,13 @@ public class CollectionControllerITCase extends AbstractControllerITCase impleme
     @Autowired
     AuthorizedUserDao authorizedUserDao;
 
-    ListCollectionController controller;
+    ShareCollectionController controller;
 
     static int indexCount = 0;
 
     @Before
     public void setup() {
-        controller = generateNewInitializedController(ListCollectionController.class);
+        controller = generateNewInitializedController(ShareCollectionController.class);
         if (indexCount < 1) {
             reindex();
         }
@@ -76,13 +76,13 @@ public class CollectionControllerITCase extends AbstractControllerITCase impleme
                 new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.ADMINISTER_GROUP),
                 new AuthorizedUser(getAdminUser(),getAdminUser(), GeneralPermissions.ADD_TO_COLLECTION)));
         List<Resource> resources = new ArrayList<Resource>(Arrays.asList(normal, draft));
-        ListCollection collection = generateResourceCollection(name, description, false, users, testPerson, resources, null, 
-                ListCollectionController.class, ListCollection.class);
+        SharedCollection collection = generateResourceCollection(name, description, false, users, testPerson, resources, null, 
+                ShareCollectionController.class, SharedCollection.class);
         final Long id = collection.getId();
         String slug = collection.getSlug();
         collection = null;
 
-        ListCollectionRightsController cc = generateNewInitializedController(ListCollectionRightsController.class, getAdminUser());
+        ShareCollectionRightsController cc = generateNewInitializedController(ShareCollectionRightsController.class, getAdminUser());
         cc.setId(id);
         cc.prepare();
         cc.edit();

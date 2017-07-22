@@ -306,7 +306,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         assertFalse("user should not be able to delete collection", resourceCollection == null);
 
         for (SharedCollection child : resourceCollectionService.findDirectChildCollections(rcid, null, SharedCollection.class)) {
-            ((SharedCollection) child).setParent(null);
+//            ((SharedCollection) child).setParent(null);
             genericService.saveOrUpdate(child);
         }
         // evictCache();
@@ -492,16 +492,16 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
 //        collection1.markUpdated(getUser());
 //        collection1.getAuthorizedUsers().addAll(users);
 //        genericService.saveOrUpdate(collection1);
-        ListCollection collection2 = generateResourceCollection("SHARED", "", false, new ArrayList<>(users), getUser(),
-                new ArrayList<Resource>(), null, ListCollectionController.class, ListCollection.class);
+        SharedCollection collection2 = generateResourceCollection("SHARED", "", false, new ArrayList<>(users), getUser(),
+                new ArrayList<Resource>(), null, ShareCollectionController.class, SharedCollection.class);
         InformationResource testFile = generateDocumentWithUser();
-        ListCollection parentCollection = generateResourceCollection("PARENT", "", true, new ArrayList<>(users), getUser(),
-                Arrays.asList(testFile), null, ListCollectionController.class, ListCollection.class);
+        SharedCollection parentCollection = generateResourceCollection("PARENT", "", true, new ArrayList<>(users), getUser(),
+                Arrays.asList(testFile), null, ShareCollectionController.class, SharedCollection.class);
         Long id = parentCollection.getId();
-        ListCollection childCollection = generateResourceCollection("CHILD", "", true, new ArrayList<AuthorizedUser>(), getUser(),
-                new ArrayList<Resource>(), id, ListCollectionController.class, ListCollection.class);
-        ListCollection childCollectionHidden = generateResourceCollection("HIDDEN CHILD", "", false, new ArrayList<AuthorizedUser>(), getUser(),
-                new ArrayList<Resource>(), id, ListCollectionController.class, ListCollection.class);
+        SharedCollection childCollection = generateResourceCollection("CHILD", "", true, new ArrayList<AuthorizedUser>(), getUser(),
+                new ArrayList<Resource>(), id, ShareCollectionController.class, SharedCollection.class);
+        SharedCollection childCollectionHidden = generateResourceCollection("HIDDEN CHILD", "", false, new ArrayList<AuthorizedUser>(), getUser(),
+                new ArrayList<Resource>(), id, ShareCollectionController.class, SharedCollection.class);
         // genericService.saveOrUpdate(parentCollection);
         Long parentCollectionId = parentCollection.getId();
         parentCollection = null;
@@ -541,7 +541,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         assertFalse(collections.contains(collection2Id));
         assertEquals(0, testFile.getRightsBasedResourceCollections().size());
         assertEquals(1, testFile.getUnmanagedResourceCollections().size());
-        parentCollection = genericService.find(ListCollection.class, id);
+        parentCollection = genericService.find(SharedCollection.class, id);
         assertTrue(!parentCollection.isHidden());
         assertTrue(parentCollection.isTopLevel());
         String slug = parentCollection.getSlug();
@@ -588,10 +588,10 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
     @Rollback
     public void testHiddenParentVisibleChild() throws Exception {
         TdarUser testPerson = createAndSaveNewPerson("a@basda.com", "1234");
-        ListCollection collection1 = generateResourceCollection("test 1 private", "", false, new ArrayList<AuthorizedUser>(), getUser(),
-                new ArrayList<Resource>(), null, ListCollectionController.class, ListCollection.class);
-        ListCollection collection2 = generateResourceCollection("test 2 public", "", true, new ArrayList<AuthorizedUser>(), getUser(),
-                new ArrayList<Resource>(), collection1.getId(), ListCollectionController.class, ListCollection.class);
+        SharedCollection collection1 = generateResourceCollection("test 1 private", "", false, new ArrayList<AuthorizedUser>(), getUser(),
+                new ArrayList<Resource>(), null, ShareCollectionController.class, SharedCollection.class);
+        SharedCollection collection2 = generateResourceCollection("test 2 public", "", true, new ArrayList<AuthorizedUser>(), getUser(),
+                new ArrayList<Resource>(), collection1.getId(), ShareCollectionController.class, SharedCollection.class);
         evictCache();
         searchIndexService.index(collection1, collection2);
 
@@ -728,8 +728,8 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         draftDocument.setStatus(Status.DRAFT);
         genericService.save(draftDocument);
         evictCache();
-        ListCollection collection = generateResourceCollection("test collection w/Draft", "testing draft...", true, null, getAdminUser(),
-                Arrays.asList(draftDocument, activeDocument), null, ListCollectionController.class, ListCollection.class);
+        SharedCollection collection = generateResourceCollection("test collection w/Draft", "testing draft...", true, null, getAdminUser(),
+                Arrays.asList(draftDocument, activeDocument), null, ShareCollectionController.class, SharedCollection.class);
 
         logger.info("DOCUMENT: {} ", draftDocument.getSubmitter());
 

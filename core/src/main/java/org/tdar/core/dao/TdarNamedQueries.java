@@ -62,7 +62,7 @@ public interface TdarNamedQueries {
     String QUERY_EDITABLE_RESOURCES = "resource.editable";
     String QUERY_SPARSE_EDITABLE_SORTED_RESOURCES = "resource.editable.sorted.sparse";
     String QUERY_SHARED_COLLECTION_BY_PARENT = "sharedcollection.parent";
-    String QUERY_LIST_COLLECTION_BY_PARENT = "listcollection.parent";
+//    String QUERY_LIST_COLLECTION_BY_PARENT = "listcollection.parent";
     String QUERY_COLLECTIONS_PUBLIC_ACTIVE = "collection.activeId";
     String QUERY_COLLECTION_RESOURCES_WITH_STATUS = "collection.resourcesWithStatus";
     String QUERY_SHARED_COLLECTION_BY_AUTH_OWNER = "sharedCollection.authOwnerId_name";
@@ -129,7 +129,7 @@ public interface TdarNamedQueries {
     String CREATOR_VIEW = "creator.views";
     String QUERY_COLLECTION_CHILDREN = "resourceCollection.allChildren";
     String QUERY_SHARED_COLLECTION_CHILDREN_RESOURCES = "sharedCollection.allChildrenResources";
-    String QUERY_LIST_COLLECTION_CHILDREN_RESOURCES = "listCollection.allChildrenResources";
+//    String QUERY_LIST_COLLECTION_CHILDREN_RESOURCES = "listCollection.allChildrenResources";
     String QUERY_COLLECTION_CHILDREN_RESOURCES_COUNT = "resourceCollection.allChildrenResources_count";
     String QUERY_INFORMATION_RESOURCE_FILE_VERSION_VERIFICATION = "versions.verify";
     String QUERY_CLEAR_REFERENCED_ONTOLOGYNODE_RULES = "update.clearOntologyNodeReferences";

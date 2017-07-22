@@ -82,8 +82,8 @@ public class WeeklyStatisticsLoggingProcess extends AbstractScheduledProcess {
         stats.add(generateStatistics(StatisticType.NUM_USERS, entityService.findAllRegisteredUsers().size(), ""));
         stats.add(generateStatistics(StatisticType.NUM_ACTUAL_CONTRIBUTORS, entityService.findNumberOfActualContributors(), ""));
         List<CustomizableCollection> findAllResourceCollections = new ArrayList<>();
-        findAllResourceCollections.addAll(genericService.findAll(ListCollection.class));
-        int numListCollections = findAllResourceCollections.size();
+//        findAllResourceCollections.addAll(genericService.findAll(ListCollection.class));
+        int numListCollections = genericService.count(ListCollection.class).intValue();
         List<SharedCollection> shareCollections = genericService.findAll(SharedCollection.class);
         int numSharedCollections = shareCollections.size();
         stats.add(generateStatistics(StatisticType.NUM_LIST_COLLECTIONS, numListCollections, ""));

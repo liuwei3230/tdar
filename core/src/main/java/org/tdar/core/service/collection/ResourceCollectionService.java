@@ -208,7 +208,7 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
     public <C extends VisibleCollection> List<C> findAllTopLevelCollections() {
         Set<C> resultSet = new HashSet<>();
         resultSet.addAll((List<C>) getDao().findCollectionsOfParent(null, false, SharedCollection.class));
-        resultSet.addAll((List<C>) getDao().findCollectionsOfParent(null, false, ListCollection.class));
+//        resultSet.addAll((List<C>) getDao().findCollectionsOfParent(null, false, ListCollection.class));
         List<C> toReturn = new ArrayList<>(resultSet);
         Collections.sort(toReturn, new Comparator<C>() {
             @Override
@@ -726,7 +726,9 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
         List<C> children = getAllChildCollections(persistable, cls);
         List<Long> oldParentIds = new ArrayList<>(persistable.getParentIds());
         logger.debug("updating parent for {} from {} to {}", persistable.getId(), persistable.getParent(), parent);
-        persistable.setParent(parent);
+        if (persistable instanceof SharedCollection) {
+         ((SharedCollection)persistable).setParent((SharedCollection)parent);
+        }
         List<Long> parentIds = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(parent)) {
             if (CollectionUtils.isNotEmpty(parent.getParentIds())) {
@@ -797,19 +799,19 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
     @Transactional(readOnly = true)
     public Set<ListCollection> getEffectiveResourceCollectionsForResource(Resource resource) {
         Set<ListCollection> tempSet = new HashSet<>();
-        for (ListCollection collection : resource.getUnmanagedResourceCollections()) {
-            if (collection != null) {
-                tempSet.addAll(collection.getHierarchicalResourceCollections());
-            }
-        }
+//        for (ListCollection collection : resource.getUnmanagedResourceCollections()) {
+//            if (collection != null) {
+//                tempSet.addAll(collection.getHierarchicalResourceCollections());
+//            }
+//        }
 
-        Iterator<ListCollection> iter = tempSet.iterator();
-        while (iter.hasNext()) {
-            ListCollection next = iter.next();
-            if (CollectionUtils.isEmpty(((ListCollection) next).getAuthorizedUsers())) {
-                iter.remove();
-            }
-        }
+//        Iterator<ListCollection> iter = tempSet.iterator();
+//        while (iter.hasNext()) {
+//            ListCollection next = iter.next();
+//            if (CollectionUtils.isEmpty(((ListCollection) next).getAuthorizedUsers())) {
+//                iter.remove();
+//            }
+//        }
 
         return tempSet;
     }
@@ -953,10 +955,10 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
         logger.debug("{} - {}", persistable, persistable.getId());
         if (PersistableUtils.isTransient(persistable)) {
             GeneralPermissions perm = GeneralPermissions.ADMINISTER_SHARE;
-            if (persistable instanceof ListCollection) {
-                cls = (Class<C>) ListCollection.class;
-                perm = GeneralPermissions.ADMINISTER_GROUP;
-            }
+//            if (persistable instanceof ListCollection) {
+//                cls = (Class<C>) ListCollection.class;
+//                perm = GeneralPermissions.ADMINISTER_GROUP;
+//            }
             persistable.getAuthorizedUsers().add(new AuthorizedUser(authenticatedUser, authenticatedUser, perm));
         }
         RevisionLogType type = RevisionLogType.CREATE;
@@ -974,12 +976,12 @@ public class ResourceCollectionService extends ServiceInterface.TypedDaoBase<Res
             reconcileIncomingResourcesForCollection(shared, authenticatedUser, resourcesToAdd, resourcesToRemove);
         }
 
-        if (persistable instanceof ListCollection) {
-            ListCollection list = (ListCollection) persistable;
-            reconcileIncomingResourcesForCollectionWithoutRights(list, authenticatedUser, resourcesToAdd, resourcesToRemove);
-        }
+//        if (persistable instanceof ListCollection) {
+//            ListCollection list = (ListCollection) persistable;
+//            reconcileIncomingResourcesForCollectionWithoutRights(list, authenticatedUser, resourcesToAdd, resourcesToRemove);
+//        }
         // saveAuthorizedUsersForResourceCollection(persistable, persistable, cso.getAuthorizedUsers(), cso.isShouldSave(), authenticatedUser,type);
-        simpleFileProcessingDao.processFileProxyForCreatorOrCollection(((CustomizableCollection<ListCollection>) persistable).getProperties(),
+        simpleFileProcessingDao.processFileProxyForCreatorOrCollection(((CustomizableCollection<SharedCollection>) persistable).getProperties(),
                 cso.getFileProxy());
 
         if (!Objects.equals(cso.getParentId(), persistable.getParentId())) {

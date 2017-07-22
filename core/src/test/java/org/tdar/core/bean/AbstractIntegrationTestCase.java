@@ -414,7 +414,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     }
 
     // create new, public, collection with the getUser() as the owner and no resources
-    public <C extends VisibleCollection> C createAndSaveNewResourceCollection(String name, Class<C> class1) {
+    public <C extends SharedCollection> C createAndSaveNewResourceCollection(String name, Class<C> class1) {
         try {
             return init(class1.newInstance(), name);
         } catch (InstantiationException | IllegalAccessException e) {
@@ -428,8 +428,8 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return init(new SharedCollection(), name);
     }
 
-    public ListCollection createAndSaveNewWhiteLabelCollection(String name) {
-        ListCollection wlc = new ListCollection();
+    public SharedCollection createAndSaveNewWhiteLabelCollection(String name) {
+        SharedCollection wlc = new SharedCollection();
         wlc.setProperties(new CollectionDisplayProperties(false,false,false,false,false,false));
         wlc.getProperties().setWhitelabel(true);
         wlc.getProperties().setSubtitle("This is a fancy whitelabel collection");
@@ -437,7 +437,7 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
         return wlc;
     }
 
-    protected <C extends VisibleCollection> C init(C resourceCollection, String name) {
+    protected <C extends SharedCollection> C init(C resourceCollection, String name) {
         resourceCollection.setName(name);
         resourceCollection.setDescription(name);
         resourceCollection.setViewable(true);

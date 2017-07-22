@@ -21,7 +21,7 @@ import org.tdar.core.bean.Sortable;
 @Entity
 @XmlType(name = "customCollBase")
 @SecondaryTable(name = "whitelabel_collection", pkJoinColumns = @PrimaryKeyJoinColumn(name = "id"))
-public abstract class CustomizableCollection<C extends HierarchicalCollection<C>> extends HierarchicalCollection<C> implements Sortable {
+public abstract class CustomizableCollection<C extends CustomizableCollection<C>> extends HierarchicalCollection<C> implements Sortable {
 
     private static final long serialVersionUID = 3900834256299683436L;
 

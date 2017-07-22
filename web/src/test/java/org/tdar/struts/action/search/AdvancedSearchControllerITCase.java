@@ -18,17 +18,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.Indexable;
+import org.tdar.core.bean.collection.CollectionDisplayProperties;
 import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.collection.VisibleCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
@@ -334,7 +337,20 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
     @Rollback
     public void testWhitelabelAdvancedSearch() {
         String collectionTitle = "The History Channel Presents: Ancient Ceramic Bowls That Resemble Elvis";
-        ListCollection rc = createAndSaveNewWhiteLabelCollection(collectionTitle);
+        SharedCollection rc = new SharedCollection();
+        rc.setProperties(new CollectionDisplayProperties(false,false,false,false,false,false));
+        rc.getProperties().setWhitelabel(true);
+        rc.getProperties().setSubtitle("This is a fancy whitelabel collection");
+        rc.setName(collectionTitle);
+        rc.setDescription(collectionTitle);
+        rc.setViewable(true);
+        rc.setHidden(false);
+        rc.markUpdated(getUser());
+        rc.setOwner(getUser());
+        rc.getAuthorizedUsers().add(new AuthorizedUser(getUser(), getUser(), GeneralPermissions.ADMINISTER_SHARE));
+        genericService.saveOrUpdate(rc);
+        genericService.saveOrUpdate(rc.getAuthorizedUsers());
+
 
         getLogger().debug("collection saved. Id:{}  obj:{}", rc.getId(), rc);
         controller.setCollectionId(rc.getId());
