@@ -20,6 +20,7 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ListCollection;
+import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -212,7 +213,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     }
 
     private void processWhitelabelSearch() {
-        ListCollection rc = getGenericService().find(ListCollection.class, getCollectionId());
+        SharedCollection rc = getGenericService().find(SharedCollection.class, getCollectionId());
         if (rc == null) {
             return;
         }
@@ -223,7 +224,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         }
         getGroups().add(sp);
         sp.getFieldTypes().addAll(Arrays.asList(SearchFieldType.COLLECTION, SearchFieldType.ALL_FIELDS));
-        sp.getCollections().addAll(Arrays.asList(rc, null));
+        sp.getShares().addAll(Arrays.asList(rc, null));
         sp.getAllFields().addAll(Arrays.asList(null, ""));
     }
 

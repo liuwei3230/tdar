@@ -359,7 +359,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
 
         // We should now have two terms: within-collection, and all-fields
         assertThat(firstGroup().getFieldTypes(), contains(SearchFieldType.COLLECTION, SearchFieldType.ALL_FIELDS));
-        assertThat(((VisibleCollection)firstGroup().getCollections().get(0)).getTitle(), is(collectionTitle));
+        assertThat(((VisibleCollection)firstGroup().getShares().get(0)).getTitle(), is(collectionTitle));
     }
 
     private void updateAndIndex(Indexable doc) throws SearchIndexException, IOException {
