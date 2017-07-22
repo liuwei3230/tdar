@@ -106,8 +106,8 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
             logger.debug("{} {}", c.getId(), c);
             if (c.getId().equals(1002L) && c instanceof ListCollection) {
                 ListCollection shared = (ListCollection)c;
-                logger.debug("parent: {}", shared.getParent());
-                logger.debug("parent: {}", shared.isTopLevel());
+//                logger.debug("parent: {}", shared.getParent());
+//                logger.debug("parent: {}", shared.isTopLevel());
                 seen = true;
             }
         }

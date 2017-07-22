@@ -861,17 +861,17 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
     @Rollback
     public void testRefineSearchWithSparseCollection() throws ParseException, SearchException, SearchIndexException, IOException {
 
-        ListCollection rc = createAndSaveNewResourceCollection("Mega Collection", ListCollection.class);
-        ListCollection sparseCollection = new ListCollection();
+        SharedCollection rc = createAndSaveNewResourceCollection("Mega Collection", SharedCollection.class);
+        SharedCollection sparseCollection = new SharedCollection();
         evictCache();
         long collectionId = rc.getId();
         assertThat(collectionId, greaterThan(0L));
         sparseCollection.setId(collectionId);
         SearchParameters sp = new SearchParameters();
-        sp.getCollections().add(sparseCollection);
+        sp.getShares().add(sparseCollection);
         SearchResult<Resource> result = doSearch(null, null, sp, null);
 
-        assertThat(((VisibleCollection)sp.getCollections().get(0)).getTitle(), is("Mega Collection"));
+        assertThat(((VisibleCollection)sp.getShares().get(0)).getTitle(), is("Mega Collection"));
     }
 
     private void assertOnlyResultAndProject(SearchResult<Resource> result, InformationResource informationResource) {

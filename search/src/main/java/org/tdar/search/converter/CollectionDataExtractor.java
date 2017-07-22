@@ -122,8 +122,8 @@ public class CollectionDataExtractor {
                 ListCollection list = (ListCollection)collection;
                 getListCollectionIds().add(collection.getId());
                 directListCollectionIds.add(collection.getId());
-                getListCollectionNames().addAll(list.getParentNameList());
-                getListCollectionIds().addAll(list.getParentIds());
+//                getListCollectionNames().addAll(list.getParentNameList());
+//                getListCollectionIds().addAll(list.getParentIds());
             }
         }
         getListCollectionIds().addAll(directCollectionIds);
