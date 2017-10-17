@@ -6,7 +6,7 @@
     <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
     <#import "/WEB-INF/macros/common.ftl" as common>
     <#import "/${config.themeDir}/settings.ftl" as settings>
-    <#import "dashboard-common.ftl" as dash />
+    <#import "common-dashboard.ftl" as dash />
 
 <head>
     <title>Billing Accounts</title>
@@ -29,7 +29,7 @@
         <br/>
       <h3>Add Space</h3>
       <p>Purchase addtional files or space.</p>
-    <@s.form name='MetadataForm' id='MetadataForm'  method='post' cssClass="form-horizontal disableFormNavigate" enctype='multipart/form-data' action='process-choice'>
+    <@s.form name='MetadataForm' id='MetadataForm'  method='post' cssClass="form-horizontal disableFormNavigate" enctype='multipart/form-data' action='/cart/process-choice'>
                 <table class="table pTable">
                     <tbody>
                         <tr>
@@ -82,8 +82,14 @@
                         <#items as account>
                         <tr>
                             <td><a href="${account.detailUrl}">${account.name}</a>
-                            <#local pspace= (account.totalSpaceInMb - account.availableSpaceInMb) / account.totalSpaceInMb * 100.0 >
-                            <#local pfiles= (account.totalNumberOfFiles - account.availableNumberOfFiles) / account.totalNumberOfFiles * 100.0 >
+                            <#local pspace =0>
+                            <#if (account.totalSpaceInMb > 0)>
+	                            <#local pspace= (account.totalSpaceInMb - account.availableSpaceInMb) / account.totalSpaceInMb * 100.0 >
+                            </#if>
+                            <#local pfiles= 0>
+                            <#if (account.totalNumberOfFiles > 0)>
+	                            <#local pfiles= (account.totalNumberOfFiles - account.availableNumberOfFiles) / account.totalNumberOfFiles * 100.0 >
+                            </#if>
                             <#local perc = pfiles />
                             <#if (pspace > pfiles) >
                             	<#local perc = pfiles>

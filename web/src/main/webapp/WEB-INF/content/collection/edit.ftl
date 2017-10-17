@@ -38,7 +38,10 @@
         </div>
     </div>
 
-
+    <#assign newRecord = false>
+    <#if persistable.id == -1>
+        <#assign newRecord = true />
+    </#if>
     <h1><#if persistable.id == -1>Creating<#else>Editing</#if>: <span> ${persistable.name!"New Collection"}</span></h1>
         <@s.form name='metadataForm' id='metadataForm'  method='post' cssClass="form-horizontal tdarvalidate"  dynamicAttributes={"data-validate-method":"initBasicForm"} enctype='multipart/form-data' action='save'>
         <@s.token name='struts.csrf.token' />
@@ -73,7 +76,7 @@
         <#if editor>
             <h4>Admin Options</h4>
             <div class="control-group" id="divSubmitter">
-                <label class="control-label">Owner</label>
+                <label class="control-label">Submitter</label>
 
                 <div class="controls controls-row">
                     <#if owner?has_content>
@@ -99,9 +102,6 @@
             </div>
 
 
-            <@s.textarea rows="4" labelposition='top' label='Collection Description' name='resourceCollection.description'  cols="80" 
-            cssClass='resizable input-xxlarge' title="Please enter the description " />
-
             <#if administrator>
                 <@s.textarea rows="4" labelposition='top' label='Collection Description (allows html)' name='resourceCollection.formattedDescription' cols="80" 
                 cssClass='resizable input-xxlarge' title="Please enter the description " />
@@ -114,6 +114,7 @@
                     labelposition='left' size='40' dynamicAttributes={
                         "data-rule-extension":"jpg,tiff,jpeg,png"
                     }/>
+                    <button name="clear" type="button" id="clearButton" class="button btn btn-mini">clear</button>
                 </div>
             </div>
         </#if>
@@ -175,6 +176,7 @@
             <#--only show the 'limit to collection' checkbox when we are editing a resource (it's pointless when creating new collection) -->
             <#assign showLimitToCollection = (actionName=='edit') && (resourceCollection.resources?size > 0)>
             <@edit.resourceDataTable showDescription=false selectable=true limitToCollection=showLimitToCollection >
+
             </@edit.resourceDataTable>
 
             <div id="divNoticeContainer" style="display:none">
@@ -200,8 +202,16 @@
             </div>
         </div>
 
-
-            <@edit.submit fileReminder=false />
+            <@edit.submit fileReminder=false class="button btn submitButton btn-primary">
+            <p><b>Where to go after save:</b><br/>
+				<input type="radio" name="alternateSubmitAction" id="alt-submit-view" <#if !newRecord>checked=checked</#if> value="" class="inline radio" emptyoption="false">
+				<label for="alt-submit-view" class="inline radio">View Page</label>
+				<input type="radio" name="alternateSubmitAction" id="alt-submit-rights" value="Assign Permissions" class="inline radio" emptyoption="false" >
+				<label for="alt-submit-rights" class="inline radio" <#if newRecord>checked=checked</#if>>Assign Permissions</label>
+            <br>
+            <br>
+			</p>
+            </@edit.submit>
         </@s.form>
 
         <#noescape>
@@ -211,7 +221,7 @@
             $(function () {
                 TDAR.datatable.setupDashboardDataTable({
                     isAdministrator: ${(editor!false)?string},
-                    limitContext: ${(editor!false)?string},
+                    limitContext: ${((!editor)!true)?string},
                     isSelectable: true,
                     showDescription: false,
                     selectResourcesFromCollectionid: $("#metadataForm_id").val()
@@ -225,12 +235,13 @@
                 var form = $("#metadataForm")[0];
                 TDAR.common.initEditPage(form);
                 TDAR.datatable.registerResourceCollectionDataTable("#resource_datatable", "#tblCollectionResources");
-                TDAR.datatable.registerResourceCollectionDataTable("#resource_datatablepublic", "#tblCollectionResourcespublic",false);
+                //TDAR.datatable.registerResourceCollectionDataTable("#resource_datatablepublic", "#tblCollectionResourcespublic",false);
                 TDAR.autocomplete.applyCollectionAutocomplete($("#txtParentCollectionName"), {showCreate: false}, {permission: "ADMINISTER_SHARE"});
                 TDAR.autocomplete.applyCollectionAutocomplete($("#txtAltParentCollectionName"), {showCreate: false}, {permission: "ADMINISTER_SHARE"});
                 TDAR.datatable.registerAddRemoveSection(${(id!-1)?c});
                         //remind users that adding a project does not also add the project's contents
-        });
+				$("#clearButton").click(function() {$('#fileUploadField').val('');return false;});
+                });
         </script>
         </#noescape>
         <@edit.personAutocompleteTemplate />

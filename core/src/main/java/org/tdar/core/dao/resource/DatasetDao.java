@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.Indexable;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.CodingSheet;
@@ -574,12 +576,15 @@ public class DatasetDao extends ResourceDao<Dataset> {
         if ((dataTables == null) || dataTables.isEmpty()) {
             return null;
         }
+        Set<String> tableNames = new HashSet<>();
         final SheetProxy proxy = new SheetProxy(SpreadsheetVersion.EXCEL2007, true);
         for (final DataTable dataTable : dataTables) {
             // each table becomes a sheet.
             String tableName = dataTable.getDisplayName();
             getLogger().debug("{} ({})",dataTable.getName(), dataTable.getId());
+            tableName = getUniqueTableName(tableNames, tableName);
             proxy.setName(tableName);
+            tableNames.add(tableName);
             ResultSetExtractor<Boolean> excelExtractor = new ResultSetExtractor<Boolean>() {
                 @Override
                 public Boolean extractData(ResultSet resultSet) throws SQLException {
@@ -593,8 +598,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
                 }
             };
             dataTable.getDataTableColumns().forEach(dataTableColumn -> {
-                getLogger().debug("\t{}", dataTableColumn);
-                getLogger().debug("\t{}", dataTableColumn.getDefaultCodingSheet());
+                getLogger().debug("\t{} (sheet: {})", dataTableColumn, dataTableColumn.getDefaultCodingSheet());
             });
             tdarDataImportDatabase.selectAllFromTableInImportOrder(dataTable, excelExtractor, true);
         }
@@ -604,6 +608,20 @@ public class DatasetDao extends ResourceDao<Dataset> {
         IOUtils.closeQuietly(stream);
         
         return proxy;
+    }
+
+    public String getUniqueTableName(Set<String> tableNames, String originalTableName) {
+        String tableName = originalTableName;
+        if (tableNames.contains(tableName)) {
+            String tablename_ = tableName;
+            int count = 1;
+            while (tableNames.contains(tablename_)) {
+                tablename_ = String.format("%s (%s)", tableName, count); 
+                count++;
+            }
+            tableName = tablename_;
+        }
+        return tableName;
     }
 
     /*
@@ -638,5 +656,11 @@ public class DatasetDao extends ResourceDao<Dataset> {
 
     public boolean checkExists(DataTable dataTable) {
         return tdarDataImportDatabase.checkTableExists(dataTable);
+    }
+
+    public Collection<? extends AuthorizedUser> findAllAuthorizedUsersForResource(Long id) {
+        Query query = getCurrentSession().createNamedQuery(AUTHORIZED_USERS_FOR_RESOURCE);
+            query.setParameter("id", id);
+        return query.list();
     }
 }

@@ -3,10 +3,12 @@ package org.tdar.struts.interceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.service.ReflectionHelper;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.UrlService;
 import org.tdar.struts.interceptor.annotation.HttpOnlyIfUnauthenticated;
@@ -27,10 +29,10 @@ public class HttpsInterceptor implements Interceptor {
     @Override
     public String intercept(ActionInvocation invocation) throws Exception {
 
-        if (ReflectionService.methodOrActionContainsAnnotation(invocation, HttpsOnly.class)) {
+        if (ReflectionHelper.methodOrActionContainsAnnotation(invocation, HttpsOnly.class)) {
             return doHttpsIntercept(invocation);
         }
-        if (ReflectionService.methodOrActionContainsAnnotation(invocation, HttpOnlyIfUnauthenticated.class)) {
+        if (ReflectionHelper.methodOrActionContainsAnnotation(invocation, HttpOnlyIfUnauthenticated.class)) {
             return doHttpIntercept(invocation);
         }
         // not annotated... business as usual.
@@ -44,7 +46,8 @@ public class HttpsInterceptor implements Interceptor {
          * If we're not secured or user is authenticated, just go on as usual, otherwise, force unauthenticated users to HTTP
          * this means you google.
          */
-        if (request.isSecure() && (invocation.getAction() instanceof AuthenticationAware) && !((AuthenticationAware) invocation.getAction()).isAuthenticated()) {
+        if (request.isSecure() && (invocation.getAction() instanceof AuthenticationAware) &&
+                !((AuthenticationAware) invocation.getAction()).isAuthenticated()) {
             String baseUrl = changeUrlProtocol("http", request);
             response.sendRedirect(baseUrl);
             return null;
@@ -78,12 +81,17 @@ public class HttpsInterceptor implements Interceptor {
         HttpServletRequest request = ServletActionContext.getRequest();
         HttpServletResponse response = ServletActionContext.getResponse();
         response.setHeader("Frame-Options:", "DENY");
-        if (request.isSecure() || !TdarConfiguration.getInstance().isHttpsEnabled()) {
+
+        if (request.isSecure() || !TdarConfiguration.getInstance().isHttpsEnabled() || StringUtils.startsWithIgnoreCase(request.getRequestURL().toString(), "https:")) {
             return invocation.invoke();
         }
-
+        logger.trace(" :: url: {} : {}", request.getRequestURI(), request.getQueryString());
+        
         if (request.getMethod().equalsIgnoreCase("get") || request.getMethod().equalsIgnoreCase("head")) {
-            response.sendRedirect(changeUrlProtocol("https", request));
+            // change redirect to be permanent
+            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+            response.setHeader("Location", changeUrlProtocol("https", request));
+
             return null;
         } else if (invocation.getAction() instanceof TdarActionSupport) {
             logger.warn("ERROR_HTTPS_ONLY");

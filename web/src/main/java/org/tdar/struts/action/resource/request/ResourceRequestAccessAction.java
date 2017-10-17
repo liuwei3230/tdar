@@ -22,7 +22,6 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ResourceCreatorProxy;
-import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.struts.action.AbstractAuthenticatableAction;
@@ -49,9 +48,6 @@ import com.opensymphony.xwork2.Preparable;
 public class ResourceRequestAccessAction extends AbstractAuthenticatableAction
         implements Preparable, PersistableLoadingAction<Resource> {
 
-    @SuppressWarnings("unused")
-    @Autowired
-    private transient RecaptchaService recaptchaService;
     @Autowired
     private transient ResourceService resourceService;
     
@@ -116,6 +112,10 @@ public class ResourceRequestAccessAction extends AbstractAuthenticatableAction
     @SkipValidation
     @Override
     public String execute() throws TdarActionException {
+        if (PersistableUtils.isNullOrTransient(getResource())) {
+            return ERROR;
+        }
+        
         // if we're logged out, go to request-access-unathenticated.ftl
         if (PersistableUtils.isNullOrTransient(getAuthenticatedUser())) {
             return SUCCESS_UNAUTH;

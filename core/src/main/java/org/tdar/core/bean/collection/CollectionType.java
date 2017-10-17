@@ -5,7 +5,7 @@ import org.tdar.core.bean.PluralLocalizable;
 import org.tdar.utils.MessageHelper;
 
 public enum CollectionType implements Localizable, PluralLocalizable {
-    INTERNAL("Internal"), SHARED("Shared"), LIST("Public");
+     SHARED("Shared"), LIST("Public");
 
     private String label;
 
@@ -24,9 +24,6 @@ public enum CollectionType implements Localizable, PluralLocalizable {
         if (cls.isAssignableFrom(ListCollection.class)) {
             return LIST;
         }
-        if (cls.isAssignableFrom(InternalCollection.class)) {
-            return INTERNAL;
-        }
         return null;
     }
 
@@ -42,8 +39,6 @@ public enum CollectionType implements Localizable, PluralLocalizable {
 
     public Class<? extends ResourceCollection> getClassForType() {
         switch (this) {
-            case INTERNAL:
-                return InternalCollection.class;
             case LIST:
                 return ListCollection.class;
             case SHARED:

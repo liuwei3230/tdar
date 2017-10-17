@@ -1,6 +1,5 @@
 package org.tdar.struts.action.browse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,6 +31,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
+import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.CultureKeyword;
@@ -101,11 +101,11 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
      * 
      */
     private static final long serialVersionUID = 7004124945674660779L;
-    public static final String FOAF_XML = ".foaf.xml";
-    public static final String SLASH = "/";
-    public static final String XML = ".xml";
-    public static final String CREATORS = "creators";
-    public static final String EXPLORE = "explore";
+//    public static final String FOAF_XML = ".foaf.xml";
+//    public static final String SLASH = "/";
+//    public static final String XML = ".xml";
+//    public static final String CREATORS = "creators";
+//    public static final String EXPLORE = "explore";
     private String logoUrl;
     private Creator creator;
     private Long viewCount = 0L;
@@ -169,6 +169,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
 
     @Override
     public void prepare() throws Exception {
+        getLogger().trace("begin prepare");
         if (PersistableUtils.isNotNullOrTransient(getId())) {
             creator = getGenericService().find(Creator.class, getId());
         } else {
@@ -189,6 +190,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
         }
 
         if (isEditor() && getPersistable() instanceof TdarUser) {
+            getLogger().trace("find collections");
             getOwnerCollections().addAll(resourceCollectionService.findParentOwnerCollections((TdarUser) getPersistable(), SharedCollection.class));
             getOwnerCollections().addAll(entityService.findAccessibleResourceCollections((TdarUser) getPersistable()));
 
@@ -197,6 +199,12 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
         if (isLogoAvailable()) {
             setLogoUrl(UrlService.creatorLogoUrl(creator));
         }
+        
+        if(creator instanceof Institution){
+            getLogger().trace("find institutions");
+        	people.addAll(entityService.findPersonsByInstitution((Institution) creator));
+        }
+        getLogger().trace("done prepare");
     }
 
     @Actions(value = {
@@ -208,7 +216,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
         if (isRedirectBadSlug()) {
             return BAD_SLUG;
         }
-
+        getLogger().trace("schema_org ld");
         try {
             setSchemaOrgJsonLD(entityService.getSchemaOrgJson(getCreator(), logoUrl));
         } catch (Exception e) {
@@ -216,6 +224,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
         }
 
         if (isEditor()) {
+            getLogger().trace("editor setup");
             if ((creator instanceof TdarUser) && StringUtils.isNotBlank(((TdarUser) creator).getUsername())) {
                 TdarUser person = (TdarUser) creator;
                 try {
@@ -227,34 +236,40 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
                         accountService.listAvailableAccountsForUser(person, Status.ACTIVE, Status.FLAGGED_ACCOUNT_BALANCE));
             }
             try {
+                getLogger().trace("uploaded stats");
                 setUploadedResourceAccessStatistic(resourceService.getResourceSpaceUsageStatisticsForUser(Arrays.asList(getId()), null));
             } catch (Exception e) {
                 getLogger().error("unable to set resource access statistics", e);
             }
-            setViewCount(entityService.getCreatorViewCount(creator));
+//            setViewCount(entityService.getCreatorViewCount(creator));
         }
 
         if (!isEditor() && !PersistableUtils.isEqual(creator, getAuthenticatedUser())) {
+            getLogger().trace("log view stat");
             CreatorViewStatistic cvs = new CreatorViewStatistic(new Date(), creator, isBot());
             getGenericService().saveOrUpdate(cvs);
         }
 
         // reset fields which can be broken by the searching hydration obfuscating things
+        getLogger().trace("find creator");
         creator = getGenericService().find(Creator.class, getId());
         return SUCCESS;
     }
+    
+    private List<Person> people = new ArrayList<Person>();
 
     @SuppressWarnings("unchecked")
     private void prepareLuceneQuery() throws TdarActionException {
         setMode("browseCreators");
         setSortField(SortOption.RESOURCE_TYPE);
         if (PersistableUtils.isNotNullOrTransient(creator)) {
+            getLogger().trace("begin solr");
             String descr = getText("browseController.all_resource_from", creator.getProperName());
             setSearchDescription(descr);
             setSearchTitle(descr);
             setRecordsPerPage(50);
             try {
-                setProjectionModel(ProjectionModel.RESOURCE_PROXY);
+                setProjectionModel(ProjectionModel.LUCENE);
                 getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_CULTURE_KEYWORDS, CultureKeyword.class);
                 getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_INVESTIGATION_TYPES, InvestigationType.class);
                 getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_MATERIAL_KEYWORDS, MaterialKeyword.class);
@@ -272,13 +287,15 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
                     roles.add(role.name());
                     getFacetWrapper().facetBy(role.name(), Creator.class);
                 }
+                // 10 per facet group should be plenty
+                getFacetWrapper().setMaxFacetLimit(10);
                 resourceSearchService.generateQueryForRelatedResources(creator, getAuthenticatedUser(), this, this);
                 List<Long> ignoreIds = new ArrayList<>();
                 ignoreIds.add(creator.getId());
                 ignoreIds.addAll(PersistableUtils.extractIds(creator.getSynonyms()));
                 summarizeFacets(getCreatorFacetMap(), roles, ignoreIds);
                 summarizeFacets(getKeywordFacetMap(), kwds, null);
-
+                getLogger().trace("apply bookmarks");
                 bookmarkedResourceService.applyTransientBookmarked(getResults(), getAuthenticatedUser());
 
             } catch (SearchPaginationException spe) {
@@ -288,7 +305,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
                 addActionError(tdre.getMessage());
             } catch (SearchException e) {
                 getLogger().warn("search parse exception", e);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 getLogger().warn("search parse exception", e);
             }
 
@@ -300,6 +317,7 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
             return;
         }
         for (String role : roles) {
+            getLogger().trace("summarize facets: {}", role);
             if (CollectionUtils.isEmpty(getFacetWrapper().getFacetResults().get(role))) {
                 continue;
             }
@@ -488,6 +506,14 @@ public class BrowseCreatorController extends AbstractLookupController<Resource> 
 
     public void setKeywordFacetMap(Map<String, Facet> keywordFacetMap) {
         this.keywordFacetMap = keywordFacetMap;
+    }
+    
+    public List<Person> getPeople(){
+    	return people;
+    }
+  
+    public void setPeople(List<Person> peopleList ){
+    	people = peopleList;
     }
 
 }

@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -21,7 +22,6 @@ import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.FileProxy;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
@@ -46,7 +46,11 @@ import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.FileAction;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.service.PersonalFilestoreService;
 import org.tdar.core.service.ResourceCreatorProxy;
+import org.tdar.junit.IgnoreActionErrors;
+import org.tdar.struts.action.AbstractControllerITCase;
+import org.tdar.struts.action.TestFileUploadHelper;
 import org.tdar.struts.action.document.DocumentController;
 import org.tdar.struts.action.document.DocumentViewAction;
 import org.tdar.struts.action.project.ProjectController;
@@ -57,7 +61,7 @@ import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.Action;
 
-public class DocumentControllerITCase extends AbstractResourceControllerITCase {
+public class DocumentControllerITCase extends AbstractControllerITCase implements TestFileUploadHelper {
 
     public DocumentController initControllerFields() throws TdarActionException {
         DocumentController controller = generateNewInitializedController(DocumentController.class);
@@ -128,22 +132,22 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         genericService.saveOrUpdate(doc);
         SharedCollection collection = createResourceCollectionWithAdminRights();
         genericService.saveOrUpdate(collection);
-        InternalCollection internal = new InternalCollection();
-        internal.markUpdated(getAdminUser());
-        genericService.saveOrUpdate(internal);
-        internal.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.MODIFY_RECORD));
-        genericService.saveOrUpdate(internal);
+//        InternalCollection internal = new InternalCollection();
+//        internal.markUpdated(getAdminUser());
+//        genericService.saveOrUpdate(internal);
+        doc.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.MODIFY_RECORD));
+//        genericService.saveOrUpdate(internal);
 
         doc.getSharedCollections().add(collection);
-        doc.getInternalCollections().add(internal);
-        internal.getResources().add(doc);
+//        doc.getInternalCollections().add(internal);
+//        internal.getResources().add(doc);
         collection.getResources().add(doc);
-        genericService.saveOrUpdate(internal);
+//        genericService.saveOrUpdate(internal);
         genericService.saveOrUpdate(collection);
         genericService.saveOrUpdate(doc);
         Long docId = doc.getId();
         doc = null;
-        internal = null;
+//        internal = null;
         collection = null;
         genericService.synchronize();
 
@@ -176,7 +180,7 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
     @Rollback
     public void testSubmitterChangeRights() throws TdarActionException {
         // setup document
-        TdarUser newUser = createAndSaveNewPerson();
+        TdarUser newUser = createAndSaveNewUser();
         DocumentController dc = generateNewInitializedController(DocumentController.class, getBasicUser());
         dc.prepare();
         Document doc = dc.getDocument();
@@ -198,8 +202,16 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         assertEquals(Action.SUCCESS, dc.save());
         setIgnoreActionErrors(true);
 
-        // try to edit as basic user -- should fail
+        
+        // try to edit as basic user -- should work
+        doc = null;
         dc = generateNewInitializedController(DocumentController.class, getBasicUser());
+        dc.setId(id);
+        dc.prepare();
+        assertEquals(Action.SUCCESS, dc.edit());
+
+        // try to edit as new user, should not work
+        dc = generateNewInitializedController(DocumentController.class, newUser);
         dc.setId(id);
         int statusCode = -1;
         try {
@@ -210,19 +222,12 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         }
         assertEquals(StatusCode.FORBIDDEN.getHttpStatusCode(), statusCode);
 
-        // try to edit as new user, should work
-        doc = null;
-        dc = generateNewInitializedController(DocumentController.class, newUser);
-        dc.setId(id);
-        dc.prepare();
-        assertEquals(Action.SUCCESS, dc.edit());
-
     }
 
     @Ignore("Ignoring because this is an internal performance test, not really a unit-test")
     @Test
     @Rollback
-    public void testPerformance() throws InstantiationException, IllegalAccessException, TdarActionException {
+    public void testPerformance() throws InstantiationException, IllegalAccessException, TdarActionException, FileNotFoundException {
         // 42s -- reconcileSet + indexInterceptor @100docs
         // 52s -- reconcileSet + w/o indexInterceptor @100docs
         // 43s -- setter model + w/o indexInterceptor @100docs
@@ -264,7 +269,7 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
                 doc.getResourceCreators().add(rc);
                 genericService.saveOrUpdate(rc);
             }
-            File file = new File(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME);
+            File file = TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR , TestConstants.TEST_DOCUMENT_NAME);
             addFileToResource(doc, file);
             genericService.saveOrUpdate(doc);
         }
@@ -339,7 +344,7 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         rva.view();
 
         d = controller.getResource();
-        Assert.assertEquals(d.getInternalResourceCollection(), null);
+//        Assert.assertEquals(d.getInternalResourceCollection(), null);
         Assert.assertEquals("expecting document IDs to match (save/reloaded)", newId, d.getId());
         Set<ResourceCreator> resourceCreators = d.getResourceCreators();
         Assert.assertTrue(resourceCreators.size() > 0);
@@ -656,9 +661,10 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
 
     @Test
     @Rollback
+    @IgnoreActionErrors
     public void testUserPermIssUpload() throws Exception {
         // setup document
-        TdarUser newUser = createAndSaveNewPerson();
+        TdarUser newUser = createAndSaveNewUser();
         DocumentController dc = generateNewInitializedController(DocumentController.class, getBasicUser());
         dc.prepare();
         Document doc = dc.getDocument();
@@ -686,20 +692,21 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         uc.grabTicket();
         Long ticketId = uc.getPersonalFilestoreTicket().getId();
         uc.setTicketId(ticketId);
-        uc.getUploadFile().add(new File(TestConstants.TEST_DOCUMENT_DIR, TestConstants.TEST_DOCUMENT_NAME));
+        uc.getUploadFile().add(TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, TestConstants.TEST_DOCUMENT_NAME));
         uc.getUploadFileFileName().add(TestConstants.TEST_DOCUMENT_NAME);
         uc.upload();
         
         doc = genericService.find(Document.class, id);
         assertFalse(authenticationAndAuthorizationService.canDo(newUser, doc,
                 InternalTdarRights.EDIT_ANY_RESOURCE, GeneralPermissions.ADMINISTER_SHARE));
-        assertEquals(1, doc.getInternalResourceCollection().getAuthorizedUsers().size());
+        assertEquals(2, doc.getAuthorizedUsers().size());
         // try to edit as basic user -- should fail
         doc = null;
         dc = generateNewInitializedController(DocumentController.class, newUser);
         dc.setId(id);
         dc.prepare();
         boolean seenException = false;
+        setIgnoreActionErrors(true);
         try {
             dc.edit();
             FileProxy fileProxy = new FileProxy();
@@ -708,15 +715,16 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
             fileProxy.setRestriction(FileAccessRestriction.CONFIDENTIAL);
             dc.getFileProxies().add(fileProxy);
             dc.setTicketId(ticketId);
-            dc.save();
+            String save = dc.save();
+            assertEquals(TdarActionSupport.INPUT, save);
         } catch (TdarActionException e) {
             logger.error("{}",e,e);
             assertEquals(StatusCode.FORBIDDEN.getHttpStatusCode(), e.getStatusCode());
             seenException = true;
         }
-        assertTrue(seenException);
-        // assertNotEmpty(dc.getActionErrors());
-        // setIgnoreActionErrors(true);
+        
+        assertFalse(seenException);
+        assertNotEmpty("should have action errors", dc.getActionErrors());
 
     }
 
@@ -748,7 +756,8 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         doc.setDateCreated(date1);
         doc.setDateUpdated(date3);
         genericService.saveOrUpdate(doc);
-
+        doc.getAuthorizedUsers().add(new AuthorizedUser(getUser(), getUser(), GeneralPermissions.MODIFY_RECORD));
+        genericService.saveOrUpdate(doc);
         long docId = doc.getId();
         assertThat(docId, is(not(-1L)));
 
@@ -766,4 +775,25 @@ public class DocumentControllerITCase extends AbstractResourceControllerITCase {
         assertThat(controller.getActionErrors(), hasSize(1));
     }
 
+    @Override
+    public PersonalFilestoreService getFilestoreService() {
+        return filestoreService;
+    }
+
+
+
+    public ResourceCreatorProxy getNewResourceCreator(String last, String first, String email, Long id, ResourceCreatorRole role) {
+        ResourceCreatorProxy rcp = new ResourceCreatorProxy();
+        Person p = rcp.getPerson();
+        rcp.getPerson().setLastName(last);
+        rcp.getPerson().setFirstName(first);
+        rcp.getPerson().setEmail(email);
+        // id may be null
+        rcp.getPerson().setId(id);
+        Institution inst = new Institution();
+        inst.setName("University of TEST");
+        p.setInstitution(inst);
+        rcp.setRole(role);
+        return rcp;
+    }
 }

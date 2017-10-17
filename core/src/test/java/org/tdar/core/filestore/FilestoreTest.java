@@ -13,6 +13,7 @@ import static org.tdar.TestConstants.TEST_IMAGE;
 import static org.tdar.TestConstants.TEST_IMAGE_NAME;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
@@ -28,7 +29,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.workflow.workflows.FileArchiveWorkflow;
-import org.tdar.filestore.Filestore.BaseFilestore;
+import org.tdar.filestore.BaseFilestore;
 import org.tdar.filestore.Filestore.StorageMethod;
 import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.filestore.PairtreeFilestore;
@@ -53,12 +54,12 @@ public class FilestoreTest {
     private TdarConfiguration tdarConfig = TdarConfiguration.getInstance();
 
     @Before
-    public void cleanup() {
-        File f = new File(TestConstants.FILESTORE_PATH);
+    public void cleanup() throws FileNotFoundException {
+        File f = TestConstants.getFile(TestConstants.FILESTORE_PATH);
         System.out.println(f.getAbsolutePath());
         try {
             FileUtils.deleteDirectory(f);
-            f = new File(TestConstants.FILESTORE_PATH);
+            f = TestConstants.getFile(TestConstants.FILESTORE_PATH);
             f.mkdirs();
             logger.debug(f.getAbsolutePath());
         } catch (IOException e) {
@@ -91,7 +92,7 @@ public class FilestoreTest {
 
     @Test
     @Rollback(true)
-    public void filestoreFilenameTest() {
+    public void filestoreFilenameTest() throws FileNotFoundException {
         cleanup();
         PairtreeFilestore store = new PairtreeFilestore(TestConstants.FILESTORE_PATH);
         String name = "abc.txt";

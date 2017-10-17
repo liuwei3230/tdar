@@ -271,10 +271,16 @@
 
                     </#if>
                 </#if>
-</#if>
+                
+                <#else>
+                    <#if ((people![])?size > 0)>
+	                <h2>Institution Members</h2>
+	                <@common.listUsers users=people span=8 baseUrl="/browse/creators" well=false />
+        				</#if>
+				</#if>
 
     <#if ( results?? && results?size > 0) >
-    <div id="divResultsSortControl">
+    <div id="divResultsSortControl">  
         <div class="row">
             <div class="span4">
                 <@search.totalRecordsSection tag="h2" helper=paginationHelper itemType="Record"/>
@@ -299,11 +305,14 @@
         <@search.basicPagination "Results"/>
     <#else>
         <#if (creator.properName)?has_content>
-        No Resources associated with ${creator.properName}
+            No Resources associated with ${creator.properName}
         </#if>
     </#if>
     <#if editor>
+    <#--
     <p><b>This Creator Page was Viewed:</b>${viewCount} times</p>
+    
+    -->
     </#if>
 
     <#macro _datefield _label _val="" _alwaysShow=true>

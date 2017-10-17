@@ -20,17 +20,16 @@ import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.DashboardController;
 
 /**
  * @author Adam Brin
  * 
  */
-public class DashboardControllerITCase extends AbstractResourceControllerITCase {
+public class DashboardControllerITCase extends AbstractControllerITCase {
 
-    
-    
-    
+
     @Test
     @Rollback
     public void testProjectLists() throws InstantiationException, IllegalAccessException, SolrServerException, IOException {
@@ -40,14 +39,14 @@ public class DashboardControllerITCase extends AbstractResourceControllerITCase 
         projectWithDifferentSubmitterAndFullUser.setDescription("test");
         projectWithDifferentSubmitterAndFullUser.setStatus(Status.ACTIVE);
         projectWithDifferentSubmitterAndFullUser.markUpdated(getBasicUser());
-        TdarUser testPerson = createAndSaveNewPerson();
+        TdarUser testPerson = createAndSaveNewUser();
 
         genericService.save(projectWithDifferentSubmitterAndFullUser);
 
         addAuthorizedUser(projectWithDifferentSubmitterAndFullUser, testPerson, GeneralPermissions.MODIFY_RECORD);
         // evictCache();
 
-        logger.debug("{internal: {}", projectWithDifferentSubmitterAndFullUser.getInternalResourceCollection());
+        logger.debug("{internal: {}", projectWithDifferentSubmitterAndFullUser.getAuthorizedUsers());
         Project projectWithSameFullUserAndSubmitter = new Project();
         projectWithSameFullUserAndSubmitter.setTitle("project with same submitter");
         projectWithSameFullUserAndSubmitter.setDescription("test2");
@@ -71,6 +70,7 @@ public class DashboardControllerITCase extends AbstractResourceControllerITCase 
         init(controller, getAdminUser());
         controller.execute();
         fullUserProjects = controller.getEditableProjects();
+        logger.debug("projects: {}", fullUserProjects.size());
         assertTrue(3 < fullUserProjects.size());
     }
 

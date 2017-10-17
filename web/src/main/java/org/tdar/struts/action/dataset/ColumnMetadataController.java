@@ -147,7 +147,6 @@ public class ColumnMetadataController extends AbstractAuthenticatableAction impl
     @Action(value = "{id}", results = { @Result(name = SUCCESS, location = "../../dataset/edit-column-metadata.ftl"),
     })
     public String editColumnMetadata() throws TdarActionException {
-        // checkValidRequest(RequestType.MODIFY_EXISTING, this, InternalTdarRights.EDIT_ANYTHING);
 
         if (getDataResource().getLatestVersions().isEmpty()) {
             addActionError(getText("abstractDatasetController.upload_data_file_first"));
@@ -164,6 +163,13 @@ public class ColumnMetadataController extends AbstractAuthenticatableAction impl
         if (CollectionUtils.size(columns) > getRecordsPerPage()) {
             columns = columns.subList(getPaginationHelper().getFirstItem(), getPaginationHelper().getLastItem() + 1);
         }
+        buildSubcategoriesList(columns);
+        setDataTableColumns(columns);
+
+        return SUCCESS;
+    }
+
+    private void buildSubcategoriesList(List<DataTableColumn> columns) {
         for (DataTableColumn column : columns) {
             CategoryVariable categoryVariable = column.getCategoryVariable();
             if (categoryVariable == null) {
@@ -178,9 +184,6 @@ public class ColumnMetadataController extends AbstractAuthenticatableAction impl
                 }
             }
         }
-        setDataTableColumns(columns);
-
-        return SUCCESS;
     }
 
     @SkipValidation
@@ -191,7 +194,7 @@ public class ColumnMetadataController extends AbstractAuthenticatableAction impl
             results = {
                     @Result(name = SAVE_VIEW, type = TDAR_REDIRECT, location = "/${resource.resourceType.urlNamespace}/${resource.id}"),
                     @Result(name = SAVE_MAP_THIS, type = TDAR_REDIRECT, location = URLConstants.COLUMNS_RESOURCE_ID),
-                    @Result(name = INPUT_COLUMNS, location = "../dataset/edit-column-metadata.ftl")
+                    @Result(name = INPUT_COLUMNS, location = "../../dataset/edit-column-metadata.ftl")
             })
     /**
      * Saves column metadata for each column in a given DataTable (set on the controller and retrievable via getDataTable()).

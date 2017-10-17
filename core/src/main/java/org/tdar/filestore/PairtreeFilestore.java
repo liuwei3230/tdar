@@ -24,7 +24,6 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
 //import org.tdar.core.bean.resource.InformationResourceFileVersion;
 import org.tdar.core.exception.TdarRuntimeException;
-import org.tdar.filestore.Filestore.BaseFilestore;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
 
@@ -63,6 +62,9 @@ public class PairtreeFilestore extends BaseFilestore {
     public PairtreeFilestore(String pathToFilestore) {
         baseStoreDirectory = new File(pathToFilestore);
         String error = "Can not initialize " + pathToFilestore + " as the filestore location.";
+        if (!baseStoreDirectory.exists()) {
+            baseStoreDirectory.mkdirs();
+        }
         if (!baseStoreDirectory.isDirectory()) {
             logger.error(error);
             throw new IllegalArgumentException(error);

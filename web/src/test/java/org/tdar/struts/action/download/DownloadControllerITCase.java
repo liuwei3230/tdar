@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
+import org.tdar.core.ArchiveEvaluator;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.DocumentType;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
@@ -27,15 +28,15 @@ import org.tdar.core.service.download.DownloadPdfFile;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.core.service.download.DownloadTransferObject;
 import org.tdar.filestore.FilestoreObjectType;
-import org.tdar.struts.action.AbstractDataIntegrationTestCase;
+import org.tdar.struts.action.AbstractAdminControllerITCase;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.Action;
 
-public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
+public class DownloadControllerITCase extends AbstractAdminControllerITCase {
     private static final File ROOT_DEST = new File("target/test/download-service-it-case");
-//    private static final File ROOT_SRC = new File(TestConstants.TEST_ROOT_DIR);
+//    private static final File ROOT_SRC = TestConstants.getFile(TestConstants.TEST_ROOT_DIR);
 
     // don't need injection (yet)
     @Autowired
@@ -70,7 +71,7 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
         DownloadTransferObject dto = new DownloadTransferObject(downloadService);
         dto.setAuthenticatedUser(getBillingUser());
         List<File> files = new ArrayList<>();
-        File file = new File(TestConstants.TEST_DOCUMENT_DIR + "sample_pdf_formats/volume1-encrypted-test.pdf");
+        File file = TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR + "sample_pdf_formats/volume1-encrypted-test.pdf");
         Document document = generateAndStoreVersion(Document.class, file.getName(), file, filestore);
         InformationResourceFileVersion version = document.getLatestUploadedVersion();
         document.setTitle("test");
@@ -99,9 +100,9 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
     public void testDownloadArchiveController() throws Exception {
 
         List<File> files = new ArrayList<>();
-        File file1 = new File(TestConstants.TEST_DOCUMENT_DIR + "/a2-15.pdf");
+        File file1 = TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR + "/a2-15.pdf");
         files.add(file1);
-        files.add(new File(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME));
+        files.add(TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME));
         Document document = generateDocumentWithUser();
         for (File file : files) {
             addFileToResource(document, file);
@@ -124,7 +125,7 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
         assertTrue("file should be non-empty", file.length() > 0);
 
         // don't do strict test since the downloaded pdf's will have a cover page
-        assertArchiveContents(files, file, false);
+        ArchiveEvaluator.assertArchiveContents(files, file, false);
     }
 
     @Test
@@ -132,9 +133,9 @@ public class DownloadControllerITCase extends AbstractDataIntegrationTestCase {
     public void testDownloadArchiveControllerWithDeleted() throws IOException, InstantiationException, IllegalAccessException {
 
         List<File> files = new ArrayList<>();
-        File file1 = new File(TestConstants.TEST_DOCUMENT_DIR + "/a2-15.pdf");
+        File file1 = TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR + "/a2-15.pdf");
         files.add(file1);
-        // files.add(new File(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME));
+        // files.add(TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR + TestConstants.TEST_DOCUMENT_NAME));
         Document document = generateDocumentWithUser();
         for (File file : files) {
             addFileToResource(document, file);

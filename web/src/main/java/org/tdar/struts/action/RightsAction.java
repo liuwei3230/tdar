@@ -3,7 +3,10 @@ package org.tdar.struts.action;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.struts2.convention.annotation.Action;
@@ -13,7 +16,6 @@ import org.apache.struts2.convention.annotation.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.TdarUser;
@@ -23,6 +25,7 @@ import org.tdar.core.service.UserNotificationService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.struts_base.interceptor.annotation.DoNotObfuscate;
 import org.tdar.utils.PersistableUtils;
+import org.tdar.utils.TitleSortComparator;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -42,9 +45,8 @@ import com.opensymphony.xwork2.Preparable;
 public class RightsAction extends AbstractAuthenticatableAction implements Preparable {
 
     private static final long serialVersionUID = 5576550365349636811L;
-    private List<SharedCollection> allResourceCollections = new ArrayList<>();
+    private TreeSet<SharedCollection> allResourceCollections = new TreeSet<>(new TitleSortComparator());
     private List<SharedCollection> sharedResourceCollections = new ArrayList<>();
-    private List<InternalCollection> internalCollections = new ArrayList<>();
     
 
     @Autowired
@@ -70,7 +72,7 @@ public class RightsAction extends AbstractAuthenticatableAction implements Prepa
     @Override
     @Action(value = "rights", results = { @Result(name = SUCCESS, location = "rights.ftl") })
     public String execute() throws SolrServerException, IOException {
-        getLogger().debug("done");
+        getLogger().trace("done");
         return SUCCESS;
     }
 
@@ -79,7 +81,9 @@ public class RightsAction extends AbstractAuthenticatableAction implements Prepa
         getLogger().trace("parent/ owner collections");
         for (SharedCollection rc : resourceCollectionService.findParentOwnerCollections(getAuthenticatedUser(),
                 SharedCollection.class)) {
-            getAllResourceCollections().add((SharedCollection) rc);
+            if (rc.isTopCollection()) {
+                getAllResourceCollections().add((SharedCollection) rc);
+            }
         }
         getLogger().trace("accessible collections");
         for (ResourceCollection rc : entityService.findAccessibleResourceCollections(getAuthenticatedUser())) {
@@ -89,40 +93,43 @@ public class RightsAction extends AbstractAuthenticatableAction implements Prepa
         }
         List<Long> collectionIds = PersistableUtils.extractIds(getAllResourceCollections());
         collectionIds.addAll(PersistableUtils.extractIds(getSharedResourceCollections()));
+        /*
         getLogger().trace("reconcile tree1");
-        resourceCollectionService.reconcileCollectionTree(getAllResourceCollections(), getAuthenticatedUser(),
+         resourceCollectionService.reconcileCollectionTree(getAllResourceCollections(), getAuthenticatedUser(),
                 collectionIds, SharedCollection.class);
         getLogger().trace("reconcile tree2");
         resourceCollectionService.reconcileCollectionTree(getSharedResourceCollections(), getAuthenticatedUser(),
                 collectionIds, SharedCollection.class);
+         */
 
-        getLogger().trace("removing duplicates");
-        getSharedResourceCollections().removeAll(getAllResourceCollections());
-        getLogger().trace("sorting");
-        Collections.sort(allResourceCollections);
-        Collections.sort(sharedResourceCollections);
-        getLogger().trace("done sort");
+//        getLogger().trace("removing duplicates");
+//        getSharedResourceCollections().removeAll(getAllResourceCollections());
+//        getLogger().trace("sorting");
+//        Collections.sort(allResourceCollections);
+//        Collections.sort(sharedResourceCollections);
+        getLogger().trace("done ");
     }
 
     private List<TdarUser> findUsersSharedWith = new ArrayList<>();
 
     public void prepare() {
         setCurrentNotifications(userNotificationService.getCurrentNotifications(getAuthenticatedUser()));
-        getLogger().debug("begin collection tree");
+        getLogger().trace("begin collection tree");
         setupResourceCollectionTreesForDashboard();
-        getLogger().debug("begin find shared with");
+        getLogger().trace("begin find shared with");
         setFindUsersSharedWith(resourceCollectionService.findUsersSharedWith(getAuthenticatedUser()));
+        getLogger().trace("done");
 //        prepareProjectStuff();
 //        internalCollections = resourceCollectionService.findAllInternalCollections(getAuthenticatedUser());
     }
 
 
     @DoNotObfuscate(reason = "not needed / performance test")
-    public List<SharedCollection> getAllResourceCollections() {
+    public Set<SharedCollection> getAllResourceCollections() {
         return allResourceCollections;
     }
 
-    public void setAllResourceCollections(List<SharedCollection> resourceCollections) {
+    public void setAllResourceCollections(TreeSet<SharedCollection> resourceCollections) {
         this.allResourceCollections = resourceCollections;
     }
 
@@ -170,14 +177,6 @@ public class RightsAction extends AbstractAuthenticatableAction implements Prepa
     @Override
     public boolean isRightSidebar() {
         return true;
-    }
-
-    public List<InternalCollection> getInternalCollections() {
-        return internalCollections;
-    }
-
-    public void setInternalCollections(List<InternalCollection> internalCollections) {
-        this.internalCollections = internalCollections;
     }
 
     public List<TdarUser> getFindUsersSharedWith() {

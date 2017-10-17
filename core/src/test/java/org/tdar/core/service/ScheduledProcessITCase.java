@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -29,6 +30,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
+import org.tdar.core.bean.TestBillingAccountHelper;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
@@ -63,7 +65,7 @@ import org.tdar.junit.RunWithTdarConfiguration;
  * @version $Revision$
  */
 @RunWith(MultipleTdarConfigurationRunner.class)
-public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
+public class ScheduledProcessITCase extends AbstractIntegrationTestCase implements TestBillingAccountHelper {
 
     @Autowired
     // private ScheduledProcessService scheduledProcessService;
@@ -143,7 +145,7 @@ public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testVerifyProcess() throws InstantiationException, IllegalAccessException {
+    public void testVerifyProcess() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         Document document = generateDocumentWithFileAndUseDefaultUser();
         scheduledProcessService.queue(WeeklyFilestoreLoggingProcess.class);
         scheduledProcessService.runNextScheduledProcessesInQueue();
@@ -169,7 +171,7 @@ public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
     
     @Test
     @Rollback
-    public void testEmbargo() throws InstantiationException, IllegalAccessException {
+    public void testEmbargo() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         // queue the embargo task
         Document doc = generateDocumentWithFileAndUser();
         long id = doc.getId();
@@ -317,6 +319,10 @@ public class ScheduledProcessITCase extends AbstractIntegrationTestCase {
                 logger.debug("{}",rce);
                 logger.debug("au: {}",rce.getAuthorizedUsers());
                 assertEquals(aus -1 , rce.getAuthorizedUsers().size());
+                rce.setStatus(Status.DELETED);
+                rcn.setStatus(Status.DELETED);
+                genericService.saveOrUpdate(rcn);
+                genericService.saveOrUpdate(rce);
                 return null;
             }
         });

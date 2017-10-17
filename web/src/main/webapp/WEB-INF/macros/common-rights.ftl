@@ -147,6 +147,7 @@
 $(function() {
     TDAR.repeatrow.registerRepeatable(".repeatLastRow");
     TDAR.autocomplete.delegateCreator("#divAccessRights", true, false);
+    TDAR.common.initFormNavigate($("form.rightsform"));
     $("form").on("repeatrowadded",function() {TDAR.datepicker.bind($("input.datepicker",$("form")))});
             
 })
@@ -162,28 +163,22 @@ $(function() {
 <#-- @param owner:object? Person object representing the collection owner
 <#-- FIXME:  both of these parameters have invalid defaults. consider making them mandatory  -->
     <#macro resourceCollectionsRights collections=[] owner="">
-        <#if collections?has_content || invites?has_content >
+        <#if editable && (collections?has_content || invites?has_content || ((persistable.authorizedUsers)![])?has_content) >
         <h3>Access Permissions</h3>
             <#nested />
         <table class="tableFormat table">
             <thead>
             <tr>
-                <th>Collection</th>
+                <th>Where</th>
                 <th>User</th>
+
                 <#list availablePermissions as permission>
                     <th>${permission.label}</th>
                 </#list>
                 <th>Expires</th>
             </tr>
-                <#if owner?has_content>
-                <tr>
-                    <td>Local Resource</td>
-                    <td>${owner.properName} (Submitter)</td>
-                    <td><i class="icon-ok"></i></td>
-                    <td><i class="icon-ok"></i></td>
-                    <td><i class="icon-ok"></i></td>
-                    <td></td>
-                </tr>
+            	<#if persistable.authorizedUsers?has_content>
+	            	<@_authorizedUsers />
                 </#if>
                 <#if collections?has_content >
 	                <@_collectionSection collections />
@@ -195,19 +190,13 @@ $(function() {
         </table>
         </#if>
     </#macro>
-    
-    <#--  print out authorized Users by collection for rights table -->
-    <#macro _collectionSection collections>
-        <#list collections as collection_ >
-            <#if collection_.authorizedUsers?has_content >
-                <#list collection_.authorizedUsers as user>
+
+   	<#macro _authorizedUsers>
+            <#list persistable.authorizedUsers as user>
                 <tr>
                     <td>
-                        <#if collection_.topCollection?has_content >
-                            <a href="<@s.url value="${collection_.detailUrl}"/>"> ${collection_.name!"<em>un-named</em>"}</a>
-                        <#else>
-                            Local Resource
-                        </#if>
+                    <!-- id:${user.id?c}--> 
+                        Local
                     </td>
                     <td>
                     <a href="<@s.url value="${user.user.detailUrl}"/>">${user.user.properName}</a> <!-- ${user.user.properName}:${user.generalPermission} -->
@@ -221,7 +210,35 @@ $(function() {
                             </#if>
                         </td>
                     </#list>
-                    <td>${(user.dateExpires?string("MM/dd/yyyy"))!''}</td>
+                    <td>${(user.dateExpires?string("MM/dd/yyyy"))!'∞'}</td>
+                </tr>
+            </#list>
+   	</#macro>
+            
+    <#--  print out authorized Users by collection for rights table -->
+    <#macro _collectionSection collections>
+        <#list collections as collection_ >
+        <#--  if the persistable is NOT a collection OR the collection != current persistable (the latter is handled above) -->
+        <#if !(persistable?has_content && persistable == collection_) >
+            <#if collection_.authorizedUsers?has_content >
+                <#list collection_.authorizedUsers as user>
+                <tr>
+                    <td>
+                        <a href="<@s.url value="${collection_.detailUrl}"/>"> ${collection_.name!"<em>un-named</em>"}</a>
+                    </td>
+                    <td>
+                        <a href="<@s.url value="${user.user.detailUrl}"/>">${user.user.properName}</a> <!-- ${user.user.properName}:${user.generalPermission} -->
+                    </td>
+                    <#list availablePermissions as permission>
+                        <td>
+                            <#if (user.generalPermission.effectivePermissions >= permission.effectivePermissions )>
+                                <i class="icon-ok"></i>
+                            <#else>
+                                <i class="icon-remove"></i>
+                            </#if>
+                        </td>
+                    </#list>
+                    <td>${(user.dateExpires?string("MM/dd/yyyy"))!'∞'}</td>
                 </tr>
                 </#list>
             <#else>
@@ -233,6 +250,7 @@ $(function() {
                     <td colspan=5>n/a</td>
                 </tr>                    
                 </#if>
+            </#if>
             </#if>
         </#list>
     </#macro>
@@ -253,7 +271,7 @@ $(function() {
                         </#if>
                     </td>
                 </#list>
-                <td>${(invite.dateExpires?string("MM/dd/yyyy"))!''}</td>
+                <td>${(invite.dateExpires?string("MM/dd/yyyy"))!'∞'}</td>
             </tr>
         </#list>
     </#macro>

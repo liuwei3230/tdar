@@ -17,7 +17,9 @@
 <head>
 <#-- expose pageTitle so edit pages can use it elsewhere -->
     <#assign pageTitle>Create a new <@edit.resourceTypeLabel /></#assign>
+    <#assign newRecord = true>
     <#if resource.id != -1>
+        <#assign newRecord = false/>
         <#assign pageTitle>Editing <@edit.resourceTypeLabel /> Metadata for ${resource.title} (${siteAcronym} id: ${resource.id?c})</#assign>
     </#if>
     <title>${pageTitle}</title>
@@ -66,8 +68,7 @@
         <@common.jsErrorLog />
         <@s.token name='struts.csrf.token' />
         <@s.hidden name="epochTimeUpdated" />
-
-
+        <@s.hidden name="doubleSubmitKey" />
 
     <#-- custom section ahead of the basic information -->
         <#if local_.topSection?? && local_.topSection?is_macro>
@@ -261,7 +262,7 @@
         <#if !resource.resourceType.project && showProjects>
 
             <h2>${siteAcronym} Collections &amp; Project</h2>
-            <h4>Add to a Collection</h4>
+            <!-- <h4>Add to a Collection</h4> -->
             <@edit.resourceCollectionSection prefix="shares" label="Collections" list=shares />
             <#assign _projectId = 'project.id' />
             <#if resource.id == -1 >
@@ -395,15 +396,22 @@
 
 <#--         <@edit.fullAccessRights /> -->
 
+        <#assign submitClasses>button btn submitButton btn-primary</#assign>
+        
+        <#assign reminder = false />
         <#if !resource.resourceType.project>
-            <@edit.submit fileReminder=((resource.id == -1) && fileReminder) class="button btn" >
-                <input type="submit" name="submit" value="Assign Rights" class="button btn" />
-            </@edit.submit>
-        <#else>
-            <@edit.submit fileReminder=false class="button btn">
-                    <input type="submit" name="submit" value="Assign Rights"  class="button btn btn-primary " />
-            </@edit.submit>
+        	<#assign reminder = ((resource.id == -1) && fileReminder)/>
         </#if>
+            <@edit.submit fileReminder=reminder class=submitClasses>
+            <p><b>Where to go after save:</b><br/>
+				<input type="radio" name="alternateSubmitAction" id="alt-submit-view" <#if !newRecord>checked=checked</#if> value="" class="inline radio" emptyoption="false">
+				<label for="alt-submit-view" class="inline radio">View Page</label>
+				<input type="radio" name="alternateSubmitAction" id="alt-submit-rights" value="Assign Permissions" class="inline radio" emptyoption="false" >
+				<label for="alt-submit-rights" class="inline radio" <#if newRecord>checked=checked</#if>>Assign Permissions</label>
+            <br>
+            <br>
+        </p>
+            </@edit.submit>
     </@s.form>
 
 <#-- include any JS templates -->
@@ -413,8 +421,25 @@
     <#if local_.footer?? && local_.footer?is_macro>
         <@local_.footer />
     </#if>
-
-
+<#if test>
+<!--
+Auth Info
+<ul>
+<#list persistable.authorizedUsers as user>
+  <li> ${user.user.id?c} | ${user.user.properName} | ${user.generalPermission}</li>
+</#list>
+<#list persistable.sharedCollections as share>
+    <li>${share.id?c} - ${share.name}
+    <ul>
+        <#list share.authorizedUsers as user>
+          <li> ${user.user.id?c} | ${user.user.properName} | ${user.generalPermission}</li>
+        </#list>
+    </ul>
+    </li>
+</#list>
+</ul>
+-->
+</#if>
 
 
 <script type='text/javascript'>

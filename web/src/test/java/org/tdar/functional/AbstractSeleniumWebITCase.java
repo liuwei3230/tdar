@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -34,7 +33,6 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
@@ -51,6 +49,7 @@ import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.HasCapabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoAlertPresentException;
@@ -64,12 +63,14 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.events.EventFiringWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -87,15 +88,11 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.external.auth.CrowdRestDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.external.auth.UserRegistration;
-import org.tdar.filestore.Filestore;
+import org.tdar.functional.util.ScreenshotHelper;
 import org.tdar.functional.util.TdarExpectedConditions;
 import org.tdar.functional.util.WebElementSelection;
 import org.tdar.utils.ProcessList;
 import org.tdar.utils.TestConfiguration;
-
-import ru.yandex.qatools.ashot.AShot;
-import ru.yandex.qatools.ashot.Screenshot;
-import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
 
 public abstract class AbstractSeleniumWebITCase {
 
@@ -120,7 +117,6 @@ public abstract class AbstractSeleniumWebITCase {
 
     private static boolean quitBrowserBetweenTests = false;
     private boolean screenshotsAllowed = true;
-    private Long previousScreenshotSize;
     // if true, ignore all javascript errors during page navigation events
     private boolean ignoreJavascriptErrors = false;
     // ignore javascript errors that match that match Patterns in this list
@@ -129,8 +125,6 @@ public abstract class AbstractSeleniumWebITCase {
     private static WebDriver driver;
     private static Browser currentBrowser;
 
-    // prefix screenshot filename with sequence number, relative to start of test (no need to init in @before)
-    private int screenidx = 0;
 
     protected static Logger logger = LoggerFactory.getLogger(AbstractSeleniumWebITCase.class);
     private static WebDriver rawDriver;
@@ -170,6 +164,8 @@ public abstract class AbstractSeleniumWebITCase {
         }
     };
     private KillSeleniumAfter someTask;
+
+    private ScreenshotHelper helper = new ScreenshotHelper();
 
     public AbstractSeleniumWebITCase() {
     }
@@ -255,6 +251,7 @@ public abstract class AbstractSeleniumWebITCase {
         someTask = new KillSeleniumAfter();
         long timeDelay = 10; // You can specify 3 what
         someScheduler.schedule(someTask, timeDelay, TimeUnit.MINUTES);
+
     }
 
     @BeforeClass
@@ -315,7 +312,9 @@ public abstract class AbstractSeleniumWebITCase {
                 caps.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
                 // profile.setPreference("browser.download.dir","c:\\downloads");
-                rawDriver = new FirefoxDriver(fb, profile, caps);
+                FirefoxOptions options = new FirefoxOptions(caps);
+                options.setProfile(profile);
+                rawDriver = new FirefoxDriver(options);
 
                 break;
             case CHROME:
@@ -349,6 +348,8 @@ public abstract class AbstractSeleniumWebITCase {
                         // "bwsi" //browse without signin
                         "browser.passwords=false",
                         "--dns-prefetch-disable",
+//                        "--headless",
+//                        "--disable-gpu",
                         "noerrdialogs");
                 rawDriver = new ChromeDriver(service, copts);
 
@@ -389,7 +390,9 @@ public abstract class AbstractSeleniumWebITCase {
     public void after() {
         report();
         //disable navigation warning
-        executeJavascript("$(window).off('beforeunload');");
+        if (CollectionUtils.isNotEmpty(driver.getWindowHandles())) {
+            executeJavascript("$(window).off('beforeunload');");
+        }
         try {
             logout();
             driver.get("about://");
@@ -505,61 +508,10 @@ public abstract class AbstractSeleniumWebITCase {
 
     protected void takeScreenshot(String filename) {
         if (!TestConfiguration.getInstance().screenshotsEnabled() ||
-                !screenshotsAllowed ||
-                screenidx > TestConstants.MAX_SCREENSHOTS_PER_TEST) {
+                !screenshotsAllowed) {
             return;
         }
-
-        screenidx++;
-        // this is necessary since we take since onException() calls takeScreenshot()
-        screenshotsAllowed = false;
-        try {
-            Screenshot takeScreenshot = new AShot()
-                    .shootingStrategy(ShootingStrategies.scaling(0.5f))
-                    .takeScreenshot(driver);
-            String scrFilename = "target/screenshots/" + getClass().getSimpleName() + "/" + testName.getMethodName();
-            File dir = new File(scrFilename);
-            dir.mkdirs();
-            String finalFilename = screenshotFilename(filename, "png");
-
-            File scrFile = File.createTempFile(finalFilename, ".png");
-            ImageIO.write(takeScreenshot.getImage(), "png", scrFile);
-
-            if (scrFile != null && Objects.equals(scrFile.length(), previousScreenshotSize)) {
-                logger.debug("skipping screenshot, size identical: {}", scrFilename);
-                return;
-            }
-            previousScreenshotSize = scrFile.length();
-            // Now you can do whatever you need to do with it, for example copy somewhere
-            logger.debug("saving screenshot: dir:{}, name:", dir, finalFilename);
-            FileUtils.copyFile(scrFile, new File(dir, finalFilename));
-        } catch (Exception e) {
-            logger.error("could not take screenshot", e);
-        } finally {
-            screenshotsAllowed = true;
-        }
-
-    }
-
-    private String screenshotFilename(String filename, String ext) {
-        // try to use url path for title otherwise testname
-        String name = null;
-        try {
-            URL url = new URL(getDriver().getCurrentUrl());
-            name = url.getPath();
-            if ("".equals(name) || "/".equals(name)) {
-                name = "(root)";
-            }
-        } catch (MalformedURLException ignored) {
-            name = testName.getMethodName();
-        }
-
-        if (filename != null) {
-            name = filename;
-        }
-
-        String fullname = String.format("%03d-%s.%s", screenidx, Filestore.BaseFilestore.sanitizeFilename(name), ext);
-        return fullname;
+        helper.takeScreenshot(driver, testName, filename);
     }
 
     /**
@@ -848,28 +800,30 @@ public abstract class AbstractSeleniumWebITCase {
     }
 
     public void logout() {
-        WebElementSelection find = find("#logout-button");
-        // driver.manage().deleteAllCookies();
-        logger.debug("LOGOUT: {} ", find);
-
-        if (find.size() > 0) {
-            // handle modal dialogs
-            try {
-                find.click();
+        if (CollectionUtils.isNotEmpty(getDriver().getWindowHandles())){ 
+            WebElementSelection find = find("#logout-button");
+            // driver.manage().deleteAllCookies();
+            logger.debug("LOGOUT: {} ", find);
+    
+            if (find.size() > 0) {
+                // handle modal dialogs
                 try {
-                    Thread.sleep(TimeUnit.SECONDS.toMillis(2));
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    find.click();
+                    try {
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    return;
+                } catch (WebDriverException se) {
+                    logger.error("error trying to logout {}", se);
                 }
-                return;
-            } catch (WebDriverException se) {
-                logger.error("error trying to logout {}", se);
             }
         }
-
+        
         gotoPage("/login");
-        find = find("#logout-button");
+        WebElementSelection find = find("#logout-button");
         if (find.size() > 0) {
             find.click();
         }
@@ -915,9 +869,14 @@ public abstract class AbstractSeleniumWebITCase {
      * @return selenium's best approximation of the value returned by your snippet, if it exists.
      */
     public <T> T executeJavascript(String functionBody, Object... arguments) {
-        JavascriptExecutor executor = (JavascriptExecutor) getDriver();
-        Object result = executor.executeScript(functionBody, arguments);
-        return (T) result;
+        try {
+            JavascriptExecutor executor = (JavascriptExecutor) getDriver();
+            Object result = executor.executeScript(functionBody, arguments);
+            return (T) result;
+        } catch (Throwable t) {
+            logger.error("{}",t,t);
+        }
+        return null;
     }
 
     /**
@@ -1078,8 +1037,25 @@ public abstract class AbstractSeleniumWebITCase {
      */
     public void submitForm(String cssSelector) {
         WebElementSelection buttons = find(cssSelector);
-        buttons.first().click();
+        WebElement first = buttons.first();
+        tryToGetFocus(first);
+        first.submit();
         waitForPageload();
+    }
+
+    private void tryToGetFocus(WebElement first) {
+        waitFor(ExpectedConditions.elementToBeClickable(first));
+        if (driver instanceof HasCapabilities) {
+            Capabilities cp = ((HasCapabilities) driver).getCapabilities();
+            if (cp.getBrowserName().equals("chrome")) {
+                try {
+                    ((JavascriptExecutor) driver).executeScript(
+                            "arguments[0].scrollIntoView(true);", first);
+                } catch (Exception e) {
+
+                }
+            }
+        }
     }
 
     /**
@@ -1493,6 +1469,13 @@ public abstract class AbstractSeleniumWebITCase {
     }
 
     public String switchToWindow(String url) {
+        for (int i=0; i < 10; i++) {
+            waitFor(1);
+            if (getDriver().getWindowHandles().size() > 1) {
+                continue;
+            }
+        }
+
         List<String> handles = new ArrayList<>();
         handles.addAll(driver.getWindowHandles());
         Collections.sort(handles);

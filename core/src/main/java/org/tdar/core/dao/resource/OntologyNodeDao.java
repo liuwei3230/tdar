@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.NoResultException;
+
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.dao.TdarNamedQueries;
-import org.tdar.core.dao.base.Dao;
+import org.tdar.core.dao.base.HibernateBase;
 
 /**
  * $Id$
@@ -21,7 +23,7 @@ import org.tdar.core.dao.base.Dao;
  * @version $Rev$
  */
 @Component
-public class OntologyNodeDao extends Dao.HibernateBase<OntologyNode> {
+public class OntologyNodeDao extends HibernateBase<OntologyNode> {
 
     public OntologyNodeDao() {
         super(OntologyNode.class);
@@ -54,7 +56,7 @@ public class OntologyNodeDao extends Dao.HibernateBase<OntologyNode> {
 
     public List<Dataset> findDatasetsUsingNode(OntologyNode node) {
         List<Long> ids = new ArrayList<>();
-        Query<OntologyNode> query = getCurrentSession().createNativeQuery(String.format(TdarNamedQueries.DATASETS_USING_NODES, node.getId()), OntologyNode.class);
+        Query query = getCurrentSession().createNativeQuery(String.format(TdarNamedQueries.DATASETS_USING_NODES, node.getId()));
         for (Object obj : query.getResultList()) {
             ids.add(((Number) obj).longValue());
         }
@@ -67,7 +69,14 @@ public class OntologyNodeDao extends Dao.HibernateBase<OntologyNode> {
         if (node.getIndex().indexOf(".") != -1) {
             String index = node.getIndex().substring(0, node.getIndex().lastIndexOf("."));
             query.setParameter("index", index);
-            return (OntologyNode) query.getSingleResult();
+
+            try {
+            	return (OntologyNode) query.getSingleResult();
+            }
+            catch(NoResultException e){
+            	getLogger().debug("No parent node was found for {} with index {}",node.getOntology().getId(), index);
+            	return null;
+            }
         }
         return null;
     }

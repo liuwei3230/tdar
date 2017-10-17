@@ -33,7 +33,7 @@ import com.opensymphony.xwork2.Action;
  * @author Adam Brin
  * 
  */
-public class DataSetBrowseITCase extends AbstractDataIntegrationTestCase {
+public class DataSetBrowseITCase extends AbstractAdminControllerITCase {
 
     private static final int RESULTS_PER_PAGE = 2;
 
@@ -106,7 +106,7 @@ public class DataSetBrowseITCase extends AbstractDataIntegrationTestCase {
         assertNotNull(dataTable);
         String term = "Bird";
         ResultMetadataWrapper selectFromDataTable = datasetService.findRowsFromDataTable(dataTable, 0, 1, true, term);
-        assertNotEmpty(selectFromDataTable.getResults());
+        assertNotEmpty("should have results", selectFromDataTable.getResults());
         for (List<String> result : selectFromDataTable.getResults()) {
             String row = StringUtils.join(result.toArray());
             assertTrue(row.contains(term));
@@ -114,7 +114,7 @@ public class DataSetBrowseITCase extends AbstractDataIntegrationTestCase {
 
         term = "D";
         selectFromDataTable = datasetService.findRowsFromDataTable(dataTable, 0, 1, true, term);
-        assertNotEmpty(selectFromDataTable.getResults());
+        assertNotEmpty("should have results", selectFromDataTable.getResults());
         for (List<String> result : selectFromDataTable.getResults()) {
             String row = StringUtils.join(result.toArray());
             assertTrue(row.contains(term));

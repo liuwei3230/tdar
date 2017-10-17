@@ -27,10 +27,12 @@ import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
 import org.tdar.search.exception.SearchPaginationException;
 import org.tdar.search.geosearch.GeoSearchService;
+import org.tdar.search.query.ProjectionModel;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.service.query.ResourceSearchService;
 import org.tdar.struts.action.AbstractLookupController;
 import org.tdar.struts.action.SlugViewAction;
+import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.PersistableUtils;
@@ -50,6 +52,7 @@ import com.opensymphony.xwork2.Preparable;
         @Result(name = TdarActionSupport.BAD_SLUG, type = TdarActionSupport.TDAR_REDIRECT,
                 location = "/${keywordType.urlNamespace}/${keyword.id}/${keyword.slug}${slugSuffix}", params = { "ignoreParams", "id,keywordPath,slug" })
 })
+@HttpsOnly
 public class BrowseKeywordController extends AbstractLookupController<Resource> implements Preparable, SlugViewAction {
 
     private static final long serialVersionUID = 5267144668224536569L;
@@ -104,6 +107,7 @@ public class BrowseKeywordController extends AbstractLookupController<Resource> 
 
     @Override
     public void prepare() throws Exception {
+        setProjectionModel(ProjectionModel.LUCENE);
         if (PersistableUtils.isNullOrTransient(getId())) {
             addActionError(getText("simpleKeywordAction.id_required"));
         }

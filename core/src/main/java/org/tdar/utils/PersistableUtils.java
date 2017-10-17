@@ -176,6 +176,9 @@ public class PersistableUtils {
 
     public static <T extends Persistable> List<Long> extractIds(Collection<T> persistables) {
         List<Long> ids = new ArrayList<>();
+        if (CollectionUtils.isEmpty(persistables)) {
+            return ids;
+        }
         for (T persistable : persistables) {
             if (persistable != null) {
                 ids.add(persistable.getId());

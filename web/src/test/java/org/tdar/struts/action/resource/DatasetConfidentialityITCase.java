@@ -52,7 +52,7 @@ public class DatasetConfidentialityITCase extends AbstractControllerITCase {
         codingSheet.setDescription(TEST_DESCRIPTION);
         List<File> codingFiles = new ArrayList<File>();
         List<String> codingFileNames = new ArrayList<String>();
-        File codingFile = new File(TestConstants.TEST_DATA_INTEGRATION_DIR, EXCEL_FILE_NAME);
+        File codingFile = TestConstants.getFile(TestConstants.TEST_DATA_INTEGRATION_DIR, EXCEL_FILE_NAME);
         codingFiles.add(codingFile);
         codingSheet.setDefaultOntology(null);
         codingFileNames.add("periods-modified-sm-01182011-2.xlsx");
@@ -88,7 +88,7 @@ public class DatasetConfidentialityITCase extends AbstractControllerITCase {
                 Dataset mydataset = genericService.find(Dataset.class, datasetId);
                 logger.info("{} {}", datasetId, mydataset);
                 Set<InformationResourceFile> informationResourceFiles = mydataset.getInformationResourceFiles();
-                assertNotEmpty(informationResourceFiles);
+                assertNotEmpty("should have files", informationResourceFiles);
                 assertEquals("should have description", TEST_DESCRIPTION,mydataset.getDataTables().iterator().next().getDescription());
                 assertEquals(FileAccessRestriction.CONFIDENTIAL, informationResourceFiles.iterator().next().getRestriction());
                 genericService.delete(mydataset);

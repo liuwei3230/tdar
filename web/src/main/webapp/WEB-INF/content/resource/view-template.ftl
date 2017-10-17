@@ -79,8 +79,12 @@
 
 <p class="meta">
     <@view.showCreatorProxy proxyList=authorshipProxies />
-    <#if resource.date?has_content && resource.date != -1 >
-        <@view.kvp key="Year" val=resource.date?c />
+    <#if resource.date?has_content>
+	    <#assign dateval = "unknown" />
+	    <#if  (resource.date?has_content &&  resource.date > -1 )>
+	    	<#assign dateval = resource.date?c />
+		</#if>
+        <@view.kvp key="Year" val=dateval />
     </#if>
 
     <#if config.copyrightMandatory && resource.copyrightHolder?? || resource.copyrightHolder?has_content >
@@ -101,7 +105,13 @@
     <p>
     <ul class="inline">
         <#items as collection>
-    <li><a class="sml" href="<@s.url value="${collection.detailUrl}"/>">${collection.name}</a>
+    <li><a class="sml moreInfo" data-type="collection" data-size="${collection.resources?size!0}" data-hidden="${collection.hidden?c}" 
+    		data-submitter="${collection.submitter.properName}"
+    		data-submitterLink="${collection.submitter.detailUrl}" 
+    		data-description="${collection.description!''}"
+    		data-name="${collection.name!''}" 
+    		
+    		href="<@s.url value="${collection.detailUrl}"/>">${collection.name}</a>
         <#sep>&nbsp;&nbsp;&bull;</#sep></li>
 </#items>
 </ul>
@@ -140,7 +150,7 @@
                 <form>
                     <label for="table_select">Choose Table:</label>
                     <select id="table_select" name="dataTableId">
-                        <#list resource.sortedDataTables as dataTable_>
+                        <#list resource.importSortedDataTables as dataTable_>
                             <option value="${dataTable_.id?c}" <#if dataTable_.id == dataTable.id>selected </#if>
                                     >${dataTable_.displayName}</option>
                         </#list>
@@ -195,7 +205,7 @@
                     <th>Ontology</th>
                 </tr>
                 </thead>
-                <#list dataTable.dataTableColumns?sort_by("importOrder") as column>
+                <#list dataTable.dataTableColumns as column>
                 <#assign oddEven="oddC" />
                 <#if column_index % 2 == 0>
                     <#assign oddEven="evenC" />
@@ -531,13 +541,6 @@
                 </a>
                 </div>
             </li>
-            <#if (authenticatedUser.id)?has_content && editable>
-            <li class="media"><i class="icon-share-alt pull-left"></i>
-                <div class="media-body">
-                        <a id="requestAccess" href="/manage?adhocShare.resourceId=${id?c}">Share</a>
-                </div>
-            </li>
-            </#if>
         <#if (authenticatedUser.id)?has_content && editable>
             <@list.bookmarkMediaLink resource />
             <#-- 

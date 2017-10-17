@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.service.external.session.SessionData;
 import org.tdar.search.index.LookupSource;
@@ -65,7 +64,33 @@ public class LuceneExcelExportControllerITCase extends AbstractSearchControllerI
 
         Workbook workbook = WorkbookFactory.create(new FileInputStream(tempFile));
         Sheet sheet = workbook.getSheet("results");
-        Assert.assertEquals(TdarConfiguration.getInstance().getSearchExcelExportRecordMax(), sheet.getLastRowNum() - EXCEL_EXPORT_HEADER_ROWCOUNT);
+        Assert.assertTrue(sheet.getLastRowNum() - EXCEL_EXPORT_HEADER_ROWCOUNT >  4);
+    }
+    
+    @SuppressWarnings("unused")
+    @Test
+    @Rollback(true)
+    public void testExcelExportAdmin() throws InstantiationException, IllegalAccessException, ParseException, FileNotFoundException, IOException,
+            InvalidFormatException, TdarActionException {
+        searchIndexService.indexAll(getAdminUser(), LookupSource.RESOURCE);
+        // currentUser = getBasicUser();
+        AdvancedSearchDownloadAction controller = generateNewInitializedController(AdvancedSearchDownloadAction.class,
+                genericService.find(TdarUser.class, getAdminUserId()));
+
+        controller.setServletRequest(getServletRequest());
+        doSearch("");
+        assertEquals(Action.SUCCESS, controller.viewExcelReport());
+        assertFalse(controller.getSearchPhrase() + " should not have bold tag", controller.getSearchPhrase().toLowerCase().contains("<b>"));
+        File tempFile = File.createTempFile("report", ".xls");
+        FileOutputStream fileOutputStream = new FileOutputStream(tempFile);
+        long copyLarge = IOUtils.copyLarge(controller.getInputStream(), fileOutputStream);
+
+        fileOutputStream.close();
+        logger.debug("tempFile: {}", tempFile);
+
+        Workbook workbook = WorkbookFactory.create(new FileInputStream(tempFile));
+        Sheet sheet = workbook.getSheet("results");
+        Assert.assertTrue(sheet.getLastRowNum() - EXCEL_EXPORT_HEADER_ROWCOUNT >  4);
     }
 
     @Test

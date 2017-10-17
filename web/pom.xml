@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.tdar</groupId>
         <artifactId>web-base</artifactId>
-        <version>16.0.1-PREHISTORIC-SNAPSHOT</version>
+        <version>16.1.0-PREHISTORIC-SNAPSHOT</version>
         <relativePath>../web-base/pom.xml</relativePath>
     </parent>
 
@@ -44,6 +44,29 @@
 	            <artifactId>hamcrest-all</artifactId>
 	            <version>${hamcrest.version}</version>
 	        </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-java</artifactId>
+                <version>${selenium.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-api</artifactId>
+                <version>${selenium.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.seleniumhq.selenium</groupId>
+                <artifactId>selenium-support</artifactId>
+                <version>${selenium.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
 		</dependencies>
 		</dependencyManagement>
     <!-- 3rd party dependencies and libraries -->

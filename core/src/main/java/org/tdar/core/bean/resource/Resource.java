@@ -39,7 +39,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -82,13 +81,12 @@ import org.tdar.core.bean.XmlLoggable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -158,7 +156,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class Resource implements Persistable,
         Comparable<Resource>, HasName, Updatable, Indexable, Validatable, 
         HasStatus, HasSubmitter, OaiDcProvider, Obfuscatable, ConfidentialViewable, Addressable,
-        DeHydratable, XmlLoggable, Slugable {
+        DeHydratable, XmlLoggable, Slugable, HasAuthorizedUsers {
 
     private static final long serialVersionUID = -230400285817185637L;
 
@@ -418,20 +416,6 @@ public class Resource implements Persistable,
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.sharedCollections")
     private Set<SharedCollection> sharedCollections = new LinkedHashSet<>();
 
-    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
-    @LazyCollection(LazyCollectionOption.EXTRA)
-    @JoinTable(name = "collection_resource", joinColumns = { @JoinColumn(nullable = false, name = "resource_id") }, inverseJoinColumns = { @JoinColumn(
-            nullable = false, name = "collection_id") })
-    @XmlTransient
-    @Size(min=0,max=1)
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.internalCollections")
-    @Where(clause="collection_type='INTERNAL' and status='ACTIVE' ")
-    private Set<InternalCollection> internalCollections = new LinkedHashSet<>();
-
-//    @OneToOne(cascade=CascadeType.ALL)
-//    @JoinTable(name="collection_resource",joinColumns=@JoinColumn(name="resource_id"), inverseJoinColumns=@JoinColumn(name="collection_id"))
-//    private InternalCollection internalCollection;
-
     // MAINTAINED FOR HQL QUERY USE
     @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
     @LazyCollection(LazyCollectionOption.EXTRA)
@@ -452,6 +436,12 @@ public class Resource implements Persistable,
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "resource")
     private Set<BookmarkedResource> bookmarkedResources = new LinkedHashSet<>();
+
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(nullable = false, updatable = false, name = "resource_id")
+    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.resource.authorizedUsers")
+    private Set<AuthorizedUser> authorizedUsers = new LinkedHashSet<AuthorizedUser>();
 
     private transient BillingAccount account;
 
@@ -711,26 +701,6 @@ public class Resource implements Persistable,
         return join(getSiteTypeKeywords());
     }
 
-//    /**
-//     * If null or invalid, clears the existing lat-long box. Otherwise, replaces
-//     * its lat-long values with those from the incoming {@link LatitudeLongitudeBox}
-//     * 
-//     * @param latitudeLongitudeBox
-//     */
-//    public void setLatitudeLongitudeBox(LatitudeLongitudeBox latitudeLongitudeBox) {
-//        logger.debug("calling lat setter");
-//        if ((latitudeLongitudeBox == null) || !latitudeLongitudeBox.isValid()) {
-//            getLatitudeLongitudeBoxes().clear();
-//            return;
-//        }
-//        LatitudeLongitudeBox currentLatitudeLongitudeBox = getFirstLatitudeLongitudeBox();
-//        if (currentLatitudeLongitudeBox == null) {
-//            getLatitudeLongitudeBoxes().add(latitudeLongitudeBox);
-//        } else {
-//            currentLatitudeLongitudeBox.copyValuesFrom(latitudeLongitudeBox);
-//        }
-//    }
-
     @XmlElementWrapper(name = "latitudeLongitudeBoxes")
     @XmlElement(name = "latitudeLongitudeBox")
     public Set<LatitudeLongitudeBox> getLatitudeLongitudeBoxes() {
@@ -864,10 +834,6 @@ public class Resource implements Persistable,
     public ResourceType getResourceType() {
         return resourceType;
     }
-
-//    public String getResourceTypeSort() {
-//        return resourceType.getSortName();
-//    }
 
     @Deprecated()
     @JsonView(JsonLookupFilter.class)
@@ -1249,13 +1215,6 @@ public class Resource implements Persistable,
         return created;
     }
 
-//    /**
-//     * @param resourceCollections
-//     *            the resourceCollections to set
-//     */
-//    public void setResourceCollections(Set<ResourceCollection> resourceCollections) {
-//        this.resourceCollections = resourceCollections;
-//    }
 
     /**
      * @return the resourceCollections
@@ -1282,11 +1241,17 @@ public class Resource implements Persistable,
 //        return resourceCollections;
 //    }
     
-    @XmlElementWrapper(name = "listCollections")
-    @XmlElementRefs({
-        @XmlElementRef(name = "listCollection", type = ListCollection.class, required = false),
-        @XmlElementRef(name = "listCollectionRef", type = JAXBPersistableRef.class, required = false)
-    })
+    
+    /**
+     * Marking these as comments due to list collections not being currently implemented.
+     * @return
+     */
+    //@XmlElementWrapper(name = "listCollections")
+    //@XmlElementRefs({
+    //    @XmlElementRef(name = "listCollection", type = ListCollection.class, required = false),
+   //     @XmlElementRef(name = "listCollectionRef", type = JAXBPersistableRef.class, required = false)
+   // })
+    @XmlTransient
     public Set<ListCollection> getUnmanagedResourceCollections() {
         return unmanagedResourceCollections;
     }
@@ -1295,10 +1260,10 @@ public class Resource implements Persistable,
         this.unmanagedResourceCollections = publicResourceCollections;
     }
 
-    @XmlElementWrapper(name = "sharedCollections")
+    @XmlElementWrapper(name = "resourceCollections")
     @XmlElementRefs({
-            @XmlElementRef(name = "sharedCollection", type = SharedCollection.class, required = false),
-            @XmlElementRef(name = "sharedCollectionRef", type = JAXBPersistableRef.class, required = false)
+            @XmlElementRef(name = "resourceCollection", type = SharedCollection.class, required = false),
+            @XmlElementRef(name = "resourceCollectionRef", type = JAXBPersistableRef.class, required = false)
     })
     @XmlJavaTypeAdapter(JaxbResourceCollectionRefConverter.class)
     public Set<SharedCollection> getSharedCollections() {
@@ -1307,17 +1272,14 @@ public class Resource implements Persistable,
 
 
     @Transient
-    public Set<RightsBasedResourceCollection> getRightsBasedResourceCollections() {
-        Set<RightsBasedResourceCollection> collections = new HashSet<>();
+    public Set<SharedCollection> getRightsBasedResourceCollections() {
+        Set<SharedCollection> collections = new HashSet<>();
         if (CollectionUtils.isNotEmpty(getSharedCollections())) {
             collections.addAll(getSharedCollections());
         }
-        if (CollectionUtils.isNotEmpty(getInternalCollections())) {
-            collections.addAll(getInternalCollections());
-        }
-        Iterator<RightsBasedResourceCollection> iterator = collections.iterator();
+        Iterator<SharedCollection> iterator = collections.iterator();
         while (iterator.hasNext()) {
-            RightsBasedResourceCollection next = iterator.next();
+            SharedCollection next = iterator.next();
             if (next == null) {
                 iterator.remove();
             }
@@ -1325,17 +1287,6 @@ public class Resource implements Persistable,
         return collections;
     }
 
-    @Transient
-    public InternalCollection getInternalResourceCollection() {
-        if (CollectionUtils.isEmpty(internalCollections)) {
-            return null;
-        }
-        Iterator<InternalCollection> iterator = internalCollections.iterator();
-        if (iterator.hasNext()) {
-            return iterator.next();
-        }
-        return null;
-    }
 
     @Override
     @Transient
@@ -1526,7 +1477,7 @@ public class Resource implements Persistable,
         this.setSpaceInBytesUsed(resource.getSpaceInBytesUsed());
         this.setFilesUsed(resource.getFilesUsed());
         this.getSharedCollections().addAll(new ArrayList<>(resource.getSharedCollections()));
-        this.internalCollections.add(resource.getInternalResourceCollection());
+        this.getAuthorizedUsers().addAll(resource.getAuthorizedUsers());
 
     }
 
@@ -1799,31 +1750,15 @@ public class Resource implements Persistable,
         this.viewConfidential = editable;
     }
 
-//    public void setInternalCollection(InternalCollection ic) {
-//        internalCollection = ic;
-//   }
-//
-//    
-//    public InternalCollection getInternalCollection() {
-//        return internalCollection;
-//   }
-
-    public void setInternalCollection(InternalCollection ic) {
-        internalCollections.clear();
-        internalCollections.add(ic);
+    
+    @XmlElementWrapper(name="authorizedUsers")
+    @XmlElement(name="authorizedUser")
+    public Set<AuthorizedUser> getAuthorizedUsers() {
+        return authorizedUsers;
     }
 
-    @XmlElementRefs({
-            @XmlElementRef(name = "internalCollection", type = InternalCollection.class, required = false),
-            @XmlElementRef(name = "internalCollectionRef", type = JAXBPersistableRef.class, required = false)
-    })
-    @XmlJavaTypeAdapter(JaxbResourceCollectionRefConverter.class)
-    public Set<InternalCollection> getInternalCollections() {
-        return internalCollections;
-    }
-
-    protected void setInternalCollections(Set<InternalCollection> internalCollections) {
-        this.internalCollections = internalCollections;
+    public void setAuthorizedUsers(Set<AuthorizedUser> authorizedUsers) {
+        this.authorizedUsers = authorizedUsers;
     }
 
 }

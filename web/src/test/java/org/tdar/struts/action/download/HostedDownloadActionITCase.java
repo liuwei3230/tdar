@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpHeaders.REFERER;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,12 +25,12 @@ import org.tdar.core.bean.resource.Document;
 import org.tdar.core.service.PdfService;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.junit.IgnoreActionErrors;
-import org.tdar.struts.action.AbstractDataIntegrationTestCase;
+import org.tdar.struts.action.AbstractAdminControllerITCase;
 import org.tdar.struts.action.collection.CollectionDeleteAction;
 
 import com.opensymphony.xwork2.Action;
 
-public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase {
+public class HostedDownloadActionITCase extends AbstractAdminControllerITCase {
 
     private Document doc;
 
@@ -132,7 +133,7 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
     @Test
     @Rollback
     @IgnoreActionErrors
-    public void testMissingApiKeyHostedDownloadReferrer() throws InstantiationException, IllegalAccessException {
+    public void testMissingApiKeyHostedDownloadReferrer() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         Long setup = setup();
         HostedDownloadAction controller = generateNewController(HostedDownloadAction.class);
         init(controller, null);
@@ -147,7 +148,7 @@ public class HostedDownloadActionITCase extends AbstractDataIntegrationTestCase 
         assertThat(controller.getActionErrors(), is( not( empty())));
     }
 
-    public Long setup() throws InstantiationException, IllegalAccessException {
+    public Long setup() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         doc = generateDocumentWithFileAndUseDefaultUser();
         SharedCollection collection = new SharedCollection();
         collection.setName("authorized collection");

@@ -5,21 +5,23 @@
     <#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
-    <title>${authenticatedUser.properName}'s Dashboard</title>
+
+    <title>Rights for ${persistable.name}</title>
     <meta name="lastModifiedDate" content="$Date$"/>
     <@edit.resourceDataTableJavascript />
 </head>
 
 <div id="titlebar" parse="true">
-    <h1>Sharing: <span class="red">${persistable.name}</span></h1>
+    <h1>Permissions: <span class="red">${persistable.name}</span></h1>
 </div>
-    <@s.form class="form-horizontal tdarvalidate" action="rights-save" method="POST" dynamicAttributes={"data-validate-method":"initRightsForm"}>
+    <@s.form class="form-horizontal tdarvalidate rightsform" action="rights-save" method="POST" dynamicAttributes={"data-validate-method":"initRightsForm"}>
 <div class="row">
     <div class="span12">
-    <p><b>This collection is shared with ${proxies?size} people.</b></p>
+    <p><b>This collection is currenrly shared with <#if (proxies?size == 1)>person<#else>people</#if>.</b></p>
     <@s.hidden name="id" />
     
     <#if editor>
+    <#--  
 	    <div class="control-group" id="divSubmitter">
 	        <label class="control-label">Owner</label>
 	            <div class="controls controls-row">
@@ -32,6 +34,7 @@
                 </#if>
             </div>
         </div>
+     -->
     </#if>
 
     

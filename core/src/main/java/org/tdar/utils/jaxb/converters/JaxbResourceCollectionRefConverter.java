@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.dao.base.GenericDao;
@@ -43,7 +42,7 @@ public class JaxbResourceCollectionRefConverter extends javax.xml.bind.annotatio
         if (HibernateProxy.class.isAssignableFrom(d.getClass())) {
             rc = (ResourceCollection) ((HibernateProxy) d).getHibernateLazyInitializer().getImplementation();
         }
-        if (rc instanceof InternalCollection || PersistableUtils.isTransient(rc)) {
+        if (PersistableUtils.isTransient(rc)) {
             return rc;
         }
         return new JAXBPersistableRef(rc.getId(), d.getClass());
@@ -68,8 +67,8 @@ public class JaxbResourceCollectionRefConverter extends javax.xml.bind.annotatio
         ResourceCollection rc_ = null;
         if (cls.isAssignableFrom(SharedCollection.class)) {
             rc_ = new SharedCollection();
-        } else if (cls.isAssignableFrom(InternalCollection.class)) {
-            rc_ = new InternalCollection();
+//        } else if (cls.isAssignableFrom(InternalCollection.class)) {
+//            rc_ = new InternalCollection();
         }
         rc_.setId(ref.getId());
 //        rc = null;

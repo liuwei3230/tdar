@@ -29,18 +29,19 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 @DiscriminatorValue(value = "LIST")
 @Entity
 @XmlRootElement(name = "listCollection")
-public class ListCollection extends CustomizableCollection<ListCollection> implements Comparable<ListCollection>, HasName {
+public class ListCollection extends HierarchicalCollection<ListCollection> implements Comparable<ListCollection> {
 
     private static final long serialVersionUID = 1225586588061994193L;
 
     @ManyToOne
-    @JoinColumn(name = "parent_id")
+    @JoinColumn(name = "l_parent_id")
     private ListCollection parent;
 
     @ManyToOne
-    @JoinColumn(name = "alternate_parent_id")
+    @JoinColumn(name = "l_alternate_parent_id")
     private ListCollection alternateParent;
 
+    @Override
     public ListCollection getParent() {
         return parent;
     }
@@ -133,4 +134,12 @@ public class ListCollection extends CustomizableCollection<ListCollection> imple
         this.alternateParent = alternateParent;
     }
 
+    @Override
+    public void copyImmutableFieldsFrom(ResourceCollection resource) {
+        super.copyImmutableFieldsFrom(resource);
+        if (resource instanceof ListCollection ) {
+            this.setParent(((ListCollection) resource).getParent());
+        }
+    }
+    
 }

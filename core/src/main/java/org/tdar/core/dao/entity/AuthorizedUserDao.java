@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -16,21 +15,22 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.HasSubmitter;
+import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.collection.HierarchicalCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
-import org.tdar.core.bean.collection.VisibleCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.integration.DataIntegrationWorkflow;
+import org.tdar.core.bean.resource.HasAuthorizedUsers;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.TdarNamedQueries;
-import org.tdar.core.dao.base.Dao;
+import org.tdar.core.dao.base.HibernateBase;
 import org.tdar.core.dao.entity.UserPermissionCacheKey.CacheResult;
+import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.utils.PersistableUtils;
 
 /**
@@ -43,15 +43,15 @@ import org.tdar.utils.PersistableUtils;
  * @version $Revision$
  */
 @Component
-public class AuthorizedUserDao extends Dao.HibernateBase<AuthorizedUser> {
+public class AuthorizedUserDao extends HibernateBase<AuthorizedUser> {
 
     public AuthorizedUserDao() {
         super(AuthorizedUser.class);
     }
 
-    public boolean isAllowedTo(TdarUser person, HasSubmitter resource, GeneralPermissions permission) {
+    public boolean isAllowedTo(TdarUser person, HasAuthorizedUsers resource, GeneralPermissions permission) {
         if (resource instanceof ResourceCollection) {
-            return isAllowedTo(person, (VisibleCollection) resource, permission);
+            return isAllowedTo(person, (ResourceCollection) resource, permission);
         } else {
             return isAllowedTo(person, (Resource) resource, permission);
         }
@@ -72,14 +72,20 @@ public class AuthorizedUserDao extends Dao.HibernateBase<AuthorizedUser> {
             }
             return false;
         }
-        // if the user is the owner, don't go any further
-        if (Objects.equals(resource.getSubmitter(), person)) {
-            getLogger().trace("allowed to ... is submitter: {}", resource.getId());
-            return true;
+
+        if (getLogger().isTraceEnabled()) {
+            getLogger().debug("authUser: {}", resource.getAuthorizedUsers());
+            getLogger().debug("  shares: {}", resource.getSharedCollections());
+        }
+
+        for (AuthorizedUser au : resource.getAuthorizedUsers()) {
+            if (au.getUser().equals(person) && permission.getEffectivePermissions() <= au.getEffectiveGeneralPermission()) {
+                return true;
+            }
         }
 
         // // get all of the resource collections and their hierarchical tree, permissions are additive
-        for (RightsBasedResourceCollection collection : resource.getRightsBasedResourceCollections()) {
+        for (SharedCollection collection : resource.getRightsBasedResourceCollections()) {
             if (collection instanceof SharedCollection) {
                 ids.addAll(((SharedCollection)collection).getParentIds());
             }
@@ -91,9 +97,6 @@ public class AuthorizedUserDao extends Dao.HibernateBase<AuthorizedUser> {
 
     public boolean isAllowedTo(TdarUser person, ResourceCollection collection, GeneralPermissions permission) {
 
-        if (Objects.equals(collection.getOwner(), person)) {
-            return true;
-        }
         List<Long> ids = new ArrayList<>();
         if (collection instanceof HierarchicalCollection) {
             HierarchicalCollection<?> hierarchicalCollection = (HierarchicalCollection<?>)collection;
@@ -127,7 +130,7 @@ public class AuthorizedUserDao extends Dao.HibernateBase<AuthorizedUser> {
             query.setParameter("userId", person.getId());
             query.setParameter("effectivePermission", permission.getEffectivePermissions() - 1);
             query.setParameter("resourceCollectionIds", ids);
-
+            getLogger().trace("{} {} {} ", person.getId(), permission.getEffectivePermissions() - 1, ids);
             List<Integer> result = query.getResultList();
             getLogger().trace("results: {}", result);
             if (result.isEmpty() || result.get(0) != 1) {
@@ -273,6 +276,35 @@ public class AuthorizedUserDao extends Dao.HibernateBase<AuthorizedUser> {
         query.setParameter("userId", user.getId());
         query.setParameter("perm", null);
         return (List<ResourceCollection>) query.getResultList();
+    }
+
+    /**
+     * find all AuthorizedUsers on Persistable where permissions are greater than specified (or all if null)
+     *  
+     * @param actor
+     * @param source
+     * @param editAnything
+     * @param generalPermission
+     * @return
+     */
+    public List<AuthorizedUser> checkSelfEscalation(TdarUser actor, HasAuthorizedUsers source, InternalTdarRights editAnything, GeneralPermissions generalPermission) {
+        String q = QUERY_RIGHTS_EXPIRY_COLLECTION;
+        if (source instanceof Resource) {
+            q = QUERY_RIGHTS_EXPIRY_RESOURCE;
+        } else if (source instanceof BillingAccount) {
+            q = QUERY_RIGHTS_EXPIRY_ACCOUNT;
+        } else if (source instanceof DataIntegrationWorkflow) {
+            q = QUERY_RIGHTS_EXPIRY_WORKFLOW;
+        }
+        Query<AuthorizedUser> query = getCurrentSession().createNamedQuery(q, AuthorizedUser.class);// QUERY_PROJECT_EDITABLE
+        query.setParameter("userId", actor.getId());
+        if (generalPermission == null) {
+            query.setParameter("perm", null);
+        } else {
+        query.setParameter("perm", generalPermission.getEffectivePermissions() - 1);
+        }
+        query.setParameter("id", source.getId());
+        return query.list();
     }
 
 }

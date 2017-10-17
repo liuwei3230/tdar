@@ -22,6 +22,8 @@ public class InstitutionControllerITCase extends AbstractAdminControllerITCase {
 
     InstitutionController controller;
 
+    public static final String TESTING_AUTH_INSTIUTION = "testing auth instiution";
+
     @Before
     public void setup() {
         controller = generateNewInitializedController(InstitutionController.class);
@@ -119,7 +121,7 @@ public class InstitutionControllerITCase extends AbstractAdminControllerITCase {
         controller.prepare();
         controller.setName("test institution 123");
         controller.getInstitution().setDescription("my test description");
-        controller.setFile(new File(TestConstants.TEST_IMAGE));
+        controller.setFile(TestConstants.getFile(TestConstants.TEST_IMAGE));
         controller.setFileFileName(TestConstants.TEST_IMAGE_NAME);
         controller.setServletRequest(getServletPostRequest());
         controller.save();

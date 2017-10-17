@@ -5,18 +5,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Set;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
+import org.tdar.core.bean.TestBillingAccountHelper;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.billing.BillingActivity;
 import org.tdar.core.bean.billing.BillingItem;
 import org.tdar.core.bean.billing.Coupon;
 import org.tdar.core.bean.billing.Invoice;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
@@ -27,13 +29,12 @@ import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.struts.action.billing.BillingAccountController;
 import org.tdar.struts.action.billing.BillingAccountSelectionAction;
 import org.tdar.struts.action.billing.CouponCreationAction;
-import org.tdar.struts.action.resource.AbstractResourceControllerITCase;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.Action;
 
-public class BillingAccountControllerITCase extends AbstractResourceControllerITCase {
+public class BillingAccountControllerITCase extends AbstractControllerITCase implements TestBillingAccountHelper, TestBillingControllerHelper {
 
     @Autowired
     BillingAccountService accountService;
@@ -57,7 +58,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     @Test
     @Rollback
     public void testAccountControllerChoicesOkNewAccount() throws TdarActionException {
-        TdarUser user = createAndSaveNewPerson();
+        TdarUser user = createAndSaveNewUser();
         Invoice invoice = new Invoice(user, PaymentMethod.INVOICE, 10L, 0L, null);
         genericService.saveOrUpdate(invoice);
 
@@ -76,7 +77,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
         BillingAccountSelectionAction controller = generateNewController(BillingAccountSelectionAction.class);
         Invoice invoice = createTrivialInvoice();
         String msg = null;
-        init(controller, createAndSaveNewPerson());
+        init(controller, createAndSaveNewUser());
         controller.setInvoiceId(invoice.getId());
         controller.prepare();
         try {
@@ -93,7 +94,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     public void testAccountControllerChoicesSelectAccounts() throws TdarActionException {
         Invoice invoice = createTrivialInvoice();
         invoice.setOwner(getAdminUser());
-        BillingAccount account = createAccount(getAdminUser());
+        BillingAccount account = createAccount(getAdminUser(), genericService);
         BillingAccountSelectionAction controller = generateNewController(BillingAccountSelectionAction.class);
         init(controller, getAdminUser());
         controller.setInvoiceId(invoice.getId());
@@ -118,7 +119,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     @Test
     @Rollback
     public void testAddingInvoiceToExistingAccount() throws TdarActionException {
-        Long accountId = createAccount(getUser()).getId();
+        Long accountId = createAccount(getUser(), genericService).getId();
         Invoice invoice = createTrivialInvoice();
         genericService.saveOrUpdate(invoice);
         BillingAccountController controller = generateNewInitializedController(BillingAccountController.class);
@@ -134,25 +135,25 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
 
     @Test
     @Rollback
-    public void testReEvaluationAppropriateWithUncountedThings() throws TdarActionException, InstantiationException, IllegalAccessException {
-        TdarUser person = createAndSaveNewPerson();
-        BillingAccount invoice = setupAccountWithInvoiceFiveResourcesAndSpace(accountService.getLatestActivityModel(), person);
+    public void testReEvaluationAppropriateWithUncountedThings() throws TdarActionException, InstantiationException, IllegalAccessException, FileNotFoundException {
+        TdarUser person = createAndSaveNewPerson("aa@bbasdas.com", "suffix");
+        BillingAccount account = setupAccountWithInvoiceFiveResourcesAndSpace(accountService.getLatestActivityModel(), person);
         Project project = createAndSaveNewProject("title");
         Document doc = createAndSaveNewInformationResource(Document.class, person);
-        addFileToResource(doc, new File(TestConstants.TEST_DOCUMENT));
+        addFileToResource(doc, TestConstants.getFile(TestConstants.TEST_DOCUMENT));
         doc.setStatus(Status.DELETED);
         Document doc2 = createAndSaveNewInformationResource(Document.class, person);
-        addFileToResource(doc2, new File(TestConstants.TEST_DOCUMENT));
-        invoice.getResources().add(doc);
-        invoice.getResources().add(doc2);
-        invoice.getResources().add(project);
+        addFileToResource(doc2, TestConstants.getFile(TestConstants.TEST_DOCUMENT));
+        account.getResources().add(doc);
+        account.getResources().add(doc2);
+        account.getResources().add(project);
         BillingAccountController controller = generateNewInitializedController(BillingAccountController.class, person);
-        controller.setId(invoice.getId());
+        controller.setId(account.getId());
         controller.prepare();
         controller.updateQuotas();
-        assertEquals(1, invoice.getFilesUsed().intValue());
-        assertEquals(4, invoice.getAvailableNumberOfFiles().intValue());
-        assertEquals(1506924, invoice.getSpaceUsedInBytes().longValue());
+        assertEquals(1, account.getFilesUsed().intValue());
+        assertEquals(4, account.getAvailableNumberOfFiles().intValue());
+        assertEquals(1506924, account.getSpaceUsedInBytes().longValue());
         // controller.setServletRequest(getServletPostRequest());
         // String save = controller.save();
         // assertEquals(BillingAccountController.SUCCESS, save);
@@ -164,7 +165,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     @Rollback
     public void testAddingInvoiceToNewAccount() throws TdarActionException {
         Invoice invoice = createTrivialInvoice();
-        BillingAccount account = createAccount(getUser());
+        BillingAccount account = createAccount(getUser(), genericService);
         CouponCreationAction controller = setupControllerForCoupon(account, invoice);
         controller.setNumberOfFiles(1L);
         String save = controller.execute();
@@ -181,18 +182,27 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
         Long id = setupAccountWithUsers();
 
         BillingAccount account = genericService.find(BillingAccount.class, id);
-        assertEquals(3, account.getAuthorizedMembers().size());
-        assertTrue(account.getAuthorizedMembers().contains(getAdminUser()));
+        assertEquals(4, account.getAuthorizedUsers().size());
+        logger.debug("users: {}", account.getAuthorizedUsers());
+        Boolean seenAdmin = false;
+        for (AuthorizedUser au : account.getAuthorizedUsers()) {
+            if (au.getUser().equals(getAdminUser())) {
+                seenAdmin = true;
+            }
+        }
+        assertTrue(seenAdmin);
     }
 
     private Long setupAccountWithUsers() throws TdarActionException {
         BillingAccountController controller = generateNewInitializedController(BillingAccountController.class);
         controller.prepare();
-        controller.validate();
+        controller.add();
+        controller.setName("my test account");
         controller.getAuthorizedMembers().add(getAdminUser());
         controller.getAuthorizedMembers().add(getBillingUser());
         controller.getAuthorizedMembers().add(getEditorUser());
         controller.setServletRequest(getServletPostRequest());
+//        controller.validate();
         String save = controller.save();
         Long id = controller.getAccount().getId();
         assertEquals(Action.SUCCESS, save);
@@ -206,15 +216,18 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
         BillingAccountController controller = generateNewInitializedController(BillingAccountController.class);
         controller.setId(id);
         controller.prepare();
-        int size = controller.getAccount().getAuthorizedMembers().size();
-        controller.getAuthorizedMembers().addAll(controller.getAccount().getAuthorizedMembers());
+        int size = controller.getAccount().getAuthorizedUsers().size();
+        controller.getAccount().getAuthorizedUsers().forEach(au -> {
+            controller.getAuthorizedMembers().add(au.getUser());
+        });
         controller.getAuthorizedMembers().remove(getBillingUser());
         controller.setServletRequest(getServletPostRequest());
         String save = controller.save();
         assertEquals(Action.SUCCESS, save);
         BillingAccount account = genericService.find(BillingAccount.class, id);
-        assertEquals(size - 1, account.getAuthorizedMembers().size());
-        assertFalse(account.getAuthorizedMembers().contains(getBillingUser()));
+        // no change because of admin user
+        assertEquals(size, account.getAuthorizedUsers().size());
+        assertFalse(account.getAuthorizedUsers().contains(getBillingUser()));
 
     }
 
@@ -224,7 +237,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     public void testCreateCouponInvalid() throws TdarActionException {
         setIgnoreActionErrors(true);
         Invoice invoice = createTrivialInvoice();
-        BillingAccount account = createAccount(getUser());
+        BillingAccount account = createAccount(getUser(), genericService);
         CouponCreationAction controller = setupControllerForCoupon(account, invoice);
         controller.setNumberOfFiles(1000L);
         try {
@@ -246,7 +259,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     public void testCreateCouponEmpty() throws TdarActionException {
         setIgnoreActionErrors(true);
         Invoice invoice = createTrivialInvoice();
-        BillingAccount account = createAccount(getUser());
+        BillingAccount account = createAccount(getUser(), genericService);
         CouponCreationAction controller = setupControllerForCoupon(account, invoice);
         // controller.setNumberOfFiles(1000L);
         try {
@@ -265,7 +278,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     public void testCreateCouponInvalidBoth() throws TdarActionException {
         setIgnoreActionErrors(true);
         Invoice invoice = createTrivialInvoice();
-        BillingAccount account = createAccount(getUser());
+        BillingAccount account = createAccount(getUser(), genericService);
         CouponCreationAction controller = setupControllerForCoupon(account, invoice);
         controller.setNumberOfFiles(1L);
         controller.setNumberOfMb(1L);
@@ -284,7 +297,7 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
     @Rollback
     public void testCreateCouponValid() throws TdarActionException {
         Invoice invoice = createTrivialInvoice();
-        BillingAccount account = createAccount(getUser());
+        BillingAccount account = createAccount(getUser(), genericService);
         CouponCreationAction controller = setupControllerForCoupon(account, invoice);
         Long files = controller.getAccount().getAvailableNumberOfFiles();
         controller.setNumberOfFiles(1L);
@@ -298,10 +311,15 @@ public class BillingAccountControllerITCase extends AbstractResourceControllerIT
         }
         assertFalse(seen);
         Set<Coupon> coupons = controller.getAccount().getCoupons();
-        assertNotEmpty(coupons);
+        assertNotEmpty("should have coupons", coupons);
         Coupon coupon = coupons.iterator().next();
         logger.info(coupon.getCode());
         assertNotNull(coupon.getCode());
         assertEquals(files - 1l, controller.getAccount().getAvailableNumberOfFiles().longValue());
+    }
+
+    @Override
+    public BillingAccountService getAccountService() {
+        return accountService;
     }
 }

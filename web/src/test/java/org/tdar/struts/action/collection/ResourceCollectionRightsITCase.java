@@ -19,7 +19,6 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
@@ -31,16 +30,17 @@ import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.collection.ResourceCollectionService;
+import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.AbstractPersistableController;
+import org.tdar.struts.action.TestResourceCollectionHelper;
 import org.tdar.struts.action.document.DocumentController;
-import org.tdar.struts.action.resource.AbstractResourceControllerITCase;
 import org.tdar.struts.action.resource.ResourceRightsController;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 
 import com.opensymphony.xwork2.Action;
 
-public class ResourceCollectionRightsITCase extends AbstractResourceControllerITCase {
+public class ResourceCollectionRightsITCase extends AbstractControllerITCase implements TestResourceCollectionHelper {
 
     private static final String TEST123 = "test123";
 
@@ -326,7 +326,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         controller.setServletRequest(getServletPostRequest());
         assertEquals(Action.SUCCESS, controller.save());
         evictCache();
-        RightsBasedResourceCollection first = document.getRightsBasedResourceCollections().iterator().next();
+        SharedCollection first = document.getRightsBasedResourceCollections().iterator().next();
         assertEquals(1, document.getRightsBasedResourceCollections().size());
         assertEquals(collection1, first);
         assertEquals(getUser(), first.getOwner());
@@ -397,9 +397,9 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
     @Rollback
     public void testInvalidRightsAssignment() throws Exception {
         Document document = generateDocumentWithUser();
-        document.setSubmitter(getAdminUser());
+        document.getAuthorizedUsers().iterator().next().setUser(getAdminUser());
         genericService.save(document);
-        // try and assign access to aa document that user should not have rights
+        // try and assign access to a document that user should not have rights
         // to add, assert that this document cannot be added
 
         ShareCollectionController controller = generateNewController(ShareCollectionController.class);
@@ -739,8 +739,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
         Long rcid2 = controller.getPersistable().getId();
 
         /*
-         * This test is expected to fail in-that hierarchical collection "owners" have no rights implicitly.
-         * Change this test when we figure out what "should" change in package-info
+         * This test is not expected to fail in-that hierarchical collection "owners" have rights explicitly.
          */
         controller = generateNewInitializedController(ShareCollectionController.class, registeredUser);
         controller.setId(rcid2);
@@ -753,7 +752,7 @@ public class ResourceCollectionRightsITCase extends AbstractResourceControllerIT
             seen = true;
             logger.warn("error", e);
         }
-        assertTrue(seen);
+        assertFalse(seen);
     }
 
 }

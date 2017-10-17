@@ -9,11 +9,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -22,7 +26,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.transform.stream.StreamSource;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.custommonkey.xmlunit.exceptions.ConfigurationException;
 import org.joda.time.DateTime;
@@ -97,6 +104,7 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
     @Autowired
     GenericKeywordService genericKeywordService;
 
+    
     @Test
     @Rollback
     public void testJAXBDocumentConversion() throws Exception {
@@ -267,6 +275,21 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
     }
 
     @Test
+    @Rollback(true)
+    public void testJAXBProjectConversionWithTransientCollection() throws Exception {
+        Project project = genericService.find(Project.class, 2420l);
+        Document document = createAndSaveNewInformationResource(Document.class);
+        SharedCollection col = new SharedCollection("test", "test", getAdminUser());
+        project.getSharedCollections().add(col);
+        document.setProject(project);
+        String xml = serializationService.convertToXML(document);
+        genericService.detachFromSession(document);
+        logger.info(xml);
+//        Project newProject = (Project) serializationService.parseXml(new StringReader(xml));
+
+    }
+
+    @Test
     @Rollback(false)
     public void testJaxbRoundtrip() throws Exception {
         Project project = genericService.find(Project.class, 3805l);
@@ -358,7 +381,7 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
 
     @Test
     public void testValidateOAIStatic() throws ConfigurationException, SAXException, IOException {
-        testValidXMLResponse(new FileInputStream(new File(TestConstants.TEST_XML_DIR, "oaidc_get_records.xml")),
+        testValidXMLResponse(new FileInputStream(TestConstants.getFile(TestConstants.TEST_XML_DIR, "oaidc_get_records.xml")),
                 "http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd");
     }
 
@@ -428,4 +451,75 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
 //            ExtendedDcTransformer.transformAny(r);
 //        }
     }
-}
+
+
+
+    /**
+     * Validate a response against an external schema
+     * 
+     * @param schemaLocation
+     *            the URL of the schema to use to validate the document
+     * @throws ConfigurationException
+     * @throws SAXException
+     * @throws FileNotFoundException 
+     */
+    public void testValidXMLResponse(InputStream code, String schemaLocation) throws ConfigurationException, SAXException, FileNotFoundException {
+        testValidXML(code, schemaLocation, true);
+    }
+
+
+
+    /**
+     * Validate that a response is a valid XML schema
+     * 
+     * @throws ConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     */
+    public void testValidXMLSchemaResponse(String code) throws ConfigurationException, SAXException, IOException {
+        JaxbSchemaValidator setupValidator =  new JaxbSchemaValidator(serializationService);
+
+        // cleanup -- this is lazy
+        File tempFile = File.createTempFile("test-schema", "xsd");
+        FileUtils.writeStringToFile(tempFile, code);
+        setupValidator.addSchemaToValidatorWithLocalFallback( null, tempFile);
+    }
+
+    private void testValidXML(InputStream code, String schema, boolean loadSchemas) throws FileNotFoundException {
+        JaxbSchemaValidator v = new JaxbSchemaValidator(serializationService);
+        
+
+        if (schema != null) {
+            v.addSchemaSource(new StreamSource(schema));
+        }
+        InputStream rereadableStream = null;
+        try {
+            rereadableStream = new ByteArrayInputStream(IOUtils.toByteArray(code));
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+        if (rereadableStream == null) {
+            rereadableStream = code;
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(rereadableStream));
+        StreamSource is = new StreamSource(reader);
+        List<?> errorList = v.getInstanceErrors(is);
+
+        if (!errorList.isEmpty()) {
+            StringBuffer errors = new StringBuffer();
+            for (Object error : errorList) {
+                errors.append(error.toString());
+                errors.append(System.getProperty("line.separator"));
+                logger.error(error.toString());
+            }
+            String content = "";
+            try {
+                rereadableStream.reset();
+                content = IOUtils.toString(rereadableStream);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            Assert.fail("Instance invalid: " + errors.toString() + " in:\n" + content);
+        }
+    }}

@@ -19,6 +19,7 @@ import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.db.model.PostgresDatabase;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.filestore.WorkflowContext;
 import org.tdar.filestore.tasks.ConvertDatasetTask;
@@ -29,9 +30,11 @@ public class ShapefileConverterITCase extends AbstractIntegrationTestCase {
         return new String[] {};
     };
 
+
+    protected PostgresDatabase tdarDataImportDatabase = new PostgresDatabase();
+
     @Autowired
     @Qualifier("tdarDataImportDataSource")
-    @Override
     public void setIntegrationDataSource(DataSource dataSource) {
         tdarDataImportDatabase.setDataSource(dataSource);
     }
@@ -50,7 +53,7 @@ public class ShapefileConverterITCase extends AbstractIntegrationTestCase {
         wc.setTargetDatabase(tdarDataImportDatabase);
         String name = "Occ_3l";
         String string = TestConstants.TEST_SHAPEFILE_DIR + name;
-        Geospatial doc = generateAndStoreVersion(Geospatial.class, name + ".shp", new File(string + ".shp"), store);
+        Geospatial doc = generateAndStoreVersion(Geospatial.class, name + ".shp", TestConstants.getFile(string + ".shp"), store);
         InformationResourceFileVersion originalFile = doc.getLatestUploadedVersion();
         wc.getOriginalFiles().add(originalFile);
 

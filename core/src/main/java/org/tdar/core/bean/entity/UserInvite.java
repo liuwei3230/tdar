@@ -16,6 +16,7 @@ import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.resource.Resource;
 
 /**
  * Bean for inviting a person to tDAR -- grants them implicit access to the collection(s)
@@ -30,10 +31,6 @@ public class UserInvite extends AbstractPersistable {
 
     private static final long serialVersionUID = 2915969311944606586L;
 
-//    @Column(unique = true, nullable = true, name="email")
-//    @Length(min = 1, max = FieldLength.FIELD_LENGTH_255)
-//    private String emailAddress;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_created", nullable=false)
     private Date dateCreated = new Date();
@@ -47,13 +44,18 @@ public class UserInvite extends AbstractPersistable {
     private Date dateRedeemed;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "collection_id")
+    @JoinColumn(nullable = true, name = "collection_id")
     private ResourceCollection resourceCollection;
+
+    @ManyToOne
+    @JoinColumn(nullable = true, name = "resource_id")
+    private Resource resource;
 
     @ManyToOne
     @JoinColumn(nullable = false, name = "authorizer_id")
     private TdarUser authorizer;
 
+    private transient String note;
     
     @ManyToOne
     @JoinColumn(nullable = false, name = "person_id")
@@ -117,6 +119,22 @@ public class UserInvite extends AbstractPersistable {
 
     public void setDateExpires(Date dateExpires) {
         this.dateExpires = dateExpires;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 
 }

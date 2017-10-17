@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.resource.InformationResource;
@@ -27,7 +26,7 @@ public class ProjectionITCase extends AbstractResourceSearchITCase {
     @Rollback
     public void testExpermientalProjectionModel() throws SearchException, SearchIndexException, IOException, ParseException {
         SearchResult<Resource> result = new SearchResult<>(10000);
-        result.setProjectionModel(ProjectionModel.LUCENE_EXPERIMENTAL);
+        result.setProjectionModel(ProjectionModel.LUCENE);
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
         result.setFacetWrapper(facetWrapper);

@@ -48,6 +48,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.resource.OntologyService;
 import org.tdar.core.service.resource.ontology.OwlOntologyConverter;
+import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.ontology.OntologyController;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.utils.Pair;
@@ -60,7 +61,7 @@ import com.opensymphony.xwork2.Action;
  * @author Adam Brin
  * @version $Revision$
  */
-public class OntologyControllerITCase extends AbstractResourceControllerITCase {
+public class OntologyControllerITCase extends AbstractControllerITCase {
 
     @Autowired
     private OntologyController controller;
@@ -80,7 +81,7 @@ public class OntologyControllerITCase extends AbstractResourceControllerITCase {
         controller.getOntology().setTitle("test");
         controller.getOntology().setDescription("test");
         controller.setFileInputMethod(AbstractInformationResourceController.FILE_INPUT_METHOD);
-        String ontologyText = IOUtils.toString(new FileInputStream(new File(TestConstants.TEST_ONTOLOGY_DIR, "degenerateTabOntologyFile.txt")));
+        String ontologyText = IOUtils.toString(new FileInputStream(TestConstants.getFile(TestConstants.TEST_ONTOLOGY_DIR, "degenerateTabOntologyFile.txt")));
         controller.setFileTextInput(ontologyText);
         controller.setServletRequest(getServletPostRequest());
         assertEquals(Action.INPUT, controller.save());
@@ -103,7 +104,7 @@ public class OntologyControllerITCase extends AbstractResourceControllerITCase {
         controller.getOntology().setTitle("test");
         controller.getOntology().setDescription("test");
         controller.setFileInputMethod(AbstractInformationResourceController.FILE_INPUT_METHOD);
-        String ontologyText = IOUtils.toString(new FileInputStream(new File(TestConstants.TEST_CODING_SHEET_DIR, "fauna-element-ontology.txt")));
+        String ontologyText = IOUtils.toString(new FileInputStream(TestConstants.getFile(TestConstants.TEST_CODING_SHEET_DIR, "fauna-element-ontology.txt")));
         controller.setFileTextInput(ontologyText);
         controller.setServletRequest(getServletPostRequest());
         controller.save();

@@ -21,9 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
-import org.tdar.core.bean.collection.VisibleCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
@@ -39,16 +37,18 @@ import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.ResourceAnnotationKey;
 import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.ResourceNoteType;
+import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.search.converter.CollectionDataExtractor;
+import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.project.ProjectController;
 import org.tdar.struts.action.sensoryData.SensoryDataController;
 import org.tdar.struts_base.action.TdarActionException;
 
 import com.opensymphony.xwork2.Action;
 
-public class ProjectControllerITCase extends AbstractResourceControllerITCase {
+public class ProjectControllerITCase extends AbstractControllerITCase {
 
     @Autowired
     ResourceCollectionService resourceCollectionService;
@@ -141,15 +141,16 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
     @Rollback
     public void testProjectRightsInheritance() throws InstantiationException, IllegalAccessException {
         // create a project w/ one user who has the ability to update it.
-        AuthorizedUser user = new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.MODIFY_RECORD);
         Project project = new Project();
         project.setTitle("test");
         project.setDescription("test");
         project.markUpdated(getBasicUser());
         genericService.save(project);
+        project.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.MODIFY_RECORD));
         List<AuthorizedUser> users = new ArrayList<AuthorizedUser>();
-        users.add(user);
-        resourceCollectionService.saveAuthorizedUsersForResource(project, users, true, getBasicUser());
+        users.add(new AuthorizedUser(getAdminUser(),getBasicUser(), GeneralPermissions.MODIFY_RECORD));
+        genericService.saveOrUpdate(project);
+//        resourceCollectionService.saveAuthorizedUsersForResource(project, users, true, getBasicUser());
         project.setSubmitter(getAdminUser());
         genericService.saveOrUpdate(project);
         // ensure that basicUser can edit the project
@@ -158,8 +159,8 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         Project project_ = genericService.find(Project.class, id);
         CollectionDataExtractor  extractor = new CollectionDataExtractor(project_);
         assertTrue(extractor.getUsersWhoCanModify().contains(getBasicUser().getId()));
-        assertNotNull(project_.getInternalResourceCollection());
-        Set<AuthorizedUser> authorizedUsers = project_.getInternalResourceCollection().getAuthorizedUsers();
+//        assertNotNull(project_.getInternalResourceCollection());
+        Set<AuthorizedUser> authorizedUsers = project_.getAuthorizedUsers();
 
         // ensure that the project has only one authorizedUser, and that it is basicUser
         assertEquals(1, authorizedUsers.size());
@@ -190,7 +191,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         users2.addAll(Arrays.asList(new AuthorizedUser(getAdminUser(), testModify, GeneralPermissions.MODIFY_RECORD), 
                 new AuthorizedUser(getAdminUser(), testView, GeneralPermissions.VIEW_ALL),
                 new AuthorizedUser(getAdminUser(),testAdmin, GeneralPermissions.ADMINISTER_SHARE)));
-        resourceCollectionService.saveAuthorizedUsersForResourceCollection(project_, testCollection, users, true, getBasicUser());
+        resourceCollectionService.saveAuthorizedUsersForResourceCollection(project_, testCollection, users, true,  getBasicUser(),RevisionLogType.EDIT);
         genericService.saveOrUpdate(testCollection);
 
         logger.info("u:{}, r:{}", testModify.getId(), testResource.getId());
@@ -216,8 +217,9 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         assertEquals(getText("project.no_associated_project"), potentialParents.get(0).getTitle());
 
         int originalParentCount = potentialParents.size();
-        createAndSaveNewProject("potential parent project one");
-        createAndSaveNewProject("potential paernt project two");
+        createAndSaveNewResource(Project.class, getBasicUser(), "potential parent project one");
+        createAndSaveNewResource(Project.class, getBasicUser(), "potential parent project two");
+        evictCache();
         controller = generateNewController(SensoryDataController.class);
         init(controller, getBasicUser());
         potentialParents = controller.getPotentialParents();
@@ -326,7 +328,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         Project loadedProject = genericService.find(Project.class, id);
         assertNotNull(loadedProject);
         Collection<ResourceCollection> cols = new HashSet<>();
-        for (RightsBasedResourceCollection rrc : loadedProject.getRightsBasedResourceCollections()) {
+        for (SharedCollection rrc : loadedProject.getRightsBasedResourceCollections()) {
             cols.add((ResourceCollection)rrc);
         }
         assertUniqueCollections(cols, name1, name2);
@@ -337,8 +339,7 @@ public class ProjectControllerITCase extends AbstractResourceControllerITCase {
         // the collections should appear in the list, though we aren't sure of the order.
         ArrayList<String> names = new ArrayList<String>();
         for (ResourceCollection rc : resourceCollections) {
-            if (rc instanceof VisibleCollection)
-            names.add(((VisibleCollection) rc).getName());
+            names.add(rc.getName());
         }
 
         assertTrue(names.contains(name1));

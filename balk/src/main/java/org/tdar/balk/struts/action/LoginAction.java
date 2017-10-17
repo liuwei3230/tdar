@@ -17,9 +17,8 @@ import org.springframework.stereotype.Component;
 import org.tdar.balk.service.SimpleAuthenticationService;
 import org.tdar.core.dao.external.auth.AuthenticationResult;
 import org.tdar.core.service.ErrorTransferObject;
-import org.tdar.core.service.external.AuthenticationService.AuthenticationStatus;
+import org.tdar.core.service.external.AuthenticationStatus;
 import org.tdar.core.service.external.AuthorizationService;
-import org.tdar.core.service.external.RecaptchaService;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.external.auth.UserLogin;
 import org.tdar.struts_base.action.TdarActionSupport;
@@ -49,8 +48,6 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
     private String url;
     private String internalReturnUrl;
 
-    @Autowired
-    private RecaptchaService recaptchaService;
     private AntiSpamHelper h = new AntiSpamHelper();
     private UserLogin userLogin = new UserLogin(h);
 
@@ -93,8 +90,7 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
         return SUCCESS;
     }
 
-    @Actions(
-    {
+    @Actions({
             @Action(value = "login/process",
                     interceptorRefs = { @InterceptorRef("registrationStack") },
                     results = {
@@ -113,11 +109,11 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
             AuthenticationResult result = authenticationService.authenticatePerson(getUserLogin(), getServletRequest(), getServletResponse(), getSessionData());
             status = result.getStatus();
         } catch (Exception e) {
-            getLogger().error("{}",e,e);
+            getLogger().error("{}", e, e);
             addActionError(e.getMessage());
             return INPUT;
         }
-        getLogger().debug("{}",status);
+        getLogger().debug("{}", status);
         switch (status) {
             case ERROR:
             case NEW:
@@ -129,7 +125,6 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
 
         setInternalReturnUrl(parseReturnUrl());
         if (StringUtils.isNotBlank(getInternalReturnUrl())) {
-            getSessionData().clearPassthroughParameters();
             return TDAR_REDIRECT;
         }
         return SUCCESS;
@@ -137,17 +132,12 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
 
     private String parseReturnUrl() {
         String parsedUrl = null;
-        getLogger().debug("url: {}, sessionUrl: {}", url, getSessionData().getReturnUrl());
-        if ((getSessionData().getReturnUrl() == null) && StringUtils.isEmpty(url)) {
+        getLogger().debug("url: {}", url);
+        if (StringUtils.isEmpty(url)) {
             return null;
         }
 
-        // Favor the session's 'returnUrl' over the querystring 'url'.
-        if (StringUtils.isNotBlank(getSessionData().getReturnUrl())) {
-            parsedUrl = getSessionData().getReturnUrl();
-        } else {
-            parsedUrl = UrlUtils.urlDecode(url);
-        }
+        parsedUrl = UrlUtils.urlDecode(url);
 
         // enforce valid + relative url
         String normalizedUrl = org.tdar.core.bean.util.UrlUtils.sanitizeRelativeUrl(parsedUrl);
@@ -195,7 +185,7 @@ public class LoginAction extends AbstractAuthenticatedAction implements Validate
 
     @Override
     public void validate() {
-        ErrorTransferObject errors = userLogin.validate(authorizationService, recaptchaService, getServletRequest().getRemoteHost());
+        ErrorTransferObject errors = userLogin.validate(authorizationService, getServletRequest().getRemoteHost());
         processErrorObject(errors);
 
         if (errors.isNotEmpty()) {

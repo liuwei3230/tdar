@@ -7,10 +7,8 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
@@ -53,7 +51,7 @@ public class CollectionDataExtractor {
         HashSet<TdarUser> writable = new HashSet<>();
         writable.add(resource.getSubmitter());
         writable.add(resource.getUpdatedBy());
-        for (RightsBasedResourceCollection collection : resource.getRightsBasedResourceCollections()) {
+        for (SharedCollection collection : resource.getRightsBasedResourceCollections()) {
             if (!collection.isActive()) {
                 continue;
             }
@@ -81,7 +79,7 @@ public class CollectionDataExtractor {
         HashSet<TdarUser> writable = new HashSet<>();
         writable.add(resource.getSubmitter());
         writable.add(resource.getUpdatedBy());
-        for (RightsBasedResourceCollection collection : resource.getRightsBasedResourceCollections()) {
+        for (SharedCollection collection : resource.getRightsBasedResourceCollections()) {
             writable.addAll(CollectionRightsExtractor.getUsersWhoCan((ResourceCollection)collection, GeneralPermissions.VIEW_ALL, true));
         }
         for (TdarUser p : writable) {
@@ -98,7 +96,7 @@ public class CollectionDataExtractor {
     }
 
     public void extractHierarchy() {
-        for (RightsBasedResourceCollection collection : resource.getRightsBasedResourceCollections()) {
+        for (SharedCollection collection : resource.getRightsBasedResourceCollections()) {
             if (!collection.isActive()) {
                 continue;
             }
@@ -109,8 +107,8 @@ public class CollectionDataExtractor {
                 collectionNames.addAll(shared.getParentNameList());
                 collectionIds.addAll(shared.getParentIds());
                 collectionIds.add(shared.getId());
-            } else if (collection instanceof InternalCollection) {
-                allCollectionIds.add(collection.getId());
+                collectionIds.addAll(shared.getAlternateParentIds());
+                collectionNames.addAll(shared.getAlternateParentNameList());
             }
         }
         allCollectionIds.addAll(collectionIds);

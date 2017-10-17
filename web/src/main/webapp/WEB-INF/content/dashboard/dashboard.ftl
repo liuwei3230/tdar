@@ -5,7 +5,7 @@
     <#import "/WEB-INF/macros/search-macros.ftl" as search>
     <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
     <#import "/WEB-INF/macros/common.ftl" as common>
-    <#import "dashboard-common.ftl" as dash >
+    <#import "common-dashboard.ftl" as dash >
     <#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
@@ -224,9 +224,7 @@
                            <div class="btn-group pull-right recent-nav">
                         <a class="btn btn-mini" href="<@s.url value='/${res.urlNamespace}/edit'><@s.param name="id" value="${res.id?c}"/></@s.url>"><@s.text name="menu.edit" /></a> |
                         <a class="btn btn-mini" href="<@s.url value='/resource/delete?'><@s.param name="id" value="${res.id?c}"/></@s.url>"><@s.text name="menu.delete" /></a>
-                    </div>
-                            <a href="<@s.url value='${res.detailUrl}' />"><@common.truncate res.title 60 /></a>
-                            <small>(ID: ${res.id?c})</small>
+                    </div><small>[ID: ${res.id?c}]</small> <a href="<@s.url value='${res.detailUrl}' />"><@common.truncate res.title 60 /></a>
                        </@commonr.cartouche>
                    </span>
                     </li>

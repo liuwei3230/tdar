@@ -1,18 +1,17 @@
 package org.tdar.struts.action;
 
-import java.io.File;
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.StrutsStatics;
 import org.hibernate.SessionFactory;
@@ -25,16 +24,17 @@ import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
-import org.tdar.core.bean.collection.InternalCollection;
-import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.EntityService;
@@ -59,22 +59,34 @@ import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.search.service.query.SearchService;
 import org.tdar.struts_base.ErrorListener;
 import org.tdar.struts_base.action.TdarActionSupport;
+import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
-import com.opensymphony.xwork2.LocaleProvider;
-import com.opensymphony.xwork2.TextProviderFactory;
+import com.opensymphony.xwork2.LocalizedTextProvider;
 import com.opensymphony.xwork2.config.ConfigurationManager;
 import com.opensymphony.xwork2.config.providers.XWorkConfigurationProvider;
+import com.opensymphony.xwork2.inject.Container;
 import com.opensymphony.xwork2.ognl.OgnlValueStackFactory;
-import com.opensymphony.xwork2.util.LocalizedTextUtil;
-import com.opensymphony.xwork2.util.ValueStack;
 
-@ContextConfiguration(classes = TdarSearchAppConfiguration.class)
+@ContextConfiguration(classes = {TdarSearchAppConfiguration.class, AbstractIntegrationControllerTestCase.SimpleCacheConfig.class})
 @SuppressWarnings("rawtypes")
 public abstract class AbstractIntegrationControllerTestCase extends AbstractIntegrationTestCase implements ErrorListener {
 
+
+    @Configuration
+    @EnableCaching
+    static class SimpleCacheConfig {
+
+      // Simulating your caching configuration
+      @Bean
+      CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager("popularResources");
+      }
+
+    }
+    
     protected HttpServletRequest defaultHttpServletRequest = new MockHttpServletRequest();
 
     protected HttpServletRequest httpServletRequest = defaultHttpServletRequest;
@@ -82,8 +94,8 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
     protected HttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
     protected PlatformTransactionManager transactionManager;
-//    private TransactionCallback verifyTransactionCallback;
-//    private TransactionTemplate transactionTemplate;
+    // private TransactionCallback verifyTransactionCallback;
+    // private TransactionTemplate transactionTemplate;
 
     @Autowired
     protected SessionFactory sessionFactory;
@@ -119,7 +131,6 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
     protected AuthenticationService authenticationService;
     @Autowired
     protected ResourceCollectionService resourceCollectionService;
-
     @Autowired
     public SendEmailProcess sendEmailProcess;
 
@@ -160,7 +171,8 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
     public void announceTestOver() {
         if (!isIgnoreActionErrors() && CollectionUtils.isNotEmpty(getActionErrors())) {
             logger.error("action errors {}", getActionErrors());
-            Assert.fail(String.format("There were %d action errors: \n {} ", getActionErrors().size(), StringUtils.join(getActionErrors().toArray(new String[0]))));
+            Assert.fail(
+                    String.format("There were %d action errors: \n {} ", getActionErrors().size(), StringUtils.join(getActionErrors().toArray(new String[0]))));
         }
 
     }
@@ -180,62 +192,39 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         contextMap.put(StrutsStatics.HTTP_REQUEST, getServletRequest());
         ActionContext context = new ActionContext(contextMap);
         context.setLocale(Locale.getDefault());
-        // http://mail-archives.apache.org/mod_mbox/struts-user/201001.mbox/%3C637b76e41001151852x119c9cd4vbbe6ff560e56e46f@mail.gmail.com%3E
-        ConfigurationManager configurationManager = new ConfigurationManager();
+
+        ConfigurationManager configurationManager = new ConfigurationManager(Container.DEFAULT_NAME);
         OgnlValueStackFactory factory = new OgnlValueStackFactory();
-
-        // FIXME: needs to be a better way to handle this
-        TextProviderFactory textProviderFactory = new TextProviderFactory();
-
-        factory.setTextProvider(textProviderFactory.createInstance(getResourceBundle(), (LocaleProvider) controller));
-
         configurationManager.addContainerProvider(new XWorkConfigurationProvider());
-        configurationManager.getConfiguration().getContainer().inject(factory);
-        if (controller instanceof ActionSupport) {
-            ((ActionSupport) controller).setContainer(configurationManager.getConfiguration().getContainer());
-        }
-        ValueStack stack = factory.createValueStack();
+        configurationManager.reload();
+        Container container = configurationManager.getConfiguration().getContainer();
+        container.inject(factory);
 
-        context.setValueStack(stack);
+        LocalizedTextProvider instance = container.getInstance(LocalizedTextProvider.class);
+        applyLocales(instance);
+        assertEquals(MessageHelper.getMessage("project.no_associated_project"), instance.findDefaultText("project.no_associated_project", Locale.getDefault()));
+
+        if (controller instanceof ActionSupport) {
+            ((ActionSupport) controller).setContainer(container);
+        }
+        context.setValueStack(factory.createValueStack());
         ActionContext.setContext(context);
-        
+
         return controller;
     }
 
-    private ResourceBundle getResourceBundle() {
-        /*
-         * NOTE: some issues encountered with finding the locale keys properly from the module
-         */
-        ResourceBundle bundle = loadLocale();
-        if (bundle != null) {
-            return bundle;
-        }
-        try {
-            String bundleName = "target/maven-shared-archive-resources/Locales";
-            FileUtils.copyDirectory(new File(bundleName), new File("target/classes/Locales"));
-        } catch (Exception e) {
-        }
-        // default
-
-        return bundle;
-    }
-
-    private ResourceBundle loadLocale() {
-        try {
-        String bundleName = "Locales/tdar-messages";
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-        LocalizedTextUtil.addDefaultResourceBundle(bundleName);
-        return bundle;
-        } catch (Exception e) {
-            return null;
-        }
+    private void applyLocales(LocalizedTextProvider localizedTextProvider) {
+        localizedTextProvider.addDefaultResourceBundle("target/maven-shared-archive-resources/Locales/tdar-messages");
+        localizedTextProvider.addDefaultResourceBundle("target/Locales/tdar-messages");
+        localizedTextProvider.addDefaultResourceBundle("Locales/tdar-messages");
+        localizedTextProvider.addDefaultResourceBundle("target/classes/Locales/tdar-messages");
     }
 
     protected void init(TdarActionSupport controller, TdarUser user) {
         if (controller != null) {
             TdarUser user_ = null;
             controller.setSessionData(getSessionData());
-            
+
             if ((user != null) && PersistableUtils.isTransient(user)) {
                 throw new TdarRecoverableRuntimeException("can't test this way right now, must persist first");
             } else if (user != null) {
@@ -247,11 +236,11 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         }
     }
 
-    protected <T extends ActionSupport> T generateNewInitializedController(Class<T> controllerClass) {
+    public <T extends ActionSupport> T generateNewInitializedController(Class<T> controllerClass) {
         return generateNewInitializedController(controllerClass, null);
     }
 
-    protected <T extends ActionSupport> T generateNewInitializedController(Class<T> controllerClass, TdarUser user) {
+    public <T extends ActionSupport> T generateNewInitializedController(Class<T> controllerClass, TdarUser user) {
         T controller = generateNewController(controllerClass);
         if (controller instanceof TdarActionSupport) {
             if (user != null) {
@@ -272,6 +261,10 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         init(controller, null);
     }
 
+    /* (non-Javadoc)
+     * @see org.tdar.struts.action.TestFixtureSetup#getSessionData()
+     */
+    @Override
     public SessionData getSessionData() {
         if (sessionData == null) {
             this.sessionData = new SessionData();
@@ -279,20 +272,20 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         return sessionData;
     }
 
-    protected <T> List<T> createListWithSingleNull() {
-        ArrayList<T> list = new ArrayList<T>();
-        list.add(null);
-        return list;
-    }
-
     public void setHttpServletRequest(HttpServletRequest httpServletRequest) {
         this.httpServletRequest = httpServletRequest;
     }
 
+    /* (non-Javadoc)
+     * @see org.tdar.struts.action.TestFixtureSetup#getServletRequest()
+     */
     public HttpServletRequest getServletRequest() {
         return httpServletRequest;
     }
 
+    /* (non-Javadoc)
+     * @see org.tdar.struts.action.TestFixtureSetup#getServletPostRequest()
+     */
     public HttpServletRequest getServletPostRequest() {
         return httpServletPostRequest;
     }
@@ -305,26 +298,13 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         this.httpServletResponse = httpServletResponse;
     }
 
+    /* (non-Javadoc)
+     * @see org.tdar.struts.action.TestFixtureSetup#getServletResponse()
+     */
     public HttpServletResponse getServletResponse() {
         return httpServletResponse;
     }
 
-    public void addAuthorizedUser(Resource resource, TdarUser person, GeneralPermissions permission) {
-        AuthorizedUser authorizedUser = new AuthorizedUser(getAdminUser(),person, permission);
-        InternalCollection internalResourceCollection = resource.getInternalResourceCollection();
-        if (internalResourceCollection == null) {
-            internalResourceCollection = new InternalCollection();
-            internalResourceCollection.setOwner(person);
-            internalResourceCollection.markUpdated(person);
-            resource.getInternalCollections().add(internalResourceCollection);
-            genericService.save(internalResourceCollection);
-        }
-        internalResourceCollection.getAuthorizedUsers().add(authorizedUser);
-        logger.debug("{}", internalResourceCollection);
-        genericService.saveOrUpdate(internalResourceCollection);
-        genericService.saveOrUpdate(authorizedUser);
-        genericService.saveOrUpdate(resource);
-    }
 
     /**
      * @param ignoreActionErrors
@@ -347,7 +327,7 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
 
     private TdarUser sessionUser;
 
-//    private static Validator v;
+    // private static Validator v;
 
     /**
      * @return
@@ -377,6 +357,7 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
 
     /**
      * Override if you want granular control over how to handle action errors.
+     * 
      * @param message
      */
     public void onActionError(String message) {
@@ -390,4 +371,13 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
         this.actionErrors = actionErrors;
     }
 
+    @Override
+    public EntityService getEntityService() {
+        return entityService;
+    }
+    
+    @Override
+    public GenericService getGenericService() {
+        return genericService;
+    }
 }

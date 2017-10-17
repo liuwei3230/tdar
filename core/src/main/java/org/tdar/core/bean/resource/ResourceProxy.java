@@ -26,7 +26,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.annotations.Cache;
@@ -42,10 +41,10 @@ import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.collection.InternalCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
 
@@ -137,15 +136,6 @@ public class ResourceProxy implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.resourceCollections")
     private Set<SharedCollection> sharedCollections = new LinkedHashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "collection_resource", joinColumns = { @JoinColumn(nullable = false, name = "resource_id") }, inverseJoinColumns = { @JoinColumn(
-            nullable = false, name = "collection_id") })
-    @XmlTransient
-    @Size(min=0,max=1)
-    @Where(clause="collection_type='INTERNAL'")
-    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.resourceCollections")
-    private Set<InternalCollection> internalCollections = new LinkedHashSet<>();
-
     @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
     @LazyCollection(LazyCollectionOption.EXTRA)
     @JoinTable(name = "collection_resource", joinColumns = { @JoinColumn(nullable = false, name = "resource_id") }, inverseJoinColumns = { @JoinColumn(
@@ -154,6 +144,13 @@ public class ResourceProxy implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.resourceCollections")
     @Where(clause="collection_type!='LIST'")
     private Set<ResourceCollection> resourceCollections = new LinkedHashSet<>();
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "resource_id")
+    @Immutable
+    @Fetch(FetchMode.JOIN)
+    @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.authorizedUsers")
+    private Set<AuthorizedUser> authorizedUsers = new LinkedHashSet<AuthorizedUser>();
 
     
     @OneToMany(fetch = FetchType.EAGER, targetEntity = ResourceCreator.class)
@@ -291,6 +288,7 @@ public class ResourceProxy implements Serializable {
         res.setId(this.getId());
         logger.trace("recursing down");
         res.getSharedCollections().addAll(getSharedCollections());
+        res.getAuthorizedUsers().addAll(getAuthorizedUsers());
         logger.trace("done generation");
         return res;
     }
@@ -303,20 +301,20 @@ public class ResourceProxy implements Serializable {
         this.sharedCollections = resourceCollections;
     }
 
-    public Set<InternalCollection> getInternalCollections() {
-        return internalCollections;
-    }
-
-    public void setInternalCollections(Set<InternalCollection> internalCollections) {
-        this.internalCollections = internalCollections;
-    }
-
     public Set<ResourceCollection> getResourceCollections() {
         return resourceCollections;
     }
 
     public void setResourceCollections(Set<ResourceCollection> resourceCollections) {
         this.resourceCollections = resourceCollections;
+    }
+
+    public Set<AuthorizedUser> getAuthorizedUsers() {
+        return authorizedUsers;
+    }
+
+    public void setAuthorizedUsers(Set<AuthorizedUser> authorizedUsers) {
+        this.authorizedUsers = authorizedUsers;
     }
 
 }

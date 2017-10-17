@@ -24,7 +24,7 @@
     <div id="sidebar-right" parse="true">
         <br/><br/>
         <#if !minimal>
-            <#if (logoAvailable && (resourceCollection.whiteLabelCollection || (resourceCollection.customHeaderEnabled!false) == false)) >
+            <#if (logoAvailable && ((resourceCollection.properties.whitelabel)!false || ((resourceCollection.properties.customHeaderEnabled)!false) == false)) >
                 <img class="collection-logo" src="/files/collection/lg/${id?c}/logo" alt="logo" title="logo" />
             </#if>
             <#if results?has_content>
@@ -64,7 +64,7 @@
 
             <ul class="unstyled-list">
             <li>
-                <strong>Owner</strong><br>
+                <strong>Submitter</strong><br>
                     <a href="<@s.url value="${resourceCollection.owner.detailUrl}"/>">${resourceCollection.owner.properName}</a>
             </li>
         <li>
@@ -82,8 +82,8 @@
             <@nav.makeLink
             namespace="${path}"
             action="add?parentId=${id?c}"
-            label="create child collection"
-            name="columns"
+            label="add child collection"
+            name="child_collection"
             current=current
             includeResourceId=false
             disabled=disabled
@@ -189,7 +189,7 @@
             </#if>
 </#macro>
 
-<#macro resultsSection header="Resources Inside This Collection">
+<#macro resultsSection header="Inside This Collection">
 
         <#if results?has_content>
         <div id="divResultsSortControl">
@@ -212,7 +212,7 @@
                 <#assign mapSize="1000" />
             </#if>
 -->
-			<@search.partFacet selectedResourceTypes paginationHelper "Collection" "h4"/>
+			<@search.partFacet selectedResourceTypes paginationHelper "Collection" "h4" />
         </div>
 
         <div class="tdarresults">
@@ -250,8 +250,8 @@
                 <@view.kvp key="Sort By" val=resourceCollection.sortBy.label />
             </div>
             <div class="span4">
-                <#assign viewed>${viewCount} times</#assign>
-                <@view.kvp key="Viewed" val=viewed />
+<#--                <#assign viewed>${viewCount} times</#assign>
+                <@view.kvp key="Viewed" val=viewed /> -->
             </div>
         </div>
         <div class="row">

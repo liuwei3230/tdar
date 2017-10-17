@@ -52,7 +52,6 @@ public class CollectionRightsExtractor {
     private List<Long> toUserList(GeneralPermissions permission) {
         ArrayList<Long> users = new ArrayList<>();
         HashSet<TdarUser> writable = new HashSet<>();
-        writable.add(collection.getOwner());
         writable.addAll(getUsersWhoCan(collection, permission, true));
         for (TdarUser p : writable) {
             if (PersistableUtils.isNullOrTransient(p)) {

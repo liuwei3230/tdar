@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -337,7 +338,10 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
 
     public boolean isSecure() {
-        return servletRequest.isSecure();
+        if (servletRequest.isSecure() || StringUtils.startsWithIgnoreCase(servletRequest.getRequestURL().toString(), "https:")) {
+            return true;
+        }
+        return false;
     }
 
     public String getProtocol() {
@@ -569,4 +573,17 @@ public abstract class TdarActionSupport extends ActionSupport implements Servlet
 
     }
 
+    public String getDoubleSubmitKey() {
+        if (doubleSubmitKey == null) {
+            doubleSubmitKey = UUID.randomUUID().toString();
+        }
+        return doubleSubmitKey;
+    }
+
+    public void setDoubleSubmitKey(String doubleSubmitKey) {
+        this.doubleSubmitKey = doubleSubmitKey;
+    }
+
+    private String doubleSubmitKey;
+    
 }

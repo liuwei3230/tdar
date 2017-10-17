@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.InterceptorRef;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,11 @@ import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.struts.action.AbstractPersistableController;
 import org.tdar.struts.action.DataTableResourceDisplay;
+import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.struts_base.action.TdarActionSupport;
+import org.tdar.struts_base.interceptor.annotation.PostOnly;
+import org.tdar.struts_base.interceptor.annotation.WriteableSession;
 import org.tdar.utils.PersistableUtils;
 
 public abstract class AbstractCollectionController<C extends HierarchicalCollection<C>> extends AbstractPersistableController<C> implements DataTableResourceDisplay {
@@ -56,6 +61,8 @@ public abstract class AbstractCollectionController<C extends HierarchicalCollect
     private transient AuthorizationService authorizationService;
     
     private static final long serialVersionUID = 5710621983240752457L;
+
+    private static final String RIGHTS = "rights";
     private List<C> allResourceCollections = new LinkedList<>();
 
     private List<Long> selectedResourceIds = new ArrayList<>();
@@ -215,9 +222,9 @@ public abstract class AbstractCollectionController<C extends HierarchicalCollect
     @Override
     public String loadAddMetadata() {
         if (PersistableUtils.isNotNullOrTransient(parentId)) {
-            HierarchicalCollection parent = getGenericService().find(HierarchicalCollection.class,parentId);
+            ResourceCollection parent = getGenericService().find(ResourceCollection.class,parentId);
             if (parent != null) {
-                parentCollectionName = parent.getName();
+                parentCollectionName =  parent.getName();
             }
         }
         prepareDataTableSection();
@@ -234,6 +241,35 @@ public abstract class AbstractCollectionController<C extends HierarchicalCollect
     public String edit() throws TdarActionException {
         String result = super.edit();
         return result;
+    }
+    
+    
+
+    @Action(value = SAVE,
+            interceptorRefs = { @InterceptorRef("editAuthenticatedStack") },
+            results = {
+                    @Result(name = SUCCESS, type = TdarActionSupport.REDIRECT, location = SAVE_SUCCESS_PATH),
+                    @Result(name = SUCCESS_ASYNC, location = "view-async.ftl"),
+                    @Result(name = INPUT, location = "edit.ftl"),
+                    @Result(name = RIGHTS, type = TdarActionSupport.REDIRECT,  location = "rights?id=${id}")
+            })
+    @WriteableSession
+    @PostOnly
+    @HttpsOnly
+    @Override
+    /**
+     * FIXME: appears to only override the INPUT result type compared to AbstractPersistableController's declaration,
+     * see if it's possible to do this with less duplicatiousness
+     * 
+     * @see org.tdar.struts.action.AbstractPersistableController#save()
+     */
+    public String save() throws TdarActionException {
+        String save2 = super.save();
+        if (StringUtils.equals(save2,SUCCESS) && StringUtils.equalsAnyIgnoreCase(getAlternateSubmitAction(),ASSIGN_RIGHTS)) {
+            return RIGHTS;
+        }
+        return save2;
+
     }
 
     public List<Long> getSelectedResourceIds() {
@@ -405,22 +441,6 @@ public abstract class AbstractCollectionController<C extends HierarchicalCollect
     }
 
     
-//    /**
-//     * @return the authorizedUsers
-//     */
-//    public List<AuthorizedUser> getAuthorizedUsers() {
-//        if (authorizedUsers == null) {
-//            authorizedUsers = new ArrayList<AuthorizedUser>();
-//        }
-//        return authorizedUsers;
-//    }
-
-    public AuthorizedUser getBlankAuthorizedUser() {
-        AuthorizedUser user = new AuthorizedUser();
-        user.setUser(new TdarUser());
-        return user;
-    }
-
     public C getAlternateParentCollection() {
         return alternateParentCollection;
     }

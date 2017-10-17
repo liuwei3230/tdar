@@ -4,21 +4,21 @@
     <#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
-    <title>${authenticatedUser.properName}'s Dashboard</title>
+    <title>Rights for ${persistable.title}</title>
     <meta name="lastModifiedDate" content="$Date$"/>
     <@edit.resourceDataTableJavascript />
 </head>
 
 <div id="titlebar" parse="true">
-    <h1>Sharing: <span class="red">${persistable.title}</span></h1>
+    <h1>Permissions: <span class="red">${persistable.title}</span></h1>
 </div>
-    <@s.form class="form-horizontal tdarvalidate" action="save" method="POST" dynamicAttributes={"data-validate-method":"initRightsForm"}>
+    <@s.form class="form-horizontal tdarvalidate rightsform" action="save" method="POST" dynamicAttributes={"data-validate-method":"initRightsForm"}>
 <div class="row">
     <div class="span12">
-    <p><b>This resource is shared with ${proxies?size} people and is in ${persistable.sharedCollections?size} collections.</b></p>
+    <p><i>This ${persistable.resourceType.label?lower_case} is currently shared with ${proxies?size} <#if (proxies?size == 1)>person<#else>people</#if><#if (persistable.sharedCollections?size > 0)>, and is in ${persistable.sharedCollections?size} collections</#if>.</i><br></p>
     <@s.hidden name="id" />
-    
     <#if editor>
+    <#-- 
 	    <div class="control-group" id="divSubmitter">
 	        <label class="control-label">Submitter</label>
 	            <div class="controls controls-row">
@@ -31,6 +31,7 @@
                 </#if>
             </div>
         </div>
+     -->
     </#if>
 
 

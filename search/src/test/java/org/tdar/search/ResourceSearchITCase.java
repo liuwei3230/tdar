@@ -29,6 +29,7 @@ import org.joda.time.DateTimeZone;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.purl.dc.terms.MESH;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
@@ -36,7 +37,6 @@ import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.SharedCollection;
-import org.tdar.core.bean.collection.VisibleCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
@@ -60,8 +60,6 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.ResourceAnnotation;
-import org.tdar.core.bean.resource.ResourceAnnotationKey;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.service.EntityService;
@@ -87,6 +85,7 @@ import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.range.DateRange;
 
 public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
+
 
 
     @Autowired
@@ -123,25 +122,6 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         LuceneSearchResultHandler<Resource> result = new SearchResult<>();
         resourceSearchService.buildAdvancedSearch(asqo, getAdminUser(), result, MessageHelper.getInstance());
     }
-
-    @Test
-    @Rollback
-    public void testResourceAnnotationSearch() throws SearchException, SearchIndexException, IOException, ParseException {
-        Document doc = createAndSaveNewResource(Document.class);
-        ResourceAnnotationKey key = new ResourceAnnotationKey("MAC Lab Lot Number");
-        genericService.saveOrUpdate(key);
-        String code = "18ST659/158";
-        ResourceAnnotation ann = new ResourceAnnotation(key, code);
-        ResourceAnnotation ann2 = new ResourceAnnotation(key, "18ST659/143");
-        doc.getResourceAnnotations().add(ann);
-        doc.getResourceAnnotations().add(ann2);
-        genericService.saveOrUpdate(doc);
-        searchIndexService.index(doc);
-        SearchResult<Resource> result = doSearch(code,null,null,null);
-        assertFalse("we should get back at least one hit", result.getResults().isEmpty());
-        assertTrue(result.getResults().contains(doc));
-    }
-
     
     @Test
     @Rollback
@@ -158,9 +138,6 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
             assertTrue("expecting site name for resource", ((Resource)resource).getSiteNameKeywords().contains(snk));
         }
     }
-    
-    
-
     
     @Test
     @Rollback
@@ -384,6 +361,7 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         }
         assertTrue("search should have at least 1 result", resourceCount > 0);
     }
+    
 
 
     @Test
@@ -800,7 +778,7 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         // skeleton lists should have been loaded w/ sparse records...
         assertEquals(proj.getTitle(), sp.getProjects().get(0).getTitle());
         logger.debug("c's:{}",sp.getCollections());
-        assertEquals(colname, ((VisibleCollection)sp.getShares().get(1)).getName());
+        assertEquals(colname, ((SharedCollection)sp.getShares().get(1)).getName());
     }
 
     @Test
@@ -825,7 +803,7 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         
         // skeleton lists should have been loaded w/ sparse records...
         // assertEquals(proj.getTitle(), sp.getProjects().get(0).getTitle());
-        assertEquals(colname, ((VisibleCollection)sp.getShares().get(0)).getName());
+        assertEquals(colname, ((SharedCollection)sp.getShares().get(0)).getName());
         assertTrue(result.getResults().contains(proj));
         // assertEquals(proj.getId(), sp.getProjects().get(0).getId());
         // assertEquals(coll.getId(), sp.getCollections().get(1).getId());
@@ -890,7 +868,7 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
         sp.getCollections().add(sparseCollection);
         SearchResult<Resource> result = doSearch(null, null, sp, null);
 
-        assertThat(((VisibleCollection)sp.getCollections().get(0)).getTitle(), is("Mega Collection"));
+        assertThat(((ListCollection)sp.getCollections().get(0)).getTitle(), is("Mega Collection"));
     }
 
     private void assertOnlyResultAndProject(SearchResult<Resource> result, InformationResource informationResource) {
@@ -1529,4 +1507,43 @@ public class ResourceSearchITCase  extends AbstractResourceSearchITCase {
     }
 
 
+    @Test
+    @Rollback
+    public void testScholarLookup() throws InstantiationException, IllegalAccessException, SearchException, SearchIndexException, IOException, ParseException {
+        // From the Hibernate documentation:
+        // "The default Date bridge uses Lucene's DateTools to convert from and to String. This means that all dates are expressed in GMT time."
+        // The Joda DateMidnight defaults to DateTimeZone.getDefault(). Which is probably *not* GMT
+        // So for the tests below to work in, say, Australia, we need to force the DateMidnight to the GMT time zone...
+        // ie:
+        // DateTimeZone dtz = DateTimeZone.forID("Australia/Melbourne");
+        // will break this test.
+        DateTimeZone dtz = DateTimeZone.forID("GMT");
+
+        // first create two documents with two separate create dates
+        Document document1 = createAndSaveNewInformationResource(Document.class, createAndSaveNewPerson("lookuptest1@tdar.net", ""));
+        DateMidnight dm1 = new DateMidnight(2001, 2, 16, dtz);
+        document1.setDateCreated(dm1.toDate());
+        document1.setDate(2017);
+        Document document2 = createAndSaveNewInformationResource(Document.class, createAndSaveNewPerson("lookuptest2@tdar.net", ""));
+        DateMidnight dm2 = new DateMidnight(2002, 11, 1, dtz);
+        document2.setDateCreated(dm2.toDate());
+        document1.setDate(2012);
+
+        genericService.saveOrUpdate(document1, document2);
+        searchIndexService.index(document1, document2);
+        LuceneSearchResultHandler<Resource> result = new SearchResult<>();
+        resourceSearchService.findByTdarYear(2001, result, MessageHelper.getInstance());
+
+        assertTrue(result.getResults().contains(document1));
+        assertFalse(result.getResults().contains(document2));
+        
+        result = new SearchResult<>();
+        resourceSearchService.findByTdarYear(2017, result, MessageHelper.getInstance());
+
+        assertFalse(result.getResults().contains(document1));
+        assertFalse(result.getResults().contains(document2));
+    }
+
+
+    
 }

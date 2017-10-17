@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +47,7 @@ import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.resource.FileProxyWrapper;
 import org.tdar.filestore.FileAnalyzer;
 
-public class AccountITCase extends AbstractIntegrationTestCase {
+public class AccountITCase extends AbstractIntegrationTestCase implements TestBillingAccountHelper {
 
     @Autowired
     BillingAccountService accountService;
@@ -63,14 +64,14 @@ public class AccountITCase extends AbstractIntegrationTestCase {
     @Test
     @Rollback
     public void testUnassignedInvoice() {
-        TdarUser person = createAndSaveNewPerson();
+        TdarUser person = createAndSaveNewUser();
         assertTrue(CollectionUtils.isEmpty(accountService.listAvailableAccountsForUser(person)));
         Invoice setupInvoice = setupInvoice(new BillingActivity("10 resource", 100f, 0, 10L, 10L, 100L, accountService.getLatestActivityModel()), person);
         setupInvoice.setTransactionStatus(TransactionStatus.TRANSACTION_SUCCESSFUL);
         genericService.saveOrUpdate(setupInvoice);
         accountService.assignOrphanInvoicesIfNecessary(person);
         assertTrue(accountService.hasSpaceInAnAccount(person, null));
-        assertNotEmpty(accountService.listAvailableAccountsForUser(person));
+        assertNotEmpty("should have accounts", accountService.listAvailableAccountsForUser(person));
     }
 
     @Test
@@ -95,15 +96,10 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         assertTrue(re.accountHasMinimumForNewResource(account, null));
     }
 
-    public void updateModel(BillingActivityModel model, boolean resources, boolean files, boolean space) {
-        model.setCountingResources(resources);
-        model.setCountingFiles(files);
-        model.setCountingSpace(space);
-    }
 
     @Test
     @Rollback
-    public void testAccountCanAddResourceDefaultCases() throws InstantiationException, IllegalAccessException {
+    public void testAccountCanAddResourceDefaultCases() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         ResourceEvaluator re = new ResourceEvaluator(model);
         BillingAccount account = new BillingAccount();
@@ -126,7 +122,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testAccountCanAddResource() throws InstantiationException, IllegalAccessException {
+    public void testAccountCanAddResource() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         ResourceEvaluator re = new ResourceEvaluator(model);
         Document resource = generateDocumentWithFileAndUseDefaultUser();
@@ -152,7 +148,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testAccountUpdateQuotaValid() throws InstantiationException, IllegalAccessException {
+    public void testAccountUpdateQuotaValid() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         updateModel(model, false, false, true);
         BillingAccount account = setupAccountWithInvoiceFor6Mb(model, getUser());
@@ -176,7 +172,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testAccountUpdateQuotaOverdrawn() throws InstantiationException, IllegalAccessException {
+    public void testAccountUpdateQuotaOverdrawn() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         updateModel(model, true, true, true);
         model.setActive(true);
@@ -207,9 +203,69 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         assertEquals(filesUsed.longValue() + resource.getFilesUsed(), account.getFilesUsed().longValue());
     }
 
+    
     @Test
     @Rollback
-    public void testAccountUpdateQuotaOverdrawnMinorEdit() throws InstantiationException, IllegalAccessException {
+    public void testAccountUpdateQuotaDeletedFast() throws InstantiationException, IllegalAccessException, FileNotFoundException {
+        BillingActivityModel model = new BillingActivityModel();
+        updateModel(model, true, true, true);
+        model.setActive(true);
+        model.setVersion(100); // forcing the model to be the "latest"
+        genericService.saveOrUpdate(model);
+        BillingAccount account = setupAccountForPerson(getUser());
+        Document resource = generateDocumentWithFileAndUseDefaultUser();
+        Document resource2 = generateDocumentWithFileAndUseDefaultUser();
+        logger.info("f{} s{}", resource.getFilesUsed(), resource.getSpaceInBytesUsed());
+        Long spaceUsedInBytes = account.getSpaceUsedInBytes();
+        Long resourcesUsed = account.getResourcesUsed();
+        Long filesUsed = account.getFilesUsed();
+
+        assertFalse(account.getResources().contains(resource));
+
+        AccountAdditionStatus status = accountService.updateQuota(account, resource.getSubmitter() ,resource);
+        genericService.refresh(account);
+        Long spaceUsedInBytesAfterAdd = account.getSpaceUsedInBytes();
+        assertEquals(AccountAdditionStatus.NOT_ENOUGH_SPACE, status);
+        logger.info("{} space used in bytes ({})", spaceUsedInBytesAfterAdd, spaceUsedInBytes);
+        assertTrue(account.getResources().contains(resource));
+        assertEquals(Status.FLAGGED_ACCOUNT_BALANCE, resource.getStatus());
+
+        assertNotEquals(spaceUsedInBytes.longValue(), spaceUsedInBytesAfterAdd.longValue());
+        assertEquals(resourcesUsed.longValue(), account.getResourcesUsed().longValue());
+        assertNotEquals(filesUsed.longValue(), account.getFilesUsed().longValue());
+
+        assertEquals(spaceUsedInBytes.longValue() + resource.getSpaceInBytesUsed(), account.getSpaceUsedInBytes().longValue());
+        // assertEquals(resourcesUsed.longValue() + resource.getResourcesUsed(), account.getResourcesUsed().longValue());
+        assertEquals(filesUsed.longValue() + resource.getFilesUsed(), account.getFilesUsed().longValue());
+
+        AccountAdditionStatus status2 = accountService.updateQuota(account, resource2.getSubmitter() ,resource2);
+        logger.debug("{}",status2);
+        genericService.refresh(account);
+        resource2.setStatus(Status.DELETED);
+        genericService.saveOrUpdate(resource2);
+        genericService.refresh(account);
+        AccountAdditionStatus status3 = accountService.updateQuota(account, resource2.getSubmitter() ,resource2);
+        logger.debug("{} {} {} {}", status3, account.getStatus(), account.getSpaceUsedInBytes(), account.getFilesUsed());
+
+        assertEquals(spaceUsedInBytesAfterAdd.longValue(), account.getSpaceUsedInBytes().longValue());
+        assertNotEquals(1, account.getFilesUsed().longValue());
+
+        genericService.refresh(account);
+        resource2.setUpdated(false);
+        AccountAdditionStatus status4 = accountService.updateQuota(account, resource2.getSubmitter() ,resource2);
+        logger.debug("{} {} {}",status2, status3,status4);
+        assertEquals(AccountAdditionStatus.NOT_ENOUGH_SPACE, status2);
+        assertEquals(AccountAdditionStatus.NOT_ENOUGH_SPACE, status3);
+        assertEquals(AccountAdditionStatus.NOT_ENOUGH_SPACE, status4);
+
+    }
+
+    
+    
+    
+    @Test
+    @Rollback
+    public void testAccountUpdateQuotaOverdrawnMinorEdit() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         updateModel(model, false, true, false);
         model.setActive(true);
@@ -245,7 +301,10 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         ok.setTitle("new title");
         accountService.updateQuota(account, account.getOwner(), ok);
         assertEquals(Status.ACTIVE, ok.getStatus());
-        addFileToResource((InformationResource) ok, new File(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
+        addFileToResource((InformationResource) ok, TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
+        genericService.synchronize();
+        genericService.refresh(ok);
+        genericService.refresh(account);
         accountService.updateQuota(account, account.getOwner(), ok);
         assertEquals(Status.FLAGGED_ACCOUNT_BALANCE, ok.getStatus());
 
@@ -253,7 +312,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testAccountUpdateQuotaWithFileOnSecondEdit() throws InstantiationException, IllegalAccessException {
+    public void testAccountUpdateQuotaWithFileOnSecondEdit() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         updateModel(model, false, true, false);
         model.setActive(true);
@@ -265,7 +324,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
         AccountAdditionStatus statusOk = accountService.updateQuota(account, account.getOwner(), resource);
         genericService.refresh(account);
-        addFileToResource(resource, new File(TestConstants.TEST_DOCUMENT));
+        addFileToResource(resource, TestConstants.getFile(TestConstants.TEST_DOCUMENT));
 
         AccountAdditionStatus status = accountService.updateQuota(account, account.getOwner(), resource);
         genericService.refresh(account);
@@ -288,7 +347,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         ok.setTitle("new title");
         accountService.updateQuota(account, account.getOwner(), ok);
         assertEquals(Status.ACTIVE, ok.getStatus());
-        addFileToResource((InformationResource) ok, new File(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
+        addFileToResource((InformationResource) ok, TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
         accountService.updateQuota(account, account.getOwner(), ok);
         assertEquals(Status.FLAGGED_ACCOUNT_BALANCE, ok.getStatus());
 
@@ -305,7 +364,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         Document doc = createAndSaveNewInformationResource(Document.class);
         re.evaluateResources(doc);
         ResourceEvaluator re2 = new ResourceEvaluator(model);
-        addFileToResource(doc, new File(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
+        addFileToResource(doc, TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
         InformationResourceFile file = doc.getInformationResourceFiles().iterator().next();
         re2.evaluateResources(doc);
         re2.subtract(re);
@@ -314,7 +373,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         assertEquals(1, re2.getFilesUsed());
         assertEquals(114875, re2.getSpaceUsedInBytes());
         re3.evaluateResources(doc);
-        FileProxy proxy = new FileProxy("test.pdf", new File(TestConstants.TEST_DOCUMENT_DIR, "/t2/test.pdf"), VersionType.UPLOADED_ARCHIVAL);
+        FileProxy proxy = new FileProxy("test.pdf", TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, "/t2/test.pdf"), VersionType.UPLOADED_ARCHIVAL);
         proxy.setAction(FileAction.REPLACE);
         proxy.setFileId(file.getId());
         FileProxyWrapper wrapper = new FileProxyWrapper(doc, analyzer, datasetDao, Arrays.asList(proxy));
@@ -336,7 +395,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
         BillingActivityModel model = accountService.getLatestActivityModel();
         BillingAccount account = setupAccountWithInvoiceSomeResourcesAndSpace(model, getUser());
         Document doc = createAndSaveNewInformationResource(Document.class);
-        addFileToResource(doc, new File(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
+        addFileToResource(doc, TestConstants.getFile(TestConstants.TEST_DOCUMENT_DIR, "/t1/test.pdf"));
         accountService.getResourceEvaluator(doc);
         genericService.saveOrUpdate(doc);
         Long availableSpaceInMb = account.getAvailableSpaceInMb();
@@ -353,7 +412,7 @@ public class AccountITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testResourceEvaluatorEvaluateResourcesByType() throws InstantiationException, IllegalAccessException {
+    public void testResourceEvaluatorEvaluateResourcesByType() throws InstantiationException, IllegalAccessException, FileNotFoundException {
         BillingActivityModel model = new BillingActivityModel();
         ResourceEvaluator re = new ResourceEvaluator(model);
         model.setCountingResources(true);

@@ -15,8 +15,8 @@ import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ListCollection;
+import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
-import org.tdar.core.bean.collection.VisibleCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator;
@@ -33,9 +33,8 @@ import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.index.analyzer.SiteCodeExtractor;
 import org.tdar.search.query.QueryFieldNames;
+import org.tdar.search.query.part.AnnotationQueryPart;
 import org.tdar.search.query.part.ContentQueryPart;
-import org.tdar.search.query.part.CreatorOwnerQueryPart;
-import org.tdar.search.query.part.CreatorQueryPart;
 import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.GeneralSearchResourceQueryPart;
 import org.tdar.search.query.part.HydrateableKeywordQueryPart;
@@ -44,10 +43,13 @@ import org.tdar.search.query.part.QueryPartGroup;
 import org.tdar.search.query.part.RangeQueryPart;
 import org.tdar.search.query.part.SkeletonPersistableQueryPart;
 import org.tdar.search.query.part.SpatialQueryPart;
-import org.tdar.search.query.part.TemporalQueryPart;
 import org.tdar.search.query.part.TitleQueryPart;
+import org.tdar.search.query.part.entity.CreatorOwnerQueryPart;
+import org.tdar.search.query.part.entity.CreatorQueryPart;
+import org.tdar.search.query.part.resource.TemporalQueryPart;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
+import org.tdar.utils.StringPair;
 import org.tdar.utils.range.DateRange;
 import org.tdar.utils.range.StringRange;
 
@@ -117,6 +119,7 @@ public class SearchParameters {
     private List<DateRange> updatedDates = new ArrayList<>();
     private List<CoverageDate> coverageDates = new ArrayList<>();
     private List<StringRange> createdDates = new ArrayList<>();
+    private List<StringPair> annotations = new ArrayList<>();
     private List<Integer> creationDecades = new ArrayList<>();
 
     // parameters. don't render these in the form view.
@@ -313,6 +316,7 @@ public class SearchParameters {
     }
 
     TextProvider support = MessageHelper.getInstance();
+    private List<String> actionMessages = new ArrayList<>();
 
     // FIXME: where appropriate need to make sure we pass along the operator to any sub queryPart groups
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -404,6 +408,8 @@ public class SearchParameters {
                 getUpdatedDates()));
         queryPartGroup.append(new RangeQueryPart(QueryFieldNames.DATE, support.getText("searchParameter.date"), getOperator(), getCreatedDates()));
 
+        queryPartGroup.append(new AnnotationQueryPart(QueryFieldNames.RESOURCE_ANNOTATION, support.getText("searchParameter.annotation"), getOperator(), getAnnotations()));
+
         queryPartGroup.append(new TemporalQueryPart(getCoverageDates(), getOperator()));
         SpatialQueryPart spatialQueryPart = new SpatialQueryPart(getLatitudeLongitudeBoxes());
         if (!latScaleUsed) {
@@ -419,7 +425,9 @@ public class SearchParameters {
         queryPartGroup.append(constructSkeletonQueryPart(QueryFieldNames.RESOURCE_COLLECTION_SHARED_IDS,
                 support.getText("searchParameter.resource_collection"), "resourceCollections.",
                 SharedCollection.class, getOperator(), getShares()));
-        queryPartGroup.append(new CreatorQueryPart<>(QueryFieldNames.CREATOR_ROLE_IDENTIFIER, Creator.class, null, resourceCreatorProxies));
+        CreatorQueryPart<Creator> cqp = new CreatorQueryPart<>(QueryFieldNames.CREATOR_ROLE_IDENTIFIER, Creator.class, null, resourceCreatorProxies);
+        getActionMessages().addAll(cqp.getActionMessages());
+        queryPartGroup.append(cqp);
 
         // explore: decade
         queryPartGroup.append(new FieldQueryPart<>(QueryFieldNames.DATE_CREATED_DECADE, Operator.OR, getCreationDecades()));
@@ -440,7 +448,7 @@ public class SearchParameters {
             Operator operator, List<P> values) {
         SkeletonPersistableQueryPart q = new SkeletonPersistableQueryPart(fieldName, label, cls, values);
         logger.trace("{} {} {} ", cls, prefix, values);
-        if ((HasName.class.isAssignableFrom(cls) || VisibleCollection.class.isAssignableFrom(cls)) && StringUtils.isNotBlank(prefix)) {
+        if ((HasName.class.isAssignableFrom(cls) || ResourceCollection.class.isAssignableFrom(cls)) && StringUtils.isNotBlank(prefix)) {
             TitleQueryPart tqp = new TitleQueryPart();
             tqp.setPrefix(prefix);
             for (Persistable p : values) {
@@ -699,6 +707,22 @@ public class SearchParameters {
 
     public void setDescriptions(List<String> descriptions) {
         this.descriptions = descriptions;
+    }
+
+    public List<StringPair> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(List<StringPair> annotations) {
+        this.annotations = annotations;
+    }
+
+    public List<String> getActionMessages() {
+        return actionMessages;
+    }
+
+    public void setActionMessages(List<String> actionMessages) {
+        this.actionMessages = actionMessages;
     }
 
 }

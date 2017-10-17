@@ -8,6 +8,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.struts2.convention.annotation.Action;
 import org.junit.Before;
@@ -25,11 +28,15 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.tdar.TestConstants;
+import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.datatable.DataTable;
@@ -37,11 +44,15 @@ import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
 import org.tdar.core.bean.resource.datatable.DataTableColumnType;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.resource.DataTableService;
+import org.tdar.db.model.PostgresDatabase;
 import org.tdar.db.model.PostgresIntegrationDatabase;
 import org.tdar.junit.MultipleTdarConfigurationRunner;
 import org.tdar.junit.RunWithTdarConfiguration;
-import org.tdar.struts.action.AbstractDataIntegrationTestCase;
+import org.tdar.struts.action.AbstractAdminControllerITCase;
+import org.tdar.struts.action.TestDatasetHelper;
+import org.tdar.struts.action.TestFileUploadHelper;
 import org.tdar.struts.action.codingSheet.CodingSheetMappingController;
 import org.tdar.struts.action.dataset.DatasetController;
 import org.tdar.struts.action.dataset.TableXMLDownloadAction;
@@ -56,23 +67,21 @@ import org.tdar.struts_base.action.TdarActionException;
  * @version $Rev$
  */
 @RunWith(MultipleTdarConfigurationRunner.class)
-public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
+public class DatasetControllerITCase extends AbstractAdminControllerITCase implements TestFileUploadHelper, TestDatasetHelper {
 
     private static final String PUNDO_FAUNAL_REMAINS_XLS = "Pundo faunal remains.xls";
     private static final String ALEXANDRIA_EXCEL_FILENAME = "qrybonecatalogueeditedkk.xls";
     private static final String TRUNCATED_HARP_EXCEL_FILENAME = "heshfaun-truncated.xls";
     private static final String BELEMENT_COL = "belement";
 
-    private DatasetController controller;
+//    private DatasetController controller;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     private DataTableService dataTableService;
 
-    @Before
-    public void setUp() {
-        controller = generateNewInitializedController(DatasetController.class);
-    }
+    @Autowired
+    private BillingAccountService accountService;
 
     @Test
     @Rollback
@@ -81,8 +90,37 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
         Dataset dataset = genericService.findRandom(Dataset.class, 1).get(0);
         dataset.setTitle("test");
         dataset.setSubmitter(p);
-        dataset.markUpdated(controller.getAuthenticatedUser());
+        dataset.markUpdated(getUser());
         genericService.merge(dataset);
+    }
+
+    @Test
+    @Rollback
+    @RunWithTdarConfiguration(runWith = { RunWithTdarConfiguration.CREDIT_CARD})    
+    public void testAccountListExistsInDatasetController() throws TdarActionException {
+        // setup new dataset with authorized user (direct) and grant EDIT rights
+        // associate resource with billing account
+        TdarUser p = genericService.find(TdarUser.class, getUser().getId());
+        Dataset dataset = createAndSaveNewDataset();
+        List<BillingAccount> findAll = genericService.findAll(BillingAccount.class);
+        BillingAccount account = findAll.get(0);
+        dataset.setAccount(account);
+        accountService.updateQuota(account, p, dataset);
+        TdarUser createAndSaveNewPerson = createAndSaveNewPerson("a@bcasdasd.com", "aa");
+        dataset.getAuthorizedUsers().add(new AuthorizedUser(p, createAndSaveNewPerson, GeneralPermissions.MODIFY_RECORD));
+        genericService.saveOrUpdate(dataset);
+        genericService.synchronize();
+        
+        // done setup
+        Long datasetId = dataset.getId();
+        DatasetController c = generateNewInitializedController(DatasetController.class, createAndSaveNewPerson);
+        c.setId(datasetId);
+        c.prepare();
+        c.edit();
+        // assert that "activeAccounts" contains our billing account
+        List<BillingAccount> activeAccounts = c.getActiveAccounts();
+        logger.debug("active Accounts:{}", activeAccounts);
+        assertTrue("account list contains one account", activeAccounts.contains(account));
     }
 
     @Autowired
@@ -93,6 +131,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
     public void testTranslatedGeneratedCodingSheet() throws Exception {
         //test for TDAR-5038 ;; issue is that the translated values are being pushed into coding sheets.
         Dataset dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
         controller.setId(dataset.getId());
         Ontology bElementOntology = setupAndLoadResource("fauna-element-updated---default-ontology-draft.owl", Ontology.class);
         DataTableColumn elementColumn = new DataTableColumn();
@@ -122,6 +161,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
     @Rollback
     public void testOntologyMappingCaseSensitivity() throws Exception {
         Dataset dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
         controller.setId(dataset.getId());
         Ontology bElementOntology = setupAndLoadResource("fauna-element-updated---default-ontology-draft.owl", Ontology.class);
         DataTableColumn elementColumn = new DataTableColumn();
@@ -182,7 +222,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
         List<String> successActions = Arrays.asList("add", "list", "edit");
         // grab all methods on DatasetController annotated with a conventions plugin @Action
         for (Method method : DatasetController.class.getMethods()) {
-            controller = generateNewInitializedController(DatasetController.class);
+            DatasetController controller = generateNewInitializedController(DatasetController.class);
             controller.prepare();
             if (method.isAnnotationPresent(Action.class)) {
                 logger.debug("Invoking action method: " + method.getName());
@@ -286,7 +326,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
     @Rollback
     public void testDatasetReplaceWithMappings() throws Exception {
         Dataset dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class);
-        controller = generateNewInitializedController(DatasetController.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
 
         Ontology bElementOntology = setupAndLoadResource("fauna-element-updated---default-ontology-draft.owl", Ontology.class);
         DataTable alexandriaTable = dataset.getDataTables().iterator().next();
@@ -300,7 +340,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
         controller.setId(dataset.getId());
         controller.prepare();
         controller.edit();
-        controller.setUploadedFiles(Arrays.asList(new File(TestConstants.TEST_DATA_INTEGRATION_DIR + ALEXANDRIA_EXCEL_FILENAME)));
+        controller.setUploadedFiles(Arrays.asList(TestConstants.getFile(TestConstants.TEST_DATA_INTEGRATION_DIR + ALEXANDRIA_EXCEL_FILENAME)));
         controller.setUploadedFilesFileName(Arrays.asList(ALEXANDRIA_EXCEL_FILENAME));
         controller.setServletRequest(getServletPostRequest());
         assertEquals(com.opensymphony.xwork2.Action.SUCCESS, controller.save());
@@ -320,14 +360,14 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testDatasetReplaceDifferentExcel() throws TdarActionException {
+    public void testDatasetReplaceDifferentExcel() throws TdarActionException, FileNotFoundException {
         Dataset dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class);
-        controller = generateNewInitializedController(DatasetController.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
         controller.setId(dataset.getId());
         controller.prepare();
         controller.edit();
         String filename = "evmpp-fauna.xls";
-        controller.setUploadedFiles(Arrays.asList(new File(TestConstants.TEST_DATA_INTEGRATION_DIR + filename)));
+        controller.setUploadedFiles(Arrays.asList(TestConstants.getFile(TestConstants.TEST_DATA_INTEGRATION_DIR + filename)));
         controller.setUploadedFilesFileName(Arrays.asList(filename));
         controller.setServletRequest(getServletPostRequest());
         assertEquals(com.opensymphony.xwork2.Action.SUCCESS, controller.save());
@@ -348,14 +388,14 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testDatasetReplaceDifferentMdb() throws TdarActionException {
+    public void testDatasetReplaceDifferentMdb() throws TdarActionException, FileNotFoundException {
         Dataset dataset = setupAndLoadResource(ALEXANDRIA_EXCEL_FILENAME, Dataset.class);
-        controller = generateNewInitializedController(DatasetController.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
         controller.setId(dataset.getId());
         controller.prepare();
         controller.edit();
         String filename = TestConstants.SPITAL_DB_NAME;
-        controller.setUploadedFiles(Arrays.asList(new File(TestConstants.TEST_DATA_INTEGRATION_DIR + filename)));
+        controller.setUploadedFiles(Arrays.asList(TestConstants.getFile(TestConstants.TEST_DATA_INTEGRATION_DIR , filename)));
         controller.setUploadedFilesFileName(Arrays.asList(filename));
         controller.setServletRequest(getServletPostRequest());
         assertEquals(com.opensymphony.xwork2.Action.SUCCESS, controller.save());
@@ -378,7 +418,7 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
         }
         verifyDataTable(dataTable, originalNumberOfRows, originalColumnData);
         InformationResourceFile file = dataset.getFirstInformationResourceFile();
-        controller = generateNewInitializedController(DatasetController.class);
+        DatasetController controller = generateNewInitializedController(DatasetController.class);
         controller.setId(dataset.getId());
         controller.prepare();
         controller.edit();
@@ -412,7 +452,17 @@ public class DatasetControllerITCase extends AbstractDataIntegrationTestCase {
     }
 
     @Override
-    protected String getTestFilePath() {
+    public String getTestFilePath() {
         return TestConstants.TEST_DATA_INTEGRATION_DIR;
     }
+
+    protected PostgresDatabase tdarDataImportDatabase = new PostgresDatabase();
+
+
+    @Autowired
+    @Qualifier("tdarDataImportDataSource")
+    public void setIntegrationDataSource(DataSource dataSource) {
+        tdarDataImportDatabase.setDataSource(dataSource);
+    }
+
 }

@@ -80,8 +80,6 @@ public enum ObjectType implements HasLabel, Localizable, PluralLocalizable {
 
     public static ObjectType from(CollectionType type) {
         switch (type) {
-            case INTERNAL:
-                break;
             case LIST:
                 return LIST_COLLECTION;
             case SHARED:

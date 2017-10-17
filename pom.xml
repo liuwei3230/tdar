@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.tdar</groupId>
     <artifactId>parent</artifactId>
-    <version>16.0.1-PREHISTORIC-SNAPSHOT</version>
+    <version>16.1.0-PREHISTORIC-SNAPSHOT</version>
     <name>parent</name>
     <packaging>pom</packaging>
     <modules>
@@ -27,18 +27,16 @@
         <module>struts-base</module>
         <module>balk</module>
         <module>web</module>
-        <module>webservice/tag</module>
         <module>webservice/dataone</module>
-        <module>webservice/odata</module>
         <module>webservice/oai-pmh</module>
         <module>utils</module>
     </modules>
 
 
     <properties>
-        <lucene.version>6.5.0</lucene.version>
-        <hibernate.version>5.2.10.Final</hibernate.version>
-        <spring.framework.version>4.3.8.RELEASE</spring.framework.version>
+        <lucene.version>7.0.0</lucene.version>
+        <hibernate.version>5.2.11.Final</hibernate.version>
+        <spring.framework.version>4.3.11.RELEASE</spring.framework.version>
         <postgresql.jdbc.version>9.4.1212</postgresql.jdbc.version>
         <servlet.api.version>3.1.0</servlet.api.version>
         <wro4j.version>1.8.0</wro4j.version>
@@ -68,43 +66,44 @@
         <maven-jar-version>2.6</maven-jar-version>
         <maven-war-version>3.0.0</maven-war-version>
         <maven-eclipse-version>2.10</maven-eclipse-version>
-        <apache.cxf.version>3.1.10</apache.cxf.version>
-        <poi.version>3.15</poi.version>
+        <apache.cxf.version>3.1.12</apache.cxf.version>
+        <poi.version>3.17</poi.version>
         <!-- see http://tomcat.apache.org/whichversion.html for compatibility 
             with tomcat ; jetty: http://wiki.eclipse.org/Jetty/Starting/Jetty_Version_Comparison_Table -->
-        <jena.version>3.1.0</jena.version>
-        <owlapi.version>5.0.4</owlapi.version>
+        <jena.version>3.3.0</jena.version>
+        <owlapi.version>5.1.0</owlapi.version>
         <exec-maven-version>1.6.0</exec-maven-version>
         <!-- /end managed versions -->
         <geotools.version>17.1</geotools.version>
-        <tika.version>1.14</tika.version>
+        <tika.version>1.16</tika.version>
         <batik.version>1.7</batik.version>
-        <rome.version>1.7.1</rome.version>
+        <rome.version>1.7.3</rome.version>
         <jackson.version>2.8.7</jackson.version>
-        <pdfbox.version>2.0.5</pdfbox.version>
+        <pdfbox.version>2.0.7</pdfbox.version>
         <bouncycastle.version>1.56</bouncycastle.version>        
         <http-components.version>4.4.6</http-components.version>
         <http-client.version>4.5.3</http-client.version>
-        <guava.version>21.0</guava.version>
-        <jackcess.version>2.1.7</jackcess.version>
+        <guava.version>23.0</guava.version>
+        <jackcess.version>2.1.9</jackcess.version>
         <jt-utils.version>1.4.0</jt-utils.version>
         <commons-io.version>2.5</commons-io.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
         <commons-codec.version>1.10</commons-codec.version>
+        <commons.math.version>3.6.1</commons.math.version>
         <joda-time.version>2.9.7</joda-time.version>
         <findbugs.version>3.0.0</findbugs.version>
         <ant.version>1.10.1</ant.version>
-        <commons-lang3.version>3.5</commons-lang3.version>
+        <commons-lang3.version>3.6</commons-lang3.version>
         <cglib.version>3.2.5</cglib.version>
-        <commons-compress.version>1.13</commons-compress.version>
+        <commons-compress.version>1.14</commons-compress.version>
         <commons-cli.version>1.3</commons-cli.version>
         <hamcrest.version>1.3</hamcrest.version>
-        <jetty.version>9.4.2.v20170220</jetty.version>
-        <struts2.version>2.5.10.1</struts2.version>
+        <jetty.version>9.4.5.v20170502</jetty.version>
+        <struts2.version>2.5.13</struts2.version>
         <jersey.version>2.25.1</jersey.version>
         <icu4j.version>58.2</icu4j.version>
-        <htmlunit.version>2.25</htmlunit.version>
-        <selenium.version>3.3.1</selenium.version>
+        <htmlunit.version>2.27</htmlunit.version>
+        <selenium.version>3.6.0</selenium.version>
 
         <commons-fileupload.version>1.3.2</commons-fileupload.version>
         
@@ -244,9 +243,15 @@
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-bom</artifactId>
-                <version>2.8.1</version>
+                <version>2.8.2</version>
                 <scope>import</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons.math.version}</version>
+                <!-- LICENSE: APACHE 2.0 -->
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -266,6 +271,11 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
                 <!-- LICENSE: MIT -->
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>2.0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>
@@ -586,6 +596,26 @@
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <!-- LICENSE: ECLIPSE -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-rs-client</artifactId>
+            <version>${apache.cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jsonld-java</groupId>
+            <artifactId>jsonld-java</artifactId>
+            <version>0.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+            <version>1.6</version>
         </dependency>
     </dependencies>		
     </dependencyManagement>

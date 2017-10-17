@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.service.GenericService;
-import org.tdar.core.service.StatisticService;
+import org.tdar.core.service.StatisticsService;
 import org.tdar.core.service.processes.AbstractScheduledProcess;
 
 /**
@@ -30,7 +30,7 @@ public class DailyStatisticsUpdate extends AbstractScheduledProcess {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    private transient StatisticService statisticService;
+    private transient StatisticsService statisticService;
 
     @Autowired
     private transient GenericService genericService;
@@ -55,7 +55,9 @@ public class DailyStatisticsUpdate extends AbstractScheduledProcess {
         Statistics sessionStatistics = genericService.getSessionStatistics();
         sessionStatistics.clear();
         logger.info("adding statistics");
-        statisticService.generateAggregateDailyResourceData(DateTime.now().minusDays(1).toDate());
+        DateTime date = DateTime.now().minusDays(1);
+        statisticService.initializeNewAggregateEntries(date);
+        statisticService.generateMonthlyResourceStats(date);
         // delete old stats
         statisticService.cleanupOldDailyStats(DateTime.now().minusMonths(1).toDate());
         statisticService.generateAggregateDailyDownloadData(DateTime.now().minusDays(1).toDate());

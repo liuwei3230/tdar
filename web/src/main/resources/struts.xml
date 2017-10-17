@@ -26,7 +26,9 @@
     <constant name="struts.ui.theme" value="bootstrap" />
     <constant name="struts.url.includeParams" value="none" />
     <constant name="struts.action.extension" value="," />
-    <constant name="struts.action.excludePattern" value="/services/.*,/dataone/.*,/oai-pmh/.*,/hosted/.*,/odata.svc/.*,/404.html,/wro/.*" />
+    
+<!--        <constant name="struts.multipart.validationRegex" value="^multipart\/form-data(; boundary=[a-zA-Z0-9\-\(\)\+\_\,\-\.\/\:\=\?]{1,70})?"/> -->
+     <constant name="struts.action.excludePattern" value="/hosted/.*,/404.html,/wro/.*" />
     <constant name="struts.additional.excludedPatterns" value="^(action|method):.*"/>
     <constant name="struts.custom.i18n.resources"
         value="Locales/tdar-freemarker-messages,Locales/tdar-messages" />
@@ -75,6 +77,8 @@
                 class="org.tdar.struts.interceptor.CacheControlInterceptor" />
             <interceptor name="activityLogging"
                 class="org.tdar.struts_base.interceptor.ActivityLoggingInterceptor" />
+            <interceptor name="doubleSubmit"
+                class="org.tdar.struts.interceptor.DoubleSubmitInterceptor" />
             <interceptor name="sso" class="org.tdar.struts_base.interceptor.CrowdTokenInterceptor" />
             <interceptor-stack name="tdarDefaultStack">
                 <interceptor-ref name="exception">
@@ -109,6 +113,7 @@
                     should be used sparingly -->
                 <interceptor-ref name="sso" />
                 <interceptor-ref name="authenticate" />
+                <interceptor-ref name="doubleSubmit" />
                 <interceptor-ref name='tdarDefaultStack' />
                 <interceptor-ref name="fileUpload">
                     <!-- ONLY OVERRIDE IF ABSOLUTELY NECESSARY - THIS PROTECTS 

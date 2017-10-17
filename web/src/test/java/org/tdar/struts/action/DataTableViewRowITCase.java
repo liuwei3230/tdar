@@ -20,7 +20,7 @@ import org.tdar.struts_base.action.TdarActionException;
 
 import com.opensymphony.xwork2.Action;
 
-public class DataTableViewRowITCase extends AbstractDataIntegrationTestCase {
+public class DataTableViewRowITCase extends AbstractAdminControllerITCase {
 
     private static final String TEST_DATASET = "/data_integration_tests/england_woods.xlsx";
     private RowViewAction controller;
@@ -100,7 +100,7 @@ public class DataTableViewRowITCase extends AbstractDataIntegrationTestCase {
             file.setRestriction(FileAccessRestriction.CONFIDENTIAL);
         }
         genericService.save(dataset);
-        TdarUser user = createAndSaveNewPerson();
+        TdarUser user = createAndSaveNewUser();
         init(controller, user);
         controller.setRowId(1L);
         controller.prepare();

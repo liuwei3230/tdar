@@ -15,8 +15,12 @@ import org.apache.commons.lang.ClassUtils;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Localizable;
 import org.tdar.core.bean.Persistable;
+import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.collection.HierarchicalCollection;
 import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.SharedCollection;
+import org.tdar.core.bean.integration.DataIntegrationWorkflow;
+import org.tdar.core.bean.resource.HasAuthorizedUsers;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.utils.MessageHelper;
 
@@ -26,38 +30,31 @@ import org.tdar.utils.MessageHelper;
  *         equivalent. The numerical equivalent is additive, hence someone with a 500 level permission can do a 100 level action. The numeric permissions should
  *         be faster to query / index in the database
  */
+@SuppressWarnings("unchecked")
 public enum GeneralPermissions implements HasLabel, Localizable {
-    VIEW_ALL("View and Download", 100, Resource.class, SharedCollection.class),
-    MODIFY_METADATA("Modify Metadata", 400, Resource.class, SharedCollection.class),
-    MODIFY_RECORD("Modify Files & Metadata", 500, Resource.class, SharedCollection.class),
-    ADD_TO_COLLECTION("Add to Collection", 40, ListCollection.class),
-    REMOVE_FROM_COLLECTION("Remove from Collection", 50, ListCollection.class),
-    ADMINISTER_GROUP("Add/Remove Items from Collection", 80,ListCollection.class),
-    ADD_TO_SHARE("Add to Share", 4000,SharedCollection.class),
-    REMOVE_FROM_SHARE("Remove from Share", 4500, SharedCollection.class),
-    ADMINISTER_SHARE("Add/Remove Items from Share", 5000,SharedCollection.class);
+    NONE(-1000),
+    VIEW_ALL( 100, Resource.class, SharedCollection.class),
+    MODIFY_METADATA(400, Resource.class, SharedCollection.class),
+    MODIFY_RECORD(500, Resource.class, SharedCollection.class),
+    ADD_TO_COLLECTION(40, ListCollection.class),
+    REMOVE_FROM_COLLECTION(50, ListCollection.class),
+    ADMINISTER_GROUP(80,ListCollection.class),
+    ADD_TO_SHARE(4000,SharedCollection.class),
+    REMOVE_FROM_SHARE(4500, SharedCollection.class),
+    ADMINISTER_SHARE( 5000,SharedCollection.class),
+    EDIT_ACCOUNT( 10000,BillingAccount.class),
+    EDIT_INTEGRATION( 2000,DataIntegrationWorkflow.class);
 
     private Integer effectivePermissions;
-    private String label;
     private List<Class<? extends Persistable>> contexts;
 
-    GeneralPermissions(String label, Integer effectivePermissions) {
-        this.setLabel(label);
+    GeneralPermissions(Integer effectivePermissions) {
         this.setEffectivePermissions(effectivePermissions);
     }
 
-    GeneralPermissions(String label, Integer effectivePermissions, Class<? extends Persistable> ... contexts) {
-        this.setLabel(label);
+    GeneralPermissions(Integer effectivePermissions, Class<? extends Persistable> ... contexts) {
         this.setEffectivePermissions(effectivePermissions);
         this.setContexts(Arrays.asList(contexts));
-    }
-
-    /**
-     * @param label
-     *            the label to set
-     */
-    private void setLabel(String label) {
-        this.label = label;
     }
 
     /**
@@ -65,7 +62,7 @@ public enum GeneralPermissions implements HasLabel, Localizable {
      */
     @Override
     public String getLabel() {
-        return label;
+        return MessageHelper.getMessage(getLocaleKey());
     }
 
     @Override
@@ -108,6 +105,8 @@ public enum GeneralPermissions implements HasLabel, Localizable {
         permissions.remove(GeneralPermissions.ADMINISTER_SHARE);
         permissions.remove(GeneralPermissions.ADD_TO_SHARE);
         permissions.remove(GeneralPermissions.REMOVE_FROM_SHARE);
+        permissions.remove(GeneralPermissions.EDIT_ACCOUNT);
+        permissions.remove(GeneralPermissions.EDIT_INTEGRATION);
         return permissions;
     }
 
@@ -119,7 +118,12 @@ public enum GeneralPermissions implements HasLabel, Localizable {
         this.contexts = contexts;
     }
 
-    public static <P extends Persistable> List<GeneralPermissions> getAvailablePermissionsFor(Class<P> persistableClass) {
+    public static <P extends Persistable> List<GeneralPermissions> getAvailablePermissionsFor(Class<P> persistableClass_) {
+        Class<P> persistableClass = persistableClass_;
+        if (persistableClass.equals(HierarchicalCollection.class)) {
+            persistableClass = (Class<P>) SharedCollection.class;
+        }
+
         List<GeneralPermissions> toReturn = new ArrayList<>();
         for (GeneralPermissions perm : GeneralPermissions.values()) {
             if (CollectionUtils.isEmpty(perm.getContexts())) {
@@ -133,6 +137,26 @@ public enum GeneralPermissions implements HasLabel, Localizable {
                 }
             }
         }
+        toReturn.remove(NONE);
         return toReturn;
+    }
+
+    public static GeneralPermissions getEditPermissionFor(HasAuthorizedUsers account) {
+        if (account instanceof BillingAccount) {
+            return GeneralPermissions.EDIT_ACCOUNT;
+        }
+        if (account instanceof DataIntegrationWorkflow) {
+            return GeneralPermissions.EDIT_INTEGRATION;
+        }
+        if (account instanceof SharedCollection) {
+            return GeneralPermissions.ADMINISTER_SHARE;
+        }
+        if (account instanceof ListCollection) {
+            return GeneralPermissions.ADMINISTER_GROUP;
+        }
+        if (account instanceof Resource) {
+            return GeneralPermissions.MODIFY_RECORD;
+        }
+        return null;
     }
 }

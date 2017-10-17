@@ -11,7 +11,7 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.dao.external.auth.AuthenticationResult;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.core.service.external.AuthenticationService;
-import org.tdar.core.service.external.AuthenticationService.AuthenticationStatus;
+import org.tdar.core.service.external.AuthenticationStatus;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.external.auth.UserLogin;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -78,7 +78,7 @@ public abstract class AbstractRequestAccessLoginAction<P extends Persistable> ex
 
     @Override
     public void validate() {
-        ErrorTransferObject errors = getUserLogin().validate(authorizationService, getRecaptchaService(), getServletRequest().getRemoteHost());
+        ErrorTransferObject errors = getUserLogin().validate(authorizationService, getServletRequest().getRemoteHost());
         processErrorObject(errors);
 
         if (errors.isNotEmpty()) {

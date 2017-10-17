@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.dao.external.auth.AuthenticationResult;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.core.service.external.AuthenticationService;
-import org.tdar.core.service.external.AuthenticationService.AuthenticationStatus;
+import org.tdar.core.service.external.AuthenticationStatus;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.external.auth.DownloadUserLogin;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -83,7 +83,7 @@ public class DownloadLoginController extends AbstractDownloadController implemen
 
     @Override
     public void validate() {
-        ErrorTransferObject errors = getDownloadUserLogin().validate(authorizationService, getRecaptchaService(), getServletRequest().getRemoteHost());
+        ErrorTransferObject errors = getDownloadUserLogin().validate(authorizationService, getServletRequest().getRemoteHost());
         processErrorObject(errors);
 
         if (errors.isNotEmpty()) {

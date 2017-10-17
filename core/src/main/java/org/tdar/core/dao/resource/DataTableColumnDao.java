@@ -8,9 +8,10 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.collection.RightsBasedResourceCollection;
 import org.tdar.core.bean.collection.SharedCollection;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.CodingRule;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
@@ -20,7 +21,7 @@ import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.TdarNamedQueries;
-import org.tdar.core.dao.base.Dao;
+import org.tdar.core.dao.base.HibernateBase;
 import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -36,7 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @version $Rev$
  */
 @Component
-public class DataTableColumnDao extends Dao.HibernateBase<DataTableColumn> {
+public class DataTableColumnDao extends HibernateBase<DataTableColumn> {
 
     public DataTableColumnDao() {
         super(DataTableColumn.class);
@@ -74,8 +75,7 @@ public class DataTableColumnDao extends Dao.HibernateBase<DataTableColumn> {
     public CodingSheet setupGeneratedCodingSheet(DataTableColumn column, Dataset dataset, TdarUser user, TextProvider provider, Ontology ontology) {
         CodingSheet codingSheet = new CodingSheet();
         codingSheet.markUpdated(user);
-        codingSheet
-                .setTitle(provider.getText("dataIntegrationService.generated_coding_sheet_title", Arrays.asList(column.getDisplayName(), dataset.getTitle())));
+        codingSheet.setTitle(provider.getText("dataIntegrationService.generated_coding_sheet_title", Arrays.asList(column.getDisplayName(), dataset.getTitle())));
         if (ontology != null) {
             codingSheet.setCategoryVariable(ontology.getCategoryVariable());
             codingSheet.setDefaultOntology(ontology);
@@ -88,10 +88,12 @@ public class DataTableColumnDao extends Dao.HibernateBase<DataTableColumn> {
         codingSheet.setDate(Calendar.getInstance().get(Calendar.YEAR));
         codingSheet.setGenerated(true);
         codingSheet.setAccount(dataset.getAccount());
+        codingSheet.getAuthorizedUsers().add(new AuthorizedUser(user, user, GeneralPermissions.MODIFY_RECORD));
+
         save(codingSheet);
         if (dataset != null) {
             codingSheet.setProject(dataset.getProject());
-            for (RightsBasedResourceCollection collection : dataset.getRightsBasedResourceCollections()) {
+            for (SharedCollection collection : dataset.getRightsBasedResourceCollections()) {
                 if (collection instanceof SharedCollection) {
                     codingSheet.getSharedCollections().add((SharedCollection) collection);
                 }

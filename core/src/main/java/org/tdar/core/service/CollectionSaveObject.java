@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.collection.HierarchicalCollection;
-import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 
@@ -28,16 +27,13 @@ public class CollectionSaveObject<C extends HierarchicalCollection> implements S
     private Long startTime;
     private List<Long> publicToAdd;
     private List<Long> publicToRemove;
-    private List<AuthorizedUser> authorizedUsers = new ArrayList<>();
-
     private Class<C> persistableClass;
     
-    public CollectionSaveObject(C persistable, TdarUser authenticatedUser, Long startTime2, List<AuthorizedUser> authorizedUsers, Class<C> class1) {
+    public CollectionSaveObject(C persistable, TdarUser authenticatedUser, Long startTime2, Class<C> class1) {
         this.collection = persistable;
         this.user = authenticatedUser;
         this.setPersistableClass(class1);
         this.startTime = startTime2;
-        this.authorizedUsers = authorizedUsers;
     }
 
     public C getCollection() {
@@ -152,13 +148,6 @@ public class CollectionSaveObject<C extends HierarchicalCollection> implements S
         this.publicToRemove = publicToRemove;
     }
 
-    public List<AuthorizedUser> getAuthorizedUsers() {
-        return authorizedUsers;
-    }
-
-    public void setAuthorizedUsers(List<AuthorizedUser> authorizedUsers) {
-        this.authorizedUsers = authorizedUsers;
-    }
 
     public Class<C> getPersistableClass() {
         return persistableClass;

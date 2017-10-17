@@ -1,6 +1,7 @@
 package org.tdar.core.dao.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.entity.AgreementTypes;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
+import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
@@ -32,7 +34,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceRevisionLog;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.TdarNamedQueries;
-import org.tdar.core.dao.base.Dao;
+import org.tdar.core.dao.base.HibernateBase;
 
 /**
  * $Id$
@@ -45,7 +47,7 @@ import org.tdar.core.dao.base.Dao;
  * @version $Revision$
  */
 @Component
-public class PersonDao extends Dao.HibernateBase<Person> {
+public class PersonDao extends HibernateBase<Person> {
 
     private static final Long TDAR_USER_PRIOR_TO_ASKING_AFFILIATION = 5215L;
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -73,6 +75,21 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         query.setParameter("initial", initial);
         query.setParameter("initial2", initial + ".");
         people.addAll(query.getResultList());
+        return people;
+    }
+    
+    @SuppressWarnings("unchecked")
+    /**
+     * Searches for all the people for a given institution, and returns a list sorted by last name, first name
+     * @param institution
+     * @return
+     */
+    public List<Person> findPeopleByInstituion(Institution institution) {
+        List<Person> people = new ArrayList<>();
+        Query<Person> query = getCurrentSession().getNamedQuery(QUERY_INSTITUTION_PEOPLE);
+        query.setParameter("id", institution.getId());
+        people.addAll(query.getResultList());
+        Collections.sort(people, (person1, person2)-> person1.getLastName().concat(person1.getFirstName()).compareTo(person2.getLastName().concat(person2.getFirstName())));
         return people;
     }
 
@@ -296,12 +313,12 @@ public class PersonDao extends Dao.HibernateBase<Person> {
         return toReturn;
     }
 
-    @SuppressWarnings("unchecked")
     public List<UserInvite> checkInvite(TdarUser person) {
         Query<UserInvite> query = getCurrentSession().createNamedQuery(TdarNamedQueries.CHECK_INVITES);
         query.setParameter("email", person.getEmail());
-        return query.getResultList();
-        
+        List<UserInvite> resultList = query.getResultList();
+        logger.debug("{}", resultList);
+        return resultList;
     }
 
     public List<ResourceRevisionLog> findChangesForUser(TdarUser user, Date date) {

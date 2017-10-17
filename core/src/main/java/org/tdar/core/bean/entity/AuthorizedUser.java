@@ -20,14 +20,11 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.validator.internal.util.privilegedactions.GetDeclaredConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
@@ -35,8 +32,6 @@ import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @author Adam Brin
@@ -82,6 +77,19 @@ public class AuthorizedUser extends AbstractPersistable {
     @JoinColumn(nullable = false, name = "creator_id")
     private TdarUser createdBy;
 
+    @Column(name="resource_collection_id", insertable=false, updatable=false)
+    private Long collectionId;
+
+    
+    @Column(name="account_id", insertable=false, updatable=false)
+    private Long accountId;
+
+    @Column(name="integration_id", insertable=false, updatable=false)
+    private Long integrationId;
+
+    @Column(name="resource_id", insertable=false, updatable=false)
+    private Long resourceId;
+
     private transient boolean enabled = false;
 
     /**
@@ -91,8 +99,8 @@ public class AuthorizedUser extends AbstractPersistable {
     public AuthorizedUser() {
     }
 
-    public AuthorizedUser(TdarUser authenticatedUser, TdarUser person, GeneralPermissions permission) {
-        this.createdBy = authenticatedUser;
+    public AuthorizedUser(TdarUser createdBy, TdarUser person, GeneralPermissions permission) {
+        this.createdBy = createdBy;
         this.user = person;
         setGeneralPermission(permission);
     }
@@ -155,7 +163,7 @@ public class AuthorizedUser extends AbstractPersistable {
         if (getDateExpires() != null) {
             ex = dateExpires.toString();
         }
-        return String.format("%s[%s] (%s - %s%s)", properName, userid, generalPermission, getId(), ex);
+        return String.format("%s[%s] (%s - %s %s)", properName, userid, generalPermission, getId(), ex);
     }
 
     /**
@@ -200,6 +208,8 @@ public class AuthorizedUser extends AbstractPersistable {
         this.dateExpires = dateExpires;
     }
 
+    @XmlElement(name = "createdByRef")
+    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
     public TdarUser getCreatedBy() {
         return createdBy;
     }
@@ -214,6 +224,22 @@ public class AuthorizedUser extends AbstractPersistable {
 
     public void setDateCreated(Date dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    public Long getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(Long resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public Long getCollectionId() {
+        return collectionId;
+    }
+
+    public void setCollectionId(Long collectionId) {
+        this.collectionId = collectionId;
     }
 
 }

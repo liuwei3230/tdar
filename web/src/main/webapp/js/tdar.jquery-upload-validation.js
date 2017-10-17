@@ -282,14 +282,21 @@
             if (!this.fileupload) {
                 errs.push("fileupload element not found");
             }
+
             if (!this.helper) {
                 errs.push("fileupload helper not found - did you call registerFileUpload yet?");
+            } else if (!this.helper.inputSelector) {
+                errs.push("fileupload helper found - but no inputSelector?");
             }
-            this.inputSelector = this.helper.inputSelector;
+            
             $.each(errs, function (idx, err) {
                 console.error(err);
             });
-
+            if (errs.length > 0) {
+                return;
+            }
+            
+            this.inputSelector = this.helper.inputSelector;
             if (this.validateOnChange) {
                 //validate on the fileupload custom events
                 $(this.fileupload).bind("fileuploadstopped fileuploaddestroyed", function () {
@@ -567,6 +574,10 @@
                     extension: ["tif", "tiff"],
                     when: _hasFileWithExtension("tfw")
                 }, "A tiff file must accompany a tfw file");
+        validator.addRule("required", {
+            extension: ["tif", "tiff","jpg","jpeg",'accdb','mdb'],
+            when: _hasFileWithExtension("mxd")
+                }, "An image file or geodatabase must accompany a map file");
 
         //aux and aux.xml files can apply to either jpg or tiff
         validator.addRule("required", {

@@ -1,6 +1,8 @@
 package org.tdar.struts.action.resource;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -11,19 +13,23 @@ import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.SharedCollection;
+import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
-import org.tdar.core.service.resource.ResourceService.ErrorHandling;
+import org.tdar.core.service.resource.ErrorHandling;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
+import org.tdar.struts.data.AuthWrapper;
 import org.tdar.struts.action.AbstractRightsController;
 import org.tdar.struts_base.action.PersistableLoadingAction;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.interceptor.annotation.PostOnly;
+import org.tdar.web.service.ResourceEditControllerService;
+import org.tdar.web.service.ResourceSaveControllerService;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -44,20 +50,27 @@ import com.opensymphony.xwork2.Preparable;
 public class ResourceRightsController extends AbstractRightsController implements
         Preparable, PersistableLoadingAction<Resource> {
 
+    private static final String RIGHTS_FTL = "../rights.ftl";
+
     private static final long serialVersionUID = 120530285741022465L;
 
     private static final String RIGHTS = "{id}";
 
-    private static final String SUCCESS_INVITE = "invite";
-    private static final String INVITE = "invite.ftl";
 
     private Resource resource;
 
     @Autowired
     private transient AuthorizationService authorizationService;
     @Autowired
+    private transient ResourceSaveControllerService saveService;
+    @Autowired
+    private transient ResourceEditControllerService editService;
+    @Autowired
     private transient ResourceCollectionService resourceCollectionService;
 
+    private List<SharedCollection> shares = new ArrayList<>();
+    private List<SharedCollection> retainedSharedCollections = new ArrayList<>();
+    private List<SharedCollection> effectiveShares = new ArrayList<>();
     @Override
     public boolean authorize() {
         return authorizationService.canEditResource(getAuthenticatedUser(), getPersistable(), GeneralPermissions.MODIFY_RECORD);
@@ -85,9 +98,11 @@ public class ResourceRightsController extends AbstractRightsController implement
 
     @SkipValidation
     @Action(value = RIGHTS, results = {
-            @Result(name = SUCCESS, location = "../rights.ftl")
+            @Result(name = SUCCESS, location = RIGHTS_FTL)
     })
     public String edit() throws TdarActionException {
+        editService.updateSharesForEdit(getResource(), getAuthenticatedUser(), effectiveShares, retainedSharedCollections, new ArrayList<>(), new ArrayList<>(), shares, new ArrayList<>());
+
         setupEdit();
         return SUCCESS;
     }
@@ -100,17 +115,19 @@ public class ResourceRightsController extends AbstractRightsController implement
     @SkipValidation
     @Action(value = SAVE, results = {
             @Result(name = SUCCESS, type = TDAR_REDIRECT, location = "${resource.detailUrl}"),
-            @Result(name = SUCCESS_INVITE, location = INVITE),
-            @Result(name = INPUT, location = RIGHTS)
+            @Result(name = INPUT, location = RIGHTS_FTL)
     })
     @PostOnly
     public String save() {
         try {
-            getLogger().debug("proxies:{}", getProxies());
-            loadEffectiveResourceCollectionsForSave();
+            getLogger().debug("save proxies:{}", getProxies());
+            AuthWrapper<Resource> auth = new AuthWrapper<Resource>(resource, false, getAuthenticatedUser(), false);
+            saveService.loadEffectiveResourceCollectionsForSave(auth, retainedSharedCollections, new ArrayList<ListCollection>());
             getLogger().debug("retained collections:{}", getRetainedSharedCollections());
             getShares().addAll(getRetainedSharedCollections());
             getLogger().debug("shares:{}", getShares());
+            
+            
 
             resourceCollectionService.saveResourceCollections(getResource(), getShares(), getResource().getSharedCollections(),
                     getAuthenticatedUser(), true, ErrorHandling.VALIDATE_SKIP_ERRORS, SharedCollection.class);
@@ -136,8 +153,8 @@ public class ResourceRightsController extends AbstractRightsController implement
     }
 
     @Override
-    public ResourceCollection getLocalRightsCollection() {
-        return getResource().getInternalResourceCollection();
+    public Set<AuthorizedUser> getLocalRightsCollection() {
+        return resource.getAuthorizedUsers();
     }
     
     public Resource getResource() {
@@ -159,34 +176,35 @@ public class ResourceRightsController extends AbstractRightsController implement
         resourceCollectionService.saveResourceRights(getProxies(), getAuthenticatedUser(), getResource());
 
     }
-    
-    public void loadEffectiveResourceCollectionsForEdit() {
-        getEffectiveShares().addAll(resourceCollectionService.getEffectiveSharesForResource(getResource()));
-
-        getLogger().debug("loadEffective...");
-        for (SharedCollection rc : getResource().getSharedResourceCollections()) {
-            if (authorizationService.canViewCollection(getAuthenticatedUser(), rc)) {
-                getShares().add(rc);
-            } else {
-                getRetainedSharedCollections().add(rc);
-                getLogger().debug("adding: {} to retained collections", rc);
-            }
-        }
-        getLogger().debug("Shares: {}", getShares());
-    }
-
-    public void loadEffectiveResourceCollectionsForSave() {
-        getLogger().debug("loadEffective...");
-        for (SharedCollection rc : getResource().getSharedCollections()) {
-            if (!authorizationService.canViewCollection(getAuthenticatedUser(), rc)) {
-                getRetainedSharedCollections().add(rc);
-                getLogger().debug("adding: {} to retained collections", rc);
-            }
-        }
-    }
 
     public boolean isRightsPage() {
         return true;
+    }
+    
+    
+
+    public List<SharedCollection> getRetainedSharedCollections() {
+        return retainedSharedCollections;
+    }
+
+    public void setRetainedSharedCollections(List<SharedCollection> retainedSharedCollections) {
+        this.retainedSharedCollections = retainedSharedCollections;
+    }
+
+    public List<SharedCollection> getEffectiveShares() {
+        return effectiveShares;
+    }
+
+    public void setEffectiveShares(List<SharedCollection> effectiveShares) {
+        this.effectiveShares = effectiveShares;
+    }
+
+    public List<SharedCollection> getShares() {
+        return shares;
+    }
+
+    public void setShares(List<SharedCollection> shares) {
+        this.shares = shares;
     }
 
 }

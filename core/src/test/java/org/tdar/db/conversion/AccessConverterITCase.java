@@ -19,6 +19,9 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.junit.Before;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,14 +37,16 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableRelationship;
+import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.db.conversion.converters.DatasetConverter;
+import org.tdar.db.model.PostgresDatabase;
+import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.utils.MessageHelper;
 
 public class AccessConverterITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback(true)
-//    @Ignore
     public void testDatabase() throws FileNotFoundException, IOException {
         //"///Users/abrin/Dropbox (ASU)/"
         DatasetConverter converter = convertDatabase(new File(getTestFilePath(),"rpms_corrected.mdb"), 1224L);
@@ -49,10 +54,11 @@ public class AccessConverterITCase extends AbstractIntegrationTestCase {
             logger.info("{}", table);
         }
 
-        // FIXME: add more depth to testing
     }
+    
+    protected PostgresDatabase tdarDataImportDatabase = new PostgresDatabase();
 
-    @Override
+
     @Autowired
     @Qualifier("tdarDataImportDataSource")
     public void setIntegrationDataSource(DataSource dataSource) {
@@ -268,6 +274,49 @@ public class AccessConverterITCase extends AbstractIntegrationTestCase {
         }
 
         // FIXME: add more depth to testing
+    }
+
+
+    static Long spitalIrId = (long) (Math.random() * 10000);
+
+    public DatasetConverter setupSpitalfieldAccessDatabase() throws IOException {
+        spitalIrId++;
+        DatasetConverter converter = convertDatabase(new File(getTestFilePath(), SPITAL_DB_NAME), spitalIrId);
+        return converter;
+    }
+
+
+    public DatasetConverter convertDatabase(File file, Long irFileId) throws IOException, FileNotFoundException {
+        InformationResourceFileVersion accessDatasetFileVersion = makeFileVersion(file, irFileId);
+        File storedFile = filestore.retrieveFile(FilestoreObjectType.RESOURCE, accessDatasetFileVersion);
+        assertTrue("text file exists", storedFile.exists());
+        DatasetConverter converter = DatasetConversionFactory.getConverter(accessDatasetFileVersion, tdarDataImportDatabase);
+        converter.execute();
+        setDataImportTables((String[]) ArrayUtils.addAll(getDataImportTables(), converter.getTableNames().toArray(new String[0])));
+        return converter;
+    }
+
+
+
+    String[] dataImportTables = new String[0];
+
+    public String[] getDataImportTables() {
+        return dataImportTables;
+    }
+
+    public void setDataImportTables(String[] dataImportTables) {
+        this.dataImportTables = dataImportTables;
+    }
+
+    @Before
+    public void dropDataImportDatabaseTables() throws Exception {
+        for (String table : getDataImportTables()) {
+            try {
+                tdarDataImportDatabase.dropTable(table);
+            } catch (Exception ignored) {
+            }
+        }
+
     }
 
 }

@@ -21,6 +21,7 @@ import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.service.EntityService;
+import org.tdar.search.bean.PersonSearchOption;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.index.LookupSource;
@@ -107,7 +108,7 @@ public class PersonSearchITCase extends AbstractWithIndexIntegrationTestCase {
     }
 
     private void assertResultsOkay(String term, SearchResult<Person> controller_) {
-        assertNotEmpty(controller_.getResults());
+        assertNotEmpty("should have results", controller_.getResults());
         for (Object obj : controller_.getResults()) {
             Person inst = (Person) obj;
             if (!term.contains(" ")) {
@@ -241,7 +242,7 @@ public class PersonSearchITCase extends AbstractWithIndexIntegrationTestCase {
         SearchResult<Person> result = findPerson(person_, "billingAdmin", true, min);
 
         List<Person> people = result.getResults();
-        assertNotEmpty(people);
+        assertNotEmpty("should have results", people);
         assertTrue(people.contains(user));
     }
 

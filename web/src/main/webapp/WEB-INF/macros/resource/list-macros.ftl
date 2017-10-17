@@ -181,11 +181,14 @@
                 <#assign defaultKeyLabel="No Resource Type"/>
             </#if>
             <#if sortfield?contains('PROJECT')>
-                <#if resource.project??>
+                <#if resource.project?? && resource.project.id != -1>
                     <#assign key = resource.project.title />
                 <#elseif resource.resourceType.project >
                     <#assign key = resource.title!'' />
+                <#else>
+                    <#assign key= defaultKeyLabel />
                 </#if>
+
             </#if>
         <#-- print special header and group/list tag -->
             <#if first || (prev != key) && key?has_content>
@@ -231,7 +234,7 @@
                     <#if (resource.citationRecord?has_content && resource.citationRecord && !resource.resourceType.project)>
                         <span class='cartouche' title="Citation only; this record has no attached files.">Citation</span>
                     </#if>
-                    <@commonr.cartouche resource true><#if resource.hidden!false><i class="icon-eye-close" title="hidden" alt="hidden"></i></#if><@_listCreators resource/></@commonr.cartouche>
+                    <@commonr.cartouche resource true><#if resource.hidden!false><i class="icon-eye-close" title="hidden" alt="hidden"></i> </#if><small>[ID: ${_rid}]</small> <@_listCreators resource/></@commonr.cartouche>
                     <#if resource.resourceType?has_content>
                         <@view.unapiLink resource  />
                     </#if>
@@ -239,7 +242,6 @@
                         <p class="project">${resource.project.title}</p>
                     </#if>
                     <p class="abstract">
-                        <span class="pull-right small">[tDAR id: ${_rid}]</span>
                         <#-- for comparing resources - points to /resource/compare?id=??&id=... -->
                         <#-- <br><span class="compare">compare:</span><input type="checkbox" name='id' style="margin-top:-2px" /></span> -->
                         <@common.truncate _desc length />
@@ -286,7 +288,7 @@ bookmark indicator, etc..
             </#if>
             <#if (result.date?has_content && (result.date > 0 || result.date < -1) )>(${result.date?c})</#if>
         </a><#lt>
-        <#if isMapLayout && result.latLongVisible><i class="icon-map-marker" title="click to highlight on map" alt="click to highlight on map"></i></#if>
+        <#if isMapLayout && result.latLongVisible!false><i class="icon-map-marker" title="click to highlight on map" alt="click to highlight on map"></i></#if>
         <#if titleTag?has_content>
         </${titleTag}>
         </#if>

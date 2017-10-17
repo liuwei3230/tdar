@@ -5,11 +5,11 @@
     <#import "/WEB-INF/macros/search-macros.ftl" as search>
     <#import "/WEB-INF/macros/resource/common-resource.ftl" as commonr>
     <#import "/WEB-INF/macros/common.ftl" as common>
-    <#import "dashboard-common.ftl" as dash />
+    <#import "common-dashboard.ftl" as dash />
     <#import "/${config.themeDir}/settings.ftl" as settings>
 
 <head>
-    <title>${authenticatedUser.properName}'s Dashboard</title>
+    <title>Rights and Permissions: ${authenticatedUser.properName} </title>
     <meta name="lastModifiedDate" content="$Date$"/>
     <@edit.resourceDataTableJavascript />
 </head>
@@ -22,35 +22,12 @@
     <@dash.sidebar current="rights" />
     </div>
     <div class="span10">
-    <#if ((findUsersSharedWith?size!0) > 0)>
-        <h5>Users you've shared with</h5>
-        <div class="row" id="sharedPeople">
-            <div class="well span10">
-                <div class="row">
-                    <#assign showMore=false />
-                    <#assign listGroups = [findUsersSharedWith]>
-                    <#if (findUsersSharedWith?size > 4)><#assign listGroups =  findUsersSharedWith?chunk(findUsersSharedWith?size /4 )> </#if>
-                    <#list listGroups as row>
-                        <div  class="span2">
-                            <#list row>
-                            <ul class="unstyled">
-                            <#items as item>
-                                <li class="<#if (item_index > 3)>hidden<#assign showMore=true /></#if>"><a href="/entity/user/rights/${item.id?c}">${item.properName}</a></li>
-                            </#items>
-                            </ul>
-                            </#list>
-                        </div>
-                    </#list>
-                    </div>
-                    <#if showMore>
-                        <div span="span10">
-                            <p class="text-center"><a href="#"  onClick="$('#sharedPeople .hidden').removeClass('hidden');$(this).hide()">show more</a></p>
-                        </div>
-                    </#if>
-                </div>
-            </div>
-        </#if>
-        <@collectionsSection />
+	    <#if ((findUsersSharedWith?size!0) > 0)>
+	        <h5>Users you've shared with</h5>
+	        <@common.listUsers users=findUsersSharedWith span=10 baseUrl="/entity/user/rights" well=true  />
+	
+	    </#if>
+	    <@collectionsSection />
     </div>
 
 </div>
@@ -67,15 +44,19 @@
             <thead>
             <tr>
                 <th>Collection (${allResourceCollections?size})</th>
-                <th>action</th>
+                <th>Resources</th>
+                <th>Users</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
             <#list allResourceCollections as collection>
                 <tr>
-                <td><a href="${collection.detailUrl}">${collection.name!'no name'}</a> <@dash.collectionLegend collection /><br/>
+                <td><a href="${collection.detailUrl}">${collection.name!'no name'}</a><br/>
                 ${collection.description!''}
                     </td>
+                   <td>${(collection.resources![])?size}</td>
+                   <td>${(collection.authorizedUsers![])?size}</td>
                 <td>
                     <div class="btn-group inline">
                       <a class="btn btn-mini" href="/collection/${collection.id?c}/edit">edit</a>

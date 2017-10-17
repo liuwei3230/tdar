@@ -3,7 +3,6 @@ package org.tdar.core.service.batch.actions;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.service.batch.AbstractBatchAction;
@@ -22,12 +21,8 @@ public class AuthorizedUserBatchAction extends AbstractBatchAction<AuthorizedUse
 
     @Override
     public void performAction(Resource resource, BatchActionType type) {
-        ResourceCollection internalResourceCollection = resource.getInternalResourceCollection();
-        if (internalResourceCollection == null) {
-            return;
-        }
 
-        Set<AuthorizedUser> authorizedUsers = internalResourceCollection.getAuthorizedUsers();
+        Set<AuthorizedUser> authorizedUsers = resource.getAuthorizedUsers();
         Iterator<AuthorizedUser> iterator = authorizedUsers.iterator();
         switch (type) {
             case CLEAR:

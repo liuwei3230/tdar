@@ -20,18 +20,22 @@
     <tdar:resourceCreators/>
     <tdar:resourceNotes/>
     <tdar:resourceType>PROJECT</tdar:resourceType>
-    <tdar:sharedCollections>
-        <tdar:sharedCollection hidden="false">
+    <tdar:resourceCollections>
+        <tdar:resourceCollection hidden="false">
+            <tdar:description>description</tdar:description>
+            <tdar:name>1234</tdar:name>
             <tdar:resources>
                 <tdar:resourceId>4232</tdar:resourceId>
             </tdar:resources>
-            <tdar:name>1234</tdar:name>
-        </tdar:sharedCollection>
-        <tdar:sharedCollection hidden="true"  parentIdRef="NULL_REF">
+            <tdar:sortBy>TITLE</tdar:sortBy>
+        </tdar:resourceCollection>
+        <tdar:resourceCollection hidden="true"  parentIdRef="NULL_REF">
             <tdar:description>description</tdar:description>
             <tdar:name>abcd</tdar:name>
-        </tdar:sharedCollection>
-    </tdar:sharedCollections>
+            <tdar:orientation>LIST</tdar:orientation>
+            <tdar:sortBy>TITLE</tdar:sortBy>
+        </tdar:resourceCollection>
+    </tdar:resourceCollections>
     
     <tdar:siteNameKeywords/>
     <tdar:siteTypeKeywords/>
@@ -41,7 +45,7 @@
     <tdar:statusChanged>false</tdar:statusChanged>
     <tdar:temporalKeywords/>
     <tdar:title>abcd</tdar:title>
-    <tdar:listCollections>
+<!--    <tdar:listCollections>
         <tdar:listCollection hidden="false">
             <tdar:resources>
                 <tdar:resourceId>4232</tdar:resourceId>
@@ -58,6 +62,6 @@
 		    </tdar:properties>
             <tdar:sortBy>TITLE</tdar:sortBy>
         </tdar:listCollection>
-    </tdar:listCollections>
+    </tdar:listCollections>-->
     <tdar:url></tdar:url>
 </tdar:project>

@@ -12,20 +12,21 @@ import org.tdar.core.bean.entity.permissions.GeneralPermissions;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.UserRightsProxy;
+import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.document.DocumentController;
 import org.tdar.struts.action.image.ImageController;
 import org.tdar.struts_base.action.TdarActionException;
 
 import com.opensymphony.xwork2.Action;
 
-public class ResourceRightsControllerITCase extends AbstractResourceControllerITCase {
+public class ResourceRightsControllerITCase extends AbstractControllerITCase {
 
 
     @Test
     @Rollback
     public void testUserPermIssuesUsers() throws Exception {
         // setup document
-        TdarUser newUser = createAndSaveNewPerson();
+        TdarUser newUser = createAndSaveNewUser();
         DocumentController dc = generateNewInitializedController(DocumentController.class, getBasicUser());
         dc.prepare();
         Document doc = dc.getDocument();
@@ -39,15 +40,13 @@ public class ResourceRightsControllerITCase extends AbstractResourceControllerIT
         doc = null;
 
         evictCache();
-        AuthorizedUser au = new AuthorizedUser(getAdminUser(),newUser, GeneralPermissions.MODIFY_METADATA);
         ResourceRightsController rrc;
-        saveUser(id, au);
+        saveUser(id, new AuthorizedUser(getAdminUser(),newUser, GeneralPermissions.MODIFY_METADATA));
         doc = genericService.find(Document.class, id);
-        logger.debug("RC: {}", doc.getInternalResourceCollection().getAuthorizedUsers());
+        logger.debug("RC: {}", doc.getAuthorizedUsers());
         // change the submitter to the admin
-        AuthorizedUser au2 = new AuthorizedUser(getAdminUser(),newUser, GeneralPermissions.ADMINISTER_SHARE);
-        saveUser(id, au2);
-        logger.debug("RC: {}", doc.getInternalResourceCollection().getAuthorizedUsers());
+        saveUser(id, new AuthorizedUser(getAdminUser(),newUser, GeneralPermissions.ADMINISTER_SHARE));
+        logger.debug("RC: {}", doc.getAuthorizedUsers());
 
         evictCache();
     }
@@ -64,7 +63,7 @@ public class ResourceRightsControllerITCase extends AbstractResourceControllerIT
         image.setTitle("test image");
         image.setDescription("test description");
         imageController.setServletRequest(getServletPostRequest());
-        TdarUser p = createAndSaveNewPerson();
+        TdarUser p = createAndSaveNewUser();
 
         // create the dataset
         imageController.save();
@@ -89,8 +88,9 @@ public class ResourceRightsControllerITCase extends AbstractResourceControllerIT
         try {
             imageController.prepare();
             imageController.edit();
-        } catch (TdarActionException e) {
             seen = true;
+        } catch (TdarActionException e) {
+            logger.error("{}",e,e);
         }
         assertTrue(seen);
     }

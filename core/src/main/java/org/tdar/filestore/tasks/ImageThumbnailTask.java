@@ -26,7 +26,6 @@ import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
-import org.tdar.filestore.tasks.Task.AbstractTask;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -125,12 +124,14 @@ public class ImageThumbnailTask extends AbstractTask {
                 // we get -1 if it's not a geotiff, so ignore
                 if (StringUtils.equals(dse.getMessage(),"-1")) {
                     //ignore, probably not a GeoTiff
+                } else if (StringUtils.contains(dse.getMessage(), "Raster to Model Transformation is not available")) {
+                    // this is likely something like a Greyscale Image
                 } else {
-                    getLogger().error("issue with GeoTiff attempt to process" + sourceFile, dse);
+                    getLogger().warn("issue with GeoTiff attempt to process" + sourceFile, dse);
                     msg = dse.getMessage();
                 }
             } catch (IOException e) {
-                getLogger().error("issue with GeoTiff attempt to process" + sourceFile, e);
+                getLogger().warn("issue with GeoTiff attempt to process" + sourceFile, e);
                 msg = e.getMessage();
             }
         }

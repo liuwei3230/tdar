@@ -1,5 +1,6 @@
 package org.tdar.struts.action.search;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +21,8 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.collection.CollectionType;
 import org.tdar.core.bean.collection.ListCollection;
+import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -42,6 +45,7 @@ import org.tdar.core.service.GenericService;
 import org.tdar.core.service.UrlService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.search.bean.ObjectType;
+import org.tdar.search.bean.PersonSearchOption;
 import org.tdar.search.bean.SearchFieldType;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.index.LookupSource;
@@ -94,6 +98,8 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     private List<SearchFieldType> allSearchFieldTypes = SearchFieldType.getSearchFieldTypesByGroup();
 
     private boolean showLeftSidebar = true;
+    
+    private List<PersonSearchOption> personSearchOptions = Arrays.asList(PersonSearchOption.values());
 
     @Override
     public boolean isLeftSidebar() {
@@ -148,6 +154,8 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         return result;
     }
 
+
+    
     @DoNotObfuscate(reason = "user submitted map")
     public LatitudeLongitudeBox getMap() {
         if (CollectionUtils.isNotEmpty(getReservedSearchParameters()
@@ -181,13 +189,12 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         searchBoxVisible = false;
         return SUCCESS;
     }
-
+  
     @Action(value = "advanced")
     public String advanced() {
         getLogger().trace("greetings from advanced search");
         // process query paramter or legacy parameters, if present.
-        processBasicSearchParameters();
-        processLegacySearchParameters();
+        processCollectionProjectLimit();
         processWhitelabelSearch();
 
         // if refining a search, make sure we inflate any deflated terms
@@ -209,7 +216,7 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     }
 
     private void processWhitelabelSearch() {
-        ListCollection rc = getGenericService().find(ListCollection.class, getCollectionId());
+        ResourceCollection rc = getGenericService().find(ResourceCollection.class, getCollectionId());
         if (rc == null) {
             return;
         }
@@ -220,7 +227,12 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
         }
         getGroups().add(sp);
         sp.getFieldTypes().addAll(Arrays.asList(SearchFieldType.COLLECTION, SearchFieldType.ALL_FIELDS));
-        sp.getCollections().addAll(Arrays.asList(rc, null));
+        if (rc instanceof SharedCollection) {
+            sp.getShares().addAll(Arrays.asList((SharedCollection)rc, null));
+        } else {
+            sp.getCollections().addAll(Arrays.asList((ListCollection)rc, null));
+            
+        }
         sp.getAllFields().addAll(Arrays.asList(null, ""));
     }
 
@@ -436,18 +448,10 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
 
     private List<String> getGeneralTypes() {
         List<String> keys = new ArrayList<>();
-        getTypeFacets().forEach(facet -> keys.add(facet.getRaw()));
-        return keys;
-    }
-
-    @Override
-    public List<SortOption> getSortOptions() {
-        List<String> keys = getGeneralTypes();
-        List<SortOption> sortOptions = super.getSortOptions();
-        if (keys.size() == 1 && keys.contains(LookupSource.COLLECTION.name())) {
-            sortOptions.remove(SortOption.PROJECT);
+        if (CollectionUtils.isNotEmpty(getTypeFacets())) {
+            getTypeFacets().forEach(facet -> keys.add(facet.getRaw()));
         }
-        return sortOptions;
+        return keys;
     }
 
     public List<SearchFieldType> getAllSearchFieldTypes() {
@@ -456,5 +460,13 @@ public class AdvancedSearchController extends AbstractAdvancedSearchController i
     
     public Keyword getExploreKeyword() {
         return exploreKeyword;
+    }
+    
+    public List<PersonSearchOption> getPersonSearchOptions(){
+    	return this.personSearchOptions;
+    }
+    
+    public void setPersonSearchOptions(List<PersonSearchOption> options){
+    	this.personSearchOptions = options;
     }
 }
