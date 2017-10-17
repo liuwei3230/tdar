@@ -242,7 +242,7 @@ public class AccessDatabaseConverter extends AbstractDatabaseConverter {
         Connection conn=DriverManager.getConnection("jdbc:ucanaccess://" + getInformationResourceFileVersion().getTransientFile().getAbsolutePath());
         
         getDatabase().getQueries().forEach(q -> {
-            logger.debug("{} {} {} | {} {}", q.getName(), q.getType(), q.getParameters(), q.getClass(), q.getOwnerAccessType());
+            logger.debug("name:{} {} {} | {} {}", q.getName(), q.getType(), q.getParameters(), q.getClass(), q.getOwnerAccessType());
             try {
                 logger.debug( q.toSQLString()); 
             } catch (Throwable t) {

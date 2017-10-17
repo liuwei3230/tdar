@@ -51,7 +51,7 @@ public class AccessConverterITCase extends AbstractIntegrationTestCase {
         //"///Users/abrin/Dropbox (ASU)/"
         DatasetConverter converter = convertDatabase(new File(getTestFilePath(),"rpms_corrected.mdb"), 1224L);
         for (DataTable table : converter.getDataTables()) {
-            logger.info("{}", table);
+            logger.info("{} - {}", table.getName(), table.getDisplayName());
         }
 
     }
