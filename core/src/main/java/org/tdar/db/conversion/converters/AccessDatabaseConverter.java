@@ -265,7 +265,7 @@ public class AccessDatabaseConverter extends AbstractDatabaseConverter {
                     for (int i =1; i<= metaData.getColumnCount(); i++ ) {
                         row.add(executeQuery.getObject(i));
                     }
-                    logger.debug("{}", row);
+//                    logger.debug("{}", row);
                 }
             } catch (Throwable e) {
                 // TODO Auto-generated catch block
