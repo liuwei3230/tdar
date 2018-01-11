@@ -106,10 +106,11 @@
                      <compilerArgs>
                 <arg>-Xlint:all</arg>
                 </compilerArgs>
-                <!-- comment this out for java9 -->
+                <!-- comment this out for java9 
                <compilerId>eclipse</compilerId>
+                -->
                 </configuration>
-                <!-- comment this out for java9 -->
+                <!-- comment this out for java9 
                 <dependencies>
                      <dependency>
                         <groupId>org.codehaus.plexus</groupId>
@@ -117,7 +118,7 @@
                         <version>2.8</version>
                       </dependency>
                 </dependencies> 
-                <!-- /comment this out for java9 -->
+              -->
             </plugin>
 
 
