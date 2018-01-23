@@ -49,6 +49,10 @@
                     <artifactId>jackson-dataformat-smile</artifactId>
                     <groupId>com.fasterxml.jackson.dataformat</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jetty-xml</artifactId>
+                    <groupId>org.eclipse.jetty</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
