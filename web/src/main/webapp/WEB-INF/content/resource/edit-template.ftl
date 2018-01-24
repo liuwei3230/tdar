@@ -84,12 +84,15 @@
 
         <@edit.hiddenStartTime />
 
-        <div id="spanStatus" data-tooltipcontent="#spanStatusToolTip" class="control-group">
+        <div id="spanStatus" data-tooltipcontent="#spanStatusToolTip">
             <#if editor && !administrator>
                 <p><b>note:</b> because you are an "editor" we've defaulted your default resource status to draft</p>
             </#if>
-            <label class="control-label">Status</label>
 
+            <#--fixme: the view layer shouldn't need to be aware of guest users.  the controller should give a different list of statuses (TDAR-4149) -->
+            <#if guestUserId != -1 && guestUserId == authenticatedUser.id>
+            <div class="control-group"
+            <label class="control-label">Status</label>
             <div class="controls">
                 <#if config.guestUserId != -1 && config.guestUserId == authenticatedUser.id>
                     <select name="status">
@@ -100,7 +103,12 @@
                 </#if>
                 <#if resource.resourceType.project><span class="help-block">Note: project status does not affect status of child resources.</span></#if>
             </div>
+            <#else>
+            </#if>
+            <@s.select label="Status" labelCssClass="col-xs-3" elementCssClass="col-xs-4" value="resource.status" name='status'  emptyOption='false' listValue='label' list='%{statuses}'/>
+            <#if resource.resourceType.project><span class="help-block">Note: project status does not affect status of child resources.</span></#if>
         </div>
+
 
         <@helptext.status />
 

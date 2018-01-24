@@ -107,17 +107,6 @@ footer {
 	background-color: #F4F4F4;
 }
 
-/*
-h1,h2,h3,header .welcome-drop p,#home .news span,.why article p,.why article ul,.contrib p,.contrib ul,.contrib .span3 li,.searchresults p,.searchresults aside li,.searchresults .sort p,.searchresults .sort form,.searchresults .pagin td.prev,.searchresults .pagin td.next,.searchresults .pagin li,header .welcome-drop p
-    {
-    font-family: 'TeXGyreAdventorBold', Arial, sans-serif;
-}
-
-#home .news li,.cols p,.tableFormat td,header form input.searchbox,header .welcome-drop a,.hero input.searchbox,#slider p,#slider span,.bucket p,#alt aside li,.why article li,.contrib li,.contrib .span3 p,.searchresults aside li,.searchresults aside label,.searchresults article p,footer ul,footer li
-    {
-    font-family: 'TeXGyreAdventorItalic', Arial, sans-serif !important;
-}
-*/
 h1,h2,h3,h4,h5,h6 {
 	font-family: 'TeXGyreAdventorRegular', Arial, sans-serif;
 	letter-spacing: 0;

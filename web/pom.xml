@@ -149,6 +149,12 @@
             <groupId>org.tdar</groupId>
             <artifactId>struts-base</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jgeppert.struts2.bootstrap</groupId>
+                    <artifactId>struts2-bootstrap-plugin</artifactId>
+                </exclusion>    
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.tdar</groupId>
@@ -156,7 +162,27 @@
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jgeppert.struts2.bootstrap</groupId>
+                    <artifactId>struts2-bootstrap-plugin</artifactId>
+                </exclusion>    
+            </exclusions>
         </dependency>
+        
+        <dependency>
+            <groupId>com.jgeppert.struts2.bootstrap</groupId>
+            <artifactId>struts2-bootstrap-plugin</artifactId>
+            <version>2.5.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.struts</groupId>
+                    <artifactId>struts2-core</artifactId>
+                </exclusion>
+            </exclusions>           
+            <!-- LICENSE: APACHE 2.0 -->
+        </dependency>
+        
         <dependency>
             <groupId>net.tanesha.recaptcha4j</groupId>
             <artifactId>recaptcha4j</artifactId>
