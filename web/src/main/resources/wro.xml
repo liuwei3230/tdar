@@ -71,6 +71,7 @@
         <js>/js/tdar.bulk.js</js>
         <js>/js/tdar.repeatrow.js</js>
         <js>/js/tdar.autocomplete.js</js>
+        <js>/js/tdar.selectize.js</js>
         <!-- <js>/js/tdar.select2-autocomplete.js</js> -->
         <!-- <css>/css/tdar.select2.css</css>         -->
         <js>/js/tdar.c3graphsupport.js</js>
