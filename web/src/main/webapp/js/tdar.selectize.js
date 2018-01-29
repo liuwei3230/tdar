@@ -3,19 +3,26 @@ TDAR.selectize = (function() {
     "use strict";
 
     var _getIdInputName = function(nme) {
+        if (nme == undefined) {
+            return undefined;
+        }
+
         var _name = nme;
-        
         // if we're using 'dotted' syntax, then set the Id attribute
         if (_name.indexOf(".") > 0) {
             _name = _name.substring(0, _name.lastIndexOf(".") + 1);
             this.$input.tdarIdField = _name + 'id';
-        } else if (_name.endsWith("]")) {
+        } else if (_endsWith(_name, "]")) {
             _name = [_name.slice(0, _name.lastIndexOf("[")), "Id", _name.slice(_name.lastIndexOf("["))].join('');
 
         } else {
             _name = _name + 'Id';
         }
         return _name;
+    }
+    
+    var _endsWith = function (str, suffix) {
+        return str.indexOf(suffix, str.length - suffix.length) !== -1;
     }
 
     var _generic = function(url, group, queryField, valueField, labelField, renderFunction, extra) {
@@ -29,13 +36,13 @@ TDAR.selectize = (function() {
 
 
         var opts = {
-            valueField: valueField,
-            labelField: labelField,
-            searchField: 'name',
-            create: true,
-            maxItems: 1,
-            createOnBlur: true,
-            onChange(value) {
+            "valueField": valueField,
+            "labelField": labelField,
+            "searchField": 'name',
+            "create": true,
+            "maxItems": 1,
+            "createOnBlur": true,
+            onChange: function(value) {
                 /** 
                  * When we set a value, set the hidden ID field too
                  */
@@ -49,12 +56,15 @@ TDAR.selectize = (function() {
                 console.log("change:", value, id);
                 $("#" + this.$input.tdarIdField).val(id);
             },
-            onClear() {
+            onClear : function() {
                 console.log("clear");
                 $("#" + this.$input.tdarIdField).clear();
             },
-            onInitialize() {
+            onInitialize : function() {
                 var $inp = $(this.$input);
+                if ($inp == undefined) {
+                    return;
+                }
                 if (extra != undefined) {
                     this.tdarQueryExtra = extra;
                 } else {
@@ -99,15 +109,15 @@ TDAR.selectize = (function() {
             }
         };
         return opts;
-
     }
 
     var _institutionLookup = function(selector) {
-
-        var opts = _generic("/api/lookup/institution", "institutions", "institution", "name", "name", undefined, {});
-        $(selector).selectize(opts);
+        if ($(selector).length > 0 ){
+            var opts = _generic("/api/lookup/institution", "institutions", "institution", "name", "name", undefined, {});
+            $(selector).selectize(opts);
+        }
     }
-
+ 
     return {
         institutionLookup: _institutionLookup
     };
