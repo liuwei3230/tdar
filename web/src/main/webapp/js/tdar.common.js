@@ -291,7 +291,8 @@ TDAR.common = function (TDAR, fileupload) {
         TDAR.autocomplete.delegateKeyword("#otherKeywordsRepeatable", "other", "OtherKeyword");
         TDAR.autocomplete.delegateKeyword("#geographicKeywordsRepeatable", "geographic", "GeographicKeyword");
         TDAR.autocomplete.applyInstitutionAutocomplete($('#txtResourceProviderInstitution'), true);
-        TDAR.autocomplete.applyInstitutionAutocomplete($('#publisher'), true);
+//        TDAR.autocomplete.applyInstitutionAutocomplete($('#publisher'), true);
+        TDAR.selectize.institutionLookup('#publisher');
         $('#resourceCollectionTable').on("focus", ".collectionAutoComplete", function () {
             TDAR.autocomplete.applyCollectionAutocomplete($(this), {showCreate: true, showCreatePhrase: "Create a new collection"}, {permission: "ADD_TO_COLLECTION"});
         });
