@@ -350,7 +350,7 @@
         <div class="well-alt" id="divResourceProvider" data-tiplabel="Resource Provider"
              data-tooltipcontent="The institution authorizing ${siteAcronym} to ingest the resource for the purpose of preservation and access.">
             <h2>Institution Authorizing Upload of this <@edit.resourceTypeLabel /></h2>
-            <@s.textfield label='Institution' name='resourceProviderInstitutionName' id='txtResourceProviderInstitution' cssClass="institution input-xxlarge"  maxlength='255'/>
+            <@s.textfield label='Institution' name='resourceProviderInstitutionName' id='txtResourceProviderInstitution' cssClass="institution input-xxlarge selectize"  maxlength='255'/>
             <br/>
         </div>
             <#if config.licensesEnabled?? && config.licensesEnabled || resource.licenseType?has_content>

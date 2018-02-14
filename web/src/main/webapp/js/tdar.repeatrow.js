@@ -24,6 +24,8 @@ TDAR.repeatrow = function (TDAR, $) {
      * "repeatrowdeleted": trigger after the delete-row handler removes the row element from the DOM.
      *      target: parent element of the deleted row
      *      additionalParameters: none
+     *      
+     * "repeatrowclear": triggered on "clear" call
      *
      * About Form Field Attributes:
      * ---------------------------
@@ -208,10 +210,10 @@ TDAR.repeatrow = function (TDAR, $) {
         $element.find("input[type=checkbox],input[type=radio]").not(noresetClass).prop("checked", false);
 
         // revert all select dropdowns to first option.
-        $($element).find("select").not(noresetClass).prop("selectedIndex", 0);
+        $element.find("select").not(noresetClass).prop("selectedIndex", 0);
 
-        // allow html5 polyfills for watermarks to be added.  (//fixme: I think this is a bug/copypasta - watermarks shouldn't need to be re-applied)
-        //TDAR.common.applyWatermarks($element);
+        $element.trigger("repeatrowclear", [$element]);
+
     };
 
     /**

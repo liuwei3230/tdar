@@ -46,10 +46,8 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                     <#-- emit a single row of the choose-a-collection section -->
                     <div id="${prefix}Row_${resourceCollection_index}_" class="controls-row repeat-row">
                         <@s.hidden name="${prefix}[${resourceCollection_index}].id"  id="${prefix}Row_${resourceCollection_index}_id" />
-                        <@s.textfield theme="simple" id="txt${prefix}Row_${resourceCollection_index}_id" name="${prefix}[${resourceCollection_index}].name" cssClass="input-xxlarge collectionAutoComplete "  autocomplete="off"
-                        autocompleteIdElement="#${prefix}Row_${resourceCollection_index}_id" maxlength=255
-                        collectionType="${collectionType}"
-                        autocompleteParentElement="#${prefix}Row_${resourceCollection_index}_" />
+                        <@s.textfield theme="simple" id="txt${prefix}Row_${resourceCollection_index}_id" name="${prefix}[${resourceCollection_index}].name"
+                         cssClass="input-xxlarge selectize resourceCollection"  autocomplete="off" maxlength=255  />
                     
                         <@nav.clearDeleteButton id="${prefix}Row" />
                     </div>

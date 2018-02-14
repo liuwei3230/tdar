@@ -290,16 +290,22 @@ TDAR.common = function (TDAR, fileupload) {
         TDAR.autocomplete.delegateKeyword("#temporalKeywordsRepeatable", "temporal", "TemporalKeyword");
         TDAR.autocomplete.delegateKeyword("#otherKeywordsRepeatable", "other", "OtherKeyword");
         TDAR.autocomplete.delegateKeyword("#geographicKeywordsRepeatable", "geographic", "GeographicKeyword");
-        TDAR.autocomplete.applyInstitutionAutocomplete($('#txtResourceProviderInstitution'), true);
+//        TDAR.autocomplete.applyInstitutionAutocomplete($('#txtResourceProviderInstitution'), true);
+        TDAR.selectize.institutionLookup('#txtResourceProviderInstitution');
 //        TDAR.autocomplete.applyInstitutionAutocomplete($('#publisher'), true);
         TDAR.selectize.institutionLookup('#publisher');
-        $('#resourceCollectionTable').on("focus", ".collectionAutoComplete", function () {
-            TDAR.autocomplete.applyCollectionAutocomplete($(this), {showCreate: true, showCreatePhrase: "Create a new collection"}, {permission: "ADD_TO_COLLECTION"});
+        TDAR.selectize.collectionLookup('#sharesTable .selectize', "ADD_TO_COLLECTION");
+        $("#sharesTable").on("repeatrowadded", function(e,a,row) {
+            TDAR.selectize.collectionLookup("#" + row.id + " .selectize","ADD_TO_COLLECTION");
         });
-
-        $('#sharesTable').on("focus", ".collectionAutoComplete", function () {
-            TDAR.autocomplete.applyCollectionAutocomplete($(this), {showCreate: true, showCreatePhrase: "Create a new collection"}, {permission: "ADD_TO_SHARE"});
+        $("#sharesTable").on("repeatrowclear", function(e,$row) {
+            console.log("clear called on row", $row);
+            var sel = $row.find(".selectize").data('sel');
+            if (sel != undefined) {
+                sel.clear();
+            }
         });
+        
 
         // prevent "enter" from submitting
         _suppressKeypressFormSubmissions($form);
