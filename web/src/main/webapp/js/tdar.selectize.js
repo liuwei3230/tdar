@@ -107,16 +107,22 @@ TDAR.selectize = (function() {
                     this.tdarQueryExtra = {};
                 }
 
-                var _name = _getIdInputName($inp.attr("name"));
+                var originalInputName = $inp.attr("name");
+                
+                var _name = _getIdInputName(originalInputName);
                 this.$input.tdarIdFieldName = _name;
                 this.$input.tdarIdFieldId = _getIdFromName(_name);
                 
+                // remove the wrapper on repeat
                 this.$wrapper.addClass("repeat-row-remove");
+                
+                // add a selector for the input
+                $(this.$control_input).attr("selectizeFor",originalInputName);
 
                 // create a hidden element for our Id if it doesn't exist
                 var ids = $("input[name=\'" +this.$input.tdarIdFieldName+"\']");
                 if (ids.length == 0) {
-                    $inp.after($('<input>').attr({
+                    $inp.before($('<input>').attr({
                         type: 'hidden',
                         name: this.$input.tdarIdFieldName,
                         id: this.$input.tdarIdFieldId
@@ -165,7 +171,6 @@ TDAR.selectize = (function() {
 
     var _apply = function(selector, opts) {
         $(selector).each(function(i,sel) {
-            console.log(sel);
             $(sel).selectize(opts);
         });
     }

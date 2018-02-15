@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
+import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -307,7 +308,25 @@ public class CompleteDocumentSeleniumWebITCase extends AbstractBasicSeleniumWebI
 
         // fill in various text fields
         for (Map.Entry<String, String> entry : docValMap.entrySet()) {
-            find(By.name(entry.getKey())).val(entry.getValue());
+            logger.debug("FIND TO SET: {}", entry.getKey());
+            try {
+            WebElementSelection find = find(By.name(entry.getKey()));
+            if (find.size() == 0) {
+                String format = String.format("input[selectizeFor='%s']", entry.getKey());
+                logger.debug("\tFIND TO SET: {}", format);
+                find = find(By.cssSelector(format));
+            }
+            find.val(entry.getValue());
+            } catch (InvalidElementStateException e) {
+                try {
+                String format = String.format("input[selectizeFor='%s']", entry.getKey());
+                logger.debug("\tFIND TO SET: {}", format);
+                WebElementSelection find = find(By.cssSelector(format));
+                find.val(entry.getValue());
+                } catch (InvalidElementStateException ee) {
+
+                }
+            }
         }
 
         // check various keyword checkboxes
