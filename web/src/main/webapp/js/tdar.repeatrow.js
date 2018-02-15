@@ -117,7 +117,7 @@ TDAR.repeatrow = function (TDAR, $) {
         var rex = /^(.*?_)(\d+)(_.*)$/i;
         var elementIdAttr = $element.attr("id");
         var match = rex.exec(elementIdAttr);
-
+        console.log(element, elementIdAttr, match);
         //if element's id is in right format the rownum will be the 2nd submatch
         var currentId = parseInt(match[2]);
 

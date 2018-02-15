@@ -283,13 +283,16 @@ TDAR.common = function (TDAR, fileupload) {
         TDAR.autocomplete.delegateCreator("#divSubmitter", true, false);
         TDAR.autocomplete.delegateCreator("#copyrightHolderTable", false, true);
         TDAR.autocomplete.delegateAnnotationKey("#resourceAnnotationsTable", "annotation", "annotationkey");
-        TDAR.autocomplete.delegateKeyword("#siteNameKeywordsRepeatable", "sitename", "SiteNameKeyword");
-        TDAR.autocomplete.delegateKeyword("#uncontrolledSiteTypeKeywordsRepeatable", "siteType", "SiteTypeKeyword");
-        TDAR.autocomplete.delegateKeyword("#uncontrolledCultureKeywordsRepeatable", "culture", "CultureKeyword");
-        TDAR.autocomplete.delegateKeyword("#uncontrolledMaterialKeywordsRepeatable", "material", "MaterialKeyword");
-        TDAR.autocomplete.delegateKeyword("#temporalKeywordsRepeatable", "temporal", "TemporalKeyword");
-        TDAR.autocomplete.delegateKeyword("#otherKeywordsRepeatable", "other", "OtherKeyword");
-        TDAR.autocomplete.delegateKeyword("#geographicKeywordsRepeatable", "geographic", "GeographicKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#siteNameKeywordsRepeatable .selectize", "#siteNameKeywordsRepeatable", "SiteNameKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledSiteTypeKeywordsRepeatable .selectize", "#uncontrolledSiteTypeKeywordsRepeatable", "SiteTypeKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledCultureKeywordsRepeatable .selectize", "#uncontrolledCultureKeywordsRepeatable", "CultureKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledMaterialKeywordsRepeatable .selectize", "#uncontrolledMaterialKeywordsRepeatable", "MaterialKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#temporalKeywordsRepeatable .selectize", "#temporalKeywordsRepeatable", "TemporalKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#otherKeywordsRepeatable .selectize", "#otherKeywordsRepeatable", "OtherKeyword");
+        TDAR.selectize.keywordLookupWithRepeatRow("#geographicKeywordsRepeatable .selectize", "#geographicKeywordsRepeatable", "GeographicKeyword");
+        
+        TDAR.selectize.institutionLookup('#txtResourceProviderInstitution');
+        
 //        TDAR.autocomplete.applyInstitutionAutocomplete($('#txtResourceProviderInstitution'), true);
         TDAR.selectize.institutionLookup('#txtResourceProviderInstitution');
 //        TDAR.autocomplete.applyInstitutionAutocomplete($('#publisher'), true);

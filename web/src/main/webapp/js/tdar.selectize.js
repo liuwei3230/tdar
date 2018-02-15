@@ -3,6 +3,10 @@ TDAR.selectize = (function() {
     "use strict";
 
     /**
+     * FIXME: On focus loss, input reverts to wrong spot on page
+     */
+    
+    /**
      * ID fields can't have all characters, so we need to clean
      */
     var _getIdFromName = function(name) {
@@ -49,12 +53,17 @@ TDAR.selectize = (function() {
     /**
      * generic initialization
      */
-    var _generic = function(url, group, queryField, valueField, labelField, renderFunction, extra) {
+    var _generic = function(url, group, queryField, valueField, labelField, renderFunction, extra, showCreate) {
         // needs to be managed prior to onIntialize();
         
         // default render function
         var tdarRenderFunction = function(item, escape) {
-            return '<div>' + '<span class="title">' + '<span class="name">' + escape(item.name) + '</span>' + '</span>' + '</div>';
+            if (item.name != undefined) {
+                return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.name) + '</span>' + '</span>' + '</div>';
+            }
+            if (item.label != undefined) {
+                return '<div>' + '<span class="title">' + '<span class="sel-label">' + escape(item.label) + '</span>' + '</span>' + '</div>';
+            }
         };
         
         // if render function is passed in, then use that
@@ -66,8 +75,8 @@ TDAR.selectize = (function() {
         var opts = {
             "valueField": valueField,
             "labelField": labelField,
-            "searchField": 'name',
-            "create": true,
+            "searchField": valueField,
+            "create": showCreate,
             "maxItems": 1,
             "createOnBlur": true,
             onChange: function(value) {
@@ -164,7 +173,7 @@ TDAR.selectize = (function() {
 
     var _institutionLookup = function(selector) {
         if ($(selector).length > 0 ){
-            var opts = _generic("/api/lookup/institution", "institutions", "institution", "name", "name", undefined, {});
+            var opts = _generic("/api/lookup/institution", "institutions", "institution", "name", "name", undefined, {}, true);
             _apply(selector,opts);
         }
     }
@@ -176,15 +185,42 @@ TDAR.selectize = (function() {
     }
     
     
-    var _collectionLookup = function(selector, permission) {
+    var _collectionLookup = function(selector, permission, create) {
         if ($(selector).length > 0 ){
-            var opts = _generic("/api/lookup/collection", "collections", "collection", "name", "name", undefined, {permission: permission});
+            var opts = _generic("/api/lookup/collection", "collections", "term", "name", "name", undefined, {permission: permission}, create);
             _apply(selector,opts);
+        }
+    }
+
+    var _keywordLookup = function(selector, type) {
+        if ($(selector).length > 0 ){
+            var opts = _generic("/api/lookup/keyword", "items", "term", "label", "label", undefined, {keywordType: type}, true);
+            _apply(selector,opts);
+        }
+    }
+    var _keywordLookupWithRepeatRow = function(selector, table, type) {
+        var $sel = $(selector); 
+        if ($sel.length > 0 ){
+            _keywordLookup(selector, type);
+            var $table = $(table);
+            $table.on("repeatrowadded", function(e,a,row) {
+                _keywordLookup("#" + row.id + " .selectize", type);
+            });
+            $table.on("repeatrowclear", function(e,$row) {
+                console.log("clear called on row", $row);
+                var sel = $row.find(".selectize").data('sel');
+                if (sel != undefined) {
+                    sel.clear();
+                }
+            });
+
         }
     }
  
     return {
         institutionLookup: _institutionLookup,
+        keywordLookup: _keywordLookup,
+        keywordLookupWithRepeatRow: _keywordLookupWithRepeatRow,
         collectionLookup: _collectionLookup
     };
 })();
