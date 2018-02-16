@@ -90,14 +90,14 @@ TDAR.selectize = (function() {
                     id = _id.id;
                 }
 
-                console.log("change:", value, id);
+                console.trace("change:", value, id);
                 $("#" + this.$input.tdarIdFieldId).val(id);
             },
             onClear : function() {
                 /**
                  * clear the value and ID
                  */
-                console.log("clear");
+                console.trace("clear");
                 $("#" + this.$input.tdarIdFieldId ).val('');
             },
             onInitialize : function() {
@@ -198,16 +198,20 @@ TDAR.selectize = (function() {
             _apply(selector,opts);
         }
     }
-    var _keywordLookupWithRepeatRow = function(selector, table, type) {
+    
+    /**
+     * Generic method for managing repeatrow initialization and binding, pass in a referecne to the initialization selector, 
+     * the table selector, the extra parameter 
+     */
+    var _lookupWithRepeatRow = function(selector, method, table, extra) {
         var $sel = $(selector); 
         if ($sel.length > 0 ){
-            _keywordLookup(selector, type);
+            method(selector, extra);
             var $table = $(table);
             $table.on("repeatrowadded", function(e,a,row) {
-                _keywordLookup("#" + row.id + " .selectize", type);
+                method("#" + row.id + " .selectize", extra);
             });
             $table.on("repeatrowclear", function(e,$row) {
-                console.log("clear called on row", $row);
                 var sel = $row.find(".selectize").data('sel');
                 if (sel != undefined) {
                     sel.clear();
@@ -215,6 +219,10 @@ TDAR.selectize = (function() {
             });
 
         }
+    }
+
+    var _keywordLookupWithRepeatRow = function(selector, table, type) {
+        _lookupWithRepeatRow(selector, _keywordLookup, table, type);
     }
  
     return {
