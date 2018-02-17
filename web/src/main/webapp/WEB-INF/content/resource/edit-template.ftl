@@ -177,7 +177,7 @@
                 <div data-tiplabel="Department / Publisher Location" data-tooltipcontent="Department name, or City,State (and Country, if relevant)">
 	        <span id="publisher-hints" book="Publisher" book_section="Publisher" journal_article="Publisher" conference_presentation="Conference"
                   thesis="Institution" other="Publisher">
-                <@s.textfield id='publisher'  maxlength=255 label="Publisher" name='publisherName' cssClass="institution input-xxlarge"  />
+                <@s.textfield id='publisher'  maxlength=255 label="Publisher" name='publisherName' cssClass="input-xxlarge selectize" />
             </span>
 	
 	        <span id="publisherLocation-hints" book="Publisher Loc." book_section="Publisher Loc." journal_article="Publisher Loc."
@@ -350,7 +350,7 @@
         <div class="well-alt" id="divResourceProvider" data-tiplabel="Resource Provider"
              data-tooltipcontent="The institution authorizing ${siteAcronym} to ingest the resource for the purpose of preservation and access.">
             <h2>Institution Authorizing Upload of this <@edit.resourceTypeLabel /></h2>
-            <@s.textfield label='Institution' name='resourceProviderInstitutionName' id='txtResourceProviderInstitution' cssClass="institution input-xxlarge"  maxlength='255'/>
+            <@s.textfield label='Institution' name='resourceProviderInstitutionName' id='txtResourceProviderInstitution' cssClass="institution input-xxlarge selectize"  maxlength='255'/>
             <br/>
         </div>
             <#if config.licensesEnabled?? && config.licensesEnabled || resource.licenseType?has_content>

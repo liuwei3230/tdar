@@ -24,12 +24,14 @@ import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.openqa.selenium.By;
+import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.MultipleWebTdarConfigurationRunner;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.functional.AbstractBasicSeleniumWebITCase;
+import org.tdar.functional.util.WebElementSelection;
 import org.tdar.junit.RunWithTdarConfiguration;
 import org.tdar.web.AbstractWebTestCase;
 
@@ -97,7 +99,8 @@ public class ImageSeleniumWebITCase extends AbstractBasicSeleniumWebITCase {
         //uploadFileAsync(FileAccessRestriction.PUBLIC, TestConstants.getFile(TestConstants.TEST_IMAGE));
         // fill in various text fields
         for (Map.Entry<String, String> entry : docValMap.entrySet()) {
-            find(By.name(entry.getKey())).val(entry.getValue());
+            applySelectizeOrNormal(entry.getKey(), entry.getValue());
+
         }
 
         // fill in uncontrolled keywords
@@ -112,6 +115,7 @@ public class ImageSeleniumWebITCase extends AbstractBasicSeleniumWebITCase {
         logger.debug(getText());
         assertFalse("no errors present", getText().toLowerCase().contains("exception"));
     }
+
 
     @Test
     public  void testKeywordsRemoved() {

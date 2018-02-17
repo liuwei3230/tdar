@@ -85,7 +85,7 @@ public class DatasetSeleniumWebITCase extends AbstractBasicSeleniumWebITCase {
         prepIndexedFields();
         // fill in various text fields
         for (Map.Entry<String, String> entry : docValMap.entrySet()) {
-            find(By.name(entry.getKey())).val(entry.getValue());
+            applySelectizeOrNormal(entry.getKey(), entry.getValue());
         }
 
         // check various keyword checkboxes

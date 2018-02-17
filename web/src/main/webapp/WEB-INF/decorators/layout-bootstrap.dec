@@ -73,6 +73,8 @@
     
     <script src="${staticHost}/includes/jquery-ui-${jquery_ui_version}.custom/jquery-ui.min.js"></script>
     <script type="text/javascript" src="//www.google.com/jsapi"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/js/standalone/selectize.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.4/css/selectize.bootstrap2.css" />
     <#include "/${config.themeDir}/head.dec" />
     <#if whiteLabelCollection??>  
         <link href="${staticHost}/css/whitelabel-default.css" rel="stylesheet" media="all">
