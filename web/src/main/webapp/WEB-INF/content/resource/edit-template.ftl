@@ -276,33 +276,10 @@
             <h4>Choose a Project</h4>
 
             <div id="t-project" data-tooltipcontent="#projectTipText" data-tiplabel="Project">
-            <#if select2SingleEnabled>
-                <div class="control-group">
-                    <label class="control-label">Project</label>
-                    <div class="controls">
-                        <div class="">
-                            <select id="projectId" name="projectId" class="resource-autocomplete input-xxlarge" tabindex="-1" aria-hidden="true"
-                                    data-ajax--url="/api/lookup/resource?resourceTypes=PROJECT&useSubmitterContext=true"
-                                    data-allow-clear="false"
-                                    data-placeholder="Search for a project..."
-                                    data-minimum-input-length="0">
-                                <option value=""></option>
-                                <option value="-1">No parent project</option>
-                                <#if resource.project?has_content && resource.project.id &gt; -1>
-                                    <option selected="selected" value="${resource.project.id?c}">${resource.project.title}</option>
-                                </#if>
-                            </select>
-                            <button type="button" class="btn btn-mini btn-clear-select" id="btnClearProjectId"><i class="icon-trash"> </i></button>
-                        </div>
-
-                        </div>
-                </div>
-
-            <#else>
+      
                 <@s.select title="Please select a project" emptyOption='true' id='projectId' label="Project"  
                 labelposition="left" name='projectId' listKey='id' listValue='title' list='%{potentialParents}'
                 truncate="70" value='${_projectId}'  cssClass="input-xxlarge" />
-			</#if>
             </div>
 
             <div class="modal hide fade" id="inheritOverwriteAlert" tabindex="-1" role="dialog" aria-labelledby="inheritOverwriteValidationErrorModalLabel" aria-hidden="true">

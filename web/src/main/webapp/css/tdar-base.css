@@ -8,6 +8,11 @@ input[autocomplete="off"]::-webkit-contacts-auto-fill-button {
   margin: 0;
 }
 
+.selectize-input {
+    background-color:inherit !important;
+    background-image:inherit !important;
+}
+
 /*
     History: this file represents the original source code as provided by Fervor
 */

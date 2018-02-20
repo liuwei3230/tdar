@@ -11,7 +11,6 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     <#import "../navigation-macros.ftl" as nav>
     <#import "../common-rights.ftl" as rights>
 
-	<#assign useSelect2=select2Enabled!true  />
 
     <#macro basicInformation itemTypeLabel="file" itemPrefix="resource">
 
@@ -45,11 +44,14 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                     <#list _resourceCollections as resourceCollection>
                     <#-- emit a single row of the choose-a-collection section -->
                     <div id="${prefix}Row_${resourceCollection_index}_" class="controls-row repeat-row">
-                        <@s.hidden name="${prefix}[${resourceCollection_index}].id"  id="${prefix}Row_${resourceCollection_index}_id" />
-                        <@s.textfield theme="simple" id="txt${prefix}Row_${resourceCollection_index}_id" name="${prefix}[${resourceCollection_index}].name"
-                         cssClass="input-xxlarge selectize resourceCollection"  autocomplete="off" maxlength=255  />
-                    
-                        <@nav.clearDeleteButton id="${prefix}Row" />
+	                    <div class="span6">
+	                        <@s.hidden name="${prefix}[${resourceCollection_index}].id"  id="${prefix}Row_${resourceCollection_index}_id" />
+	                        <@s.textfield theme="simple" id="txt${prefix}Row_${resourceCollection_index}_id" name="${prefix}[${resourceCollection_index}].name"
+	                         cssClass="input-xlarge selectize resourceCollection"  autocomplete="off" maxlength=255  />
+	                    </div>
+	                    <div class="span1">
+	                        <@nav.clearDeleteButton id="${prefix}Row" />
+	                    </div>
                     </div>
                     </#list>
                    
@@ -94,9 +96,6 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
 -->
     <#macro keywordRows label keywordList keywordField className showDelete=true addAnother="add another keyword">
     
-		<#if useSelect2>
-                <@select2 label keywordList keywordField className />
-        <#else>
             <div class="control-group repeatLastRow" id="${keywordField}Repeatable" data-add-another="${addAnother}">
                 <label class="control-label">${label}</label>
                 <#list keywordList as keyword>
@@ -105,36 +104,21 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                     <@_keywordRow keywordField />
                 </#list>
             </div>
-		</#if>
 
     
     </#macro>
 
     <#macro _keywordRow keywordField keyword_index=0 showDelete=true>
     <div class="controls controls-row" id='${keywordField}Row_${keyword_index}_'>
-        <div class="span7">
+        <div class="<#if showDelete>span6<#else>span7</#if>">
         <@s.textfield theme="tdar" name='${keywordField}[${keyword_index}]'  maxlength=255 cssClass='input-xlarge selectize' placeholder="enter keyword"/>
         <#if showDelete>
+        </div>
+        <div class="span1">
         <@nav.clearDeleteButton id="${keywordField}Row" />
         </#if>
         </div>
     </div>
-    </#macro>
-
-    <#macro select2 title array prefix type>
-    <div class="control-group">
-        <label class="control-label">${title}</label>
-        <div class="controls">
-            <select class="keyword-autocomplete form-control select2-hidden-accessible input-xxlarge" multiple="multiple" tabindex="-1" aria-hidden="true"
-                name="${prefix}" data-ajax--url="/api/lookup/keyword?keywordType=${type?url}" id="${prefix}select2" style="width:100%">
-                <#list array![] as term>
-                    <#if term?has_content><option value="${term?xhtml}" data-label="${term?xhtml}" selected="selected">${term}</option></#if>
-                </#list>
-            </select>
-            <span class="help-block">Use  <kbd>&semi;</kbd> or <kbd>|</kbd> to separate multiple keywords.</span>
-        </div>
-    </div>
-
     </#macro>
 
 

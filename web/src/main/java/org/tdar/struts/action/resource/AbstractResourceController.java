@@ -92,8 +92,6 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     private static final long serialVersionUID = 8620875853247755760L;
 
     private static final String RIGHTS = "rights";
-    private boolean select2Enabled = TdarConfiguration.getInstance().isSelect2Enabled();
-    private boolean select2SingleEnabled = TdarConfiguration.getInstance().isSelect2SingleEnabled();
     private List<MaterialKeyword> allMaterialKeywords;
     private List<InvestigationType> allInvestigationTypes;
     private List<EmailMessageType> emailTypes = EmailMessageType.valuesWithoutConfidentialFiles();
@@ -930,22 +928,6 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         if (getSubmitter() == null)
             return null;
         return getSubmitter().getProperName();
-    }
-
-    public Boolean isSelect2Enabled() {
-        return select2Enabled;
-    }
-
-    public void setSelect2Enabled(boolean select2Enabled) {
-        this.select2Enabled = select2Enabled;
-    }
-
-    public Boolean isSelect2SingleEnabled() {
-        return select2SingleEnabled;
-    }
-
-    public void setSelect2SingleEnabled(boolean select2SingleEnabled) {
-        this.select2SingleEnabled = select2SingleEnabled;
     }
 
     public List<ResourceCollection> getEffectiveResourceCollections() {
