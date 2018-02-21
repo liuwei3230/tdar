@@ -1,6 +1,5 @@
 package org.tdar.struts.action.ontology;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,12 +9,10 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.ResourceType;
-import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.service.resource.CodingSheetService;
 import org.tdar.core.service.resource.OntologyService;
 import org.tdar.struts.action.resource.AbstractSupportingInformationResourceController;
@@ -43,17 +40,8 @@ public class OntologyController extends AbstractSupportingInformationResourceCon
     @Autowired
     private transient OntologyService ontologyService;
 
-    /**
-     * Sets the various pieces of metadata on this ontology and then saves it.
-     * 
-     * @param ontology
-     * @throws TdarActionException
-     */
-    @Override
-    protected String save(Ontology ontology) throws TdarActionException {
-        String save2 = super.save(ontology);
-        saveCategories();
-        return save2;
+    public void saveCustomMetadata() {
+        super.saveCategories();
     }
 
     public Ontology getOntology() {

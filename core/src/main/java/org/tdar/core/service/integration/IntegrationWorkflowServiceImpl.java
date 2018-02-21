@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.dao.integration.IntegrationWorkflowDao;
 import org.tdar.core.dao.resource.OntologyNodeDao;
@@ -32,7 +32,8 @@ import com.opensymphony.xwork2.TextProvider;
  * 
  */
 @Service
-public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBase<DataIntegrationWorkflow, IntegrationWorkflowDao> implements IntegrationWorkflowService {
+public class IntegrationWorkflowServiceImpl extends ServiceInterface.TypedDaoBase<DataIntegrationWorkflow, IntegrationWorkflowDao>
+        implements IntegrationWorkflowService {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,8 +46,11 @@ public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBa
     @Autowired
     private transient OntologyNodeDao ontologyNodeDao;
 
-    /* (non-Javadoc)
-     * @see org.tdar.core.service.integration.IntegrationWorkflowService#toIntegrationContext(org.tdar.core.bean.integration.DataIntegrationWorkflow, com.opensymphony.xwork2.TextProvider)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.tdar.core.service.integration.IntegrationWorkflowService#toIntegrationContext(org.tdar.core.bean.integration.DataIntegrationWorkflow,
+     * com.opensymphony.xwork2.TextProvider)
      */
     @Override
     @Transactional
@@ -58,8 +62,12 @@ public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBa
         return context;
     }
 
-    /* (non-Javadoc)
-     * @see org.tdar.core.service.integration.IntegrationWorkflowService#saveForController(org.tdar.core.bean.integration.DataIntegrationWorkflow, org.tdar.core.service.integration.dto.v1.IntegrationWorkflowData, java.lang.String, org.tdar.core.bean.entity.TdarUser, com.opensymphony.xwork2.TextProvider)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.tdar.core.service.integration.IntegrationWorkflowService#saveForController(org.tdar.core.bean.integration.DataIntegrationWorkflow,
+     * org.tdar.core.service.integration.dto.v1.IntegrationWorkflowData, java.lang.String, org.tdar.core.bean.entity.TdarUser,
+     * com.opensymphony.xwork2.TextProvider)
      */
     @Override
     @Transactional(readOnly = false)
@@ -72,11 +80,11 @@ public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBa
             return result;
         }
         try {
-            logger.debug("{}",data);
+            logger.debug("{}", data);
             validateWorkflow(data, provider);
             persistable.markUpdated(authUser);
             if (PersistableUtils.isTransient(persistable)) {
-                persistable.getAuthorizedUsers().add(new AuthorizedUser(authUser, authUser, GeneralPermissions.EDIT_INTEGRATION));
+                persistable.getAuthorizedUsers().add(new AuthorizedUser(authUser, authUser, Permissions.EDIT_INTEGRATION));
             }
             data.copyValuesToBean(persistable, json);
             ontologyNodeDao.saveOrUpdate(persistable);
@@ -90,8 +98,11 @@ public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBa
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.tdar.core.service.integration.IntegrationWorkflowService#validateWorkflow(org.tdar.core.service.integration.dto.IntegrationWorkflowWrapper, com.opensymphony.xwork2.TextProvider)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.tdar.core.service.integration.IntegrationWorkflowService#validateWorkflow(org.tdar.core.service.integration.dto.IntegrationWorkflowWrapper,
+     * com.opensymphony.xwork2.TextProvider)
      */
     @Override
     @Transactional(readOnly = true)
@@ -102,21 +113,40 @@ public class IntegrationWorkflowServiceImpl  extends ServiceInterface.TypedDaoBa
         data.validate(ontologyNodeDao, provider);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.tdar.core.service.integration.IntegrationWorkflowService#getWorkflowsForUser(org.tdar.core.bean.entity.TdarUser)
      */
     @Override
     @Transactional(readOnly = true)
     public List<DataIntegrationWorkflow> getWorkflowsForUser(TdarUser authorizedUser) {
-        return getDao().getWorkflowsForUser(authorizedUser, authorizationService.isEditor(authorizedUser));
+        List<DataIntegrationWorkflow> workflowsForUser = getDao().getWorkflowsForUser(authorizedUser, authorizationService.isEditor(authorizedUser));
+        for (DataIntegrationWorkflow workflow: workflowsForUser) {
+            workflow.setEditable(authorizationService.canEditWorkflow(authorizedUser, workflow));
+        }
+        return workflowsForUser;
     }
 
-    /* (non-Javadoc)
-     * @see org.tdar.core.service.integration.IntegrationWorkflowService#deleteForController(com.opensymphony.xwork2.TextProvider, org.tdar.core.bean.integration.DataIntegrationWorkflow, org.tdar.core.bean.entity.TdarUser)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.tdar.core.service.integration.IntegrationWorkflowService#deleteForController(com.opensymphony.xwork2.TextProvider,
+     * org.tdar.core.bean.integration.DataIntegrationWorkflow, org.tdar.core.bean.entity.TdarUser)
      */
     @Override
     @Transactional(readOnly = false)
     public void deleteForController(TextProvider provider, DataIntegrationWorkflow persistable, TdarUser authenticatedUser) {
         getDao().delete(persistable);
+    }
+
+    @Transactional(readOnly=false)
+    @Override
+    public DataIntegrationWorkflow duplicateWorkflow(DataIntegrationWorkflow workflow, TdarUser user) {
+        DataIntegrationWorkflow copy = new DataIntegrationWorkflow();
+        copy.copyFrom(workflow, user);
+        copy.getAuthorizedUsers().add(new AuthorizedUser(user, user, Permissions.EDIT_INTEGRATION));
+        getDao().saveOrUpdate(copy);
+        return copy;
     }
 }

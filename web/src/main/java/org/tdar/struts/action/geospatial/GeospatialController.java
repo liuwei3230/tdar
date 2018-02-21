@@ -34,12 +34,6 @@ public class GeospatialController extends AbstractDatasetController<Geospatial> 
 
     private static final long serialVersionUID = 6576781526708737335L;
 
-    @Override
-    protected String save(Geospatial persistable) throws TdarActionException {
-        String save2 = super.save(persistable);
-        resolvePostSaveAction(getPersistable());
-        return save2;
-    }
 
     @Override
     public Class<Geospatial> getPersistableClass() {
@@ -60,7 +54,7 @@ public class GeospatialController extends AbstractDatasetController<Geospatial> 
         // FIXME: these should come from the analyzer
         // Note: aux.xml and shp.xml omitted because we know view layer logic will accept any .xml (so will server, for that matter)
         String[] geoexts = { "shp", "shx", "dbf", "sbn", "sbx", "fbn", "fbx", "ain", "aih", "atx", "ixs", "mxs", "prj", "xml", "cpg", "jpw", "jgw", "tfw",
-                "aux", "aux", "ovr", "rrd", "mxd", "lyr" }; //"adf",
+                "aux", "aux", "ovr", "rrd", "mxd", "lyr" }; // "adf",
         Collections.addAll(extensionsForTypes, geoexts);
 
         return extensionsForTypes;

@@ -21,8 +21,7 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
-import org.tdar.core.bean.collection.ListCollection;
-import org.tdar.core.bean.collection.SharedCollection;
+import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
@@ -30,11 +29,13 @@ import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
 import org.tdar.core.bean.keyword.MaterialKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
+import org.tdar.core.bean.resource.Dataset;
+import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.ResourceAnnotationKey;
@@ -123,13 +124,13 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     private KeywordNode<SiteTypeKeyword> approvedSiteTypeKeywords;
     private KeywordNode<CultureKeyword> approvedCultureKeywords;
 
-    private List<ListCollection> resourceCollections = new ArrayList<>();
-    private List<ListCollection> effectiveResourceCollections = new ArrayList<>();
+    private List<ResourceCollection> resourceCollections = new ArrayList<>();
+    private List<ResourceCollection> effectiveResourceCollections = new ArrayList<>();
 
-    private List<SharedCollection> shares = new ArrayList<>();
-    private List<SharedCollection> effectiveShares = new ArrayList<>();
-    private List<SharedCollection> retainedSharedCollections = new ArrayList<>();
-    private List<ListCollection> retainedListCollections = new ArrayList<>();
+    private List<ResourceCollection> shares = new ArrayList<>();
+    private List<ResourceCollection> effectiveShares = new ArrayList<>();
+    private List<ResourceCollection> retainedSharedCollections = new ArrayList<>();
+    private List<ResourceCollection> retainedListCollections = new ArrayList<>();
 
     private List<ResourceRelationship> resourceRelationships = new ArrayList<>();
 
@@ -189,11 +190,38 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         return sw.toString();
     }
 
+
     @Override
     public String save(Resource resource) {
         getLogger().debug("calling save");
+        String toReturn = SUCCESS;
+        if (resource instanceof InformationResource) {
+            try { 
+                toReturn = saveInformationResource(getPersistable());
+            } catch (TdarActionException e) {
+                addActionErrorWithException(e.getMessage(), e);
+                return INPUT;
+            }
+            if (this instanceof BulkUploadController) {
+                resolvePostSaveAction(getPersistable());
+                return toReturn;
+            }
+        }
+
+        saveCustomMetadata();
         saveBasicResourceMetadata();
-        return SUCCESS;
+        resolvePostSaveAction(getPersistable());
+        return toReturn;
+    }
+    
+    public void saveCustomMetadata() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void resolvePostSaveAction(R persistable) {
+        // TODO Auto-generated method stub
+        
     }
 
     @Override
@@ -206,7 +234,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
 
         if (getTdarConfiguration().isPayPerIngestEnabled()) {
             accountService.updateTransientAccountInfo(getResource());
-//            setActiveAccounts(new ArrayList<>(editService.determineActiveAccounts(getAuthenticatedUser(), getResource())));
+            // setActiveAccounts(new ArrayList<>(editService.determineActiveAccounts(getAuthenticatedUser(), getResource())));
             if (PersistableUtils.isNotNullOrTransient(getResource()) && PersistableUtils.isNotNullOrTransient(getResource().getAccount())) {
                 setAccountId(getResource().getAccount().getId());
             }
@@ -239,7 +267,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         setSaveSuccessPath(getResource().getResourceType().getUrlNamespace());
         if (PersistableUtils.isNullOrTransient(getId())) {
             revisionType = RevisionLogType.CREATE;
-            getPersistable().getAuthorizedUsers().add(new AuthorizedUser(getAuthenticatedUser(), getAuthenticatedUser(), GeneralPermissions.ADMINISTER_SHARE));
+            getPersistable().getAuthorizedUsers().add(new AuthorizedUser(getAuthenticatedUser(), getAuthenticatedUser(), Permissions.MODIFY_RECORD));
         }
 
         String save2 = super.save();
@@ -252,6 +280,10 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         }
         getLogger().debug("success: {}", getSaveSuccessPath());
         return save2;
+    }
+
+    public String saveInformationResource(R persistable) throws TdarActionException {
+        return SUCCESS;
     }
 
     @SkipValidation
@@ -347,7 +379,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
             return true;
         }
         if (editable == null) {
-            editable = authorizationService.canEditResource(getAuthenticatedUser(), getPersistable(), GeneralPermissions.MODIFY_METADATA);
+            editable = authorizationService.canEditResource(getAuthenticatedUser(), getPersistable(), Permissions.MODIFY_METADATA);
         }
         return editable;
     }
@@ -433,9 +465,9 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         getRelatedComparativeCollections().addAll(getResource().getRelatedComparativeCollections());
         editService.initializeResourceCreatorProxyLists(authWrapper, getAuthorshipProxies(), getCreditProxies());
         getResourceAnnotations().addAll(getResource().getResourceAnnotations());
-        editService.updateSharesForEdit(getResource(), getAuthenticatedUser(), effectiveShares, retainedSharedCollections, effectiveResourceCollections, retainedListCollections, shares, effectiveResourceCollections);
+        editService.updateSharesForEdit(getResource(), getAuthenticatedUser(), effectiveShares, retainedSharedCollections, effectiveResourceCollections,
+                retainedListCollections, shares, effectiveResourceCollections);
     }
-
 
     public List<String> getSiteNameKeywords() {
         if (CollectionUtils.isEmpty(siteNameKeywords)) {
@@ -742,12 +774,12 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         return new ResourceAnnotation(new ResourceAnnotationKey(), "");
     }
 
-    public ListCollection getBlankResourceCollection() {
-        return new ListCollection();
+    public ResourceCollection getBlankResourceCollection() {
+        return new ResourceCollection();
     }
 
-    public SharedCollection getBlankShare() {
-        return new SharedCollection();
+    public ResourceCollection getBlankShare() {
+        return new ResourceCollection();
     }
 
     public SourceCollection getBlankSourceCollection() {
@@ -770,21 +802,21 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
      * @param resourceCollections
      *            the resourceCollections to set
      */
-    public void setShares(List<SharedCollection> resourceCollections) {
+    public void setShares(List<ResourceCollection> resourceCollections) {
         this.shares = resourceCollections;
     }
 
     /**
      * @return the resourceCollections
      */
-    public List<SharedCollection> getShares() {
+    public List<ResourceCollection> getShares() {
         return shares;
     }
 
     /**
      * @return the effectiveResourceCollections
      */
-    public List<SharedCollection> getEffectiveShares() {
+    public List<ResourceCollection> getEffectiveShares() {
         return effectiveShares;
     }
 
@@ -792,7 +824,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
      * @param effectiveResourceCollections
      *            the effectiveResourceCollections to set
      */
-    public void setEffectiveShares(List<SharedCollection> effectiveResourceCollections) {
+    public void setEffectiveShares(List<ResourceCollection> effectiveResourceCollections) {
         this.effectiveShares = effectiveResourceCollections;
     }
 
@@ -916,19 +948,19 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         this.select2SingleEnabled = select2SingleEnabled;
     }
 
-    public List<ListCollection> getEffectiveResourceCollections() {
+    public List<ResourceCollection> getEffectiveResourceCollections() {
         return effectiveResourceCollections;
     }
 
-    public void setEffectiveResourceCollections(List<ListCollection> effectiveResourceCollections) {
+    public void setEffectiveResourceCollections(List<ResourceCollection> effectiveResourceCollections) {
         this.effectiveResourceCollections = effectiveResourceCollections;
     }
 
-    public List<ListCollection> getResourceCollections() {
+    public List<ResourceCollection> getResourceCollections() {
         return resourceCollections;
     }
 
-    public void setResourceCollections(List<ListCollection> resourceCollections) {
+    public void setResourceCollections(List<ResourceCollection> resourceCollections) {
         this.resourceCollections = resourceCollections;
     }
 

@@ -39,13 +39,13 @@ public class ResourceViewRedirectAction extends AbstractAuthenticatableAction {
             results = {
                     @Result(name = SUCCESS, type = TdarActionSupport.TDAR_REDIRECT, location = "${resource.detailUrl}"),
                     @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.FREEMARKERHTTP,
-                    location = "/WEB-INF/content/errors/error.ftl",
-                    params = { "status", "400" })
+                            location = "/WEB-INF/content/errors/error.ftl",
+                            params = { "status", "400" })
             })
     public String view() {
         setResource(getGenericService().find(Resource.class, getId()));
         if (getResource() == null) {
-            getLogger().error("trying to view information resource but it was null.");
+            getLogger().debug("trying to view information resource but it was null.");
             addActionError(getText("resourceController.not_found"));
             return NOT_FOUND;
         }

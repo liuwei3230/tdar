@@ -14,13 +14,11 @@ import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.collection.ListCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.collection.SharedCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.service.UserRightsProxyService;
@@ -40,7 +38,6 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
     private static final long serialVersionUID = 8551222659351457637L;
 
     private static final String RIGHTS = "{id}";
-    private boolean asyncSave = true;
     private static final String SUCCESS_INVITE = "invite";
     private static final String INVITE = "invite.ftl";
 
@@ -51,29 +48,24 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
     @Autowired
     private transient SearchIndexService searchIndexService;
 
-//    private List<SharedCollection> shares = new ArrayList<>();
-//    private List<SharedCollection> retainedSharedCollections = new ArrayList<>();
-//    private List<SharedCollection> effectiveShares = new ArrayList<>();
-
     private List<UserRightsProxy> proxies = new ArrayList<>();
     private List<UserRightsProxy> invites = new ArrayList<>();
     private Long id;
     private String ownerProperName;
     private TdarUser owner;
 
-    
     @Override
     public void prepare() throws Exception {
         setupOwnerField();
         if (PersistableUtils.isNotNullOrTransient(getOwner())) {
             TdarUser uploader = getGenericService().find(TdarUser.class, getOwner().getId());
             if (getPersistable() instanceof ResourceCollection) {
-                ((ResourceCollection)getPersistable()).setOwner(uploader);
+                ((ResourceCollection) getPersistable()).setOwner(uploader);
             }
         }
         getProxies().addAll(getInvites());
     }
-    
+
     public Long getId() {
         return id;
     }
@@ -99,8 +91,8 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
         return SUCCESS;
     }
 
-    public List<GeneralPermissions> getAvailablePermissions() {
-        List<GeneralPermissions> permissions = GeneralPermissions.getAvailablePermissionsFor(getPersistableClass());
+    public List<Permissions> getAvailablePermissions() {
+        List<Permissions> permissions = Permissions.getAvailablePermissionsFor(getPersistableClass());
         return permissions;
     }
 
@@ -134,16 +126,15 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
         }
         return SUCCESS;
     }
-    
+
     public void indexPersistable() throws SearchIndexException, IOException {
         if (getPersistable() instanceof Resource) {
-            searchIndexService.index((Resource)getPersistable()); 
-        } 
+            searchIndexService.index((Resource) getPersistable());
+        }
         if (getPersistable() instanceof ResourceCollection) {
-            searchIndexService.index((ResourceCollection)getPersistable()); 
-        } 
+            searchIndexService.index((ResourceCollection) getPersistable());
+        }
     }
-
 
     public abstract Persistable getPersistable();
 
@@ -153,7 +144,6 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
 
     public abstract void handleCollectionSave();
 
-
     protected void setupEdit() {
         if (getPersistable() instanceof ResourceCollection) {
             setOwner(((ResourceCollection) getPersistable()).getOwner());
@@ -161,17 +151,20 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
         if (getPersistable() instanceof Resource) {
             setOwner(((Resource) getPersistable()).getSubmitter());
         }
-        
+
         setupOwnerField();
-        Collection<AuthorizedUser> users  = getLocalRightsCollection();
-            users.forEach(au -> {
-                proxies.add(new UserRightsProxy(au));
-            });
+        Collection<AuthorizedUser> users = getLocalRightsCollection();
+        users.forEach(au -> {
+            proxies.add(new UserRightsProxy(au));
+        });
 
         List<UserInvite> invites = userRightsProxyService.findUserInvites(getPersistable());
         if (CollectionUtils.isNotEmpty(invites)) {
             invites.forEach(invite -> {
-                proxies.add(new UserRightsProxy(invite));
+                // only add unredemmed invites
+                if (invite.getDateRedeemed() == null && !(invite.getUser() instanceof TdarUser))  {
+                    proxies.add(new UserRightsProxy(invite));
+                }
             });
         }
         getLogger().debug("proxies:{}", proxies);
@@ -181,14 +174,12 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
         this.id = id;
     }
 
-
-    public SharedCollection getBlankShare() {
-        return new SharedCollection();
+    public ResourceCollection getBlankShare() {
+        return getBlankResourceCollection();
     }
 
-
-    public ListCollection getBlankResourceCollection() {
-        return new ListCollection();
+    public ResourceCollection getBlankResourceCollection() {
+        return new ResourceCollection();
     }
 
     public boolean isRightsPage() {
@@ -196,8 +187,6 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
     }
 
     public abstract Set<AuthorizedUser> getLocalRightsCollection();
-
-    
 
     protected void setupOwnerField() {
         if (PersistableUtils.isNotNullOrTransient(getOwner()) && StringUtils.isNotBlank(getOwner().getProperName())) {
@@ -207,7 +196,6 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
             setOwnerProperName(getAuthenticatedUser().getProperName());
         }
     }
-
 
     public String getOwnerProperName() {
         return ownerProperName;
@@ -224,14 +212,7 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
     public void setOwner(TdarUser owner) {
         this.owner = owner;
     }
-    
-    public void setAsync(boolean async) {
-        this.asyncSave = async;
-    }
 
-    public boolean isAsync() {
-        return asyncSave;
-    }
 
     public List<UserRightsProxy> getInvites() {
         return invites;
@@ -240,7 +221,5 @@ public abstract class AbstractRightsController extends AbstractAuthenticatableAc
     public void setInvites(List<UserRightsProxy> invites) {
         this.invites = invites;
     }
-
-
 
 }

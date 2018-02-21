@@ -23,7 +23,7 @@ import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.permissions.GeneralPermissions;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
@@ -222,7 +222,7 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
             account = new BillingAccount();
             account.setName("Generated account for " + user.getProperName());
             account.markUpdated(user);
-            account.getAuthorizedUsers().add(new AuthorizedUser(user, user, GeneralPermissions.EDIT_ACCOUNT));
+            account.getAuthorizedUsers().add(new AuthorizedUser(user, user, Permissions.EDIT_ACCOUNT));
             getDao().saveOrUpdate(account);
         }
         return account;
@@ -461,7 +461,7 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
                 owner = authenticatedUser;
             }
             account.setOwner(owner);
-            account.getAuthorizedUsers().add(new AuthorizedUser(owner, owner, GeneralPermissions.EDIT_ACCOUNT));
+            account.getAuthorizedUsers().add(new AuthorizedUser(owner, owner, Permissions.EDIT_ACCOUNT));
             account.setName("Default account for " + owner.getProperName());
         }
         return account;
@@ -475,7 +475,7 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
      */
     @Override
     @Transactional(readOnly = false)
-    public BillingAccount reconcileSelectedAccount(long id, Invoice invoice, BillingAccount account, List<BillingAccount> accounts) {
+    public BillingAccount reconcileSelectedAccount(long id, Invoice invoice, BillingAccount account, List<BillingAccount> accounts, TdarUser user) {
         BillingAccount selectedAccount = null;
         if (id == -1L) {
             if (account != null && StringUtils.isNotBlank(account.getName())) {
@@ -484,6 +484,11 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
             } else {
                 selectedAccount = processBillingAccountChoice(invoice, invoice.getOwner());
             }
+            
+            if (CollectionUtils.isEmpty(selectedAccount.getAuthorizedUsers())) {
+                selectedAccount.getAuthorizedUsers().add(new AuthorizedUser(user, user, Permissions.EDIT_ACCOUNT));
+            }
+            
         } else {
             selectedAccount = getDao().find(BillingAccount.class, id);
         }
@@ -583,9 +588,9 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
         }
 
         if (isTransient) {
-            AuthorizedUser au = new AuthorizedUser(authenticatedUser, authenticatedUser, GeneralPermissions.EDIT_ACCOUNT);
+            AuthorizedUser au = new AuthorizedUser(authenticatedUser, authenticatedUser, Permissions.EDIT_ACCOUNT);
             if (account.getOwner() != null) {
-                au = new AuthorizedUser(account.getOwner(), account.getOwner(), GeneralPermissions.EDIT_ACCOUNT);
+                au = new AuthorizedUser(account.getOwner(), account.getOwner(), Permissions.EDIT_ACCOUNT);
             }
             proxies.add(new UserRightsProxy(au));
             account.getAuthorizedUsers().add(au);

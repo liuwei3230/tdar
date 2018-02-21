@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.billing.BillingAccountGroup;
 import org.tdar.core.bean.billing.BillingActivityModel;
@@ -177,7 +176,7 @@ public interface BillingAccountService {
 
     void processBillingAccountChoice(BillingAccount acct, Invoice invoice, TdarUser authenticatedUser);
 
-    BillingAccount reconcileSelectedAccount(long id, Invoice invoice, BillingAccount account, List<BillingAccount> accounts);
+    BillingAccount reconcileSelectedAccount(long id, Invoice invoice, BillingAccount account, List<BillingAccount> accounts, TdarUser tdarUser);
 
     void updateQuotas(BillingAccount account, ResourceEvaluator re, List<Resource> resources);
 
@@ -193,6 +192,7 @@ public interface BillingAccountService {
 
     List<Invoice> getInvoicesForAccount(BillingAccount account);
 
-    void saveForController(BillingAccount account, String name, String description, Invoice invoice, Long invoiceId, TdarUser owner, TdarUser authenticatedUser, List<UserRightsProxy> proxies);
+    void saveForController(BillingAccount account, String name, String description, Invoice invoice, Long invoiceId, TdarUser owner, TdarUser authenticatedUser,
+            List<UserRightsProxy> proxies);
 
 }
