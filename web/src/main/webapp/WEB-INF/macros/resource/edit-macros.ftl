@@ -38,7 +38,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     <div data-tiplabel="${siteAcronym} ${label}" data-tooltipcontent="#divResourceCollectionListTips">
         <#if (ableToUploadFiles?? && ableToUploadFiles) || resource.resourceType.project || rightsPage!false >
             <div id="${prefix}Table" class="control-group repeatLastRow" addAnother="add another ${label}">
-                <label class="control-label">${label} Name(s)</label>
+                <label class="control-label">${label} (s)</label>
 
                 <div class="controls">
                     <#list _resourceCollections as resourceCollection>
