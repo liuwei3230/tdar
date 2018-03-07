@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.struts.action.dataset.AbstractDatasetController;
-import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 
 /**
