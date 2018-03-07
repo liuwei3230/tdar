@@ -18,6 +18,34 @@ TDAR.selectize = (function() {
     }
     
     /**
+     * find the next 'focusable element'
+     * ignore things that have a tabIndex == -1 unless they have an attribute 'selectizeFor'
+     * 
+     */
+    var _focusOn = function(existingName) {
+        setTimeout(function() {
+            var focusable = $(':focusable');
+            var seen = false;
+            for (var i= 0; i < focusable.length; i++) {
+                var $val = $(focusable[i]);
+                if ($val.attr('tabindex') == -1 && $val.attr("selectizeFor") == undefined) { continue;}
+                console.log(existingName, $val.name, $val.attr("selectizeFor"), $val);
+                if ($val.name == existingName || $val.attr("selectizeFor") == existingName) {
+                    console.log($val, $val.name == existingName);
+                    seen = true;
+
+                } else {
+                    if (seen == true) {
+                        console.log('focusing on', $(focusable[i]));
+                        $(focusable[i]).focus();
+                        break;
+                    }
+                }
+            };
+          },100);
+    }
+    
+    /**
      * try and construct the same field structure with an ID. 
      * 
      * 1. if we're using myfield.name then use a.id
@@ -92,6 +120,8 @@ TDAR.selectize = (function() {
 
                 console.trace("change:", value, id);
                 $("#" + this.$input.tdarIdFieldId).val(id);
+                _focusOn($(this.$control_input).attr("selectizeFor"));
+
             },
             onClear : function() {
                 /**
@@ -127,7 +157,13 @@ TDAR.selectize = (function() {
                 
                 // add a selector for the input
                 $(this.$control_input).attr("selectizeFor",originalInputName);
+                $(this.$control_input).keydown(function(e) {
+                    var code = e.keyCode || e.which;
 
+                    if (code === 9) {
+                        _focusOn(originalInputName);
+                    }
+                });
                 // create a hidden element for our Id if it doesn't exist
                 var ids = $("input[name=\'" +this.$input.tdarIdFieldName+"\']");
                 if (ids.length == 0) {
@@ -180,7 +216,13 @@ TDAR.selectize = (function() {
 
     var _apply = function(selector, opts) {
         $(selector).each(function(i,sel) {
-            $(sel).selectize(opts);
+            var $sel = $(sel);
+//             opts['dropdownParent'] = $sel.parent()[0];
+            $sel.selectize(opts);
+            $(sel).blur(function(e) {
+               var existing = $(this).attr('selectizeFor');
+               _focusOn(existing);
+            });
         });
     }
     
