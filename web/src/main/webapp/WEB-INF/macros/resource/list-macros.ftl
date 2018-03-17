@@ -235,7 +235,8 @@
                     <#if (resource.citationRecord?has_content && resource.citationRecord && !resource.resourceType.project)>
                         <span class='cartouche' title="Citation only; this record has no attached files.">Citation</span>
                     </#if>
-                    <@commonr.cartouche resource true><#if resource.hidden!false><i class="icon-eye-close" title="hidden" alt="hidden"></i> </#if><small>[ID: ${_rid}]</small> <@_listCreators resource/></@commonr.cartouche>
+                    
+                    <@commonr.cartouche resource true><#if resource.hidden!false><i class="icon-eye-close" title="hidden" alt="hidden"></i> </#if><#if permissionsCache?has_content && permissionsCache.isManaged(resource.id) == false>[not managed]</#if></@commonr.cartouche>
                     <#if resource.resourceType?has_content>
                         <@view.unapiLink resource  />
                     </#if>
@@ -453,16 +454,18 @@ bookmark indicator, etc..
     </#macro>
 
     <#macro displayWidget>
+            <#list availableOrientations>
                 <h3>View Options</h3>
                 <ul class="tools media-list">
-                    <#list availableOrientations as orientation>
+                <#items as orientation>
                     <li class="media"><a href="<@s.url includeParams="all">
                         <@s.param name="orientation">${orientation}</@s.param>
                     </@s.url>">
                     <svg class="svgicon red"><use xlink:href="/images/svg/symbol-defs.svg#svg-icons_${orientation.svg!orientation}"></use></svg>
                     <@s.text name="${orientation.localeKey}"/></a></li>
-                    </#list>
+                    </#items>
                 </ul>
+                    </#list>
     </#macro>
 
 

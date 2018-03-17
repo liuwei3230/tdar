@@ -34,7 +34,7 @@ import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
 import org.tdar.core.bean.keyword.MaterialKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
-import org.tdar.core.bean.resource.Dataset;
+import org.tdar.core.bean.notification.EmailType;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotation;
@@ -67,7 +67,6 @@ import org.tdar.struts_base.interceptor.annotation.WriteableSession;
 import org.tdar.transform.MetaTag;
 import org.tdar.transform.OpenUrlFormatter;
 import org.tdar.transform.ScholarMetadataTransformer;
-import org.tdar.utils.EmailMessageType;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.web.service.ResourceControllerProxy;
 import org.tdar.web.service.ResourceEditControllerService;
@@ -96,7 +95,7 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     private boolean select2SingleEnabled = TdarConfiguration.getInstance().isSelect2SingleEnabled();
     private List<MaterialKeyword> allMaterialKeywords;
     private List<InvestigationType> allInvestigationTypes;
-    private List<EmailMessageType> emailTypes = EmailMessageType.valuesWithoutConfidentialFiles();
+    private List<EmailType> emailTypes = EmailType.valuesWithoutConfidentialFiles();
     private RevisionLogType revisionType = RevisionLogType.EDIT;
     private String submit;
     protected ResourceControllerProxy<R> proxy = new ResourceControllerProxy<>(this);
@@ -384,14 +383,71 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         return editable;
     }
 
+    
+    /**
+     * Resolves the state between whether the resource has lat/long boundaries, and if after the save it will have them. 
+     * Used to control whether an alert message should be displayed or not. 
+     * @author briancastellanos
+     * @param activeBoxes
+     * @param newBoxes
+     * @return boolean 
+     */
+    @SuppressWarnings("deprecation")
+    protected boolean willHaveLatLongBoxes(Set<LatitudeLongitudeBox> activeBoxes, List<LatitudeLongitudeBox> newBoxes){
+    	
+    	boolean isActiveBoxesEmpty = CollectionUtils.isEmpty(activeBoxes);
+    	boolean isNewBoxesEmpty = CollectionUtils.isEmpty(newBoxes);
+       	boolean result;
+    	
+    	if(!isNewBoxesEmpty){
+    		LatitudeLongitudeBox l  = newBoxes.get(0);
+    		
+    		//If there's no boundaries, the fields will all be null.
+    		isNewBoxesEmpty = (l.getNorth()==null && l.getSouth()==null && l.getEast()==null && l.getWest()==null);
+    	}
+    	
+ 
+    	getLogger().debug("{} ",newBoxes);
+    	getLogger().debug("Checking if willHaveLatLongBoxes - isActiveBoxesEmpty: {} ,  isNewBoxesEmpty: {} ", isActiveBoxesEmpty, isNewBoxesEmpty);
+    	
+    	//There are no current boxes
+    	if(isActiveBoxesEmpty){
+    		 if(isNewBoxesEmpty){
+    			 result = false; 
+    		 }
+    		 //The boxes are being added. 
+    		 else{
+    			 result = true;
+    		 }
+    	}
+    	//There are current boxes
+    	else {
+    		//the boxes are being removed
+    		if(isNewBoxesEmpty){
+    			result = false;
+	   		}
+    		//The boxes will stay.
+	   		else{
+	   			result = true;
+	   		}
+    	}
+    	
+    	getLogger().debug("will have boundaries: {} ", result);
+    	
+    	return result;
+    	
+    }
+    
+    
     /**
      * Saves keywords, full / read user access, and confidentiality.
      */
     protected void saveBasicResourceMetadata() {
         AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
 
-        if (CollectionUtils.isEmpty(authWrapper.getItem().getActiveLatitudeLongitudeBoxes()) && !(this instanceof BulkUploadController)
-                && !(this instanceof AbstractSupportingInformationResourceController)) {
+        if (	!willHaveLatLongBoxes(authWrapper.getItem().getActiveLatitudeLongitudeBoxes(),getLatitudeLongitudeBoxes()) && 
+        		!(this instanceof BulkUploadController) &&  // 
+        		!(this instanceof AbstractSupportingInformationResourceController)) {
             addActionMessage(getText("abstractResourceController.no_map", Arrays.asList(authWrapper.getItem().getResourceType().getLabel())));
         }
 
@@ -918,11 +974,11 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
         return PersistableUtils.extractIds(persistables);
     }
 
-    public List<EmailMessageType> getEmailTypes() {
+    public List<EmailType> getEmailTypes() {
         return emailTypes;
     }
 
-    public void setEmailTypes(List<EmailMessageType> emailTypes) {
+    public void setEmailTypes(List<EmailType> emailTypes) {
         this.emailTypes = emailTypes;
     }
 
