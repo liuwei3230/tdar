@@ -871,14 +871,14 @@
             <artifactId>activation</artifactId>
             <version>1.1.1</version>
         </dependency>
-        
-<!--        <dependency>
+
+        <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
             <version>2.3.0</version>
         </dependency>
         
-        
+<!--        
         -->
                 <!-- <dependency> -->
             <!-- this attempts to use the META-INF/ configuraiton for the 
