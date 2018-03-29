@@ -12,7 +12,7 @@
     "d3": "~3.5.17",
     "DataTables": "~1.9.4",
     "DataTablesPlugins": "https://github.com/DataTables/Plugins.git#1.0.1",
-    "es6-promise": "https://github.com/stefanpenner/es6-promise.git",
+    "es6-promise": "https://github.com/stefanpenner/es6-promise.git#vv4.2.3",
     "jquery": "~1.11.3",
     "jquery-file-upload": "8.6.1",
     "jquery.treeview": "~1.4.1",
