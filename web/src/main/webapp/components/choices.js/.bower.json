@@ -1,0 +1,39 @@
+{
+  "name": "choices.js",
+  "version": "3.0.4",
+  "description": "A vanilla JS customisable text input/select box plugin",
+  "main": [
+    "./assets/scripts/dist/choices.js",
+    "./assets/styles/css/choices.css"
+  ],
+  "authors": [
+    "Josh Johnson"
+  ],
+  "license": "MIT",
+  "homepage": "https://joshuajohnson.co.uk/Choices/",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "keywords": [
+    "customisable",
+    "input",
+    "select",
+    "vanilla",
+    "plugin",
+    "js"
+  ],
+  "_release": "3.0.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.0.4",
+    "commit": "9b860da25477985de018efeacf37194aea3a70b2"
+  },
+  "_source": "https://github.com/jshjohnson/Choices.git",
+  "_target": "~3.0.4",
+  "_originalSource": "choices.js",
+  "_direct": true
+}

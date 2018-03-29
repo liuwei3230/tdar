@@ -283,7 +283,6 @@ TDAR.common = function (TDAR, fileupload) {
         TDAR.autocomplete.delegateCreator("#divSubmitter", true, false);
         TDAR.autocomplete.delegateCreator("#copyrightHolderTable", false, true);
         TDAR.autocomplete.delegateAnnotationKey("#resourceAnnotationsTable", "annotation", "annotationkey");
-<<<<<<< mine
         TDAR.selectize.keywordLookupWithRepeatRow("#siteNameKeywordsRepeatable .selectize", "#siteNameKeywordsRepeatable", "SiteNameKeyword");
         TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledSiteTypeKeywordsRepeatable .selectize", "#uncontrolledSiteTypeKeywordsRepeatable", "SiteTypeKeyword");
         TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledCultureKeywordsRepeatable .selectize", "#uncontrolledCultureKeywordsRepeatable", "CultureKeyword");

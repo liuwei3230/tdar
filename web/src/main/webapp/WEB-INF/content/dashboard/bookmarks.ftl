@@ -11,45 +11,52 @@
 <head>
     <title>${authenticatedUser.properName}'s Dashboard</title>
     <meta name="lastModifiedDate" content="$Date$"/>
+    <!-- Include base CSS (optional) -->
+<!-- Include Choices CSS -->
+<link rel="stylesheet" href="/components/choices.js/assets/styles/css/choices.min.css">
+<!-- Include Choices JavaScript -->
+<script src="/components/choices.js/assets/scripts/dist/choices.min.js"></script>
 
 </head>
 
 
 <div id="titlebar" parse="true">
-<form>
     <h1>Dashboard &raquo; <span class="red">My Bookmarks</span></h1>
+
+</div>
 <div class="row">
-<div class="span9">
+<div class="span2">
+    <@dash.sidebar current="bookmarks" />
+</div>
+
+<div class="span10">
+<form>
 <b>selectize</b>
-<input class="selectizeajax" type="text" />
-</div>
-</div>
+<input class="selectizeajax" type="text"  autocomplete="off" />
 
-
-<div class="row">
-<div class="span9">
+<br/><br/>
 <b>select2</b>
 <select class="js-data-example-ajax"></select>
-</div>
-</div>
 
 
+<br/><br/>
 
-<div class="row">
-<div class="span9">
 <b>select2 (tags)</b>
 <select class="js-data-example-ajaxmulti" multiple></select>
-</div>
-</div>
 
 
+<br/><br/>
 
-
-
-<div class="row">
-<div class="span9">
 <b>selectize (tags)</b>
 <input class="selectize-ajaxmulti" />
+
+
+
+<b>choices (single)</b>
+<select class="choicesajax" multiple></select>
+
+
+
 <script>
 $(document).ready(function() {
 $('.js-data-example-ajaxmulti').select2({
@@ -59,7 +66,7 @@ $('.js-data-example-ajaxmulti').select2({
     dataType: 'jsonp',
      data: function (params) {
       return {
-      	keywordType: 'GeographicKeyword',
+        keywordType: 'GeographicKeyword',
         term: params.term
       }
       },
@@ -100,41 +107,51 @@ $('.js-data-example-ajax').select2({
   }
 });
     $('.selectize-ajaxmulti').selectize({
-        "delimiter": ',',
-        "valueField": 'label',
-        "labelField": 'label',
-        "searchField": 'term',
+        "valueField": 'id',
+        delimeter:',',
+        "labelField": 'name',
+        "searchField": 'name',
         "persist": true,
-		"createOnBlur": true,
+        "maxItems": 100,
+        "showCreate":false,
+        "createOnBlur": false,
 
-        "render": {
+        render: {
             option: function(item, escape) {
-	        console.log(item);
-	            if (item.name != undefined) {
-	                return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.name) + '</span>' + '</span>' + '</div>';
-	            }
-	            if (item.label != undefined) {
-	                return '<div>' + '<span class="title">' + '<span class="sel-label">' + escape(item.label) + '</span>' + '</span>' + '</div>';
-	            }
+            console.log(item);
+                if (item.title != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.title) + '</span>' + '</span>' + '</div>';
+                }
+                if (item.name != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.name) + '</span>' + '</span>' + '</div>';
+                }
+                if (item.label != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-label">' + escape(item.label) + '</span>' + '</span>' + '</div>';
+                }
             }
         },
-        "create": true,
+        create: true,
 
         load: function(query, callback) {
-        console.log('load');
+           console.log('load', callback);
             if (!query.length) return callback();
+            var self = this;
             $.ajax({
-                url: '/api/lookup/keyword',
-                dataType: 'jsonp',
+                url: '/api/lookup/institution',
+                dataType: 'json',
+                type:'GET',
                 data: {
-                    keywordType: 'GeographicKeyword',
-                    term: query
+                    institution: query
                 },
                 error: function() {
                     callback();
                 },
                 success: function(res) {
-                    callback(res['items']);
+                    console.log(res['institutions'].length);
+                    var results = res['institutions'];
+                    callback(results);
+
+
                 }
 
             });
@@ -145,47 +162,48 @@ $('.js-data-example-ajax').select2({
 //        "delimiter": ',',
     $('.selectizeajax').selectize({
         "valueField": 'id',
-        "labelField": 'title',
-        "searchField": 'term',
+        "labelField": 'name',
+        "searchField": 'name',
         "persist": true,
         "maxItems": 1,
         "showCreate":false,
-		"createOnBlur": false,
+        "createOnBlur": false,
 
         render: {
             option: function(item, escape) {
-	        console.log(item);
-	            if (item.title != undefined) {
-	                return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.title) + '</span>' + '</span>' + '</div>';
-	            }
-	            if (item.label != undefined) {
-	                return '<div>' + '<span class="title">' + '<span class="sel-label">' + escape(item.label) + '</span>' + '</span>' + '</div>';
-	            }
+            console.log(item);
+                if (item.title != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.title) + '</span>' + '</span>' + '</div>';
+                }
+                if (item.name != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-name">' + escape(item.name) + '</span>' + '</span>' + '</div>';
+                }
+                if (item.label != undefined) {
+                    return '<div>' + '<span class="title">' + '<span class="sel-label">' + escape(item.label) + '</span>' + '</span>' + '</div>';
+                }
             }
         },
         create: true,
 
         load: function(query, callback) {
-     	   console.log('load', callback);
+           console.log('load', callback);
             if (!query.length) return callback();
-            //var self = this;
+            var self = this;
             $.ajax({
-                url: '/api/lookup/resource',
+                url: '/api/lookup/institution',
                 dataType: 'json',
                 type:'GET',
                 data: {
-                    term: query
+                    institution: query
                 },
                 error: function() {
                     callback();
                 },
                 success: function(res) {
-                	console.log(res['resources'].length);
-                	var results = res['resources'];
+                    console.log(res['institutions'].length);
+                    var results = res['institutions'];
                     callback(results);
-//					self.addOption(results);
-//					console.log(self.isFocused , !self.isInputHidden);
-//					self.refreshOptions(true);
+
 
                 }
 
@@ -195,18 +213,34 @@ $('.js-data-example-ajax').select2({
     });
 
 
+
+
+
+ var singleXhrRemove = new Choices('.choicesajax', {
+        removeItemButton: true,
+      }).ajax(function(callback) {
+      console.log('hi');
+                  $.ajax({
+                url: '/api/lookup/institution?minLookupLength=0&recordsPerPage=1000',
+                dataType: 'json',
+                type:'GET',
+                error: function() {
+                    callback();
+                },
+                success: function(res) {
+                    console.log(res['institutions'].length);
+                    var results = res['institutions'];
+                    callback(results,'name','name');
+
+                }
+            });
+
+
+    });
 });
 
-</script>
-</div>
-</div>
 
-</div>
-<div class="row">
-<div class="span2">
-    <@dash.sidebar current="bookmarks" />
-</div>
-<div class="span10">
+</script>
     <@bookmarksSection />
         </div>
 </div>
