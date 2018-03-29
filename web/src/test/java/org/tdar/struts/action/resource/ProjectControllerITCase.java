@@ -18,6 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
+import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
@@ -81,7 +82,8 @@ public class ProjectControllerITCase extends AbstractControllerITCase {
         assertTrue(projectAsJson.contains("21234"));
         assertTrue(projectAsJson.contains("key23123"));
     }
-
+    
+    
     @SuppressWarnings("unused")
     @Test
     @Rollback

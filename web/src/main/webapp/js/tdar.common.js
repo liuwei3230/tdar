@@ -283,6 +283,7 @@ TDAR.common = function (TDAR, fileupload) {
         TDAR.autocomplete.delegateCreator("#divSubmitter", true, false);
         TDAR.autocomplete.delegateCreator("#copyrightHolderTable", false, true);
         TDAR.autocomplete.delegateAnnotationKey("#resourceAnnotationsTable", "annotation", "annotationkey");
+<<<<<<< mine
         TDAR.selectize.keywordLookupWithRepeatRow("#siteNameKeywordsRepeatable .selectize", "#siteNameKeywordsRepeatable", "SiteNameKeyword");
         TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledSiteTypeKeywordsRepeatable .selectize", "#uncontrolledSiteTypeKeywordsRepeatable", "SiteTypeKeyword");
         TDAR.selectize.keywordLookupWithRepeatRow("#uncontrolledCultureKeywordsRepeatable .selectize", "#uncontrolledCultureKeywordsRepeatable", "CultureKeyword");
@@ -465,6 +466,17 @@ TDAR.common = function (TDAR, fileupload) {
             });
         }
     };
+    
+    /**
+     * For the permissions view, it attaches the collections auto completes. 
+     */
+    var _initRightsPage = function(){
+        $('#sharesTable').on("focus", ".collectionAutoComplete", function () {
+        	console.debug("Applying collection autocomplete to ",$(this));
+            TDAR.autocomplete.applyCollectionAutocomplete($(this), {showCreate: true, showCreatePhrase: "Create a new collection"}, {permission: "ADD_TO_SHARE"});
+        });
+    }
+    
 
     /**
      * Custom  ajax filter (enable by calling $.ajaxPrefilter(_customAjaxPrefilter). JQuery executes this prefilter
@@ -687,6 +699,7 @@ TDAR.common = function (TDAR, fileupload) {
      * @param container element/selector. Context for .typeToggle search.
      */
     var _switchType = function (radio, container) {
+    	console.debug("Called _switchType");
         var val = $(radio).val();
         var type = (typeof val !== 'undefined') ? val.toLowerCase() : "SWITCHTYPEDEFAULT";
         type = "." + type;
@@ -715,7 +728,28 @@ TDAR.common = function (TDAR, fileupload) {
 
         _switchLabel($("#publisher-hints"), doctype);
         _switchLabel($("#publisherLocation-hints"), doctype);
+        
+        _clearHiddenFields();
     }
+    
+    
+    /**
+     * When the document type is changed, the hidden fields backing it need to clear, otherwise they get saved. 
+     * 
+     */
+    var _clearHiddenFields = function(){
+    	$(".doctypeToggle:hidden input").each(function(){
+    		var el = $(this);
+    		if($(this).attr("type")=="radio"){
+    			$(this).attr("checked",false);
+    		}
+    		else{
+    			$(this).val("");
+    		}
+		}
+    	);
+    }
+    
 
     /**
      * specific setup for initializing "supporting resoure" edit forms.
@@ -943,6 +977,7 @@ TDAR.common = function (TDAR, fileupload) {
 
     $.extend(self, {
         "initEditPage": _initEditPage,
+        "initRightsPage" : _initRightsPage,
         "applyTreeviews": _applyTreeviews,
         "initializeView": _initializeView,
         "determineResponsiveClass": _determineResponsiveClass,
