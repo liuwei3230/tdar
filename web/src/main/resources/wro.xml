@@ -118,6 +118,10 @@
         <css>/components/selectize/dist/css/selectize.css</css>
 
 
+        <js>/components/select2/dist/js/select2.full.js</js>
+        <css>/components/select2/dist/css/select2.css</css>
+
+
         <js>/components/vue/dist/vue.js</js>
         <js>/js/vue/vue-selectize.js</js>
         <js>/js/vue/view-collection-widget.js</js>
