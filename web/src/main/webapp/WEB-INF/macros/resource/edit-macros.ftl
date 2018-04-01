@@ -36,7 +36,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     <@helptext.resourceCollection />
     
     <div data-tiplabel="${siteAcronym} ${label}" data-tooltipcontent="#divResourceCollectionListTips">
-        <#if (ableToUploadFiles?? && ableToUploadFiles) || resource.resourceType.project || rightsPage!false >
+        <#if (ableToAdjustPermissions?? && ableToAdjustPermissions) || resource.resourceType.project || rightsPage!false >
             <div id="${prefix}Table" class="control-group repeatLastRow" addAnother="add another ${label}">
                 <label class="control-label">${label} (s)</label>
 
@@ -81,7 +81,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
             </i></p>
         </#if>
 
-    <#else>
+        <#else>
         <p>Collection selection is disabled because you don't have full rights on this resource.</p>    
         </#if>
     </div>
@@ -898,7 +898,11 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
     </#macro>
     <#macro _singleFileUpload typeLabel="${resource.resourceType.label}">
         <#if !ableToUploadFiles>
-        <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#if ableToAdjustPermissions?? && !ableToAdjustPermissions>
+                <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#else>
+                <b>note:</b> your billing acccount is overdrawn. You must add funds to your account before you can add or replace a file.<br/>
+            </#if>
         <#else>
         <div class="control-group"
              data-tiplabel="Upload ${typeLabel}"
@@ -937,8 +941,12 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
             </div>
         </div>
 
-        <#if !ableToUploadFiles>
-            <b>note:</b> you have not been granted permission to upload or modify files<br/>
+        <#if !ableToUploadFiles >
+            <#if ableToAdjustPermissions?? && !ableToAdjustPermissions>
+                <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#else>
+                <b>note:</b> your billing acccount is overdrawn. You must add funds to your account before you can add or replace a file.<br/>
+            </#if>
         <#else>
             <div class="row fileupload-buttonbar">
                 <div class="span2">

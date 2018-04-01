@@ -33,7 +33,7 @@ public class AbstractBasicSeleniumWebITCase extends AbstractSeleniumWebITCase {
         super.beforeTest();
         login();
     }
-    
+
     @Override
     public void login() {
         setScreenshotsAllowed(false);
