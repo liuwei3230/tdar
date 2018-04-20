@@ -22,7 +22,6 @@ import org.tdar.search.query.SearchResult;
 
 public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
 
-
     // note: relevance sort broken out into SearchRelevancyITCase
     @Test
     @Rollback
@@ -57,7 +56,8 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
 
     @Test
     @Rollback
-    public void testSortFieldProject() throws InstantiationException, IllegalAccessException, ParseException, SearchException, SearchIndexException, IOException,SearchException, SearchIndexException {
+    public void testSortFieldProject() throws InstantiationException, IllegalAccessException, ParseException, SearchException, SearchIndexException,
+            IOException, SearchException, SearchIndexException {
         searchIndexService.purgeAll();
         Project project = createAndSaveNewProject("my project");
         Project project2 = createAndSaveNewProject("my project 2");
@@ -75,7 +75,7 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
         List<Resource> results = result.getResults();
         for (Resource r : results) {
             if (r instanceof InformationResource) {
-                InformationResource ir = (InformationResource)r;
+                InformationResource ir = (InformationResource) r;
                 logger.debug("{} {} {}", r.getId(), ir.getProjectTitle() + r.getName(), ir.getProjectId());
             } else {
                 logger.debug("{} {}", r.getId(), r.getName());
@@ -118,8 +118,39 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
         }
         reindex();
 
-        setSortThenCheckFirstResult("sorting by datecreated asc", SortOption.DATE, p.getId(), alphaId);
-        setSortThenCheckFirstResult("sorting by datecreated desc", SortOption.DATE_REVERSE, p.getId(), omegaId);
+        setSortThenCheckFirstResult("sorting by date asc", SortOption.DATE, p.getId(), alphaId);
+        setSortThenCheckFirstResult("sorting by date desc", SortOption.DATE_REVERSE, p.getId(), omegaId);
+    }
+
+
+    @Test
+    @Rollback
+    public void testSortFieldDateCreated() throws ParseException, SearchException, SearchIndexException, IOException {
+        Long alphaId = -1L;
+        Long omegaId = -1L;
+        Project p = new Project();
+        p.setTitle("test project");
+        p.setDescription("test description");
+        p.markUpdated(getUser());
+        List<Integer> dateList = Arrays.asList(new Integer[] { 1, 2, 3, 4, 5, 19, 39 });
+        genericService.save(p);
+        for (Integer date : dateList) {
+            Document doc = new Document();
+            doc.markUpdated(getUser());
+            doc.setDate(date);
+            doc.setTitle("hello" + date);
+            doc.setDescription(doc.getTitle());
+            doc.setProject(p);
+            genericService.save(doc);
+            if (alphaId == -1) {
+                logger.debug("setting id for doc:{}", doc.getId());
+                alphaId = doc.getId();
+            }
+            omegaId = doc.getId();
+        }
+        reindex();
+
+        setSortThenCheckFirstResult("sorting by date asc", SortOption.DATE_CREATED, p.getId(), alphaId);
     }
 
 }

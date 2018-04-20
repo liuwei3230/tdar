@@ -50,7 +50,7 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
         accountWithPermissions.setOwner(p2);
         accountWithPermissions.markUpdated(getUser());
         accountWithPermissions.setStatus(Status.ACTIVE);
-        accountWithPermissions.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), p, Permissions.EDIT_ACCOUNT));
+        accountWithPermissions.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), p, Permissions.USE_ACCOUNT));
         genericService.saveOrUpdate(accountWithPermissions);
 
         List<BillingAccount> accountsForUser = accountService.listAvailableAccountsForUser(p);
@@ -70,7 +70,7 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
         group.markUpdated(getBasicUser());
         BillingAccount accountForPerson = setupAccountForPerson(getBasicUser());
         BillingAccount accountForPerson2 = setupAccountForPerson(createAndSaveNewUser());
-        accountForPerson2.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), getBasicUser(), Permissions.EDIT_ACCOUNT));
+        accountForPerson2.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), getBasicUser(), Permissions.USE_ACCOUNT));
         group.getAccounts().add(accountForPerson);
         group.getAccounts().add(accountForPerson2);
         genericService.saveOrUpdate(group);
@@ -152,7 +152,7 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
         group.markUpdated(getBasicUser());
         BillingAccount accountForPerson = setupAccountForPerson(getBasicUser());
         BillingAccount accountForPerson2 = setupAccountForPerson(getBasicUser());
-        accountForPerson2.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), getBasicUser(), Permissions.EDIT_ACCOUNT));
+        accountForPerson2.getAuthorizedUsers().add(new AuthorizedUser(getAdminUser(), getBasicUser(), Permissions.USE_ACCOUNT));
         TdarUser person = createAndSaveNewUser();
         group.getAuthorizedMembers().add(person);
         group.getAccounts().add(accountForPerson);
@@ -163,7 +163,6 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
         assertTrue(accountService.listAvailableAccountsForUser(person).contains(accountForPerson2));
     }
 
-    
     @Test
     @Rollback
     public void testAccountTransfer() {
@@ -174,9 +173,9 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
         logger.debug("from: {}", from.availableString());
         assertEquals(5, to.getAvailableNumberOfFiles().intValue());
         assertEquals(0, from.getAvailableNumberOfFiles().intValue());
-        
+
     }
-    
+
     @SuppressWarnings("deprecation")
     @Test
     @Rollback
@@ -220,15 +219,15 @@ public class AccountServiceITCase extends AbstractIntegrationTestCase implements
 
         genericService.saveOrUpdate(activity, invoice);
 
-        //recreate a repeat of the "choose a billing account" step  with a blank account.
-        BillingAccount account1 = accountService.reconcileSelectedAccount(-1L, invoice, null, Collections.<BillingAccount>emptyList(), authenticatedUser);
+        // recreate a repeat of the "choose a billing account" step with a blank account.
+        BillingAccount account1 = accountService.reconcileSelectedAccount(-1L, invoice, null, Collections.<BillingAccount> emptyList(), authenticatedUser);
         account1.markUpdated(authenticatedUser);
         accountService.processBillingAccountChoice(account1, invoice, authenticatedUser);
 
-        BillingAccount account2 = accountService.reconcileSelectedAccount(-1L, invoice, null, Collections.<BillingAccount>emptyList(), authenticatedUser);
+        BillingAccount account2 = accountService.reconcileSelectedAccount(-1L, invoice, null, Collections.<BillingAccount> emptyList(), authenticatedUser);
 
-        //account1 and account2 should  be equal because the system should detect on the second call that it is not necessary to create a new account
-        assertThat(account1, is( account2));
+        // account1 and account2 should be equal because the system should detect on the second call that it is not necessary to create a new account
+        assertThat(account1, is(account2));
     }
 
 }

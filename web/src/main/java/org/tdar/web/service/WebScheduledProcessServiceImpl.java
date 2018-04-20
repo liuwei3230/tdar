@@ -17,6 +17,7 @@ import org.tdar.core.service.processes.PollEmailBouncesProcess;
 import org.tdar.core.service.processes.SendEmailProcess;
 import org.tdar.core.service.processes.daily.DailyEmailProcess;
 import org.tdar.core.service.processes.daily.DailyStatisticsUpdate;
+import org.tdar.core.service.processes.daily.DailyTimedAccessRevokingProcess;
 import org.tdar.core.service.processes.daily.DoiProcess;
 import org.tdar.core.service.processes.daily.EmbargoedFilesUpdateProcess;
 import org.tdar.core.service.processes.daily.RebuildHomepageCache;
@@ -66,7 +67,7 @@ public class WebScheduledProcessServiceImpl implements WebScheduledProcessServic
     public void cronQueueEmail() {
         scheduledProcessService.queue(SendEmailProcess.class);
     }
-    
+
     /*
      * (non-Javadoc)
      * 
@@ -75,7 +76,7 @@ public class WebScheduledProcessServiceImpl implements WebScheduledProcessServic
     @Override
     @Scheduled(fixedDelay = ScheduledProcessService.FIVE_MIN_MS)
     public void cronProcessEmailErrors() {
-    	scheduledProcessService.queue(PollEmailBouncesProcess.class);
+        scheduledProcessService.queue(PollEmailBouncesProcess.class);
     }
 
     /*
@@ -113,6 +114,18 @@ public class WebScheduledProcessServiceImpl implements WebScheduledProcessServic
     public void cronEmbargoNotices() {
         logger.info("updating Embargo notices");
         scheduledProcessService.queue(EmbargoedFilesUpdateProcess.class);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.tdar.web.service.WebScheduledProcessService#cronEmbargoNotices()
+     */
+    @Override
+    @Scheduled(cron = "0 45 0 * * *")
+    public void cronDailyAccessRevocationNotices() {
+        logger.info("updating Embargo notices");
+        scheduledProcessService.queue(DailyTimedAccessRevokingProcess.class);
     }
 
     /*

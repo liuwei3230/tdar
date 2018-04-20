@@ -57,13 +57,14 @@ public class AdminPermissonsRequestAction extends AbstractProcessPermissonsActio
 
     @Override
     public List<Permissions> getAvailablePermissions() {
-        if (getType() != null && getType() == EmailType.CUSTOM) {
+        if (getType() != null && getType() == EmailType.CUSTOM_CONTACT) {
             if (custom != null) {
                 return Arrays.asList(custom.getPermission());
             }
         }
         return super.getAvailablePermissions();
     }
+
     public RequestCollection getCustom() {
         return custom;
     }

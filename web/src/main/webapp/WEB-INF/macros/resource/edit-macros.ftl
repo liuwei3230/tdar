@@ -37,7 +37,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
     <@helptext.resourceCollection />
     
     <div data-tiplabel="${siteAcronym} ${label}" data-tooltipcontent="#divResourceCollectionListTips">
-        <#if (ableToUploadFiles?? && ableToUploadFiles) || resource.resourceType.project || rightsPage!false >
+        <#if (ableToAdjustPermissions?? && ableToAdjustPermissions) || resource.resourceType.project || rightsPage!false >
             <div id="${prefix}Table" class="control-group repeatLastRow" addAnother="add another ${label}">
                 <label class="control-label">${label} Name(s)</label>
 
@@ -81,7 +81,7 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
             </i></p>
         </#if>
 
-    <#else>
+        <#else>
         <p>Collection selection is disabled because you don't have full rights on this resource.</p>    
         </#if>
     </div>
@@ -656,6 +656,8 @@ Edit freemarker macros.  Getting large, should consider splitting this file up.
                 <@s.select name="accountId" list="%{activeAccounts}" label="Account" title="Choose an account to bill from" listValue="name" listKey="id" emptyOption="true" required=true cssClass="required"/>
             </div>
             </#if>
+        <#else>
+        <i>Charging is disabled (TESTING), re-enable in tdar.properties</i>    
         </#if>
     </#macro>
 
@@ -868,7 +870,7 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
    						  <@s.textfield name="fileProxies[0].fileCreatedDate" cssClass="datepicker input-small" placeholder="mm/dd/yyyy" value="${val}" dynamicAttributes={"data-date-format":"mm/dd/yyyy"} />
                           <span class="add-on"><i class="icon-th"></i></span>
                         </div>
-                Description      <@s.textarea class="input-block-level" name="fileProxies[0].description" rows="3" placeholder="Enter a description here" cols="80" />
+                Description      <@s.textarea cssClass="input-block-level resizable resize-vertical" name="fileProxies[0].description" rows="3" placeholder="Enter a description here" cols="80" />
 
             </div>
             </@_singleFileUpload>
@@ -916,7 +918,11 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
     </#macro>
     <#macro _singleFileUpload typeLabel="${resource.resourceType.label}">
         <#if !ableToUploadFiles>
-        <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#if ableToAdjustPermissions?? && !ableToAdjustPermissions>
+                <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#else>
+                <b>note:</b> your billing acccount is overdrawn. You must add funds to your account before you can add or replace a file.<br/>
+            </#if>
         <#else>
         <div class="control-group"
              data-tiplabel="Upload ${typeLabel}"
@@ -955,8 +961,12 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
             </div>
         </div>
 
-        <#if !ableToUploadFiles>
-            <b>note:</b> you have not been granted permission to upload or modify files<br/>
+        <#if !ableToUploadFiles >
+            <#if ableToAdjustPermissions?? && !ableToAdjustPermissions>
+                <b>note:</b> you have not been granted permission to upload or modify files<br/>
+            <#else>
+                <b>note:</b> your billing acccount is overdrawn. You must add funds to your account before you can add or replace a file.<br/>
+            </#if>
         <#else>
             <div class="row fileupload-buttonbar">
                 <div class="span2">
@@ -1486,7 +1496,7 @@ MARTIN: it's also used by the FAIMS Archive type on edit.
                     <#if user??>
                         <div class="controls-row repeat-row" id="userrow_${user_index}_">
                             <div class="span6">
-                                <@registeredUserRow person=user _indexNumber=user_index includeRepeatRow=false/>
+                                <@registeredUserRow person=user _indexNumber=user_index includeRepeatRow=false includeRights=true />
                             </div>
                             <div class="span1">
                                 <@nav.clearDeleteButton id="user${user_index}"  />

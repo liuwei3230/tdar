@@ -7,7 +7,7 @@ public interface WebScheduledProcessService {
     void evictCaches();
 
     void cronQueueEmail();
-    
+
     void cronProcessEmailErrors();
 
     /**
@@ -59,5 +59,7 @@ public interface WebScheduledProcessService {
      * the admin area and general system
      */
     void cronGenerateWeeklyStats();
+
+    void cronDailyAccessRevocationNotices();
 
 }

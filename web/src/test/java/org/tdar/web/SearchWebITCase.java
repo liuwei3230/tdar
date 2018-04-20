@@ -1,5 +1,6 @@
 package org.tdar.web;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -80,6 +81,24 @@ public class SearchWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         assertTextPresentInPage("Search");
         submitForm("Search");
         assertNoErrorTextPresent();
+    }
+
+    @Test
+    public void testCollectionSearch() {
+        gotoPage("/search/results?objectTypes=COLLECTION");
+//        logger.debug(getPageText());
+        assertNoErrorTextPresent();
+        assertTrue(getPageText().contains("COLLECTION"));
+        assertFalse(getPageText().contains("INTEGRATION"));
+    }
+
+    @Test
+    public void testIntegrationSearch() {
+        gotoPage("/search/results?objectTypes=INTEGRATION");
+        logger.debug(getPageText());
+        assertNoErrorTextPresent();
+        assertTrue(getPageText().contains("INTEGRATION"));
+        assertFalse(getPageText().contains("COLLECTION"));
     }
 
     @Test
@@ -186,13 +205,13 @@ public class SearchWebITCase extends AbstractAdminAuthenticatedWebTestCase {
     @Rollback
     public void testFacets() throws InstantiationException,
             IllegalAccessException {
-         List<ResourceType> types = Arrays.asList(ResourceType.DATASET, ResourceType.DOCUMENT, ResourceType.IMAGE, ResourceType.GEOSPATIAL);
+        List<ResourceType> types = Arrays.asList(ResourceType.DATASET, ResourceType.DOCUMENT, ResourceType.IMAGE, ResourceType.GEOSPATIAL);
         for (ResourceType rt : types) {
             createResourceFromType(rt, "test");
         }
 
         reindex();
-        for (ResourceType type :types) {
+        for (ResourceType type : types) {
             gotoPage(SEARCH_RESULTS_BASE_URL + "?");
             logger.debug("{} -- TYPE", type);
             if (getPageLink(type.getPlural()) != null) {
@@ -221,7 +240,7 @@ public class SearchWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         try {
             return getHtmlPage().getAnchorByText(plural);
         } catch (Exception e) {
-            
+
         }
         return null;
     }

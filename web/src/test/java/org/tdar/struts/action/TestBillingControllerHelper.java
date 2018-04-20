@@ -31,12 +31,12 @@ public interface TestBillingControllerHelper {
 
     final Logger logger_ = LoggerFactory.getLogger(TestBillingControllerHelper.class);
 
-
     default String createCouponForAccount(Long numberOfFiles, Long numberOfMb, BillingAccount account, Invoice invoice) throws TdarActionException {
-        return createCouponForAccount(numberOfFiles, numberOfMb, account, invoice,null);
+        return createCouponForAccount(numberOfFiles, numberOfMb, account, invoice, null);
     }
-    
-    default String createCouponForAccount(Long numberOfFiles, Long numberOfMb, BillingAccount account, Invoice invoice, TdarUser user) throws TdarActionException {
+
+    default String createCouponForAccount(Long numberOfFiles, Long numberOfMb, BillingAccount account, Invoice invoice, TdarUser user)
+            throws TdarActionException {
         CouponCreationAction controller = setupControllerForCoupon(account, invoice, user);
         controller.setNumberOfFiles(numberOfFiles);
         controller.setNumberOfMb(numberOfMb);
@@ -49,9 +49,9 @@ public interface TestBillingControllerHelper {
     }
 
     default CouponCreationAction setupControllerForCoupon(BillingAccount account, Invoice invoice) throws TdarActionException {
-        return setupControllerForCoupon(account, invoice,null);
+        return setupControllerForCoupon(account, invoice, null);
     }
-    
+
     default CouponCreationAction setupControllerForCoupon(BillingAccount account, Invoice invoice, TdarUser user) throws TdarActionException {
         invoice.setTransactionStatus(TransactionStatus.TRANSACTION_SUCCESSFUL);
         invoice.markFinal();
@@ -61,7 +61,7 @@ public interface TestBillingControllerHelper {
 
         assertTrue(invoice.getNumberOfFiles() > 0);
         BillingAccountController controller = null;
-        if (user != null ) {
+        if (user != null) {
             controller = generateNewInitializedController(BillingAccountController.class, user);
         } else {
             controller = generateNewInitializedController(BillingAccountController.class);
@@ -70,6 +70,7 @@ public interface TestBillingControllerHelper {
         controller.setId(account.getId());
         controller.setName("test");
         controller.prepare();
+        controller.edit();
         boolean seen = false;
         controller.setServletRequest(getServletPostRequest());
         getGenericService().refresh(controller.getAccount());
@@ -83,7 +84,7 @@ public interface TestBillingControllerHelper {
         }
         assertFalse(seen);
         CouponCreationAction controllerc = generateNewInitializedController(CouponCreationAction.class);
-        if (user != null ) {
+        if (user != null) {
             controllerc = generateNewInitializedController(CouponCreationAction.class, user);
         } else {
             controllerc = generateNewInitializedController(CouponCreationAction.class);
@@ -94,13 +95,12 @@ public interface TestBillingControllerHelper {
         controllerc.setServletRequest(getServletPostRequest());
         return controllerc;
     }
-    
 
     default BillingAccount createAccount(TdarUser owner, GenericService genericService) {
         BillingAccount account = new BillingAccount("my account");
         account.setDescription("this is an account for : " + owner.getProperName());
         account.setOwner(owner);
-        account.getAuthorizedUsers().add(new AuthorizedUser(owner, owner, Permissions.EDIT_ACCOUNT));
+        account.getAuthorizedUsers().add(new AuthorizedUser(owner, owner, Permissions.USE_ACCOUNT));
         account.markUpdated(owner);
         getGenericService().saveOrUpdate(account);
         return account;
@@ -117,7 +117,6 @@ public interface TestBillingControllerHelper {
         getGenericService().saveOrUpdate(invoice);
         return invoice;
     }
-
 
     HttpServletRequest getServletRequest();
 

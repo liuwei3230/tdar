@@ -440,6 +440,17 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
     /*
      * (non-Javadoc)
      * 
+     * @see org.tdar.core.service.external.AuthorizationService#canModifyPermissions(org.tdar.core.bean.entity.TdarUser, org.tdar.core.bean.resource.Resource)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canModifyPermissions(TdarUser person, Resource resource) {
+        return canDo(person, resource, InternalTdarRights.EDIT_ANY_RESOURCE, Permissions.MODIFY_RECORD);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.tdar.core.service.external.AuthorizationService#canDo(org.tdar.core.bean.entity.TdarUser, org.tdar.core.bean.resource.HasAuthorizedUsers,
      * org.tdar.core.dao.external.auth.InternalTdarRights, org.tdar.core.bean.entity.permissions.GeneralPermissions)
      */
@@ -612,9 +623,9 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
             item.setViewable(viewable);
         }
     }
-    
+
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public void applyTransientEditableFlag(Editable p, TdarUser authenticatedUser) {
         // FIXME: it'd be nice if this took an array and could handle multiple lookups at once
         logger.trace("applying transient editable flag to : {}", p);
@@ -859,7 +870,7 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
 
         for (AuthorizedUser au : account.getAuthorizedUsers()) {
             logger.debug("au: {}", au);
-            if (au.getUser().equals(authenticatedUser) && (Permissions.EDIT_ACCOUNT.ordinal() - 1) < au.getEffectiveGeneralPermission()) {
+            if (au.getUser().equals(authenticatedUser) && (Permissions.ADMINISTER_ACCOUNT.ordinal() - 1) < au.getEffectiveGeneralPermission()) {
                 return true;
             }
         }
@@ -984,7 +995,7 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
 
         for (AuthorizedUser au : account.getAuthorizedUsers()) {
             logger.debug("au: {}", au);
-            if (au.getUser().equals(authenticatedUser) && (Permissions.EDIT_ACCOUNT.ordinal() - 1) < au.getEffectiveGeneralPermission()) {
+            if (au.getUser().equals(authenticatedUser) && (Permissions.USE_ACCOUNT.ordinal() - 1) < au.getEffectiveGeneralPermission()) {
                 return true;
             }
         }

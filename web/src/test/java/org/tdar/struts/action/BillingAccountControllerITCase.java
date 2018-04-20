@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
@@ -20,9 +21,11 @@ import org.tdar.core.bean.billing.Coupon;
 import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.external.payment.PaymentMethod;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.billing.BillingAccountService;
@@ -135,7 +138,8 @@ public class BillingAccountControllerITCase extends AbstractControllerITCase imp
 
     @Test
     @Rollback
-    public void testReEvaluationAppropriateWithUncountedThings() throws TdarActionException, InstantiationException, IllegalAccessException, FileNotFoundException {
+    public void testReEvaluationAppropriateWithUncountedThings()
+            throws TdarActionException, InstantiationException, IllegalAccessException, FileNotFoundException {
         TdarUser person = createAndSaveNewPerson("aa@bbasdas.com", "suffix");
         BillingAccount account = setupAccountWithInvoiceFiveResourcesAndSpace(accountService.getLatestActivityModel(), person);
         Project project = createAndSaveNewProject("title");
@@ -182,7 +186,7 @@ public class BillingAccountControllerITCase extends AbstractControllerITCase imp
         Long id = setupAccountWithUsers();
 
         BillingAccount account = genericService.find(BillingAccount.class, id);
-        assertEquals(4, account.getAuthorizedUsers().size());
+        assertEquals(3, account.getAuthorizedUsers().size());
         logger.debug("users: {}", account.getAuthorizedUsers());
         Boolean seenAdmin = false;
         for (AuthorizedUser au : account.getAuthorizedUsers()) {
@@ -194,15 +198,15 @@ public class BillingAccountControllerITCase extends AbstractControllerITCase imp
     }
 
     private Long setupAccountWithUsers() throws TdarActionException {
-        BillingAccountController controller = generateNewInitializedController(BillingAccountController.class);
+        BillingAccountController controller = generateNewInitializedController(BillingAccountController.class, getAdminUser());
         controller.prepare();
         controller.add();
         controller.setName("my test account");
-        controller.getAuthorizedMembers().add(getAdminUser());
-        controller.getAuthorizedMembers().add(getBillingUser());
-        controller.getAuthorizedMembers().add(getEditorUser());
+        controller.getProxies().add(new UserRightsProxy(new AuthorizedUser(getAdminUser(), getAdminUser(), Permissions.ADMINISTER_ACCOUNT)));
+        controller.getProxies().add(new UserRightsProxy(new AuthorizedUser(getAdminUser(), getBillingUser(), Permissions.ADMINISTER_ACCOUNT)));
+        controller.getProxies().add(new UserRightsProxy(new AuthorizedUser(getAdminUser(), getBasicUser(), Permissions.USE_ACCOUNT)));
         controller.setServletRequest(getServletPostRequest());
-//        controller.validate();
+        // controller.validate();
         String save = controller.save();
         Long id = controller.getAccount().getId();
         assertEquals(Action.SUCCESS, save);
@@ -218,9 +222,15 @@ public class BillingAccountControllerITCase extends AbstractControllerITCase imp
         controller.prepare();
         int size = controller.getAccount().getAuthorizedUsers().size();
         controller.getAccount().getAuthorizedUsers().forEach(au -> {
-            controller.getAuthorizedMembers().add(au.getUser());
+            controller.getProxies().add(new UserRightsProxy(new AuthorizedUser(getAdminUser(),au.getUser(), Permissions.ADMINISTER_ACCOUNT)));
         });
-        controller.getAuthorizedMembers().remove(getBillingUser());
+        Iterator<UserRightsProxy> iterator = controller.getProxies().iterator();
+        while (iterator.hasNext()) {
+            UserRightsProxy proxy = iterator.next();
+            if (proxy.getId().equals(getBillingAdminUserId())) {
+                iterator.remove();
+            }
+        }
         controller.setServletRequest(getServletPostRequest());
         String save = controller.save();
         assertEquals(Action.SUCCESS, save);

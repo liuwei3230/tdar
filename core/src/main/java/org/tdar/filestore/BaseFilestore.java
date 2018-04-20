@@ -123,6 +123,7 @@ public abstract class BaseFilestore implements Filestore {
             if (version.getVersionType().isArchival() || version.getVersionType().isUploaded()) {
                 File checksum = new File(file.getParentFile(), String.format("%s.%s", file.getName(), digest.getAlgorithm()));
                 FileUtils.write(checksum, version.getChecksum(), Charset.defaultCharset());
+                logFilestoreWrite(checksum);
             }
         }
         if (version.getDateCreated() == null) {
@@ -197,7 +198,7 @@ public abstract class BaseFilestore implements Filestore {
         logger.trace("\told: {} new: {}", object.getChecksum(), hex);
         return hex.trim().equalsIgnoreCase(object.getChecksum().trim());
     }
-    
+
     public DigestInputStream appendMessageDigestStream(InputStream content) {
         DigestInputStream digestInputStream = null;
         MessageDigest messageDigest = null;
