@@ -15,12 +15,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.collection.RequestCollection;
+import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
@@ -31,16 +35,37 @@ import org.tdar.core.bean.notification.Status;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.dao.StatsResultObject;
 import org.tdar.core.dao.resource.stats.DateGranularity;
+import org.tdar.core.service.email.AwsEmailSender;
 import org.tdar.core.service.email.MockAwsEmailSenderServiceImpl;
+import org.tdar.utils.EmailRawMessageHelper;
+import org.tdar.utils.MessageHelper;
 
 import com.amazonaws.services.simpleemail.model.SendRawEmailResult;
 
 public class EmailServiceITCase extends AbstractIntegrationTestCase {
 
+    @Autowired
+    private AwsEmailSender awsEmailService;
+    
+    @Test
+    public void testEnumLabelsAndLocalesExist(){
+        for(EmailType emailType : EmailType.values()){
+            String localeKey  = emailType.getLocaleKey();
+            String labelKey  = emailType.getLabel();
+            String localeMessage  = MessageHelper.getMessage(localeKey);
+            String labelMessage   = MessageHelper.getMessage(labelKey);
+            getLogger().debug("Email Type: {}",emailType);
+            getLogger().debug("Locale Key : {}", localeKey);
+            getLogger().debug("Label Key : {}", labelKey);
+            assertTrue("The locale key exists", StringUtils.isNotEmpty(localeMessage));            
+            assertTrue("The label key exists", StringUtils.isNotEmpty(labelMessage));            
+        }
+    }
+    
     @Test
     @Rollback
     public void testUsingMockAwsObject() {
-        assertTrue("The object is an AWS mock", emailService.getAwsEmailService() instanceof MockAwsEmailSenderServiceImpl);
+        assertTrue("The object is an AWS mock", awsEmailService instanceof MockAwsEmailSenderServiceImpl);
     }
 
     @Test
@@ -61,6 +86,20 @@ public class EmailServiceITCase extends AbstractIntegrationTestCase {
         sendContactRequestEmail(EmailType.SUGGEST_CORRECTION);
     }
 
+    @Test
+    @Rollback
+    public void testMergeRequestEmail(){
+        sendContactRequestEmail(EmailType.MERGE_REQUEST);
+    }
+    
+    
+    @Test
+    @Rollback
+    public void testCustomContactEmail(){
+        sendContactRequestEmail(EmailType.CUSTOM_CONTACT);
+    }
+    
+    
     @Test
     @Rollback
     public void testPermissionRequestRejectedEmail() {
@@ -111,6 +150,42 @@ public class EmailServiceITCase extends AbstractIntegrationTestCase {
     }
 
     @Test
+    public void testMultipleRecipientsWithCommas() throws MessagingException{
+        String toRecipients = "toPerson1@email.com,toEmail2@email.com,toEmail3@email.com";
+        testSendingToMulitpleRecipients(toRecipients, 3);
+    }
+    
+    @Test
+    public void testMultipleRecipientsWithSemiColons() throws MessagingException{
+        String toRecipients = "toPerson1@email.com;toEmail2@email.com;toEmail3@email.com";
+        testSendingToMulitpleRecipients(toRecipients, 3);
+    }
+    
+    @Test
+    public void testMultipleRecipientsCommasAndSemiColons() throws MessagingException{
+        String toRecipients = "toPerson1@email.com,toEmail2@email.com;toEmail3@email.com";
+        testSendingToMulitpleRecipients(toRecipients, 3);
+    }
+    
+    
+    public void testSendingToMulitpleRecipients(String toRecipients, int size) throws MessagingException {
+       
+        Email email = new Email();
+        email.setMessage("Some message");
+        email.setTo(toRecipients);
+        email.setFrom("From@me.com");
+        email.setSubject("Test Subject");
+
+        EmailRawMessageHelper helper = new EmailRawMessageHelper();
+        MimeMessage mimeMessage = helper.createMimeMessage(email);
+
+        String assertion = String.format("Testing if there's %s recipients", size);
+        logger.debug(assertion);
+        assertEquals(assertion, size, mimeMessage.getAllRecipients().length);
+
+    }
+
+    @Test
     @Rollback
     public void testSendInviteEmail() {
         Person to = new Person("To", "Person", getTestUserEmail());
@@ -148,7 +223,7 @@ public class EmailServiceITCase extends AbstractIntegrationTestCase {
         email.setSubject("test");
         emailService.queueWithFreemarkerTemplate("test-email.ftl", map, email);
         sendEmailProcess.execute();
-        assertTrue("expecting a mail in in the inbox", ((MockAwsEmailSenderServiceImpl) emailService.getAwsEmailService()).getMessages().size() > 0);
+        assertTrue("expecting a mail in in the inbox", ((MockAwsEmailSenderServiceImpl) awsEmailService).getMessages().size() > 0);
     }
 
     @Test
@@ -265,12 +340,27 @@ public class EmailServiceITCase extends AbstractIntegrationTestCase {
         TdarUser from = new TdarUser("Test", "User", "test@tdar.org", "tdartest", getAdminUserId());
         TdarUser to = new TdarUser("Test", "User", getTestUserEmail(), "tdartest", getUserId());
         Resource resource = createAndSaveNewDataset();
-        String subject = "";
+        ResourceCollection collection = createAndSaveNewResourceCollection("test resource collection");
+        collection.getManagedResources().add(resource);
+        resource.getManagedResourceCollections().add(collection);
+        RequestCollection reqCollection = new RequestCollection();
+        
+        reqCollection.getCollections().add(collection.getId());
+        reqCollection.setContact(getAdminUser());
+        reqCollection.setName("Test Request Collection");
+        
+        genericService.saveOrUpdate(resource);
+        genericService.saveOrUpdate(collection);
+        genericService.saveOrUpdate(reqCollection);
+
+        genericService.synchronize();
+        
+        String subjectSuffix = "suffix";
         String messageBody = "This is a test message";
         Map<String, String[]> params = null;
 
-        Email email = emailService.constructEmail(from, to, resource, subject, messageBody, type, params);
-
+        Email email = emailService.createAccessRequestEmail(from, to, resource, subjectSuffix, messageBody, type, params);
+        
         email.setFrom("test@tdar.org");
 
         /**
@@ -288,7 +378,9 @@ public class EmailServiceITCase extends AbstractIntegrationTestCase {
          **/
 
         assertNotNull("Expect the subject to be the same", email.getSubject());
+        assertTrue("Expect the email subject to not be blank", !email.getSubject().equals(""));
 
+        logger.debug("The subject is {} ",email.getSubject());
         try {
             emailService.sendAwsHtmlMessage(email);
         } catch (MessagingException | IOException e) {
