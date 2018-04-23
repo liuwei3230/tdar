@@ -379,12 +379,24 @@
             <artifactId>gt-epsg-extension</artifactId>
             <version>${geotools.version}</version>
             <!-- LICENSE: LGPL 2.1 -->
+            <exclusions>
+                <exclusion>
+                    <artifactId>hsqldb</artifactId>
+                    <groupId>org.hsqldb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-epsg-hsql</artifactId>
             <version>${geotools.version}</version>
             <!-- LICENSE: LGPL 2.1 -->
+            <exclusions>
+                <exclusion>
+                    <artifactId>hsqldb</artifactId>
+                    <groupId>org.hsqldb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- <dependency> <groupId>org.geotools</groupId> <artifactId>gt-epsg-wkt</artifactId> 
             <version>${geotools.version}</version> </dependency> -->
@@ -827,6 +839,12 @@
                   <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/net.sf.ucanaccess/ucanaccess -->
+        <dependency>
+            <groupId>net.sf.ucanaccess</groupId>
+            <artifactId>ucanaccess</artifactId>
+            <version>4.0.4</version>
         </dependency>
         <dependency>
             <groupId>org.tuckey</groupId>
