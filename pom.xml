@@ -86,7 +86,7 @@
         <bouncycastle.version>1.58</bouncycastle.version>        
         <http-components.version>4.4.9</http-components.version>
         <http-client.version>4.5.5</http-client.version>
-        <jackcess.version>2.1.10</jackcess.version>
+        <jackcess.version>2.1.11</jackcess.version>
         <guava.version>23.6-jre</guava.version>
         <jt-utils.version>1.4.0</jt-utils.version>
         <commons-io.version>2.6</commons-io.version>
