@@ -280,7 +280,7 @@ public interface GenericService {
      * 
      * @param obj
      */
-    void detachFromSession(Object obj);
+    void detachFromSession(Persistable obj);
 
     /**
      * Detach an object from the Hibernate session, and warn if the object is actually on the session when detached. This is used in a few cases where we've

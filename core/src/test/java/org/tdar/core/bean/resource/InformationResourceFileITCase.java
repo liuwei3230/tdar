@@ -225,7 +225,6 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
         assertTrue("should see exception", seen);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @Rollback
     public void testFileStatus() throws Exception {
@@ -235,6 +234,7 @@ public class InformationResourceFileITCase extends AbstractIntegrationTestCase {
             assertFalse(file.isProcessed());
             genericService.saveOrUpdate(file);
             flush();
+            file = genericService.merge(file);
             file.setStatus(FileStatus.PROCESSED);
             assertTrue(file.isProcessed());
             genericService.saveOrUpdate(file);

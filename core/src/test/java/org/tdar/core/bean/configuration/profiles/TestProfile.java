@@ -10,11 +10,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @Profile("test")
-@EnableScheduling
+//@EnableScheduling
+@EnableAsync
 public class TestProfile implements AsyncConfigurer {
 
     public transient Logger logger = LoggerFactory.getLogger(getClass());

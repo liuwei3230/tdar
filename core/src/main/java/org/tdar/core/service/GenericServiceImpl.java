@@ -453,7 +453,7 @@ public class GenericServiceImpl implements GenericService {
      */
     @Override
     @Transactional
-    public void detachFromSession(Object obj) {
+    public void detachFromSession(Persistable obj) {
         genericDao.detachFromSession(obj);
     }
 

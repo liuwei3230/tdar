@@ -108,7 +108,6 @@ public class ResourceCollectionITCase extends AbstractIntegrationTestCase {
         assertEquals(withName, test);
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     @Rollback(true)
     public void testFindInSaveForResource() {
@@ -352,6 +351,7 @@ public class ResourceCollectionITCase extends AbstractIntegrationTestCase {
         myCollection.getAuthorizedUsers().forEach(au -> {
             logger.debug(" au: {}", au);
         });
+        genericService.synchronize();
 
         resourceCollectionService.saveCollectionForRightsController(myCollection, getBasicUser(), aus, -1L);
         genericService.synchronize();

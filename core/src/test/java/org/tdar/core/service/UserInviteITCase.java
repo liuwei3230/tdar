@@ -58,7 +58,6 @@ public class UserInviteITCase extends AbstractIntegrationTestCase {
         authenticationService.addAndAuthenticateUser(reg, new MockHttpServletRequest("POST", "/"), new MockHttpServletResponse(), getSessionData());
     }
 
-    @SuppressWarnings("unused")
     @Test
     @Rollback(true)
     /**

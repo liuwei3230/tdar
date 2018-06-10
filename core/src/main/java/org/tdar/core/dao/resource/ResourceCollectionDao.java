@@ -300,7 +300,7 @@ public class ResourceCollectionDao extends HibernateBase<ResourceCollection> {
         query.getResultList();
 
         HashSet<AuthorizedUser> set = new HashSet<AuthorizedUser>(query.getResultList());
-        detachFromSession(set);
+//        detachFromSession(set);
         return set;
     }
 

@@ -510,17 +510,17 @@ public class GenericDao {
         session.delete(entity);
     }
 
-    public <T> void detachFromSession(T entity) {
+    public <T extends Persistable> void detachFromSession(T entity) {
         Session session = getCurrentSession();
         session.evict(entity);
     }
 
-    public <T> void detachFromSession(Collection<T> entities) {
-        Session session = getCurrentSession();
-        for (T entity : entities) {
-            session.evict(entity);
-        }
-    }
+//    public <T> void detachFromSession(Collection<T> entities) {
+//        Session session = getCurrentSession();
+//        for (T entity : entities) {
+//            session.evict(entity);
+//        }
+//    }
 
     public <T> boolean sessionContains(T entity) {
         if (entity instanceof HasStatic && ((HasStatic) entity).isStatic()) {
