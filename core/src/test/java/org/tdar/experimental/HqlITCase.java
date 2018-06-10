@@ -11,9 +11,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,9 +34,6 @@ import org.tdar.core.service.resource.ResourceService;
 public class HqlITCase extends AbstractIntegrationTestCase {
 
     @Autowired
-    private SessionFactory sessionFactory;
-
-    @Autowired
     ResourceService resourceService;
 
     @Autowired
@@ -43,6 +42,8 @@ public class HqlITCase extends AbstractIntegrationTestCase {
     @Autowired
     GenericKeywordService genericKeywordService;
 
+    @PersistenceContext
+    private EntityManager manager;
     private Session session;
 
     @Before
@@ -51,13 +52,12 @@ public class HqlITCase extends AbstractIntegrationTestCase {
     }
 
     private Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
+        return manager.unwrap(Session.class);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testGetProjects() {
-        Assert.assertNotNull(sessionFactory);
         Query query = getCurrentSession().createQuery("from Resource where id = :id");
         query.setParameter("id", 1L);
         List<Resource> list = query.getResultList();

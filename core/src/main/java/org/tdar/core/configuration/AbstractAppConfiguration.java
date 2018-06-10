@@ -2,20 +2,17 @@ package org.tdar.core.configuration;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +27,11 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
@@ -97,18 +97,37 @@ public abstract class AbstractAppConfiguration implements Serializable {
         return "tdarmetadata";
     }
 
-    @Bean(name = "sessionFactory")
-    public SessionFactory getSessionFactory(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
-            throws FileNotFoundException, IOException, URISyntaxException {
+//    @Bean(name = "sessionFactory")
+//    public SessionFactory getSessionFactory(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
+//            throws FileNotFoundException, IOException, URISyntaxException {
+//        Properties properties = new Properties();
+//
+//        properties.load(ConfigurationAssistant.toInputStream(HIBERNATE_PROPERTIES));
+//
+//        LocalSessionFactoryBuilder builder = new LocalSessionFactoryBuilder(dataSource);
+//        builder.scanPackages(new String[] { getHibernatePackageScan() });
+//        builder.addProperties(properties);
+//        // SessionBuilder sessionBuilder = builder.buildSessionFactory().withOptions().eventListeners(new FilestoreLoggingSessionEventListener());
+//        return builder.buildSessionFactory();
+//    }
+
+    Properties additionalProperties() {
         Properties properties = new Properties();
+        properties.setProperty("hibernate.dialect", org.hibernate.dialect.PostgreSQL9Dialect.class.getName());
+        return properties;
+    }
 
-        properties.load(ConfigurationAssistant.toInputStream(HIBERNATE_PROPERTIES));
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("tdarMetadataDataSource") DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
+        em.setPackagesToScan(new String[] { getHibernatePackageScan() });
 
-        LocalSessionFactoryBuilder builder = new LocalSessionFactoryBuilder(dataSource);
-        builder.scanPackages(new String[] { getHibernatePackageScan() });
-        builder.addProperties(properties);
-        // SessionBuilder sessionBuilder = builder.buildSessionFactory().withOptions().eventListeners(new FilestoreLoggingSessionEventListener());
-        return builder.buildSessionFactory();
+        JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        em.setJpaVendorAdapter(vendorAdapter);
+        em.setJpaProperties(additionalProperties());
+
+        return em;
     }
 
     public String getHibernatePackageScan() {
@@ -158,14 +177,24 @@ public abstract class AbstractAppConfiguration implements Serializable {
         templateLoaderPaths.add("file:/templates");
         return templateLoaderPaths;
     }
-
+    
     @Bean
     @Primary
-    public HibernateTransactionManager transactionManager(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
-            throws PropertyVetoException, FileNotFoundException, IOException, URISyntaxException {
-        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager(getSessionFactory(dataSource));
-        return hibernateTransactionManager;
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+        JpaTransactionManager transactionManager = new JpaTransactionManager();
+        transactionManager.setEntityManagerFactory(emf);
+
+        return transactionManager;
     }
+
+//
+//    @Bean
+//    @Primary
+//    public HibernateTransactionManager transactionManager(@Qualifier("tdarMetadataDataSource") DataSource dataSource)
+//            throws PropertyVetoException, FileNotFoundException, IOException, URISyntaxException {
+//        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager(
+//        return hibernateTransactionManager;
+//    }
 
     @Bean(name = "processManager")
     public ProcessManager processManager() {

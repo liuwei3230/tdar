@@ -9,6 +9,7 @@ import javax.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.orm.hibernate5.support.OpenSessionInViewFilter;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -70,7 +71,7 @@ public abstract class AbstractServletConfiguration {
     }
 
     protected void setupOpenSessionInViewFilter(ServletContext container) {
-        Dynamic openSessionInView = container.addFilter("osiv-filter", OpenSessionInViewFilter.class);
+        Dynamic openSessionInView = container.addFilter("osiv-filter", OpenEntityManagerInViewFilter.class);
         openSessionInView.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD), false, ALL_PATHS);
     }
 

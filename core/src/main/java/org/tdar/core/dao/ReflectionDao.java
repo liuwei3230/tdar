@@ -6,16 +6,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +30,9 @@ public class ReflectionDao {
 
     public transient Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private transient SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager manager;
 
-    private Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
-    }
 
     // find all the instances of the specified type that refer to instances of the target specified type
     public ScrollableResults findReferrers(Field field, Collection<Long> idlist) {
@@ -75,11 +74,12 @@ public class ReflectionDao {
          * 
          */
         // hql = hql.replace(":idlist", StringUtils.join(idlist,","));
-        Query query = getCurrentSession().createQuery(hql);
+        Query query = manager.createQuery(hql);
         query.setParameter("idlist", idlist);
+        query.setHint("org.hibernate.fetchSize", TdarConfiguration.getInstance().getScrollableFetchSize());
+        org.hibernate.query.Query hquery = query.unwrap(org.hibernate.query.Query.class);
 
-        query.setFetchSize(TdarConfiguration.getInstance().getScrollableFetchSize());
-        return query.scroll(ScrollMode.FORWARD_ONLY);
+        return hquery.scroll(ScrollMode.FORWARD_ONLY);
     }
 
     /**
@@ -111,9 +111,9 @@ public class ReflectionDao {
         }
 
         hql = String.format(fmt, targetClass, field.getName());
-        Query<Long> query = getCurrentSession().createQuery(hql, Long.class);
+        Query query = manager.createQuery(hql, Long.class);
         query.setParameter("idlist", idlist);
-        return query.getSingleResult();
+        return (long) query.getSingleResult();
     }
 
     /**
@@ -158,7 +158,7 @@ public class ReflectionDao {
         }
 
         hql = String.format(fmt, targetClass, field.getName());
-        Query query = getCurrentSession().createQuery(hql);
+        Query query = manager.createQuery(hql);
         query.setParameter("idlist", idlist);
         return query.getResultList();
     }

@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -112,12 +114,12 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     @Autowired
     private AwsEmailSender awsEmailService;
 
+    @PersistenceContext
+    private EntityManager manager;
 
     public static final String SPITAL_DB_NAME = TestConstants.SPITAL_DB_NAME;
     protected static final String PATH = TestConstants.TEST_DATA_INTEGRATION_DIR;
 
-    @Autowired
-    protected SessionFactory sessionFactory;
     @Autowired
     protected ProjectService projectService;
     @Autowired
@@ -513,18 +515,17 @@ public abstract class AbstractIntegrationTestCase extends AbstractTransactionalJ
     }
 
     protected void flush() {
-        Session session = sessionFactory.getCurrentSession();
-        if (session != null) {
-            session.flush();
-            session.clear();
+        if (manager != null) {
+            manager.flush();
+            manager.clear();
         }
 
         evictCache();
 
         // searchIndexService.flushToIndexes();
-        Cache cache = sessionFactory.getCache();
-        if (cache != null) {
-            cache.evictAllRegions();
+        javax.persistence.Cache cache2 = manager.getEntityManagerFactory().getCache();
+        if (cache2 != null) {
+            cache2.evictAll();
         }
 
     }

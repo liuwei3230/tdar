@@ -7,6 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.hibernate.Cache;
@@ -28,9 +31,9 @@ public class HibernatePerformanceITCase extends AbstractIntegrationTestCase {
 
     @Autowired
     private ResourceService resourceService;
+    @PersistenceContext
+    private EntityManager manager;
 
-    @Autowired
-    private transient SessionFactory sessionFactory;
 
     /**
      * FIXME: Disabled for new log4j
@@ -79,17 +82,19 @@ public class HibernatePerformanceITCase extends AbstractIntegrationTestCase {
     }
 
     // obliterate hibernate caches(1st level, 2nd level, and query cache), then return the current session
-    Session cleanSession() {
+    void cleanSession() {
         evictCache();
         // searchIndexService.flushToIndexes();
-        Cache cache = sessionFactory.getCache();
-        cache.evictEntityRegions();
-        cache.evictCollectionRegions();
-        cache.evictDefaultQueryRegion();
-        cache.evictQueryRegions();
-        Session session = sessionFactory.getCurrentSession();
-        session.clear();
-        return session;
+        manager.getEntityManagerFactory().getCache().evictAll();
+//        Cache cache = sessionFactory.getCache();
+//        cache.evictEntityRegions();
+//        cache.evictCollectionRegions();
+//        cache.evictDefaultQueryRegion();
+//        cache.evictQueryRegions();
+//        Session session = sessionFactory.getCurrentSession();
+//        session.clear();
+//        return session;
+        manager.clear();
     }
 
     @Test

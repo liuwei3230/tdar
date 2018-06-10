@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.CacheMode;
@@ -15,7 +18,6 @@ import org.hibernate.Criteria;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Example;
@@ -78,8 +80,8 @@ public class GenericDao {
     @Autowired
     private ApplicationEventPublisher publisher;
 
-    @Autowired
-    private transient SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager manager;
 
     public <T> T find(Class<T> cls, Long id) {
         // FIXME: push guard checks into Service layer?
@@ -573,15 +575,11 @@ public class GenericDao {
     }
 
     protected Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
+        return manager.unwrap(Session.class);
     }
 
     protected Logger getLogger() {
         return logger;
-    }
-
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
     }
 
     /**
@@ -706,7 +704,7 @@ public class GenericDao {
     }
 
     public boolean isSessionOpen() {
-        return getCurrentSession().isOpen();
+        return manager.isOpen();
     }
 
     public boolean isSessionWritable() {
@@ -714,11 +712,11 @@ public class GenericDao {
     }
 
     public boolean cacheContains(Class<?> cls, Long id) {
-        return sessionFactory.getCache().containsEntity(cls, id);
+        return manager.getEntityManagerFactory().getCache().contains(cls, id);
     }
 
     public void evictFromCache(Persistable id) {
-        sessionFactory.getCache().evictEntity(id.getClass(), id);
+        manager.getEntityManagerFactory().getCache().evict(id.getClass(), id);
     }
 
     public CacheMode getCacheModeForCurrentSession() {
