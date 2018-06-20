@@ -135,7 +135,7 @@ public class AccessConverterITCase extends AbstractIntegrationTestCase {
         DataTableColumn valCol = DatasetImportUtils.createDataTableColumn(dataTable.getColumnByName("basic_int_exp"), dt);
         ds.getDataTables().add(dt);
         genericService.saveOrUpdate(dt);
-        CodingSheet codingSheet = datasetService.convertTableToCodingSheet(getUser(), MessageHelper.getInstance(), keyCol, valCol, null);
+        CodingSheet codingSheet = datasetService.convertTableToCodingSheet(getUser(), MessageHelper.getInstance(), ds, dt, keyCol, valCol, null);
         Map<String, CodingRule> ruleMap = new HashMap<String, CodingRule>();
         for (CodingRule rule : codingSheet.getCodingRules()) {
             ruleMap.put(rule.getCode(), rule);

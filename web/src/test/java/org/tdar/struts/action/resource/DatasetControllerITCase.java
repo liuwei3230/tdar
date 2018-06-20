@@ -139,7 +139,7 @@ public class DatasetControllerITCase extends AbstractAdminControllerITCase imple
         elementColumn.setName(BELEMENT_COL);
         mapColumnsToDataset(dataset, dataTable, elementColumn);
         DataTableColumn column = dataTable.getColumnByName(BELEMENT_COL);
-        database.translateInPlace(column, column.getDefaultCodingSheet());
+        database.translateInPlace(dataTable, column, column.getDefaultCodingSheet());
         database.executeUpdateOrDelete(String.format("update %s set %s='ABCD'", dataTable.getName(), column.getName()));
         assertNotNull(column.getDefaultCodingSheet());
         assertTrue(column.getDefaultCodingSheet().isGenerated());
@@ -408,8 +408,8 @@ public class DatasetControllerITCase extends AbstractAdminControllerITCase imple
         final List<List<String>> originalColumnData = new ArrayList<List<String>>();
         for (DataTableColumn column : dataTable.getSortedDataTableColumns()) {
             // munge column names and rename in tdar data database
-            originalColumnData.add(tdarDataImportDatabase.selectAllFrom(column));
-            tdarDataImportDatabase.renameColumn(column, column.getDisplayName());
+            originalColumnData.add(tdarDataImportDatabase.selectAllFrom(dataTable, column));
+            tdarDataImportDatabase.renameColumn(dataTable, column, column.getDisplayName());
             assertFalse("Column name should be denormalized", tdarDataImportDatabase.normalizeTableOrColumnNames(column.getName()).equals(column.getName()));
             genericService.save(column);
         }
@@ -443,7 +443,7 @@ public class DatasetControllerITCase extends AbstractAdminControllerITCase imple
             // verify column values
             logger.debug(String.format("table: %s / %s --> column:%s (%s) %s ", dataTable.getName(), dataTable.getDisplayName(),  column.getName(), column.getDisplayName(), column.getId()));
             List<String> expectedValues = expectedColumnDataIterator.next();
-            List<String> actualValues = tdarDataImportDatabase.selectAllFrom(column);
+            List<String> actualValues = tdarDataImportDatabase.selectAllFrom(dataTable, column);
             assertEquals(expectedValues, actualValues);
         }
     }

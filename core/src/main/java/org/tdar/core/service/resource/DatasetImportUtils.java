@@ -34,7 +34,7 @@ public class DatasetImportUtils {
         col.setDescription(incomingColumn.getDescription());
         col.setColumnDataType(incomingColumn.getColumnDataType());
         col.setImportOrder(incomingColumn.getImportOrder());
-        col.setDataTable(tableToPersist);
+//        col.setDataTable(tableToPersist);
         col.setColumnEncodingType(DataTableColumnEncodingType.UNCODED_VALUE);
         tableToPersist.getDataTableColumns().add(col);
         return col;

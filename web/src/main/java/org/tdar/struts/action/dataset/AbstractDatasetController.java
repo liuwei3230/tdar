@@ -138,7 +138,8 @@ public abstract class AbstractDatasetController<R extends Dataset> extends Abstr
         }
         this.dataTableColumn = dataTableService.findDataTableColumn(columnId);
         if ((dataTableColumn != null) && (getResource() == null)) {
-            setId(dataTableColumn.getDataTable().getDataset().getId());
+            DataTable dt = getGenericService().find(DataTable.class, dataTableColumn.getDataTableId());
+            setId(dt.getDataset().getId());
         }
     }
 

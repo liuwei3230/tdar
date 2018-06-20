@@ -176,7 +176,7 @@ public class CodingSheetMappingITCase extends AbstractAdminControllerITCase {
         column.setColumnEncodingType(DataTableColumnEncodingType.CODED_VALUE);
         column.setDefaultCodingSheet(codingSheet);
         genericService.save(column);
-        datasetDao.translate(column, codingSheet);
+        datasetDao.translate(firstTable, column, codingSheet);
 
         ResultMetadataWrapper resultsWrapper = datasetService.selectAllFromDataTable(firstTable, 0, 100, true, false);
         List<List<String>> selectAllFromDataTable = resultsWrapper.getResults();

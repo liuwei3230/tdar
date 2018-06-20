@@ -534,7 +534,9 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
         if (!columnsToTranslate.isEmpty()) {
             // create the translation file for this dataset.
             getLogger().debug("creating translated file");
-            getDao().retranslate(columnsToTranslate);
+            for (DataTableColumn dtc : columnsToTranslate) {
+                getDao().retranslate(dataset.getDataTableById(dtc.getDataTableId()), dtc);
+            }
             createTranslatedFile(dataset);
         }
         logDataTableColumns(dataTable, "data column metadata registration", authenticatedUser, startTime);

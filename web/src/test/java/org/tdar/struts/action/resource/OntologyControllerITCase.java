@@ -376,7 +376,6 @@ public class OntologyControllerITCase extends AbstractControllerITCase {
         dataTableColumn.setDisplayName("test");
         dataTableColumn.setColumnDataType(DataTableColumnType.VARCHAR);
         dataTableColumn.setColumnEncodingType(DataTableColumnEncodingType.UNCODED_VALUE);
-        dataTableColumn.setDataTable(dataTable);
         genericService.save(dataTableColumn);
         dataTable.getDataTableColumns().add(dataTableColumn);
         dataset.getDataTables().add(dataTable);

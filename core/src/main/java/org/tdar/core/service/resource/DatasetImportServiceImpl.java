@@ -19,7 +19,6 @@ import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
-import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
 import org.tdar.core.bean.resource.file.FileStatus;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.dao.resource.DataTableDao;
@@ -29,7 +28,6 @@ import org.tdar.core.service.resource.dataset.DatasetChangeLogger;
 import org.tdar.datatable.ImportColumn;
 import org.tdar.datatable.ImportTable;
 import org.tdar.datatable.TDataTable;
-import org.tdar.datatable.TDataTableColumn;
 import org.tdar.datatable.TDataTableRelationship;
 import org.tdar.db.model.abstracts.TargetDatabase;
 import org.tdar.exception.TdarRecoverableRuntimeException;
@@ -288,9 +286,14 @@ public class DatasetImportServiceImpl implements DatasetImportService {
             return;
         }
 
-        datasetDao.translate(associatedDataTableColumns, codingSheet);
         for (DataTable dataTable : dataTableDao.findDataTablesUsingResource(codingSheet)) {
             Dataset dataset = dataTable.getDataset();
+            for (DataTableColumn ftc : associatedDataTableColumns) {
+                if (ftc.getDataTableId() == dataTable.getId()) {
+                    datasetDao.translate(dataTable, ftc, codingSheet);
+                }
+            }
+            
             InformationResourceFile file = datasetDao.createTranslatedFile(dataset, analyzer, inormationResourceFileDao);
             dataTableDao.saveOrUpdate(file);
         }
