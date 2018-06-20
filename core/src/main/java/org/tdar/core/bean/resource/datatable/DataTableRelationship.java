@@ -57,20 +57,20 @@ public class DataTableRelationship extends AbstractPersistable {
     }
 
     @XmlTransient
-    public DataTable getForeignTable() {
+    public Long getForeignTableId() {
         // try {
         DataTableColumnRelationship relationship = getColumnRelationships().iterator().next();
-        return relationship.getForeignColumn().getDataTable();
+        return relationship.getForeignColumn().getDataTableId();
         // } catch (Exception e) {
         // }
         // return null;
     }
 
     @XmlTransient
-    public DataTable getLocalTable() {
+    public Long getLocalTableId() {
         // try {
         DataTableColumnRelationship relationship = getColumnRelationships().iterator().next();
-        return relationship.getLocalColumn().getDataTable();
+        return relationship.getLocalColumn().getDataTableId();
         // } catch (Exception e) {
         //
         // }
@@ -80,7 +80,7 @@ public class DataTableRelationship extends AbstractPersistable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getType().name());
-        sb.append(" - ").append(getLocalTable().getName()).append(" (");
+        sb.append(" - ").append(getLocalTableId()).append(" (");
         for (DataTableColumnRelationship rel : getColumnRelationships()) {
             sb.append(rel.getLocalColumn().getName());
             sb.append("<==>");

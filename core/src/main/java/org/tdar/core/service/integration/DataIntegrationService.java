@@ -10,6 +10,7 @@ import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.resource.CodingRule;
 import org.tdar.core.bean.resource.CodingSheet;
+import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.UserRightsProxy;
@@ -31,7 +32,7 @@ public interface DataIntegrationService {
      * 
      * @param column
      */
-    void updateMappedCodingRules(DataTableColumn column);
+    void updateMappedCodingRules(DataTable table, DataTableColumn column);
 
     /**
      * Convert the integration context to XML for persistance in the @link PersonalFilestore and logging
@@ -50,7 +51,7 @@ public interface DataIntegrationService {
      * @param column
      * @return
      */
-    List<CodingRule> findMappedCodingRules(DataTableColumn column);
+    List<CodingRule> findMappedCodingRules(DataTable table, DataTableColumn column);
 
     /**
      * When a user maps a @link DataTableColumn to an @link Ontology without a @link CodingSheet specifically chosen, create one on-the-fly from the @link
@@ -61,7 +62,7 @@ public interface DataIntegrationService {
      * @param ontology
      * @return
      */
-    CodingSheet createGeneratedCodingSheet(TextProvider provider, DataTableColumn column, TdarUser submitter, Ontology ontology);
+    CodingSheet createGeneratedCodingSheet(TextProvider provider, Dataset dataset, DataTable table, DataTableColumn column, TdarUser submitter, Ontology ontology);
 
     /**
      * @see #convertCodingSheetToCSV(CodingSheet, Collection)

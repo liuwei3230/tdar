@@ -665,8 +665,7 @@ public class PostgresDatabase extends AbstractSqlTools implements TargetDatabase
      */
     @Override
     @Transactional(value = "tdarDataTx", readOnly = false)
-    public void translateInPlace(final DataTableColumn column, final CodingSheet codingSheet) {
-        DataTable dataTable = column.getDataTable();
+    public void translateInPlace(final DataTable dataTable, final DataTableColumn column, final CodingSheet codingSheet) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
 
         String tableName = dataTable.getName();
@@ -802,8 +801,7 @@ public class PostgresDatabase extends AbstractSqlTools implements TargetDatabase
 
     @Override
     @Transactional(readOnly = false)
-    public void untranslate(DataTableColumn column) {
-        DataTable dataTable = column.getDataTable();
+    public void untranslate(DataTable dataTable, DataTableColumn column) {
         String tableName = dataTable.getName();
         String originalName = generateOriginalColumnName(column);
         String translatedName = column.getName();
@@ -827,24 +825,24 @@ public class PostgresDatabase extends AbstractSqlTools implements TargetDatabase
 
     @Override
     @Transactional(value = "tdarDataTx", readOnly = true)
-    public <T> T selectAllFromTable(DataTableColumn column, String key, ResultSetExtractor<T> resultSetExtractor) {
-        return jdbcTemplate.query(String.format(SELECT_ALL_FROM_TABLE_WHERE, column.getDataTable().getName(), column.getName()),
+    public <T> T selectAllFromTable(DataTable table, DataTableColumn column, String key, ResultSetExtractor<T> resultSetExtractor) {
+        return jdbcTemplate.query(String.format(SELECT_ALL_FROM_TABLE_WHERE, table.getName(), column.getName()),
                 new String[] { key },
                 resultSetExtractor);
     }
 
     @Override
     @Transactional(value = "tdarDataTx", readOnly = true)
-    public Map<DataTableColumn, String> selectAllFromTableCaseInsensitive(DataTableColumn column, String key,
+    public Map<DataTableColumn, String> selectAllFromTableCaseInsensitive(DataTable table, DataTableColumn column, String key,
             ResultSetExtractor<Map<DataTableColumn, String>> resultSetExtractor) {
-        return jdbcTemplate.query(String.format(SELECT_ALL_FROM_TABLE_WHERE_LOWER, column.getDataTable().getName(), column.getName()),
+        return jdbcTemplate.query(String.format(SELECT_ALL_FROM_TABLE_WHERE_LOWER, table.getName(), column.getName()),
                 new String[] { key }, resultSetExtractor);
     }
 
     @Transactional(value = "tdarDataTx", readOnly = false)
-    public void renameColumn(DataTableColumn column, String newName) {
+    public void renameColumn(DataTable table, DataTableColumn column, String newName) {
         logger.warn("RENAMING COLUMN " + column + " TO " + newName, new Exception("altering column should only be done by tests."));
-        String sql = String.format(RENAME_COLUMN, column.getDataTable().getName(), column.getName(), newName);
+        String sql = String.format(RENAME_COLUMN, table.getName(), column.getName(), newName);
         column.setName(newName);
         jdbcTemplate.execute(sql);
     }
@@ -867,13 +865,13 @@ public class PostgresDatabase extends AbstractSqlTools implements TargetDatabase
     }
 
     @Transactional(value = "tdarDataTx", readOnly = true)
-    public List<String> selectAllFrom(final DataTableColumn column) {
+    public List<String> selectAllFrom(final DataTable dataTable, final DataTableColumn column) {
         if (column == null) {
             return Collections.emptyList();
         }
         SqlSelectBuilder builder = new SqlSelectBuilder();
         builder.getColumns().add(column.getName());
-        builder.getTableNames().add(column.getDataTable().getName());
+        builder.getTableNames().add(dataTable.getName());
         return jdbcTemplate.queryForList(builder.toSql(), String.class);
     }
 

@@ -488,7 +488,7 @@ public class ImportServiceImpl implements ImportService {
                     adt.clear();
                     for (DataTableColumn dtc : vals) {
                         resetIdAndAdd(adt, dtc);
-                        dtc.setDataTable(dataTable);
+                        adt.add(dtc);
                     }
                     Set<DataTableRelationship> relationships = dataset.getRelationships();
                     Collection<DataTableRelationship> vals_ = new ArrayList<>(relationships);
@@ -578,8 +578,8 @@ public class ImportServiceImpl implements ImportService {
             dataTable.setDataset((Dataset) resource);
             toReturn = (P) dataTable;
             for (DataTableColumn dataTableColumn : dataTable.getDataTableColumns()) {
-                dataTableColumn.setDataTable(dataTable);
-                logger.debug("{} {}", dataTableColumn, dataTableColumn.getDataTable());
+//                dataTableColumn.setDataTable(dataTable);
+                logger.debug("{} {}", dataTableColumn, dataTableColumn.getDataTableId());
                 CodingSheet codingSheet = dataTableColumn.getDefaultCodingSheet();
                 CategoryVariable categoryVariable = dataTableColumn.getCategoryVariable();
                 if (PersistableUtils.isNotNullOrTransient(codingSheet)) {

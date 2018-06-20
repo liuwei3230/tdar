@@ -124,7 +124,7 @@ public class PostgresIntegrationDatabase extends PostgresDatabase implements Int
                     // only re-use when the node + mappings are 100% the same
                     map.putIfAbsent(userChosenNode, new HashMap<>());
                     map.get(userChosenNode).putIfAbsent(nodeSet, new ArrayList<>());
-                    map.get(userChosenNode).get(nodeSet).add(actualColumn.getDataTable().getId());
+                    map.get(userChosenNode).get(nodeSet).add(actualColumn.getDataTableId());
                 }
                 ignoreNodes.addAll(seenNodes);
             }

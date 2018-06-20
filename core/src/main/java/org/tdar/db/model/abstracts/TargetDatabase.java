@@ -1,6 +1,5 @@
 package org.tdar.db.model.abstracts;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +49,7 @@ public interface TargetDatabase extends Database , ImportDatabase {
     <T> T selectAllFromTableInImportOrder(ImportTable table, ResultSetExtractor<T> resultSetExtractor, boolean includeGeneratedValues);
 
     @Transactional(value = "tdarDataTx", readOnly = true)
-    <T> T selectAllFromTable(DataTableColumn column, String key, ResultSetExtractor<T> resultSetExtractor);
+    <T> T selectAllFromTable(DataTable table, DataTableColumn column, String key, ResultSetExtractor<T> resultSetExtractor);
 
     @Transactional(value = "tdarDataTx", readOnly = true)
     Map<String, Long> selectDistinctValuesWithCounts(ImportTable table, ImportColumn dataTableColumn);
@@ -71,7 +70,7 @@ public interface TargetDatabase extends Database , ImportDatabase {
     int getMaxColumnNameLength();
 
     @Transactional(value = "tdarDataTx", readOnly = false)
-    Map<DataTableColumn, String> selectAllFromTableCaseInsensitive(DataTableColumn column, String key,
+    Map<DataTableColumn, String> selectAllFromTableCaseInsensitive(DataTable table, DataTableColumn column, String key,
             ResultSetExtractor<Map<DataTableColumn, String>> resultSetExtractor);
 
     @Transactional(value = "tdarDataTx", readOnly = true)

@@ -28,6 +28,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.atlas.test.Gen;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
@@ -116,7 +117,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
         if (StringUtils.isBlank(key) || (column == null)) {
             return null;
         }
-        final DataTable table = column.getDataTable();
+        final DataTable table = find(DataTable.class, column.getDataTableId());
         ResultSetExtractor<Map<DataTableColumn, String>> resultSetExtractor = new ResultSetExtractor<Map<DataTableColumn, String>>() {
             @Override
             public Map<DataTableColumn, String> extractData(ResultSet rs) throws SQLException, DataAccessException {
@@ -128,7 +129,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
             }
         };
 
-        return tdarDataImportDatabase.selectAllFromTableCaseInsensitive(column, key, resultSetExtractor);
+        return tdarDataImportDatabase.selectAllFromTableCaseInsensitive(table, column, key, resultSetExtractor);
     }
 
     public boolean canLinkDataToOntology(Dataset dataset) {
@@ -194,8 +195,8 @@ public class DatasetDao extends ResourceDao<Dataset> {
      * 
      * Using a raw SQL update statement to try and simplify the execution here to use as few loops as possible...
      */
-    public void mapColumnToResource(DataTableColumn column, List<String> distinctValues) {
-        Project project = column.getDataTable().getDataset().getProject();
+    public void mapColumnToResource(Project project, DataTableColumn column, List<String> distinctValues) {
+//        Project project = column.getDataTable().getDataset().getProject();
         // for each distinct column value
 
         long timestamp = System.currentTimeMillis();
@@ -462,7 +463,7 @@ public class DatasetDao extends ResourceDao<Dataset> {
         return query.getSingleResult();
     }
 
-    public void remapColumns(List<DataTableColumn> columns, Project project) {
+    public void remapColumns(DataTable table, List<DataTableColumn> columns, Project project) {
         getLogger().info("remapping columns: {} in {} ", columns, project);
         if (CollectionUtils.isNotEmpty(columns) && (project != null)) {
             resetColumnMappings(project);
@@ -476,46 +477,46 @@ public class DatasetDao extends ResourceDao<Dataset> {
              * NOTE: a manual reindex happens at the end
              */
             for (DataTableColumn column : columns) {
-                mapColumnToResource(column, tdarDataImportDatabase.selectNonNullDistinctValues(column.getDataTable(), column, false));
+                mapColumnToResource(project, column, tdarDataImportDatabase.selectNonNullDistinctValues( table, column, false));
             }
         }
 
     }
 
-    public boolean translate(DataTableColumn column, CodingSheet codingSheet) {
+    public boolean translate(DataTable table, DataTableColumn column, CodingSheet codingSheet) {
         if (codingSheet == null) {
             return false;
         }
         getLogger().debug("translating {} with {}", column.getName(), codingSheet);
         // FIXME: if we eventually offer on-the-fly coding sheet translation we cannot modify the actual dataset in place
-        tdarDataImportDatabase.translateInPlace(column, codingSheet);
+        tdarDataImportDatabase.translateInPlace(table, column, codingSheet);
         return true;
     }
 
     public void retranslate(Dataset dataset) {
         for (DataTable table : dataset.getDataTables()) {
-            retranslate(table.getDataTableColumns());
+            retranslate(table, table.getDataTableColumns());
         }
     }
 
-    public boolean retranslate(DataTableColumn column) {
-        untranslate(column);
-        return translate(column, column.getDefaultCodingSheet());
+    public boolean retranslate(DataTable table, DataTableColumn column) {
+        untranslate(table, column);
+        return translate(table, column, column.getDefaultCodingSheet());
     }
 
-    public void untranslate(DataTableColumn column) {
-        tdarDataImportDatabase.untranslate(column);
+    public void untranslate(DataTable table, DataTableColumn column) {
+        tdarDataImportDatabase.untranslate(table, column);
     }
 
-    public void translate(Set<DataTableColumn> columns, CodingSheet codingSheet) {
+    public void translate(DataTable table, Set<DataTableColumn> columns, CodingSheet codingSheet) {
         for (DataTableColumn column : columns) {
-            translate(column, codingSheet);
+            translate(table, column, codingSheet);
         }
     }
 
-    public void retranslate(Collection<DataTableColumn> columns) {
+    public void retranslate(DataTable table, Collection<DataTableColumn> columns) {
         for (DataTableColumn column : columns) {
-            retranslate(column);
+            retranslate(table, column);
         }
     }
 

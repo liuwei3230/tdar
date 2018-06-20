@@ -173,7 +173,7 @@ public class IntegrationWorkflowData extends AbstractIntegrationWorkflowData imp
             }
 
             // make sure the DataTableColumn is in a valid DataTable
-            if (!dataTableIds.contains(dtc.getPersistable().getDataTable().getId())) {
+            if (!dataTableIds.contains(dtc.getPersistable().getDataTableId())) {
                 checkAddKey(getFieldErrors(), DATA_TABLE_COLUMN).add(provider.getText("integrationWorkflowData.bad_datatable_column", Arrays.asList(dtc)));
             }
             // make sure the Ontologies match

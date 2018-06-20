@@ -123,7 +123,7 @@ public class DataIntegrationServiceImpl implements DataIntegrationService {
      * @see org.tdar.core.service.integration.DataIntegrationService#updateMappedCodingRules(org.tdar.core.bean.resource.datatable.DataTableColumn)
      */
     @Override
-    public void updateMappedCodingRules(DataTableColumn column) {
+    public void updateMappedCodingRules(DataTable table, DataTableColumn column) {
         if (column == null) {
             return;
         }
@@ -135,7 +135,7 @@ public class DataIntegrationServiceImpl implements DataIntegrationService {
         }
         logger.trace("selecting distinct values from column");
 
-        Set<String> values = new HashSet<>(tdarDataImportDatabase.selectDistinctValues(column.getDataTable(), column, false));
+        Set<String> values = new HashSet<>(tdarDataImportDatabase.selectDistinctValues(table, column, false));
         logger.trace("values: {} ", values);
         logger.trace("matching coding rule terms to column values");
 
@@ -190,8 +190,8 @@ public class DataIntegrationServiceImpl implements DataIntegrationService {
      */
     @Override
     @Transactional
-    public List<CodingRule> findMappedCodingRules(DataTableColumn column) {
-        List<String> distinctColumnValues = tdarDataImportDatabase.selectNonNullDistinctValues(column.getDataTable(), column, false);
+    public List<CodingRule> findMappedCodingRules(DataTable datatable, DataTableColumn column) {
+        List<String> distinctColumnValues = tdarDataImportDatabase.selectNonNullDistinctValues(datatable,  column, false);
         return dataTableColumnDao.findMappedCodingRules(column, distinctColumnValues);
     }
 
@@ -203,15 +203,14 @@ public class DataIntegrationServiceImpl implements DataIntegrationService {
      */
     @Override
     @Transactional
-    public CodingSheet createGeneratedCodingSheet(TextProvider provider, DataTableColumn column, TdarUser submitter, Ontology ontology) {
+    public CodingSheet createGeneratedCodingSheet(TextProvider provider,Dataset dataset, DataTable table,  DataTableColumn column, TdarUser submitter, Ontology ontology) {
         if (column == null) {
             logger.debug("{} tried to create an identity coding sheet for {} with no values", submitter, column);
         }
 
-        Dataset dataset = column.getDataTable().getDataset();
         CodingSheet codingSheet = dataTableColumnDao.setupGeneratedCodingSheet(column, dataset, submitter, provider, ontology);
         // generate identity coding rules
-        List<String> dataColumnValues = tdarDataImportDatabase.selectNonNullDistinctValues(column.getDataTable(), column, true);
+        List<String> dataColumnValues = tdarDataImportDatabase.selectNonNullDistinctValues(table, column, true);
         Set<CodingRule> rules = new HashSet<>();
         for (int index = 0; index < dataColumnValues.size(); index++) {
             String dataValue = dataColumnValues.get(index);
@@ -339,7 +338,8 @@ public class DataIntegrationServiceImpl implements DataIntegrationService {
                 icp.setSharedOntology(ontology);
                 results.add(icp);
                 // get the actual mappings from tdardata
-                updateMappedCodingRules(col);
+                DataTable table = genericDao.find(DataTable.class, col.getDataTableId());
+                updateMappedCodingRules( table, col);
                 applyLegacyFilter(ontology, col, icp);
 
             }

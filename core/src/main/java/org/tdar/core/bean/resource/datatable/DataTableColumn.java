@@ -122,11 +122,6 @@ public class DataTableColumn extends AbstractSequenced<DataTableColumn> implemen
         return false;
     }
 
-    @ManyToOne(optional = false)
-    // , cascade = { CascadeType.PERSIST })
-    @JoinColumn(name = "data_table_id", nullable = false)
-    private DataTable dataTable;
-
     @Column(nullable = false)
     @Length(max = FieldLength.FIELD_LENGTH_255)
     private String name;
@@ -164,6 +159,9 @@ public class DataTableColumn extends AbstractSequenced<DataTableColumn> implemen
 
     @Column(columnDefinition = "boolean default FALSE")
     private boolean mappingColumn = false;
+    
+    @Column(name = "data_table_id", updatable = false, insertable = false)
+    private Long dataTableId;
 
     @Column
     @Length(max = 4)
@@ -188,14 +186,8 @@ public class DataTableColumn extends AbstractSequenced<DataTableColumn> implemen
     @Transient
     private transient CategoryVariable tempSubCategoryVariable;
 
-    @XmlElement(name = "dataTableRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public DataTable getDataTable() {
-        return dataTable;
-    }
-
-    public void setDataTable(DataTable dataTable) {
-        this.dataTable = dataTable;
+    public Long getDataTableId() {
+        return dataTableId;
     }
 
     @JsonView({ JsonIntegrationDetailsFilter.class, JsonIdNameFilter.class })

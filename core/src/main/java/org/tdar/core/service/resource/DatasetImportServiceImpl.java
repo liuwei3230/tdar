@@ -86,7 +86,7 @@ public class DatasetImportServiceImpl implements DatasetImportService {
             List<DataTableColumn> columns = dataTable.getDataTableColumns();
             logger.debug("dataTableColumns: {}", columns);
             for (DataTableColumn column : columns) {
-                datasetDao.translate(column, column.getDefaultCodingSheet());
+                datasetDao.translate(dataTable, column, column.getDefaultCodingSheet());
             }
         }
         datasetFile.setStatus(FileStatus.PROCESSED);

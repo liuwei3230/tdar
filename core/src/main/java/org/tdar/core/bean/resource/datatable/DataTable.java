@@ -137,7 +137,7 @@ public class DataTable extends AbstractPersistable implements ImportTable<DataTa
         Set<DataTableRelationship> relationships = new HashSet<DataTableRelationship>();
         for (DataTableRelationship r : dataset.getRelationships()) {
             // return the relationship if this table is either the relationship's foreign or local table
-            if (this.equals(r.getLocalTable()) || this.equals(r.getForeignTable())) {
+            if (this.equals(r.getLocalTableId()) || this.equals(r.getForeignTableId())) {
                 relationships.add(r);
             }
         }

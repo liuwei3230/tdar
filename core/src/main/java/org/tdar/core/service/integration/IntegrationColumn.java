@@ -157,7 +157,7 @@ public class IntegrationColumn implements Serializable, Sequenceable<Integration
      */
     public DataTableColumn getColumnForTable(DataTable table) {
         for (DataTableColumn col : getColumns()) {
-            if (col.getDataTable().equals(table)) {
+            if (col.getDataTableId().equals(table.getId())) {
                 return col;
             }
         }

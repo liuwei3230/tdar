@@ -1,6 +1,7 @@
 package org.tdar.db.model.abstracts;
 
 import org.tdar.core.bean.resource.CodingSheet;
+import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.datatable.DataTableColumnType;
 import org.tdar.datatable.ImportColumn;
@@ -52,8 +53,8 @@ public interface Database {
      */
     void alterTableColumnType(String tableName, ImportColumn column, DataTableColumnType type, int length);
 
-    void translateInPlace(final DataTableColumn column, final CodingSheet codingSheet);
+    void translateInPlace(final DataTable table, final DataTableColumn column, final CodingSheet codingSheet);
 
-    void untranslate(DataTableColumn column);
+    void untranslate(DataTable table, DataTableColumn column);
 
 }

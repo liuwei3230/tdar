@@ -48,7 +48,7 @@ public interface DatasetService {
     /*
      * Takes a Coding Table within a larger data set and converts it to a tDAR CodingSheet
      */
-    CodingSheet convertTableToCodingSheet(TdarUser user, TextProvider provider, DataTableColumn keyColumn,
+    CodingSheet convertTableToCodingSheet(TdarUser user, TextProvider provider, Dataset dataset, DataTable datatable, DataTableColumn keyColumn,
             DataTableColumn valueColumn,
             DataTableColumn descriptionColumn);
 
@@ -78,7 +78,7 @@ public interface DatasetService {
      * Based on a set of @link DataTableColumn entries, and a @link Project we can will clear out the existing mappings; and then identify mappings that need to
      * be made.
      */
-    List<DataTableColumn> prepareAndFindMappings(Project project, Collection<DataTableColumn> columns);
+    List<DataTableColumn> prepareAndFindMappings(Project project, Dataset dataset, Collection<DataTableColumn> columns);
 
     /*
      * Finds all Dataset Ids
@@ -90,9 +90,9 @@ public interface DatasetService {
      * other resources in the project, e.g. a database of images. The mapping here is created using a field in the column that contains the filename of the file
      * to be mapped, and is associated with the filename associated with @InformationResourceFileVersion of any @link Resource in that @link Project.
      */
-    void remapColumns(List<DataTableColumn> columns, Project project);
+    void remapColumns(DataTable datatable, List<DataTableColumn> columns, Project project);
 
-    void remapColumnsWithoutIndexing(List<DataTableColumn> columns, Project project);
+    void remapColumnsWithoutIndexing(DataTable datatable, List<DataTableColumn> columns, Project project);
 
     /*
      * Takes an existing @link Dataset and @link DataTable, and an incoming list of @link DataTableColumn entries, from the edit-column-metadata function in

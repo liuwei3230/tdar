@@ -205,11 +205,10 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
      */
     @Override
     @Transactional
-    public CodingSheet convertTableToCodingSheet(TdarUser user, final TextProvider provider, final DataTableColumn keyColumn,
+    public CodingSheet convertTableToCodingSheet(TdarUser user, final TextProvider provider, Dataset dataset, DataTable dataTable, final DataTableColumn keyColumn,
             final DataTableColumn valueColumn,
             final DataTableColumn descriptionColumn) {
         // codingSheet.setAccount(keyColumn.getDataTable().getDataset().getAccount());
-        Dataset dataset = keyColumn.getDataTable().getDataset();
         final CodingSheet codingSheet = dataTableColumnDao.setupGeneratedCodingSheet(keyColumn, dataset, user, provider, null);
         ResultSetExtractor<Set<CodingRule>> resultSetExtractor = new ResultSetExtractor<Set<CodingRule>>() {
             @Override
@@ -244,7 +243,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
             }
         };
         @SuppressWarnings("deprecation")
-        Set<CodingRule> codingRules = tdarDataImportDatabase.selectAllFromTable(keyColumn.getDataTable(), resultSetExtractor, false);
+        Set<CodingRule> codingRules = tdarDataImportDatabase.selectAllFromTable(dataTable, resultSetExtractor, false);
         codingSheet.getCodingRules().addAll(codingRules);
         getDao().save(codingRules);
         return codingSheet;
@@ -365,7 +364,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
      */
     @Override
     @Transactional
-    public List<DataTableColumn> prepareAndFindMappings(Project project, Collection<DataTableColumn> columns) {
+    public List<DataTableColumn> prepareAndFindMappings(Project project,Dataset dataset,  Collection<DataTableColumn> columns) {
         List<DataTableColumn> columnsToMap = new ArrayList<DataTableColumn>();
         if (CollectionUtils.isEmpty(columns)) {
             return columnsToMap;
@@ -376,7 +375,6 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
         getDao().unmapAllColumnsInProject(project.getId(), PersistableUtils.extractIds(columns));
         for (DataTableColumn column : columns) {
             getLogger().info("mapping dataset to resources using column: {} ", column);
-            Dataset dataset = column.getDataTable().getDataset();
             if (dataset == null) {
                 throw new TdarRecoverableRuntimeException("datasetService.dataset_null_column", Arrays.asList(column));
             } else if (ObjectUtils.notEqual(project, dataset.getProject())) {
@@ -415,8 +413,8 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
      */
     @Override
     @Transactional
-    public void remapColumns(List<DataTableColumn> columns, Project project) {
-        remapColumnsWithoutIndexing(columns, project);
+    public void remapColumns(DataTable dataTable, List<DataTableColumn> columns, Project project) {
+        remapColumnsWithoutIndexing(dataTable, columns, project);
     }
 
     /*
@@ -426,7 +424,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
      */
     @Override
     @Transactional
-    public void remapColumnsWithoutIndexing(List<DataTableColumn> columns, Project project) {
+    public void remapColumnsWithoutIndexing(DataTable dataTable, List<DataTableColumn> columns, Project project) {
         getLogger().info("remapping columns: {} in {} ", columns, project);
         if (CollectionUtils.isNotEmpty(columns) && (project != null)) {
             getDao().resetColumnMappings(project);
@@ -440,7 +438,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
              * NOTE: a manual reindex happens at the end
              */
             for (DataTableColumn column : columns) {
-                getDao().mapColumnToResource(column, tdarDataImportDatabase.selectNonNullDistinctValues(column.getDataTable(), column, false));
+                getDao().mapColumnToResource(project, column, tdarDataImportDatabase.selectNonNullDistinctValues(dataTable, column, false));
             }
         }
     }
@@ -487,7 +485,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
             incomingColumn.setTransientOntology(defaultOntology);
             if ((defaultOntology != null) && PersistableUtils.isNullOrTransient(incomingCodingSheet)) {
                 incomingColumn.setColumnEncodingType(DataTableColumnEncodingType.CODED_VALUE);
-                CodingSheet generatedCodingSheet = dataIntegrationService.createGeneratedCodingSheet(provider, existingColumn, authenticatedUser,
+                CodingSheet generatedCodingSheet = dataIntegrationService.createGeneratedCodingSheet(provider, dataset, dataTable, existingColumn, authenticatedUser,
                         defaultOntology);
                 incomingColumn.setDefaultCodingSheet(generatedCodingSheet);
                 getLogger().debug("generated coding sheet {} for {}", generatedCodingSheet, incomingColumn);
@@ -584,7 +582,7 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
             getDao().update(existingColumn);
         }
         dataset.markUpdated(authenticatedUser);
-        List<DataTableColumn> toReturn = prepareAndFindMappings(dataset.getProject(), columnsToMap);
+        List<DataTableColumn> toReturn = prepareAndFindMappings(dataset.getProject(), dataset, columnsToMap);
         save(dataset);
         logDataTableColumns(dataTable, "column metadata mapping", authenticatedUser, start);
         getLogger().info("mappingColumns: {} ", toReturn);
@@ -679,9 +677,9 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
     }
 
     private void remapAllColumns(Dataset dataset, Project project) {
-        List<DataTableColumn> columns = new ArrayList<>();
         if (dataset != null && project != null && CollectionUtils.isNotEmpty(dataset.getDataTables())) {
             for (DataTable datatable : dataset.getDataTables()) {
+                List<DataTableColumn> columns = new ArrayList<>();
                 if (CollectionUtils.isNotEmpty(datatable.getDataTableColumns())) {
                     for (DataTableColumn col : datatable.getDataTableColumns()) {
                         if (col.isMappingColumn()) {
@@ -689,9 +687,9 @@ public class DatasetServiceImpl extends ServiceInterface.TypedDaoBase<Dataset, D
                         }
                     }
                 }
+                remapColumns(datatable, columns, project);
             }
         }
-        remapColumns(columns, project);
     }
 
     /*
