@@ -56,12 +56,15 @@ public class GeoJSONITCase extends AbstractIntegrationTestCase {
         Resource[] setupDocs = setupDocs();
         genericService.synchronize();
         FeedSearchHelper feedHelper = setupTest(null, setupDocs);
+        for (Resource r : setupDocs) {
+            r.setConfidentialViewable(false);
+        }
         Map<String, Object> result_ = serializationService.createGeoJsonFromResourceList(feedHelper);
         String result = serializationService.convertFilteredJsonForStream(result_, null, null);
         logger.info("{}", result);
         feedHelper.setOverrideAndObfuscate(true);
         Map<String, Object> result2_ = serializationService.createGeoJsonFromResourceList(feedHelper);
-        String result2 = serializationService.convertFilteredJsonForStream(result_, null, null);
+        String result2 = serializationService.convertFilteredJsonForStream(result2_, null, null);
         logger.info(result2);
         String r1 = getCoordinatesBlock(result);
         String r2 = getCoordinatesBlock(result2);
@@ -102,6 +105,7 @@ public class GeoJSONITCase extends AbstractIntegrationTestCase {
         LatitudeLongitudeBox llb = project.getFirstActiveLatitudeLongitudeBox();
         llb.setNorth(llb.getSouth());
         llb.setEast(llb.getWest());
+        llb.obfuscateAll();
         project.getCultureKeywords().add(new CultureKeyword(BEDOUIN));
         genericService.saveOrUpdate(project.getCultureKeywords());
         genericService.saveOrUpdate(project, document);

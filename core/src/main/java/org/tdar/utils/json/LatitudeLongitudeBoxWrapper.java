@@ -37,6 +37,7 @@ public class LatitudeLongitudeBoxWrapper implements Serializable {
             this.resource = resource;
             LatitudeLongitudeBox llb = resource.getFirstActiveLatitudeLongitudeBox();
             if (llb != null) {
+                System.out.println(helper.isOverrideAndObfuscate() + " " + resource.isLatLongVisible() + " " + resource.isConfidentialViewable() + " " + resource.getId() + " " + resource.getTitle());
                 if (helper.isOverrideAndObfuscate() == true || resource.isLatLongVisible()) {
                     setSpatial(true);
                     this.centerLatitude = llb.getObfuscatedCenterLatitude();
