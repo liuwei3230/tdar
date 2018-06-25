@@ -4,17 +4,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.balk.bean.AbstractDropboxItem;
 import org.tdar.balk.bean.DropboxDirectory;
@@ -26,14 +25,11 @@ import org.tdar.utils.dropbox.DropboxConfig;
 @Component
 public class ItemDao {
 
-    @Autowired
-    private transient SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager manager;
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected Session getCurrentSession() {
-        return sessionFactory.getCurrentSession();
-    }
 
     public DropboxDirectory findByParentPath(String fullPath, boolean dir, boolean archived) {
         String path = fullPath;
@@ -51,7 +47,7 @@ public class ItemDao {
         logger.trace("in: {} out: {}", fullPath, path);
         try {
             // FIXME: FIgure out deleted paths/directories
-            Query query2 = getCurrentSession().createQuery(
+            Query query2 = manager.createQuery(
                     "from DropboxDirectory where dropboxId not like 'deleted%' and  lower(path)=lower(:path) and archived is :archived order by id desc");
             query2.setParameter("path", path);
             query2.setParameter("archived", archived);
@@ -70,7 +66,7 @@ public class ItemDao {
             query = "from DropboxDirectory Item where dropbox_id=:id";
         }
         try {
-            Query query2 = getCurrentSession().createQuery(query);
+            Query query2 = manager.createQuery(query);
             query2.setParameter("id", id);
             return (AbstractDropboxItem) query2.getSingleResult();
         } catch (NoResultException e) {
@@ -83,7 +79,7 @@ public class ItemDao {
 
     @SuppressWarnings("unchecked")
     public List<DropboxFile> findToUpload() {
-        Query query2 = getCurrentSession().createQuery(
+        Query query2 = manager.createQuery(
                 "from DropboxFile df where lower(path) like lower('%/Upload to tDAR/%') and not exists (select tr from TdarReference tr where df.dropboxId=tr.dropboxId and df.dropboxId not like 'deleted%')");
         return query2.getResultList();
     }
@@ -108,10 +104,10 @@ public class ItemDao {
             query += " ) ";
         }
         logger.debug(query);
-        Query query2 = getCurrentSession().createQuery(query);
+        Query query2 = manager.createQuery(query);
         query2.setParameter("archived", archived);
         int total = query2.getResultList().size();
-        query2 = getCurrentSession().createQuery(query);
+        query2 = manager.createQuery(query);
         query2.setParameter("archived", archived);
         query2.setMaxResults(size);
         query2.setFirstResult(size * page);
@@ -120,7 +116,7 @@ public class ItemDao {
     }
 
     public Set<String> findTopLevelPaths(String path, boolean archived) {
-        Query query = getCurrentSession().createQuery(
+        Query query = manager.createQuery(
                 "select name from DropboxDirectory where parentId in (select dropboxId from DropboxDirectory where lower(name)=lower(:path) and archived is :archived) and dropboxId not like 'deleted%' and archived is :archived");
         query.setParameter("path", path);
         query.setParameter("archived", archived);
@@ -142,7 +138,7 @@ public class ItemDao {
     }
 
     public DropboxFile findByPath(String fullPath, boolean archived) {
-        Query query = getCurrentSession().createQuery("from DropboxFile where lower(path) like :path and archived is :archived");
+        Query query = manager.createQuery("from DropboxFile where lower(path) like :path and archived is :archived");
         query.setParameter("path", fullPath);
         query.setParameter("archived", archived);
         List<DropboxFile> list = query.getResultList();
@@ -155,12 +151,12 @@ public class ItemDao {
     public void archive(AbstractDropboxItem item) {
         if (item.getType() == ItemType.DIR) {
             String intialQuery = "update DropboxDirectory set archived=true where dropboxId=:dropboxId";
-            Query query = getCurrentSession().createQuery(intialQuery);
+            Query query = manager.createQuery(intialQuery);
             query.setParameter("dropboxId", item.getDropboxId());
             query.executeUpdate();
         } else {
             String intialQuery = "update DropboxFile set archived=true where dropboxId=:dropboxId";
-            Query query = getCurrentSession().createQuery(intialQuery);
+            Query query = manager.createQuery(intialQuery);
             query.setParameter("dropboxId", item.getDropboxId());
             query.executeUpdate();
         }
@@ -168,7 +164,7 @@ public class ItemDao {
         int count = 10;
         while (numResults > 0) {
             String repeat = "update dropbox_items set archived=true where parent_id in (select dropbox_id from dropbox_items where archived is true)";
-            Query query2 = getCurrentSession().createNativeQuery(repeat);
+            Query query2 = manager.createNativeQuery(repeat);
             numResults = query2.executeUpdate();
             count--;
             if (count == 0) {

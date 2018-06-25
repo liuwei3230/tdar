@@ -69,7 +69,6 @@ public class NestedObjectIdexingITCase extends AbstractWithIndexIntegrationTestC
     @Ignore
     @Rollback(true)
     public void testIndexing() throws SearchException, SearchIndexException, IOException, ParseException {
-        // sessionFactory.getCurrentSession().
         ResourceCollection collection = createAndSaveNewResourceCollection(SPITAL_DB_NAME);
         Image image = createAndSaveNewInformationResource(Image.class);
         genericService.synchronize();
