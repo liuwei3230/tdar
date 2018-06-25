@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.StrutsStatics;
-import org.hibernate.SessionFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -93,11 +92,7 @@ public abstract class AbstractIntegrationControllerTestCase extends AbstractInte
     protected HttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
     protected PlatformTransactionManager transactionManager;
-    // private TransactionCallback verifyTransactionCallback;
-    // private TransactionTemplate transactionTemplate;
 
-    @Autowired
-    protected SessionFactory sessionFactory;
     @Autowired
     protected ProjectService projectService;
     @Autowired
