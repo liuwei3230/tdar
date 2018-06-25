@@ -78,7 +78,7 @@ public class SearchServiceImpl<I extends Indexable> extends AbstractSearchServic
     private final SearchDao<I> searchDao;
 
     @Autowired
-    public SearchServiceImpl(SessionFactory sessionFactory, GenericService genericDao,
+    public SearchServiceImpl(GenericService genericDao,
             AuthenticationService authenticationService, AuthorizationService authorizationService, SearchDao<I> searchDao) {
         this.genericService = genericDao;
         this.searchDao = searchDao;
