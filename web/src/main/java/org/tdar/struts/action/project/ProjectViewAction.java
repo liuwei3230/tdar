@@ -68,7 +68,7 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
     }
 
     private void handleSearch() throws TdarActionException {
-        Project project = (Project) getResource();
+        Project project = getPersistable();
 
         setSortField(project.getSortBy());
         setSecondarySortField(SortOption.TITLE);

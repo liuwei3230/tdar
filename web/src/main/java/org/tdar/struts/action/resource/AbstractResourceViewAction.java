@@ -31,6 +31,7 @@ import org.tdar.core.bean.resource.ResourceAnnotationKey;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.billing.BillingAccountService;
@@ -105,11 +106,30 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     private List<ResourceCollection> visibleUnmanagedCollections;
 
     public String getOpenUrl() {
-        return OpenUrlFormatter.toOpenURL(getResource());
+        return OpenUrlFormatter.toOpenURL(getPersistable());
     }
 
     public String getGoogleScholarTags() throws Exception {
-        return resourceService.getGoogleScholarTags(getResource());
+        return resourceService.getGoogleScholarTags(getPersistable());
+    }
+    
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+
+    private org.tdar.core.serialize.resource.PResource resource;
+    
+    @Override
+    public void prepare() throws TdarActionException {
+        super.prepare();
+        try {
+            this.resource = proxyConstructionService.constructResource(getPersistable(), proxyConstructionService.getClassForResourceClass(getPersistableClass()), getAuthenticatedUser(), false);
+        } catch (InstantiationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -117,8 +137,8 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         if (getResource() == null) {
             return ERROR;
         }
-        setResourceCitation(new ResourceCitationFormatter(getResource()));
-        setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getResource()));
+        setResourceCitation(new ResourceCitationFormatter(getPersistable()));
+        setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getPersistable()));
         loadBasicViewMetadata();
         loadCustomViewMetadata();
         AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
@@ -141,7 +161,7 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
 
     @Override
     public boolean authorize() throws TdarActionException {
-        boolean result = authorizationService.isResourceViewable(getAuthenticatedUser(), getResource());
+        boolean result = authorizationService.isResourceViewable(getAuthenticatedUser(), getPersistable());
         if (result == false) {
             if (getResource() == null) {
                 abort(StatusCode.UNKNOWN_ERROR, getText("abstractPersistableController.not_found"));
@@ -168,15 +188,15 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         getLogger().trace("effective collections: {}", getEffectiveResourceCollections());
         visibleCollections = viewService.getVisibleManagedCollections(authWrapper);
         visibleUnmanagedCollections = viewService.getVisibleUnmanagedCollections(authWrapper);
-        if (getResource() instanceof InformationResource) {
-            InformationResource informationResource = (InformationResource) getResource();
-            setMappedData(resourceService.getMappedDataForInformationResource(informationResource, getTdarConfiguration().isProductionEnvironment()));
+        if (getResource() instanceof org.tdar.core.serialize.resource.PInformationResource) {
+            org.tdar.core.serialize.resource.PInformationResource informationResource = (org.tdar.core.serialize.resource.PInformationResource) getResource();
+            setMappedData(resourceService.getMappedDataForInformationResource((InformationResource) getPersistable(), getTdarConfiguration().isProductionEnvironment()));
         }
 
     }
 
-    public Resource getResource() {
-        return getPersistable();
+    public org.tdar.core.serialize.resource.PResource getResource() {
+        return resource;
     }
 
     public void setResource(R resource) {
@@ -283,7 +303,7 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
      */
     public ResourceCollection getWhiteLabelCollection() {
         if (whiteLabelCollection == null) {
-            whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(getResource());
+            whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(getPersistable());
         }
         return whiteLabelCollection;
     }

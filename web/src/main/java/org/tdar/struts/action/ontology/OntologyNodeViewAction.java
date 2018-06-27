@@ -128,7 +128,7 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
     }
 
     public Ontology getOntology() {
-        return (Ontology) getResource();
+        return getPersistable();
     }
 
     @Override

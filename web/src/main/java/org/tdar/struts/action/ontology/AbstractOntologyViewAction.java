@@ -51,7 +51,7 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
     }
 
     public Ontology getOntology() {
-        return (Ontology) getResource();
+        return getPersistable();
     }
 
     /**

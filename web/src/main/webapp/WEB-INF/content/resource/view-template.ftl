@@ -101,7 +101,7 @@
 <h2>Summary</h2>
     <@common.description resource.description />
 <hr>
-<#list viewableResourceCollections>
+<#list resource.managedResourceCollections>
     <h3>This Resource is Part of the Following Collections</h3>
     <p>
     <ul class="inline">
@@ -395,14 +395,14 @@
         <#if (resource.activeLatitudeLongitudeBoxes?has_content) >
             <#assign llb = resource.firstActiveLatitudeLongitudeBox />
             <p>
-            min long: ${llb.obfuscatedWest}; min
-            lat: ${llb.obfuscatedSouth} ;
-            max long: ${llb.obfuscatedEast}; max
-            lat: ${llb.obfuscatedNorth} ;
-            <!-- ${llb.scale } -->
-            <!-- ${resource.managedGeographicKeywords } -->
-            <#if userAbleToViewUnobfuscatedMap>
-                <#if llb.obfuscatedObjectDifferent> [obfuscated]</#if>
+            min long: ${llb.west}; min
+            lat: ${llb.south} ;
+            max long: ${llb.east}; max
+            lat: ${llb.north} ;
+            <!-- ${llb.scale!-1 } -->
+            <!-- ${resource.managedGeographicKeywords![] } -->
+            <#if userAbleToViewUnobfuscatedMap!false>
+                <#if llb.obfuscatedObjectDifferent!false> [obfuscated]</#if>
             </#if>
         </p>
         </#if>
@@ -413,17 +413,10 @@
         <#if userAbleToViewUnobfuscatedMap && geoJson?has_content>data-geojson="#localGeoJson"</#if>
         <#if (resource.activeLatitudeLongitudeBoxes?has_content)>
             <#assign llb = resource.firstActiveLatitudeLongitudeBox />
-            data-maxy="${llb.obfuscatedNorth}"
-            data-minx="${llb.obfuscatedWest}"
-            data-maxx="${llb.obfuscatedEast}"
-            data-miny="${llb.obfuscatedSouth}"
-        <#-- disabled for Obsidian
-        <#if resource.confidentialViewable && llb.obfuscatedObjectDifferent >
-            data-real-maxy="${llb.east}"
-            data-real-minx="${llb.south}"
-            data-real-maxx="${llb.north}"
-            data-real-miny="${llb.west}"
-        </#if> -->
+            data-maxy="${llb.north}"
+            data-minx="${llb.west}"
+            data-maxx="${llb.east}"
+            data-miny="${llb.south}"
         </#if>
         ></div>
     </div>

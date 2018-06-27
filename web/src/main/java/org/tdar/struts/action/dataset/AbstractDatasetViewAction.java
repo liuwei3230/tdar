@@ -69,7 +69,7 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
             if (dataTableId != null) {
                 this.dataTable = dataTableService.find(dataTableId);
             } else {
-                Set<DataTable> dataTables = ((Dataset) getResource()).getDataTables();
+                Set<DataTable> dataTables = getPersistable().getDataTables();
                 if (!CollectionUtils.isEmpty(dataTables)) {
                     dataTable = dataTables.iterator().next();
                 }
