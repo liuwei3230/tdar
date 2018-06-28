@@ -86,9 +86,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     @Autowired
     private ResourceService resourceService;
 
-    private List<ResourceCollection> effectiveShares = new ArrayList<>();
-    private List<ResourceCollection> effectiveResourceCollections = new ArrayList<>();
-
     private List<ResourceCreatorProxy> authorshipProxies = new ArrayList<>();
     private List<ResourceCreatorProxy> creditProxies = new ArrayList<>();
     private List<ResourceCreatorProxy> contactProxies = new ArrayList<>();
@@ -103,14 +100,13 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     @Autowired
     ResourceViewControllerService viewService;
 
-    private List<ResourceCollection> visibleUnmanagedCollections;
 
     public String getOpenUrl() {
-        return OpenUrlFormatter.toOpenURL(getPersistable());
+        return OpenUrlFormatter.toOpenURL(getResource());
     }
 
     public String getGoogleScholarTags() throws Exception {
-        return resourceService.getGoogleScholarTags(getPersistable());
+        return resourceService.getGoogleScholarTags(getResource());
     }
     
     @Autowired
@@ -137,8 +133,8 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         if (getResource() == null) {
             return ERROR;
         }
-        setResourceCitation(new ResourceCitationFormatter(getPersistable()));
-        setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getPersistable()));
+        setResourceCitation(new ResourceCitationFormatter(getResource()));
+        setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getResource()));
         loadBasicViewMetadata();
         loadCustomViewMetadata();
         AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
@@ -184,10 +180,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     public void loadBasicViewMetadata() {
         AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
         viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
-        viewService.loadSharesCollectionsAuthUsers(authWrapper, getEffectiveShares(), getEffectiveResourceCollections(), getAuthorizedUsers());
-        getLogger().trace("effective collections: {}", getEffectiveResourceCollections());
-        visibleCollections = viewService.getVisibleManagedCollections(authWrapper);
-        visibleUnmanagedCollections = viewService.getVisibleUnmanagedCollections(authWrapper);
         if (getResource() instanceof org.tdar.core.serialize.resource.PInformationResource) {
             org.tdar.core.serialize.resource.PInformationResource informationResource = (org.tdar.core.serialize.resource.PInformationResource) getResource();
             setMappedData(resourceService.getMappedDataForInformationResource((InformationResource) getPersistable(), getTdarConfiguration().isProductionEnvironment()));
@@ -247,16 +239,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         return creditProxies;
     }
 
-    private List<ResourceCollection> visibleCollections = new ArrayList<>();
-
-    /**
-     * All shares and list collections
-     * 
-     * @return
-     */
-    public List<ResourceCollection> getViewableResourceCollections() {
-        return visibleCollections;
-    }
 
     public boolean isUserAbleToReTranslate() {
         if (authorizationService.canEdit(getAuthenticatedUser(), getPersistable())) {
@@ -338,26 +320,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         return true;
     }
 
-    public List<ResourceCollection> getEffectiveShares() {
-        return effectiveShares;
-    }
-
-    public void setEffectiveShares(List<ResourceCollection> effectiveShares) {
-        this.effectiveShares = effectiveShares;
-    }
-
-    public List<BillingAccount> getBillingAccounts() {
-        return accountService.listAvailableAccountsForUser(getAuthenticatedUser());
-    }
-
-    public List<ResourceCollection> getEffectiveResourceCollections() {
-        return effectiveResourceCollections;
-    }
-
-    public void setEffectiveResourceCollections(List<ResourceCollection> effectiveResourceCollections) {
-        this.effectiveResourceCollections = effectiveResourceCollections;
-    }
-
     public List<UserInvite> getInvites() {
         return invites;
     }
@@ -366,11 +328,4 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         this.invites = invites;
     }
 
-    public List<ResourceCollection> getVisibleUnmanagedCollections() {
-        return visibleUnmanagedCollections;
-    }
-
-    public void setVisibleUnmanagedCollections(List<ResourceCollection> visibleUnmanagedCollections) {
-        this.visibleUnmanagedCollections = visibleUnmanagedCollections;
-    }
 }

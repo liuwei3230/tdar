@@ -30,12 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.tdar.core.bean.entity.Person;
-import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.FileSystemResourceDao;
 import org.tdar.core.exception.PdfCoverPageGenerationException;
+import org.tdar.core.serialize.entity.PPerson;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.pdf.PDFMergeTask;
 import org.tdar.core.service.pdf.PDFMergeWrapper;
 import org.tdar.core.service.pdf.PdfFontHelper;
@@ -77,7 +78,7 @@ public class PdfServiceImpl implements PdfService {
      * org.tdar.core.bean.resource.file.InformationResourceFileVersion, org.tdar.core.bean.resource.Document, java.io.File)
      */
     @Override
-    public InputStream mergeCoverPage(TextProvider provider, Person submitter, InformationResourceFileVersion version, Document document, File coverPage)
+    public InputStream mergeCoverPage(TextProvider provider, PPerson submitter, PInformationResourceFileVersion version, PDocument document, File coverPage)
             throws PdfCoverPageGenerationException {
         try {
             logger.debug("IR: {}, {} {}", document, version, version.getExtension());
@@ -187,7 +188,7 @@ public class PdfServiceImpl implements PdfService {
      * @throws FileNotFoundException
      * @throws URISyntaxException
      */
-    private File createCoverPage(TextProvider provider, Person submitter, File template, Document document, String description)
+    private File createCoverPage(TextProvider provider, PPerson submitter, File template, PDocument document, String description)
             throws IOException, FileNotFoundException, URISyntaxException {
         PDDocument doc = PDDocument.load(template);
         PDPage page = null;

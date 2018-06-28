@@ -18,7 +18,7 @@ import org.tdar.core.bean.resource.ResourceType;
  * @author Martin Paulo
  */
 @XmlRootElement(name = "audio")
-public class Audio extends PInformationResource {
+public class PAudio extends PInformationResource {
 
     private String software;
     private Integer bitDepth;
@@ -26,7 +26,7 @@ public class Audio extends PInformationResource {
     private Integer sampleRate;
     private String audioCodec;
 
-    public Audio() {
+    public PAudio() {
         setResourceType(ResourceType.AUDIO);
     }
 
@@ -106,8 +106,8 @@ public class Audio extends PInformationResource {
     }
 
     @Override
-    public Audio getTransientCopyForWorkflow() {
-        final Audio result = new Audio();
+    public PAudio getTransientCopyForWorkflow() {
+        final PAudio result = new PAudio();
         result.setId(this.getId());
         return result;
     }
@@ -118,7 +118,7 @@ public class Audio extends PInformationResource {
             // Should never be here, so perhaps we should do more than return?
             return;
         }
-        this.audioCodec = ((Audio) transientAudio).getAudioCodec();
+        this.audioCodec = ((PAudio) transientAudio).getAudioCodec();
     }
 
 }

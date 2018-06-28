@@ -66,6 +66,7 @@ import org.tdar.core.event.EventType;
 import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.ResourceCreatorProxy;
@@ -1002,7 +1003,7 @@ public class ResourceServiceImpl implements ResourceService {
      */
     @Override
     @Transactional(readOnly = true)
-    public String getGoogleScholarTags(Resource resource) {
+    public String getGoogleScholarTags(PResource resource) {
         StringWriter sw = new StringWriter();
         try {
             ScholarMetadataTransformer trans = new ScholarMetadataTransformer();
@@ -1023,7 +1024,7 @@ public class ResourceServiceImpl implements ResourceService {
      */
     @Override
     @Transactional(readOnly = true)
-    public String getSchemaOrgJsonLD(Resource resource) {
+    public String getSchemaOrgJsonLD(PResource resource) {
         try {
             SchemaOrgResourceTransformer transformer = new SchemaOrgResourceTransformer();
             return transformer.convert(serializationService, resource);

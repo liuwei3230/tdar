@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.serialize.resource.PCategoryVariable;
-import org.tdar.core.serialize.resource.CodingRule;
+import org.tdar.core.serialize.resource.PCodingRule;
 import org.tdar.core.serialize.resource.PCodingSheet;
 import org.tdar.core.serialize.resource.POntology;
 import org.tdar.core.serialize.resource.POntologyNode;
@@ -296,7 +296,7 @@ public class PDataTableColumn extends AbstractSequenced<PDataTableColumn> {
 
     public Set<String> getMappedDataValues(POntologyNode node) {
         Set<String> values = new HashSet<>();
-        for (CodingRule rule : getDefaultCodingSheet().getCodingRules()) {
+        for (PCodingRule rule : getDefaultCodingSheet().getCodingRules()) {
             if (Objects.equals(node, rule.getOntologyNode())) {
                 values.add(rule.getTerm());
             }
@@ -311,7 +311,7 @@ public class PDataTableColumn extends AbstractSequenced<PDataTableColumn> {
         if (getDefaultCodingSheet() == null || CollectionUtils.isEmpty(getDefaultCodingSheet().getCodingRules())) {
             return values;
         }
-        for (CodingRule rule : getDefaultCodingSheet().getCodingRules()) {
+        for (PCodingRule rule : getDefaultCodingSheet().getCodingRules()) {
             if (rule.getOntologyNode() == null) {
                 values.add(rule.getTerm());
             }
@@ -330,7 +330,7 @@ public class PDataTableColumn extends AbstractSequenced<PDataTableColumn> {
             return false;
         }
 
-        for (CodingRule rule : getDefaultCodingSheet().getCodingRules()) {
+        for (PCodingRule rule : getDefaultCodingSheet().getCodingRules()) {
             if (rule != null && rule.getOntologyNode() != null) {
                 return true;
             }

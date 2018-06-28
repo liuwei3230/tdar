@@ -14,10 +14,10 @@ import org.tdar.core.bean.resource.ResourceType;
  * @version $Revision: 543$
  */
 @XmlRootElement(name = "geospatial")
-public class Geospatial extends PDataset {
+public class PGeospatial extends PDataset {
 
 
-    public Geospatial() {
+    public PGeospatial() {
         setResourceType(ResourceType.GEOSPATIAL);
     }
 

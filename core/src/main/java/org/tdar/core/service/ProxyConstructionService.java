@@ -1,5 +1,7 @@
 package org.tdar.core.service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,17 +25,20 @@ import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.resource.BookmarkedResource;
-import org.tdar.core.bean.resource.CategoryType;
 import org.tdar.core.bean.resource.CategoryVariable;
+import org.tdar.core.bean.resource.CodingRule;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
+import org.tdar.core.bean.resource.Ontology;
+import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.datatable.DataTable;
+import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
@@ -58,12 +63,14 @@ import org.tdar.core.serialize.keyword.PSiteTypeKeyword;
 import org.tdar.core.serialize.keyword.PTemporalKeyword;
 import org.tdar.core.serialize.resource.PBookmarkedResource;
 import org.tdar.core.serialize.resource.PCategoryVariable;
+import org.tdar.core.serialize.resource.PCodingRule;
 import org.tdar.core.serialize.resource.PCodingSheet;
 import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.core.serialize.resource.PImage;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
@@ -95,33 +102,33 @@ public class ProxyConstructionService {
         ctx.setLatLongObfuscated(!viewConfidentialinfo);
         ctx.setPersonEmailObfuscated(true);
         ctx.setInstitutionEmailObfuscated(true);
-        r.setCultureKeywords(convertKeywords(resource, resource.getCultureKeywords(), PCultureKeyword.class, ctx));
-        r.setSiteTypeKeywords(convertKeywords(resource, resource.getSiteTypeKeywords(), PSiteTypeKeyword.class, ctx));
-        r.setOtherKeywords(convertKeywords(resource, resource.getOtherKeywords(), POtherKeyword.class, ctx));
-        r.setSiteNameKeywords(convertKeywords(resource, resource.getSiteNameKeywords(), PSiteNameKeyword.class, ctx));
-        r.setMaterialKeywords(convertKeywords(resource, resource.getMaterialKeywords(), PMaterialKeyword.class, ctx));
-        r.setInvestigationTypes(convertKeywords(resource, resource.getInvestigationTypes(), PInvestigationType.class, ctx));
-        r.setGeographicKeywords(convertKeywords(resource, resource.getGeographicKeywords(), PGeographicKeyword.class, ctx));
-        r.setManagedGeographicKeywords(convertKeywords(resource, resource.getManagedGeographicKeywords(), PGeographicKeyword.class, ctx));
-        r.setTemporalKeywords(convertKeywords(resource, resource.getTemporalKeywords(), PTemporalKeyword.class, ctx));
+        r.setCultureKeywords(convertKeywords(resource, resource.getActiveCultureKeywords(), PCultureKeyword.class, ctx));
+        r.setSiteTypeKeywords(convertKeywords(resource, resource.getActiveSiteTypeKeywords(), PSiteTypeKeyword.class, ctx));
+        r.setOtherKeywords(convertKeywords(resource, resource.getActiveOtherKeywords(), POtherKeyword.class, ctx));
+        r.setSiteNameKeywords(convertKeywords(resource, resource.getActiveSiteNameKeywords(), PSiteNameKeyword.class, ctx));
+        r.setMaterialKeywords(convertKeywords(resource, resource.getActiveMaterialKeywords(), PMaterialKeyword.class, ctx));
+        r.setInvestigationTypes(convertKeywords(resource, resource.getActiveInvestigationTypes(), PInvestigationType.class, ctx));
+        r.setGeographicKeywords(convertKeywords(resource, resource.getActiveGeographicKeywords(), PGeographicKeyword.class, ctx));
+        r.setManagedGeographicKeywords(convertKeywords(resource, resource.getActiveManagedGeographicKeywords(), PGeographicKeyword.class, ctx));
+        r.setTemporalKeywords(convertKeywords(resource, resource.getActiveTemporalKeywords(), PTemporalKeyword.class, ctx));
         // r.setResourceRevisionLog((resource.getResourceRevisionLog(());
-        r.setSourceCollections(convertSourceCollections(resource.getSourceCollections(), ctx));
-        r.setResourceNotes(convertResourceNotes(resource.getResourceNotes(), ctx));
-        r.setRelatedComparativeCollections(convertRelatedComparativeCollections(resource.getRelatedComparativeCollections(), ctx));
+        r.setSourceCollections(convertSourceCollections(resource.getActiveSourceCollections(), ctx));
+        r.setResourceNotes(convertResourceNotes(resource.getActiveResourceNotes(), ctx));
+        r.setRelatedComparativeCollections(convertRelatedComparativeCollections(resource.getActiveRelatedComparativeCollections(), ctx));
         r.setId(resource.getId());
         r.setTitle(resource.getTitle());
         r.setDescription(resource.getDescription());
         r.setDateCreated(resource.getDateCreated());
         r.setSubmitter(convertUser(resource.getSubmitter(), ctx));
-        r.setLatitudeLongitudeBoxes(convertLatLong(resource.getLatitudeLongitudeBoxes(), ctx));
+        r.setLatitudeLongitudeBoxes(convertLatLong(resource.getActiveLatitudeLongitudeBoxes(), ctx));
         r.setResourceType(resource.getResourceType());
         r.setUrl(resource.getUrl());
         r.setUpdatedBy(convertUser(resource.getUpdatedBy(), ctx));
         r.setDateUpdated(resource.getDateUpdated());
         r.setStatus(resource.getStatus());
-        r.setResourceCreators(convertResourrceCreator(resource.getResourceCreators(), ctx));
-        r.setResourceAnnotations(convertResourceAnnotation(resource.getResourceAnnotations()));
-        r.setCoverageDates(convertCoverageDates(resource.getCoverageDates()));
+        r.setResourceCreators(convertResourrceCreator(resource.getActiveResourceCreators(), ctx));
+        r.setResourceAnnotations(convertResourceAnnotation(resource.getActiveResourceAnnotations()));
+        r.setCoverageDates(convertCoverageDates(resource.getActiveCoverageDates()));
         r.setUnmanagedResourceCollections(convertResourceCollections(resource.getUnmanagedResourceCollections(), 1, ctx));
         r.setManagedResourceCollections(convertResourceCollections(resource.getManagedResourceCollections(), 1, ctx));
         r.setExternalId(resource.getExternalId());
@@ -177,7 +184,23 @@ public class ProxyConstructionService {
                 Dataset doc_ = (Dataset) iresource;
                 doc.setDataTables(convertDataTables(doc_.getDataTables()));
                 doc.setRelationships(convertRelationships(doc_.getRelationships()));
-                
+            }
+            if (ir instanceof PCodingSheet) {
+                PCodingSheet doc = (PCodingSheet) ir;
+                CodingSheet doc_ = (CodingSheet) iresource;
+                doc.setCodingRules(convertCodingRules(doc_.getCodingRules()));
+                doc.setCategoryVariable(convertCategoryVariable(doc_.getCategoryVariable()));
+                doc.setAssociatedDataTableColumns(convertDataTableColumns(doc_.getAssociatedDataTableColumns()));
+                doc.setDefaultOntology(createShellResource(doc_.getDefaultOntology(), POntology.class));
+                doc.setGenerated(doc_.isGenerated());
+            }
+            if (ir instanceof POntology) {
+                POntology doc = (POntology) ir;
+                Ontology doc_ = (Ontology) iresource;
+                doc.setCategoryVariable(convertCategoryVariable(doc_.getCategoryVariable()));
+                doc_.getOntologyNodes().forEach(on -> {
+                    doc.getOntologyNodes().add(convertOntologyNode(on));
+                });
             }
             if (ir instanceof PDocument) {
                 PDocument doc = (PDocument) ir;
@@ -207,6 +230,66 @@ public class ProxyConstructionService {
         return r;
     }
 
+    private Set<PDataTableColumn> convertDataTableColumns(Collection<DataTableColumn> list) {
+        HashSet<PDataTableColumn> toReturn = new HashSet<>();
+        list.forEach(dtc_ -> {
+            PDataTableColumn c = new PDataTableColumn();
+            c.setName(dtc_.getName());
+            c.setColumnDataType(dtc_.getColumnDataType());
+            c.setColumnEncodingType(dtc_.getColumnEncodingType());
+            c.setMeasurementUnit(dtc_.getMeasurementUnit());
+            c.setDescription(dtc_.getDescription());
+            c.setDisplayName(dtc_.getDisplayName());
+            c.setLength(dtc_.getLength());
+            c.setDelimiterValue(dtc_.getDelimiterValue());
+            c.setIgnoreFileExtension(dtc_.isIgnoreFileExtension());
+            c.setVisible(dtc_.isVisible());
+            c.setMappingColumn(dtc_.isMappingColumn());
+            c.setCategoryVariable(convertCategoryVariable(dtc_.getCategoryVariable()));
+            c.setTempSubCategoryVariable(convertCategoryVariable(dtc_.getTempSubCategoryVariable()));
+            c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class));
+            c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class));
+            c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class));
+            c.setImportOrder(dtc_.getImportOrder());
+            toReturn.add(c);
+        });
+        return toReturn;
+    }
+
+    private Set<PCodingRule> convertCodingRules(Set<CodingRule> codingRules) {
+        if (CollectionUtils.isEmpty(codingRules)) {
+            return Collections.EMPTY_SET;
+        }
+        Set<PCodingRule> toReturn = new HashSet<>();
+        codingRules.forEach(cr_ -> {
+            PCodingRule cr = new PCodingRule();
+            cr.setCode(cr_.getCode());
+            cr.setTerm(cr_.getTerm());
+            cr.setDescription(cr_.getDescription());
+            cr.setOntologyNode(convertOntologyNode(cr_.getOntologyNode()));
+            cr.setCount(cr_.getCount());
+            toReturn.add(cr);
+        });
+        return toReturn;
+    }
+
+    private POntologyNode convertOntologyNode(OntologyNode ontologyNode) {
+        POntologyNode n = new POntologyNode();
+        n.setIntervalStart(ontologyNode.getIntervalStart());
+        n.setIntervalEnd(ontologyNode.getIntervalEnd());
+        n.setIri(ontologyNode.getIri());
+        n.setUri(ontologyNode.getUri());
+        n.setIndex(ontologyNode.getIndex());
+        n.setDisplayName(ontologyNode.getDisplayName());
+        n.setDescription(ontologyNode.getDescription());
+        n.setImportOrder(ontologyNode.getImportOrder());
+        n.setSynonyms(ontologyNode.getSynonyms());
+        n.setParent(ontologyNode.isParent());
+        n.setSynonym(ontologyNode.isSynonym());
+        n.setMappedDataValues(ontologyNode.isMappedDataValues());
+        return n;
+    }
+
     private Set<PDataTableRelationship> convertRelationships(Set<org.tdar.core.bean.resource.datatable.DataTableRelationship> relationships) {
         // TODO Auto-generated method stub
         return null;
@@ -223,26 +306,7 @@ public class ProxyConstructionService {
             dt.setDisplayName(dt_.getDisplayName());
             dt.setId(dt_.getId());
             dt.setImportOrder(dt_.getImportOrder());
-            dt_.getDataTableColumns().forEach(dtc_ -> {
-                PDataTableColumn c = new PDataTableColumn();
-                c.setName(dtc_.getName());
-                c.setColumnDataType(dtc_.getColumnDataType());
-                c.setColumnEncodingType(dtc_.getColumnEncodingType());
-                c.setMeasurementUnit(dtc_.getMeasurementUnit());
-                c.setDescription(dtc_.getDescription());
-                c.setDisplayName(dtc_.getDisplayName());
-                c.setLength(dtc_.getLength());
-                c.setDelimiterValue(dtc_.getDelimiterValue());
-                c.setIgnoreFileExtension(dtc_.isIgnoreFileExtension());
-                c.setVisible(dtc_.isVisible());
-                c.setMappingColumn(dtc_.isMappingColumn());
-                c.setCategoryVariable(convertCategoryVariable(dtc_.getCategoryVariable()));
-                c.setTempSubCategoryVariable(convertCategoryVariable(dtc_.getTempSubCategoryVariable()));
-                c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class));
-                c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class));
-                c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class));
-                c.setImportOrder(dtc_.getImportOrder());
-            });
+            dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns())));
         });
         return toReturn;
     }
@@ -282,10 +346,10 @@ public class ProxyConstructionService {
             if (!irf_.isDeleted()) {
                 PInformationResourceFile irf = new PInformationResourceFile();
                 irf.setViewable(true);
-                if ( irf_.isConfidential() && !ctx.isAbleToSeeConfidentialFiles()) {
+                if (irf_.isConfidential() && !ctx.isAbleToSeeConfidentialFiles()) {
                     irf_.setViewable(false);
                 }
-                
+
                 // irf.setInformationResource(irf_.getInformationResource());
                 irf.setInformationResourceFileType(irf_.getInformationResourceFileType());
                 irf.setLatestVersion(irf_.getLatestVersion());
@@ -596,17 +660,17 @@ public class ProxyConstructionService {
         keywords.forEach(k_ -> {
             if (k_ != null) {
 
-            K k;
-            try {
-                k = createKeyword(cls, k_, 1, ctx);
-                toReturn.add(k);
-            } catch (InstantiationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+                K k;
+                try {
+                    k = createKeyword(cls, k_, 1, ctx);
+                    toReturn.add(k);
+                } catch (InstantiationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         });
         return toReturn;
@@ -622,7 +686,7 @@ public class ProxyConstructionService {
         if (k instanceof PHierarchicalKeyword) {
             L parent = (L) ((HierarchicalKeyword) k_).getParent();
             if (parent != null) {
-            ((PHierarchicalKeyword) k).setParent((PHierarchicalKeyword) createKeyword(cls, parent, 1, ctx));
+                ((PHierarchicalKeyword) k).setParent((PHierarchicalKeyword) createKeyword(cls, parent, 1, ctx));
             }
         }
 
@@ -639,6 +703,11 @@ public class ProxyConstructionService {
         if (persistableClass == Image.class) {
             return PImage.class;
         }
+        return null;
+    }
+
+    public PKeyword consructKeyword(Keyword keyword) {
+//        createKeyword(cls, k_, depth, ctx)
         return null;
     }
 }

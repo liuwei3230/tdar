@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.tdar.core.bean.keyword.Keyword;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.service.SerializationService;
 
 /**
@@ -19,7 +19,7 @@ public class SchemaOrgKeywordTransformer extends AbstractSchemaOrgMetadataTransf
 
     private static final long serialVersionUID = 8735863754368415427L;
 
-    public String convert(SerializationService serializationService, Keyword keyword) throws IOException {
+    public String convert(SerializationService serializationService, PKeyword keyword) throws IOException {
         Map<String, Object> jsonLd = new HashMap<String, Object>();
         addGraphSection(new HashSet<>(Arrays.asList(keyword)), "keywords");
         jsonLd.put(GRAPH, getGraph().get(0).get("keywords"));

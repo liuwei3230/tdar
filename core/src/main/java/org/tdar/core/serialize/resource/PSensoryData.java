@@ -14,7 +14,7 @@ import org.tdar.core.serialize.resource.sensory.SensoryDataImage;
 import org.tdar.core.serialize.resource.sensory.SensoryDataScan;
 
 @XmlRootElement(name = "sensoryData")
-public class SensoryData extends PDataset {
+public class PSensoryData extends PDataset {
 
     private String monumentNumber;
     private String surveyLocation; // FIXME: remove this field
@@ -80,7 +80,7 @@ public class SensoryData extends PDataset {
     private ScannerTechnologyType scannerTechnology;
     private String cameraDetails;
 
-    public SensoryData() {
+    public PSensoryData() {
         setResourceType(ResourceType.SENSORY_DATA);
     }
 

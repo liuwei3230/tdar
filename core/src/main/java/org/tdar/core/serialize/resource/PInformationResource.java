@@ -84,7 +84,7 @@ public abstract class PInformationResource extends PResource {
         setResourceType(type);
     }
 
-    private Project project;
+    private PProject project;
 
     private Set<PInformationResourceFile> informationResourceFiles = new LinkedHashSet<>();
 
@@ -225,9 +225,9 @@ public abstract class PInformationResource extends PResource {
 
     @XmlElement(name = "projectRef")
     @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public Project getProject() {
+    public PProject getProject() {
         if (project == null) {
-            return Project.NULL;
+            return PProject.NULL;
         }
         return project;
     }
@@ -245,8 +245,8 @@ public abstract class PInformationResource extends PResource {
         return getProject().getTitle();
     }
 
-    public void setProject(Project project) {
-        if (project == Project.NULL) {
+    public void setProject(PProject project) {
+        if (project == PProject.NULL) {
             this.project = null;
         } else {
             this.project = project;
@@ -833,7 +833,7 @@ public abstract class PInformationResource extends PResource {
      * Override this if you need to pass resource specific information on to the work flow process.
      * Make a new instance of the resource, and then copy the fields across that will be needed by the work flow process
      * 
-     * @see Archive#getTransientCopyForWorkflow() for an implementation
+     * @see PArchive#getTransientCopyForWorkflow() for an implementation
      * @return <b>The default is null!</b> A copy of the information resource that will be serialised and sent to the work flow.
      */
     @SuppressWarnings("static-method")

@@ -115,5 +115,15 @@ public class PLatitudeLongitudeBox extends AbstractPersistable {
         this.scale = scale;
     }
 
+    public Double getCenterLongitude() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Double getCenterLatitude() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     
 }

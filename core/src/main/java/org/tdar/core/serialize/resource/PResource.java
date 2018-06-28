@@ -91,8 +91,8 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @version $Revision$
  */
 @XmlRootElement
-@XmlSeeAlso({ PDocument.class, PInformationResource.class, Project.class, PCodingSheet.class, PDataset.class, POntology.class,
-        PImage.class, SensoryData.class, Video.class, Geospatial.class, Archive.class, Audio.class })
+@XmlSeeAlso({ PDocument.class, PInformationResource.class, PProject.class, PCodingSheet.class, PDataset.class, POntology.class,
+        PImage.class, PSensoryData.class, PVideo.class, PGeospatial.class, PArchive.class, PAudio.class })
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(name = "resource", propOrder = {})
 @XmlTransient

@@ -32,7 +32,7 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
  * currently perform data integration, where different datasets can be compared through their mappings
  * to nodes in a common ontology.
  */
-public class CodingRule extends AbstractPersistable implements Comparable<CodingRule>, HasStatic {
+public class PCodingRule extends AbstractPersistable implements Comparable<PCodingRule>, HasStatic {
 
     @Override
     @XmlTransient
@@ -52,18 +52,18 @@ public class CodingRule extends AbstractPersistable implements Comparable<Coding
 
     private transient List<POntologyNode> suggestions = new ArrayList<>();
 
-    public CodingRule() {
+    public PCodingRule() {
     }
 
-    public CodingRule(PCodingSheet codingSheet, String value) {
+    public PCodingRule(PCodingSheet codingSheet, String value) {
         this(codingSheet, value, value, "", null);
     }
 
-    public CodingRule(PCodingSheet codingSheet, String code, String term, String description) {
+    public PCodingRule(PCodingSheet codingSheet, String code, String term, String description) {
         this(codingSheet, code, term, description, null);
     }
 
-    public CodingRule(PCodingSheet codingSheet, String code, String term, String description, POntologyNode node) {
+    public PCodingRule(PCodingSheet codingSheet, String code, String term, String description, POntologyNode node) {
         setCodingSheet(codingSheet);
         setCode(code);
         setTerm(term);
@@ -73,7 +73,7 @@ public class CodingRule extends AbstractPersistable implements Comparable<Coding
         codingSheet.getCodingRules().add(this);
     }
 
-    public CodingRule(String unmappedValue, Long count) {
+    public PCodingRule(String unmappedValue, Long count) {
         setTerm(term);
         setCount(count);
         setOntologyNode(null);
@@ -140,7 +140,7 @@ public class CodingRule extends AbstractPersistable implements Comparable<Coding
      * Default implementation of compareTo using the code.
      */
     @Override
-    public int compareTo(CodingRule other) {
+    public int compareTo(PCodingRule other) {
         try {
             // first try integer comparison instead of String lexicographic comparison
             return Integer.valueOf(code).compareTo(Integer.valueOf(other.code));

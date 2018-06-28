@@ -14,9 +14,9 @@ import org.tdar.core.bean.resource.ResourceType;
  * @author abrin
  *
  */
-public class Video extends PInformationResource {
+public class PVideo extends PInformationResource {
 
-    public Video() {
+    public PVideo() {
         setResourceType(ResourceType.VIDEO);
     }
 

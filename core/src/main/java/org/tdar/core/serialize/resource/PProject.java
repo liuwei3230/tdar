@@ -18,10 +18,10 @@ import org.tdar.core.bean.resource.ResourceType;
  */
 
 @XmlRootElement(name = "project")
-public class Project extends PResource implements Sortable, HasStatic {
+public class PProject extends PResource implements Sortable, HasStatic {
 
 
-    public static final Project NULL = new Project() {
+    public static final PProject NULL = new PProject() {
 
         @Override
         public String getDescription() {
@@ -56,13 +56,13 @@ f     *
      * @param id
      * @param title
      */
-    public Project(Long id, String title) {
+    public PProject(Long id, String title) {
         setId(id);
         setTitle(title);
         setResourceType(ResourceType.PROJECT);
     }
 
-    public Project() {
+    public PProject() {
         setResourceType(ResourceType.PROJECT);
     }
 

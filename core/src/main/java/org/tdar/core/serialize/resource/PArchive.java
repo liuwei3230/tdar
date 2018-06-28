@@ -10,9 +10,9 @@ import org.tdar.core.bean.resource.ResourceType;
  * @author Martin Paulo
  */
 @XmlRootElement(name = "archive")
-public class Archive extends PInformationResource {
+public class PArchive extends PInformationResource {
 
-    public Archive() {
+    public PArchive() {
         setResourceType(ResourceType.ARCHIVE);
     }
 

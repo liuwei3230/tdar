@@ -21,7 +21,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
-import org.tdar.core.bean.resource.datatable.DataTableColumn;
+import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.json.JsonLookupFilter;
 
@@ -40,14 +40,14 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class PCodingSheet extends PInformationResource  {
 
     private PCategoryVariable categoryVariable;
-    private Set<CodingRule> codingRules = new LinkedHashSet<>();
-    private Set<DataTableColumn> associatedDataTableColumns = new HashSet<>();
+    private Set<PCodingRule> codingRules = new LinkedHashSet<>();
+    private Set<PDataTableColumn> associatedDataTableColumns = new HashSet<>();
     @JsonView(JsonLookupFilter.class)
     private POntology defaultOntology;
 
     private boolean generated;
 
-    private transient Map<Long, CodingRule> idMap = new HashMap<>();
+    private transient Map<Long, PCodingRule> idMap = new HashMap<>();
 
     public PCodingSheet() {
         setResourceType(ResourceType.CODING_SHEET);
@@ -63,11 +63,11 @@ public class PCodingSheet extends PInformationResource  {
 
     @XmlElementWrapper(name = "codingRules")
     @XmlElement(name = "codingRule")
-    public Set<CodingRule> getCodingRules() {
+    public Set<PCodingRule> getCodingRules() {
         return codingRules;
     }
 
-    public void setCodingRules(Set<CodingRule> codingRules) {
+    public void setCodingRules(Set<PCodingRule> codingRules) {
         this.codingRules = codingRules;
     }
 
@@ -80,32 +80,32 @@ public class PCodingSheet extends PInformationResource  {
     }
 
     @Transient
-    public SortedSet<CodingRule> getSortedCodingRules() {
-        return new TreeSet<CodingRule>(getCodingRules());
+    public SortedSet<PCodingRule> getSortedCodingRules() {
+        return new TreeSet<PCodingRule>(getCodingRules());
     }
 
     @Transient
-    public SortedSet<CodingRule> getSortedCodingRules(Comparator<CodingRule> comparator) {
-        TreeSet<CodingRule> sortedCodingRules = new TreeSet<>(comparator);
+    public SortedSet<PCodingRule> getSortedCodingRules(Comparator<PCodingRule> comparator) {
+        TreeSet<PCodingRule> sortedCodingRules = new TreeSet<>(comparator);
         sortedCodingRules.addAll(getCodingRules());
         return sortedCodingRules;
     }
 
     @Transient
-    public Map<String, CodingRule> getCodeToRuleMap() {
-        HashMap<String, CodingRule> map = new HashMap<>();
-        for (CodingRule codingRule : getCodingRules()) {
+    public Map<String, PCodingRule> getCodeToRuleMap() {
+        HashMap<String, PCodingRule> map = new HashMap<>();
+        for (PCodingRule codingRule : getCodingRules()) {
             map.put(codingRule.getCode(), codingRule);
         }
         return map;
     }
 
     @Transient
-    public Map<String, List<CodingRule>> getTermToCodingRuleMap() {
-        Map<String, List<CodingRule>> map = new HashMap<>();
-        for (CodingRule codingRule : codingRules) {
+    public Map<String, List<PCodingRule>> getTermToCodingRuleMap() {
+        Map<String, List<PCodingRule>> map = new HashMap<>();
+        for (PCodingRule codingRule : codingRules) {
             String term = codingRule.getTerm();
-            List<CodingRule> rules = map.get(term);
+            List<PCodingRule> rules = map.get(term);
             if (rules == null) {
                 rules = new ArrayList<>();
                 map.put(term, rules);
@@ -118,16 +118,16 @@ public class PCodingSheet extends PInformationResource  {
     @Transient
     public Map<String, POntologyNode> getTermToOntologyNodeMap() {
         HashMap<String, POntologyNode> map = new HashMap<>();
-        for (CodingRule codingRule : getCodingRules()) {
+        for (PCodingRule codingRule : getCodingRules()) {
             map.put(codingRule.getTerm(), codingRule.getOntologyNode());
         }
         return map;
     }
 
-    public List<CodingRule> getCodingRuleByTerm(String term) {
-        List<CodingRule> rules = new ArrayList<>();
+    public List<PCodingRule> getCodingRuleByTerm(String term) {
+        List<PCodingRule> rules = new ArrayList<>();
         if (StringUtils.isNotEmpty(term)) {
-            for (CodingRule rule : getCodingRules()) {
+            for (PCodingRule rule : getCodingRules()) {
                 if (StringUtils.equals(term, rule.getTerm())) {
                     rules.add(rule);
                 }
@@ -136,9 +136,9 @@ public class PCodingSheet extends PInformationResource  {
         return rules;
     }
 
-    public CodingRule getCodingRuleByCode(String code) {
+    public PCodingRule getCodingRuleByCode(String code) {
         if (StringUtils.isNotEmpty(code)) {
-            for (CodingRule rule : getCodingRules()) {
+            for (PCodingRule rule : getCodingRules()) {
                 if (StringUtils.equals(code, rule.getCode())) {
                     return rule;
                 }
@@ -150,7 +150,7 @@ public class PCodingSheet extends PInformationResource  {
     @Transient
     public Map<String, List<Long>> getTermToOntologyNodeIdMap() {
         HashMap<String, List<Long>> map = new HashMap<>();
-        for (CodingRule codingRule : codingRules) {
+        for (PCodingRule codingRule : codingRules) {
             POntologyNode node = codingRule.getOntologyNode();
             if (node != null) {
                 String term = codingRule.getTerm();
@@ -165,11 +165,11 @@ public class PCodingSheet extends PInformationResource  {
         return map;
     }
 
-    public Set<DataTableColumn> getAssociatedDataTableColumns() {
+    public Set<PDataTableColumn> getAssociatedDataTableColumns() {
         return associatedDataTableColumns;
     }
 
-    public void setAssociatedDataTableColumns(Set<DataTableColumn> associatedDataTableColumns) {
+    public void setAssociatedDataTableColumns(Set<PDataTableColumn> associatedDataTableColumns) {
         this.associatedDataTableColumns = associatedDataTableColumns;
     }
 
@@ -188,9 +188,9 @@ public class PCodingSheet extends PInformationResource  {
         this.defaultOntology = defaultOntology;
     }
 
-    public CodingRule getCodingRuleById(Long id) {
+    public PCodingRule getCodingRuleById(Long id) {
         if (idMap.isEmpty()) {
-            for (CodingRule node : getCodingRules()) {
+            for (PCodingRule node : getCodingRules()) {
                 idMap.put(node.getId(), node);
             }
         }
@@ -199,12 +199,12 @@ public class PCodingSheet extends PInformationResource  {
 
     @Transient
     @XmlTransient
-    public Map<POntologyNode, List<CodingRule>> getNodeToDataValueMap() {
-        HashMap<POntologyNode, List<CodingRule>> map = new HashMap<>();
-        for (CodingRule rule : getCodingRules()) {
+    public Map<POntologyNode, List<PCodingRule>> getNodeToDataValueMap() {
+        HashMap<POntologyNode, List<PCodingRule>> map = new HashMap<>();
+        for (PCodingRule rule : getCodingRules()) {
             POntologyNode node = rule.getOntologyNode();
             if (node != null) {
-                List<CodingRule> list = map.get(node);
+                List<PCodingRule> list = map.get(node);
                 if (list == null) {
                     list = new ArrayList<>();
                     map.put(node, list);
@@ -215,9 +215,9 @@ public class PCodingSheet extends PInformationResource  {
         return map;
     }
 
-    public List<CodingRule> getMappedValues() {
-        List<CodingRule> mappedValues = new ArrayList<>();
-        for (CodingRule rule : getCodingRules()) {
+    public List<PCodingRule> getMappedValues() {
+        List<PCodingRule> mappedValues = new ArrayList<>();
+        for (PCodingRule rule : getCodingRules()) {
             if (rule.getOntologyNode() != null) {
                 mappedValues.add(rule);
             }
@@ -225,11 +225,11 @@ public class PCodingSheet extends PInformationResource  {
         return mappedValues;
     }
 
-    public List<CodingRule> findRulesMappedToOntologyNode(POntologyNode node) {
+    public List<PCodingRule> findRulesMappedToOntologyNode(POntologyNode node) {
         if ((node == null) || CollectionUtils.isEmpty(getCodingRules())) {
             return new ArrayList<>();
         }
-        Map<POntologyNode, List<CodingRule>> nodeToDataValueMap = getNodeToDataValueMap();
+        Map<POntologyNode, List<PCodingRule>> nodeToDataValueMap = getNodeToDataValueMap();
         return nodeToDataValueMap.get(node);
     }
 
@@ -240,7 +240,7 @@ public class PCodingSheet extends PInformationResource  {
         }
 
         int count = 0;
-        for (CodingRule rule : getCodingRules()) {
+        for (PCodingRule rule : getCodingRules()) {
             if (rule != null && rule.getOntologyNode() != null) {
                 count++;
             }

@@ -12,48 +12,50 @@ import java.util.TreeSet;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.coverage.CoverageDate;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.coverage.PCoverageDate;
 import org.tdar.core.bean.coverage.CoverageType;
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator.CreatorType;
-import org.tdar.core.bean.entity.Institution;
-import org.tdar.core.bean.entity.Person;
-import org.tdar.core.bean.entity.ResourceCreator;
+import org.tdar.core.serialize.entity.PInstitution;
+import org.tdar.core.serialize.entity.PPerson;
+import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
-import org.tdar.core.bean.keyword.CultureKeyword;
-import org.tdar.core.bean.keyword.GeographicKeyword;
-import org.tdar.core.bean.keyword.InvestigationType;
-import org.tdar.core.bean.keyword.MaterialKeyword;
-import org.tdar.core.bean.keyword.OtherKeyword;
-import org.tdar.core.bean.keyword.SiteNameKeyword;
-import org.tdar.core.bean.keyword.SiteTypeKeyword;
-import org.tdar.core.bean.keyword.TemporalKeyword;
-import org.tdar.core.bean.resource.Archive;
-import org.tdar.core.bean.resource.Audio;
-import org.tdar.core.bean.resource.CodingSheet;
-import org.tdar.core.bean.resource.Dataset;
-import org.tdar.core.bean.resource.Document;
+import org.tdar.core.serialize.keyword.PCultureKeyword;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
+import org.tdar.core.serialize.keyword.PInvestigationType;
+import org.tdar.core.serialize.keyword.PMaterialKeyword;
+import org.tdar.core.serialize.keyword.POtherKeyword;
+import org.tdar.core.serialize.keyword.PSiteNameKeyword;
+import org.tdar.core.serialize.keyword.PSiteTypeKeyword;
+import org.tdar.core.serialize.keyword.PTemporalKeyword;
+import org.tdar.core.serialize.resource.PArchive;
+import org.tdar.core.serialize.resource.PAudio;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.core.bean.resource.DocumentType;
-import org.tdar.core.bean.resource.Geospatial;
-import org.tdar.core.bean.resource.Image;
-import org.tdar.core.bean.resource.InformationResource;
+import org.tdar.core.serialize.resource.PGeospatial;
+import org.tdar.core.serialize.resource.PImage;
+import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.bean.resource.Language;
-import org.tdar.core.bean.resource.Ontology;
-import org.tdar.core.bean.resource.Project;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.bean.resource.ResourceType;
-import org.tdar.core.bean.resource.SensoryData;
-import org.tdar.core.bean.resource.Video;
-import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
+import org.tdar.core.serialize.resource.PSensoryData;
+import org.tdar.core.serialize.resource.PVideo;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.UrlService;
 import org.tdar.utils.ResourceCitationFormatter;
 import org.tdar.utils.XmlEscapeHelper;
 
 import edu.asu.lib.qdc.QualifiedDublinCoreDocument;
 
-public abstract class ExtendedDcTransformer<R extends Resource> implements Transformer<R, QualifiedDublinCoreDocument> {
+public abstract class ExtendedDcTransformer<R extends PResource> implements Transformer<R, QualifiedDublinCoreDocument> {
 
     protected Set<String> contributors = new HashSet<>();
     protected Set<String> creators = new HashSet<>();
@@ -79,7 +81,7 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
         }
 
         // add creators and contributors
-        for (ResourceCreator resourceCreator : toSortedList(source.getActiveResourceCreators())) {
+        for (PResourceCreator resourceCreator : toSortedList(source.getActiveResourceCreators())) {
             String name = resourceCreator.getCreator().getProperName();
             if (resourceCreator.getCreatorType() == CreatorType.PERSON) {
                 // display person names in special format
@@ -101,41 +103,41 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
         }
 
         // add geographic subjects
-        for (GeographicKeyword geoTerm : toSortedList(source.getActiveGeographicKeywords())) {
+        for (PGeographicKeyword geoTerm : toSortedList(source.getActiveGeographicKeywords())) {
             dc.addSpatial(getX().stripNonValidXMLCharacters(geoTerm.getLabel()));
         }
 
         // add temporal subjects
-        for (TemporalKeyword temporalTerm : toSortedList(source.getActiveTemporalKeywords())) {
+        for (PTemporalKeyword temporalTerm : toSortedList(source.getActiveTemporalKeywords())) {
             dc.addTemporal(getX().stripNonValidXMLCharacters(temporalTerm.getLabel()));
         }
 
         // add culture subjects
-        for (CultureKeyword cultureTerm : toSortedList(source.getActiveCultureKeywords())) {
+        for (PCultureKeyword cultureTerm : toSortedList(source.getActiveCultureKeywords())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(cultureTerm.getLabel()));
         }
 
         // add culture subjects
-        for (InvestigationType investigationType : toSortedList(source.getActiveInvestigationTypes())) {
+        for (PInvestigationType investigationType : toSortedList(source.getActiveInvestigationTypes())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(investigationType.getLabel()));
         }
 
         // add site name subjects
-        for (SiteNameKeyword siteNameTerm : toSortedList(source.getActiveSiteNameKeywords())) {
+        for (PSiteNameKeyword siteNameTerm : toSortedList(source.getActiveSiteNameKeywords())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(siteNameTerm.getLabel()));
         }
 
         // add site name subjects
-        for (SiteTypeKeyword siteNameTerm : toSortedList(source.getActiveSiteTypeKeywords())) {
+        for (PSiteTypeKeyword siteNameTerm : toSortedList(source.getActiveSiteTypeKeywords())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(siteNameTerm.getLabel()));
         }
 
         // add site name subjects
-        for (MaterialKeyword term : toSortedList(source.getActiveMaterialKeywords())) {
+        for (PMaterialKeyword term : toSortedList(source.getActiveMaterialKeywords())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(term.getLabel()));
         }
 
-        for (CoverageDate cov : toSortedList(source.getActiveCoverageDates())) {
+        for (PCoverageDate cov : toSortedList(source.getActiveCoverageDates())) {
             if (cov.getDateType() == CoverageType.CALENDAR_DATE) {
                 dc.addDate(getX().stripNonValidXMLCharacters(String.format("start:%s end:%s", cov.getStartDate(), cov.getEndDate())));
             } else {
@@ -143,12 +145,12 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
             }
         }
 
-        for (ResourceCollection coll : toSortedList(source.getVisibleSharedResourceCollections())) {
+        for (PResourceCollection coll : toSortedList(source.getVisibleSharedResourceCollections())) {
             dc.addIsPartOf(getX().stripNonValidXMLCharacters(coll.getName()));
         }
 
         // add other subjects
-        for (OtherKeyword otherTerm : toSortedList(source.getActiveOtherKeywords())) {
+        for (POtherKeyword otherTerm : toSortedList(source.getActiveOtherKeywords())) {
             dc.addSubject(getX().stripNonValidXMLCharacters(otherTerm.getLabel()));
         }
 
@@ -156,16 +158,16 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
 
         dc.addIdentifier(getX().stripNonValidXMLCharacters(source.getId().toString()));
         dc.addReferences(getX().stripNonValidXMLCharacters(UrlService.absoluteUrl(source)));
-        for (LatitudeLongitudeBox longLat : toSortedList(source.getActiveLatitudeLongitudeBoxes())) {
-            String maxy = longLat.getObfuscatedNorth().toString();
-            String miny = longLat.getObfuscatedSouth().toString();
-            String maxx = longLat.getObfuscatedEast().toString();
-            String minx = longLat.getObfuscatedWest().toString();
+        for (PLatitudeLongitudeBox longLat : toSortedList(source.getActiveLatitudeLongitudeBoxes())) {
+            String maxy = longLat.getNorth().toString();
+            String miny = longLat.getSouth().toString();
+            String maxx = longLat.getEast().toString();
+            String minx = longLat.getWest().toString();
             dc.addSpatial(minx, miny, maxx, maxy);
             // dc.addCoverage(String.format("%s, %s, %s, %s", maxy, miny, maxx, minx));
         }
 
-        for (CoverageDate date : toSortedList(source.getCoverageDates())) {
+        for (PCoverageDate date : toSortedList(source.getCoverageDates())) {
             dc.addTemporal(getX().stripNonValidXMLCharacters(date.toString()));
         }
 
@@ -197,11 +199,11 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
         return name;
     }
 
-    protected String dcConstructPersonalName(ResourceCreator resourceCreator) {
+    protected String dcConstructPersonalName(PResourceCreator resourceCreator) {
         if (resourceCreator.getCreatorType() != CreatorType.PERSON) {
             return null;
         }
-        Person person = (Person) resourceCreator.getCreator();
+        PPerson person = (PPerson) resourceCreator.getCreator();
         String name = String.format("%s, %s", person.getLastName(), person.getFirstName());
         // if (!StringUtils.isEmpty("" + resourceCreator.getRole())) {
         // name += String.format(", %s", resourceCreator.getRole());
@@ -212,7 +214,7 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
         return name;
     }
 
-    public static class InformationResourceTransformer<I extends InformationResource> extends ExtendedDcTransformer<I> {
+    public static class InformationResourceTransformer<I extends PInformationResource> extends ExtendedDcTransformer<I> {
 
         @Override
         public QualifiedDublinCoreDocument transform(I source) {
@@ -223,7 +225,7 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
                 dc.addIdentifier(getX().stripNonValidXMLCharacters(doi));
             }
 
-            if (source.getProject() != Project.NULL) {
+            if (source.getProject() != PProject.NULL) {
                 dc.addIsPartOf(getX().stripNonValidXMLCharacters(source.getProjectTitle()));
             }
 
@@ -232,7 +234,7 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
                 dc.addRelation(getX().stripNonValidXMLCharacters(copyLocation));
             }
 
-            for (ResourceCreator resourceCreator : source.getActiveResourceCreators()) {
+            for (PResourceCreator resourceCreator : source.getActiveResourceCreators()) {
                 if (resourceCreator.getRole() == ResourceCreatorRole.CONTACT) {
                     dc.addPublisher(getX().stripNonValidXMLCharacters(resourceCreator.getCreator().getProperName()));
                 }
@@ -251,12 +253,12 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
             }
 
             SortedSet<String> types = new TreeSet<>();
-            for (InformationResourceFileVersion version : source.getLatestUploadedVersions()) {
+            for (PInformationResourceFileVersion version : source.getLatestUploadedVersions()) {
                 types.add(version.getMimeType());
             }
             types.forEach(type -> dc.addType(getX().stripNonValidXMLCharacters(type)));
 
-            Institution resourceProviderInstitution = source.getResourceProviderInstitution();
+            PInstitution resourceProviderInstitution = source.getResourceProviderInstitution();
             if (resourceProviderInstitution != null) {
                 String name = resourceProviderInstitution.getName();
                 if (!contributors.contains(name)) {
@@ -285,10 +287,10 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
 
     }
 
-    public static class DocumentTransformer extends InformationResourceTransformer<Document> {
+    public static class DocumentTransformer extends InformationResourceTransformer<PDocument> {
 
         @Override
-        public QualifiedDublinCoreDocument transform(Document source) {
+        public QualifiedDublinCoreDocument transform(PDocument source) {
             QualifiedDublinCoreDocument dc = super.transform(source);
 
             String isbn = source.getIsbn();
@@ -387,74 +389,74 @@ public abstract class ExtendedDcTransformer<R extends Resource> implements Trans
 
     }
 
-    public static class DatasetTransformer extends InformationResourceTransformer<Dataset> {
+    public static class DatasetTransformer extends InformationResourceTransformer<PDataset> {
         // marker class
     }
 
-    public static class SensoryDataTransformer extends InformationResourceTransformer<SensoryData> {
+    public static class SensoryDataTransformer extends InformationResourceTransformer<PSensoryData> {
         // marker class
     }
 
-    public static class VideoTransformer extends InformationResourceTransformer<Video> {
+    public static class VideoTransformer extends InformationResourceTransformer<PVideo> {
         // marker class
     }
 
-    public static class GeospatialTransformer extends InformationResourceTransformer<Geospatial> {
+    public static class GeospatialTransformer extends InformationResourceTransformer<PGeospatial> {
         // marker class
     }
 
-    public static class CodingSheetTransformer extends InformationResourceTransformer<CodingSheet> {
+    public static class CodingSheetTransformer extends InformationResourceTransformer<PCodingSheet> {
         // marker class
     }
 
-    public static class ImageTransformer extends InformationResourceTransformer<Image> {
+    public static class ImageTransformer extends InformationResourceTransformer<PImage> {
         // marker class
     }
 
-    public static class ArchiveTransformer extends InformationResourceTransformer<Archive> {
+    public static class ArchiveTransformer extends InformationResourceTransformer<PArchive> {
         // marker class
     }
 
-    public static class AudioTransformer extends InformationResourceTransformer<Audio> {
+    public static class AudioTransformer extends InformationResourceTransformer<PAudio> {
         // marker class
     }
 
-    public static class OntologyTransformer extends InformationResourceTransformer<Ontology> {
+    public static class OntologyTransformer extends InformationResourceTransformer<POntology> {
         // marker class
     }
 
-    public static class ProjectTransformer extends ExtendedDcTransformer<Project> {
+    public static class ProjectTransformer extends ExtendedDcTransformer<PProject> {
         // marker class
     }
 
-    public static QualifiedDublinCoreDocument transformAny(Resource resource) {
+    public static QualifiedDublinCoreDocument transformAny(PResource resource) {
         ResourceType resourceType = ResourceType.fromClass(resource.getClass());
         if (resourceType == null) {
             throw new TdarRecoverableRuntimeException("transformer.unsupported_type");
         }
         switch (resourceType) {
             case CODING_SHEET:
-                return new CodingSheetTransformer().transform((CodingSheet) resource);
+                return new CodingSheetTransformer().transform((PCodingSheet) resource);
             case DATASET:
-                return new DatasetTransformer().transform((Dataset) resource);
+                return new DatasetTransformer().transform((PDataset) resource);
             case DOCUMENT:
-                return new DocumentTransformer().transform((Document) resource);
+                return new DocumentTransformer().transform((PDocument) resource);
             case IMAGE:
-                return new ImageTransformer().transform((Image) resource);
+                return new ImageTransformer().transform((PImage) resource);
             case ONTOLOGY:
-                return new OntologyTransformer().transform((Ontology) resource);
+                return new OntologyTransformer().transform((POntology) resource);
             case PROJECT:
-                return new ProjectTransformer().transform((Project) resource);
+                return new ProjectTransformer().transform((PProject) resource);
             case SENSORY_DATA:
-                return new SensoryDataTransformer().transform((SensoryData) resource);
+                return new SensoryDataTransformer().transform((PSensoryData) resource);
             case VIDEO:
-                return new VideoTransformer().transform((Video) resource);
+                return new VideoTransformer().transform((PVideo) resource);
             case GEOSPATIAL:
-                return new GeospatialTransformer().transform((Geospatial) resource);
+                return new GeospatialTransformer().transform((PGeospatial) resource);
             case ARCHIVE:
-                return new ArchiveTransformer().transform((Archive) resource);
+                return new ArchiveTransformer().transform((PArchive) resource);
             case AUDIO:
-                return new AudioTransformer().transform((Audio) resource);
+                return new AudioTransformer().transform((PAudio) resource);
             default:
                 break;
         }

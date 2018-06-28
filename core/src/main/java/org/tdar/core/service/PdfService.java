@@ -7,10 +7,11 @@ import java.net.URISyntaxException;
 
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.tdar.core.bean.entity.Person;
-import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.exception.PdfCoverPageGenerationException;
+import org.tdar.core.serialize.entity.PPerson;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.pdf.PdfFontHelper;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -28,7 +29,7 @@ public interface PdfService {
      * @throws IOException
      * @throws URISyntaxException
      */
-    InputStream mergeCoverPage(TextProvider provider, Person submitter, InformationResourceFileVersion version, Document document, File coverPage)
+    InputStream mergeCoverPage(TextProvider provider, PPerson submitter, PInformationResourceFileVersion version, PDocument document, File coverPage)
             throws PdfCoverPageGenerationException;
 
     /**

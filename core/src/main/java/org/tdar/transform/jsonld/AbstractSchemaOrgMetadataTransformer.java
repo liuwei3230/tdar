@@ -12,15 +12,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.RelationType;
-import org.tdar.core.bean.coverage.CoverageDate;
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
-import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.keyword.Keyword;
-import org.tdar.core.bean.resource.Document;
+import org.tdar.core.serialize.coverage.PCoverageDate;
+import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.keyword.PKeyword;
+import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.core.bean.resource.DocumentType;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.service.UrlService;
 import org.tdar.utils.PersistableUtils;
@@ -64,21 +64,18 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
 
     }
 
-    protected void addGraphSectionSpatial(Set<LatitudeLongitudeBox> llbs) {
+    protected void addGraphSectionSpatial(Set<PLatitudeLongitudeBox> llbs) {
         List<Map<String, Object>> all = new ArrayList<>();
         llbs.forEach(llb -> {
             Map<String, Object> js = new HashMap<>();
             js.put("tdar:id", llb.getId());
-            if (llb.getObfuscatedNorth() == null) {
-                llb.obfuscateAll();
-            }
-            js.put("schema:longitude", llb.getObfuscatedCenterLongitude());
-            js.put("schema:latitude", llb.getObfuscatedCenterLatitude());
+            js.put("schema:longitude", llb.getCenterLongitude());
+            js.put("schema:latitude", llb.getCenterLatitude());
             js.put("tdar:note", "possibly obfuscated");
-            js.put("tdar:north", llb.getObfuscatedNorth());
-            js.put("tdar:south", llb.getObfuscatedSouth());
-            js.put("tdar:east", llb.getObfuscatedEast());
-            js.put("tdar:west", llb.getObfuscatedWest());
+            js.put("tdar:north", llb.getNorth());
+            js.put("tdar:south", llb.getSouth());
+            js.put("tdar:east", llb.getEast());
+            js.put("tdar:west", llb.getWest());
             js.put(TYPE, "GeoCoordinates");
         });
         appendIfNotEmpty("tdar:spatial", all);
@@ -93,7 +90,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
         }
     }
 
-    protected void addGraphSectionTemporal(Set<CoverageDate> coverages) {
+    protected void addGraphSectionTemporal(Set<PCoverageDate> coverages) {
         List<Map<String, Object>> all = new ArrayList<>();
         coverages.forEach(coverage -> {
             Map<String, Object> js = new HashMap<>();
@@ -112,7 +109,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
      * a JSON LD object can have multiple "graphs" each graph with a unique name. This section is for a set of similar keywords
      */
     @SuppressWarnings("unchecked")
-    protected void addGraphSection(Set<? extends Keyword> keywords, String nodeName) {
+    protected void addGraphSection(Set<? extends PKeyword> keywords, String nodeName) {
         List<Map<String, Object>> all = new ArrayList<>();
         if (logger.isTraceEnabled()) {
             logger.trace("adding keywords:{}", keywords);
@@ -126,7 +123,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
                 js.put(map.getRelationType().getJsonKey(), map.getRelation());
             });
 
-            for (Keyword syn : (Set<Keyword>) kwd.getSynonyms()) {
+            for (PKeyword syn : (Set<PKeyword>) kwd.getSynonyms()) {
                 js.put(RelationType.HAS_VERSION.getJsonKey(), syn.getDetailUrl());
             }
 
@@ -139,7 +136,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
     /*
      * Add a graph section for a resource
      */
-    protected void addGraphSection(Resource r) {
+    protected void addGraphSection(PResource r) {
         Map<String, Object> jsonLd = new HashMap<>();
         getGraph().add(jsonLd);
         jsonLd.put(NAME, r.getTitle());
@@ -171,7 +168,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
 
         }
 
-        for (ResourceCreator rc : r.getActiveResourceCreators()) {
+        for (PResourceCreator rc : r.getActiveResourceCreators()) {
             if (rc.getRole().isPartOfSchemaOrg()) {
                 jsonLd.put(rc.getRole().getSchemaOrgLabel(), rc.getCreator().getProperName());
             }
@@ -183,10 +180,10 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
             add(jsonLd, SCHEMA_URL, UrlService.absoluteUrl(r));
         }
 
-        if (r instanceof InformationResource) {
-            InformationResource ir = (InformationResource) r;
+        if (r instanceof PInformationResource) {
+            PInformationResource ir = (PInformationResource) r;
 
-            List<InformationResourceFile> thumbs = ir.getVisibleFilesWithThumbnails();
+            List<PInformationResourceFile> thumbs = ir.getVisibleFilesWithThumbnails();
             if (CollectionUtils.isNotEmpty(thumbs)) {
                 add(jsonLd, "schema:thumbnailUrl", UrlService.thumbnailUrl(thumbs.get(0).getLatestThumbnail()));
             }
@@ -204,8 +201,8 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
                 jsonLd.put(DATE_PUBLISHED, ir.getDate());
             }
 
-            if (ir instanceof Document) {
-                Document doc = (Document) ir;
+            if (ir instanceof PDocument) {
+                PDocument doc = (PDocument) ir;
                 jsonLd.put(TYPE, "Book");
                 add(jsonLd, "schema:alternateName", doc.getSeriesName());
                 add(jsonLd, "schema:isbn", doc.getIsbn());
@@ -243,7 +240,7 @@ public abstract class AbstractSchemaOrgMetadataTransformer implements Serializab
                     add(article, NAME, doc.getTitle());
                     add(article, "schema:pageStart", doc.getStartPage());
                     add(article, "schema:pageEnd", doc.getEndPage());
-                    for (ResourceCreator rc : r.getActiveResourceCreators()) {
+                    for (PResourceCreator rc : r.getActiveResourceCreators()) {
                         if (rc.getRole().isPartOfSchemaOrg()) {
                             article.put(rc.getRole().getSchemaOrgLabel(), rc.getCreator().getProperName());
                         }
