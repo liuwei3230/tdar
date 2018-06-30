@@ -8,10 +8,11 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.Keyword;
+//import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.KeywordType;
 import org.tdar.core.bean.resource.Project;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.ResourceLookupObject;
@@ -24,7 +25,7 @@ import com.opensymphony.xwork2.TextProvider;
 
 public interface ResourceSearchService {
 
-    LuceneSearchResultHandler<Resource> buildCollectionResourceSearch(LuceneSearchResultHandler<Resource> result, TextProvider provider)
+    LuceneSearchResultHandler<PResource> buildCollectionResourceSearch(LuceneSearchResultHandler<PResource> result, TextProvider provider)
             throws SearchException, IOException;
 
     /**
@@ -38,8 +39,8 @@ public interface ResourceSearchService {
      * @throws SolrServerException
      * @throws ParseException
      */
-    LuceneSearchResultHandler<Resource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException;
+    LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException;
 
     /**
      * Shared logic to find all direct children of container resource (ResourceCollections and Projects)
@@ -52,18 +53,18 @@ public interface ResourceSearchService {
      * @throws SolrServerException
      * @throws ParseException
      */
-    LuceneSearchResultHandler<Resource> buildResourceContainedInSearch(ResourceCollection indexable, String term, TdarUser user,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException;
+    LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(ResourceCollection indexable, String term, TdarUser user,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException;
 
-    LuceneSearchResultHandler<Resource> lookupResource(TdarUser user, ResourceLookupObject look, LuceneSearchResultHandler<Resource> result,
+    LuceneSearchResultHandler<PResource> lookupResource(TdarUser user, ResourceLookupObject look, LuceneSearchResultHandler<PResource> result,
             TextProvider support) throws SearchException, IOException;
 
-    LuceneSearchResultHandler<Resource> buildKeywordQuery(Keyword keyword, KeywordType keywordType, ReservedSearchParameters rsp,
-            LuceneSearchResultHandler<Resource> result,
+    LuceneSearchResultHandler<PResource> buildKeywordQuery(Keyword keyword, KeywordType keywordType, ReservedSearchParameters rsp,
+            LuceneSearchResultHandler<PResource> result,
             TextProvider provider, TdarUser user) throws SearchException, IOException;
 
-    LuceneSearchResultHandler<Resource> buildAdvancedSearch(AdvancedSearchQueryObject asqo, TdarUser authenticatedUser,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException;
+    LuceneSearchResultHandler<PResource> buildAdvancedSearch(AdvancedSearchQueryObject asqo, TdarUser authenticatedUser,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException;
 
     /**
      * Take any of the @link SearchParameter properties that can support skeleton resources and inflate them so we can display something in the search title /
@@ -83,12 +84,12 @@ public interface ResourceSearchService {
      * @throws SolrServerException
      * @throws ParseException
      */
-    LuceneSearchResultHandler<Resource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, FacetedResultHandler<Resource> result,
+    LuceneSearchResultHandler<PResource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, FacetedResultHandler<PResource> result,
             TextProvider provider) throws SearchException, IOException;
 
-    LuceneSearchResultHandler<Resource> findByTdarYear(int year, LuceneSearchResultHandler<Resource> result, TextProvider support)
+    LuceneSearchResultHandler<PResource> findByTdarYear(int year, LuceneSearchResultHandler<PResource> result, TextProvider support)
             throws SearchException, IOException;
 
-    LuceneSearchResultHandler<Resource> findByResourceType(ResourceType resourceType, LuceneSearchResultHandler<Resource> result, TextProvider support)
+    LuceneSearchResultHandler<PResource> findByResourceType(ResourceType resourceType, LuceneSearchResultHandler<PResource> result, TextProvider support)
             throws SearchException, IOException;
 }

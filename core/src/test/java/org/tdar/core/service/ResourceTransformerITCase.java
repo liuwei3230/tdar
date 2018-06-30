@@ -9,6 +9,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.entity.ResourceCreator;
@@ -18,6 +19,7 @@ import org.tdar.core.bean.keyword.OtherKeyword;
 import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.resource.Document;
+import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.transform.EMLDocumentTransformer;
 import org.tdar.transform.ExtendedDcTransformer;
 import org.tdar.transform.ModsTransformer;
@@ -39,8 +41,11 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
 
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
     @Test
-    public void transformDC() throws JAXBException {
+    public void transformDC() throws JAXBException, InstantiationException, IllegalAccessException {
         Document d = new Document();
         d.getInvestigationTypes().add(new InvestigationType("bacd"));
         d.getSiteNameKeywords().add(new SiteNameKeyword("siteName"));
@@ -49,7 +54,8 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         d.getSiteTypeKeywords().add(new SiteTypeKeyword("SiteType"));
         d.getResourceCreators().add(new ResourceCreator(getBasicUser(), ResourceCreatorRole.AUTHOR));
         d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.CONTRIBUTOR));
-        QualifiedDublinCoreDocument transformAny = ExtendedDcTransformer.transformAny(d);
+        PDocument dd = proxyConstructionService.constructResource(d, PDocument.class, getBasicUser(), true);
+        QualifiedDublinCoreDocument transformAny = ExtendedDcTransformer.transformAny(dd);
         StringWriter writer = new StringWriter();
         JaxbDocumentWriter.write(transformAny, writer, true);
         String str = writer.toString();

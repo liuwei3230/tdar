@@ -175,20 +175,6 @@ public abstract class AbstractResourceController<R extends Resource> extends Abs
     protected void loadCustomMetadata() throws TdarActionException {
     }
 
-    public String getOpenUrl() {
-        return OpenUrlFormatter.toOpenURL(getResource());
-    }
-
-    public String getGoogleScholarTags() throws Exception {
-        ScholarMetadataTransformer trans = new ScholarMetadataTransformer();
-        StringWriter sw = new StringWriter();
-        for (MetaTag tag : trans.convertResourceToMetaTag(getResource())) {
-            serializationService.convertToXMLFragment(MetaTag.class, tag, sw);
-            sw.append("\n");
-        }
-        return sw.toString();
-    }
-
     @Override
     public String save(Resource resource) {
         getLogger().debug("calling save");

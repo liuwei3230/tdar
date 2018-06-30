@@ -15,7 +15,7 @@ import org.tdar.core.bean.resource.ResourceRelationship.ResourceRelationshipType
  * @version $Revision$
  */
 
-public class ResourceRelationship extends AbstractPersistable {
+public class PResourceRelationship extends AbstractPersistable {
 
     private PResource sourceResource;
     private PResource targetResource;

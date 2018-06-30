@@ -18,6 +18,7 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ObjectType;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
@@ -36,7 +37,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         updateAndIndex(doc);
         SearchParameters sp = new SearchParameters();
         sp.setTitles(Arrays.asList("USAF"));
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
 
         assertTrue(result.getResults().contains(doc));
         doc.setTitle("USAF");
@@ -80,9 +81,9 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         }
         genericService.synchronize();
         // searchIndexService.indexCollection(docs);
-        SearchResult<Resource> result = doSearch("AZ U:9:1(ASM)");
-        List<Resource> results = result.getResults();
-        for (Resource r : result.getResults()) {
+        SearchResult<PResource> result = doSearch("AZ U:9:1(ASM)");
+        List<PResource> results = result.getResults();
+        for (PResource r : result.getResults()) {
             logger.debug("results: {}", r);
         }
 
@@ -103,7 +104,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getTitles().add(title);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
 
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
@@ -121,7 +122,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getAllFields().add(title);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
         assertEquals(doc, result.getResults().iterator().next());
@@ -290,7 +291,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.indexAll(getAdminUser(), LookupSource.RESOURCE);
         ReservedSearchParameters params = new ReservedSearchParameters();
         params.setObjectTypes(Arrays.asList(ObjectType.CODING_SHEET));
-        SearchResult<Resource> result = performSearch("Taxonomic Level", null, null, null, null, null, params, 10);
+        SearchResult<PResource> result = performSearch("Taxonomic Level", null, null, null, null, null, params, 10);
         logger.info("{}", result.getResults());
         logger.info("{}", sheetIds);
         assertTrue(PersistableUtils.extractIds(result.getResults()).containsAll(sheetIds));
@@ -298,7 +299,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         result = performSearch("Taxonomic Level", null, null, null, 85l, getBasicUser(), params, 10);
         logger.info("{}", result.getResults());
         assertTrue(PersistableUtils.extractIds(result.getResults()).containsAll(sheetIds));
-        Resource col = ((Resource) result.getResults().get(0));
+        PResource col = ((PResource) result.getResults().get(0));
         assertEquals("Taxonomic Level 1", col.getName());
 
         result = performSearch(null, null, null, null, 85l, getBasicUser(), params, 1000);
@@ -317,7 +318,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         String projectTitle = project.getTitle();
         SearchParameters sp = new SearchParameters();
         sp.getTitles().add(projectTitle);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         result.getResults().contains(project);
     }
 
@@ -361,10 +362,10 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         }
         genericService.synchronize();
         searchIndexService.indexCollection(docs);
-        SearchResult<Resource> result = doSearch(exact);
+        SearchResult<PResource> result = doSearch(exact);
         @SuppressWarnings("unused")
-        List<Resource> results = result.getResults();
-        for (Resource r : result.getResults()) {
+        List<PResource> results = result.getResults();
+        for (PResource r : result.getResults()) {
             logger.debug("results: {}", r);
         }
         assertEquals(exact, result.getResults().get(0).getTitle());

@@ -13,7 +13,7 @@ import org.tdar.core.bean.resource.Resource;
  * @author abrin
  *
  */
-public class UserInvite extends AbstractPersistable {
+public class PUserInvite extends AbstractPersistable {
 
     private Date dateCreated = new Date();
     private Date dateExpires;

@@ -494,7 +494,7 @@
         <@local_.afterFileInfo />
     </#if>
 
-<#list visibleUnmanagedCollections>
+<#list resource.unmanagedResourceCollections>
     <h3>This Resource is Part of the Following User Created Collections</h3>
         <ul class="inline">
     <#items as collection>

@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.struts.action.api.AbstractJsonApiAction;
 import org.tdar.struts_base.interceptor.annotation.HttpForbiddenErrorResponseOnly;
@@ -33,6 +35,9 @@ public class ResourceLinkedOpenDataAction extends AbstractJsonApiAction implemen
     private ResourceService resourceService;
     private Map<String, String> error = new HashMap<>();
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
     @Override
     public void prepare() throws Exception {
         error.put("status", getText("error.object_does_not_exist"));
@@ -42,7 +47,9 @@ public class ResourceLinkedOpenDataAction extends AbstractJsonApiAction implemen
             setJsonObject(error);
             return;
         }
-        String message = resourceService.getSchemaOrgJsonLD(resource);
+        
+        PResource r = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+        String message = resourceService.getSchemaOrgJsonLD(r);
         setJsonInputStream(new ByteArrayInputStream(message.getBytes()));
     }
 

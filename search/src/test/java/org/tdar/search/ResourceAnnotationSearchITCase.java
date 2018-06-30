@@ -11,9 +11,9 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.ResourceAnnotationKey;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
@@ -36,7 +36,7 @@ public class ResourceAnnotationSearchITCase extends AbstractResourceSearchITCase
         sp.getAnnotations().add(new StringPair(MAC_LAB_LOT_NUMBER, _18ST659_143));
         ReservedSearchParameters rsp = new ReservedSearchParameters();
         rsp.getObjectTypes().clear(); // select all resource types
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         int resourceCount = 0;
         for (Indexable resource : result.getResults()) {
             if (resource instanceof InformationResource) {
@@ -52,7 +52,7 @@ public class ResourceAnnotationSearchITCase extends AbstractResourceSearchITCase
     public void testResourceAnnotationKeywordSearch() throws SearchException, SearchIndexException, IOException, ParseException {
         String code = _18ST659_158;
         Document doc = createDocumentWithAnnotationKey(code);
-        SearchResult<Resource> result = doSearch(code, null, null, null);
+        SearchResult<PResource> result = doSearch(code, null, null, null);
         assertFalse("we should get back at least one hit", result.getResults().isEmpty());
         assertTrue(result.getResults().contains(doc));
     }

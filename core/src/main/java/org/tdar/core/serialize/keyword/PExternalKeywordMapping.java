@@ -9,13 +9,13 @@ import org.tdar.utils.json.JsonLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-public class ExternalKeywordMapping extends AbstractPersistable implements Validatable {
+public class PExternalKeywordMapping extends AbstractPersistable implements Validatable {
 
 
-    public ExternalKeywordMapping() {
+    public PExternalKeywordMapping() {
     }
 
-    public ExternalKeywordMapping(String relationUrl, RelationType type) {
+    public PExternalKeywordMapping(String relationUrl, RelationType type) {
         this.relation = relationUrl;
         this.relationType = type;
     }

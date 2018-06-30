@@ -9,11 +9,12 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.bean.resource.SensoryData.RgbCapture;
 import org.tdar.core.bean.resource.sensory.ScannerTechnologyType;
-import org.tdar.core.serialize.resource.sensory.SensoryDataImage;
-import org.tdar.core.serialize.resource.sensory.SensoryDataScan;
+import org.tdar.core.serialize.resource.sensory.PSensoryDataImage;
+import org.tdar.core.serialize.resource.sensory.PSensoryDataScan;
 
-@XmlRootElement(name = "sensoryData")
+@XmlRootElement(name = "PsensoryData")
 public class PSensoryData extends PDataset {
 
     private String monumentNumber;
@@ -31,21 +32,6 @@ public class PSensoryData extends PDataset {
     private String additionalProjectNotes;
     private String planimetricMapFilename;
     private String controlDataFilename;
-
-    public enum RgbCapture {
-        NA("None"),
-        INTERNAL("Internal"),
-        EXTERNAL("External");
-        String label;
-
-        RgbCapture(String label) {
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
 
     private RgbCapture rgbCapture;
     private String registeredDatasetName;
@@ -75,8 +61,8 @@ public class PSensoryData extends PDataset {
     private Long decimatedMeshOriginalTriangleCount;
     private Long decimatedMeshTriangleCount;
     private boolean rgbPreservedFromOriginal;
-    private Set<SensoryDataScan> sensoryDataScans = new LinkedHashSet<SensoryDataScan>();
-    private Set<SensoryDataImage> sensoryDataImages = new LinkedHashSet<SensoryDataImage>();
+    private Set<PSensoryDataScan> sensoryDataScans = new LinkedHashSet<PSensoryDataScan>();
+    private Set<PSensoryDataImage> sensoryDataImages = new LinkedHashSet<PSensoryDataImage>();
     private ScannerTechnologyType scannerTechnology;
     private String cameraDetails;
 
@@ -398,21 +384,21 @@ public class PSensoryData extends PDataset {
 
     @XmlElementWrapper(name = "sensoryDataScans")
     @XmlElement(name = "sensoryDataScan")
-    public Set<SensoryDataScan> getSensoryDataScans() {
+    public Set<PSensoryDataScan> getSensoryDataScans() {
         return sensoryDataScans;
     }
 
-    public void setSensoryDataScans(LinkedHashSet<SensoryDataScan> sensoryDataScans) {
+    public void setSensoryDataScans(LinkedHashSet<PSensoryDataScan> sensoryDataScans) {
         this.sensoryDataScans = sensoryDataScans;
     }
 
     @XmlElementWrapper(name = "sensoryDataImages")
     @XmlElement(name = "sensoryDataImage")
-    public Set<SensoryDataImage> getSensoryDataImages() {
+    public Set<PSensoryDataImage> getSensoryDataImages() {
         return sensoryDataImages;
     }
 
-    public void setSensoryDataImages(LinkedHashSet<SensoryDataImage> sensoryDataImages) {
+    public void setSensoryDataImages(LinkedHashSet<PSensoryDataImage> sensoryDataImages) {
         this.sensoryDataImages = sensoryDataImages;
     }
 

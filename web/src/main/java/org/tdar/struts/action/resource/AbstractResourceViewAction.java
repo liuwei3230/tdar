@@ -31,6 +31,7 @@ import org.tdar.core.bean.resource.ResourceAnnotationKey;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
@@ -81,9 +82,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     public ResourceCollectionService resourceCollectionService;
 
     @Autowired
-    private BillingAccountService accountService;
-
-    @Autowired
     private ResourceService resourceService;
 
     private List<ResourceCreatorProxy> authorshipProxies = new ArrayList<>();
@@ -118,13 +116,9 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     public void prepare() throws TdarActionException {
         super.prepare();
         try {
-            this.resource = proxyConstructionService.constructResource(getPersistable(), proxyConstructionService.getClassForResourceClass(getPersistableClass()), getAuthenticatedUser(), false);
-        } catch (InstantiationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            this.resource = proxyConstructionService.constructResource(getPersistable(), getPersistable().getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+        } catch (Exception e) {
+            throw new TdarRecoverableRuntimeException(e);
         }
     }
 

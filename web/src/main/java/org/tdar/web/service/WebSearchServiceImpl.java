@@ -16,6 +16,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarAuthorizationException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.AsynchronousProcessManager;
 import org.tdar.core.service.AsynchronousStatus;
 import org.tdar.core.service.GenericService;
@@ -79,7 +80,7 @@ public class WebSearchServiceImpl implements WebSearchService {
             }
 
             // Construct a search query object
-            LuceneSearchResultHandler<Resource> result = new SearchResult<>();
+            LuceneSearchResultHandler<PResource> result = new SearchResult<>();
             result.setRecordsPerPage(maxNumOfRecords);
             resourceSearchService.buildAdvancedSearch(asqo, user, result, MessageHelper.getInstance());
 
@@ -89,7 +90,8 @@ public class WebSearchServiceImpl implements WebSearchService {
             logger.debug("There are {} total records to process");
 
             // Iterate over the search results and add the resources to the collection.
-            for (Resource resource : result.getResults()) {
+            for (PResource r_ : result.getResults()) {
+                Resource resource = genericService.find(Resource.class, r_.getId());
                 CollectionResourceSection sectionToAddTo = CollectionResourceSection.UNMANAGED;
                 Set<ResourceCollection> currentResources = resource.getUnmanagedResourceCollections();
 

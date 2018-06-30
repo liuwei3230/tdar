@@ -103,6 +103,7 @@ import org.tdar.core.bean.keyword.SuggestedKeyword;
 import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.util.UrlUtils;
 import org.tdar.core.exception.TdarValidationException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.utils.MathUtils;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
@@ -1743,5 +1744,6 @@ public class Resource implements Persistable,
     public void setEditable(boolean editable) {
         this.editable = editable;
     }
+
 
 }

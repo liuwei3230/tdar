@@ -27,6 +27,7 @@ import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.UrlService;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
@@ -43,7 +44,7 @@ import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.struts_base.interceptor.annotation.DoNotObfuscate;
 import org.tdar.utils.PersistableUtils;
 
-public abstract class AbstractAdvancedSearchController extends AbstractLookupController<Resource> {
+public abstract class AbstractAdvancedSearchController extends AbstractLookupController<PResource> {
 
     private static final long serialVersionUID = -1673127898112301380L;
 

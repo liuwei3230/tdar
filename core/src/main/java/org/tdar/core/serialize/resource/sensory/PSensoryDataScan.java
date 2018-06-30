@@ -17,7 +17,7 @@ import org.tdar.core.bean.resource.sensory.ScannerTechnologyType;
  * @author abrin
  * 
  */
-public class SensoryDataScan extends AbstractSequenced<SensoryDataScan> {
+public class PSensoryDataScan extends AbstractSequenced<PSensoryDataScan> {
     private String filename;
     private String transformationMatrix;
     private String monumentName;

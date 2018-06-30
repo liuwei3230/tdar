@@ -13,6 +13,7 @@ import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.query.LuceneSearchResultHandler;
 import org.tdar.search.query.ProjectionModel;
@@ -23,7 +24,7 @@ import org.tdar.utils.PaginationHelper;
 @Scope("prototype")
 @ParentPackage("secured")
 @Namespace("/entity/keyword")
-public class SimpleKeywordViewAction extends AbstractKeywordController implements LuceneSearchResultHandler<Resource> {
+public class SimpleKeywordViewAction extends AbstractKeywordController implements LuceneSearchResultHandler<PResource> {
 
     private static final long serialVersionUID = 8576078075798508582L;
 
@@ -33,7 +34,7 @@ public class SimpleKeywordViewAction extends AbstractKeywordController implement
     private int startRecord = DEFAULT_START;
     private int recordsPerPage = getDefaultRecordsPerPage();
     private int totalRecords;
-    private List<Resource> results;
+    private List<PResource> results;
     private SortOption secondarySortField;
     private SortOption sortField;
     private String mode = "KeywordBrowse";
@@ -81,11 +82,11 @@ public class SimpleKeywordViewAction extends AbstractKeywordController implement
         this.totalRecords = totalRecords;
     }
 
-    public List<Resource> getResults() {
+    public List<PResource> getResults() {
         return results;
     }
 
-    public void setResults(List<Resource> results) {
+    public void setResults(List<PResource> results) {
         this.results = results;
     }
 

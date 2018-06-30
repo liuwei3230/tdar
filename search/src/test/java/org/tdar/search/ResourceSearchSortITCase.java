@@ -12,10 +12,11 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
@@ -71,11 +72,11 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
         List<Resource> res = Arrays.asList(project, project2, a, b, c, d, e, aa);
         searchIndexService.indexCollection(res);
 
-        SearchResult<Resource> result = doSearch("", null, null, null, SortOption.PROJECT);
-        List<Resource> results = result.getResults();
-        for (Resource r : results) {
-            if (r instanceof InformationResource) {
-                InformationResource ir = (InformationResource) r;
+        SearchResult<PResource> result = doSearch("", null, null, null, SortOption.PROJECT);
+        List<PResource> results = result.getResults();
+        for (PResource r : results) {
+            if (r instanceof PInformationResource) {
+                PInformationResource ir = (PInformationResource) r;
                 logger.debug("{} {} {}", r.getId(), ir.getProjectTitle() + r.getName(), ir.getProjectId());
             } else {
                 logger.debug("{} {}", r.getId(), r.getName());

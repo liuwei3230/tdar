@@ -20,6 +20,7 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ResourceLookupObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
@@ -40,7 +41,7 @@ import org.tdar.utils.json.JsonLookupFilter;
 @ParentPackage("default")
 @Component
 @Scope("prototype")
-public class ResourceLookupAction extends AbstractLookupController<Resource> {
+public class ResourceLookupAction extends AbstractLookupController<PResource> {
 
     private static final long serialVersionUID = 1328807454084572934L;
 

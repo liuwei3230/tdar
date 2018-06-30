@@ -11,11 +11,11 @@ public class Context {
     private TdarUser user;
     private Map<Long, Permissions> collectionPermissions = new HashMap<>();
     private Map<Long, Permissions> resourcePermissions = new HashMap<>();
-    private boolean admin;
-    private boolean ableToSeeConfidentialFiles;
-    private boolean institutionEmailObfuscated;
-    private boolean personEmailObfuscated;
-    private boolean latLongObfuscated;
+    private boolean admin = false;
+    private boolean ableToSeeConfidentialFiles = false;
+    private boolean institutionEmailObfuscated = false;
+    private boolean personEmailObfuscated = false;
+    private boolean latLongObfuscated = false;
 
     public boolean isAdmin() {
         return admin;
@@ -84,5 +84,12 @@ public class Context {
     public void setAdmin(boolean b) {
         this.admin = b;
 
+    }
+
+    public Long getUserId() {
+        if (getUser() == null) {
+        return null;
+        } 
+        return getUser().getId();
     }
 }

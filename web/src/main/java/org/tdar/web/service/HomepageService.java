@@ -6,6 +6,7 @@ import java.util.Set;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.cache.HomepageResourceCountCache;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.query.facet.FacetedResultHandler;
 
@@ -14,11 +15,11 @@ import com.opensymphony.xwork2.TextProvider;
 public interface HomepageService {
 
     HomepageDetails getSearchAndHomepageGraphs(TdarUser authenticatedUser, AdvancedSearchQueryObject advancedSearchQueryObject,
-            FacetedResultHandler<Resource> result, TextProvider provider);
+            FacetedResultHandler<PResource> result, TextProvider provider);
 
-    HomepageDetails generateDetails(FacetedResultHandler<Resource> result);
+    HomepageDetails generateDetails(FacetedResultHandler<PResource> result);
 
-    void setupResultForMapSearch(FacetedResultHandler<Resource> result);
+    void setupResultForMapSearch(FacetedResultHandler<PResource> result);
 
     HomepageDetails getHomepageGraphs(TdarUser authenticatedUser, Long collectionId, boolean isBot, TextProvider provider);
 

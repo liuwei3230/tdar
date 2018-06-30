@@ -34,6 +34,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.FileStatus;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.ResourceTypeStatusInfo;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.UserNotificationService;
@@ -201,7 +202,7 @@ public class DashboardController extends AbstractAuthenticatableAction implement
         advancedSearchQueryObject.getReservedParams().setDasboardQuery(true);
         advancedSearchQueryObject.getReservedParams()
                 .setStatuses(new ArrayList<>(Arrays.asList(Status.ACTIVE, Status.DRAFT, Status.FLAGGED, Status.FLAGGED_ACCOUNT_BALANCE)));
-        SearchResult<Resource> request = new SearchResult<>();
+        SearchResult<PResource> request = new SearchResult<>();
         request.setFacetWrapper(new FacetWrapper());
         request.setRecordsPerPage(0);
         request.getFacetWrapper().facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
@@ -209,7 +210,7 @@ public class DashboardController extends AbstractAuthenticatableAction implement
 
         ResourceTypeStatusInfo info = new ResourceTypeStatusInfo();
         try {
-            FacetedResultHandler<Resource> result = (FacetedResultHandler<Resource>) resourceSearchService.buildAdvancedSearch(advancedSearchQueryObject,
+            FacetedResultHandler<PResource> result = (FacetedResultHandler<PResource>) resourceSearchService.buildAdvancedSearch(advancedSearchQueryObject,
                     getAuthenticatedUser(), request, this);
             activeResourceCount = result.getTotalRecords();
             FacetWrapper facetWrapper = result.getFacetWrapper();

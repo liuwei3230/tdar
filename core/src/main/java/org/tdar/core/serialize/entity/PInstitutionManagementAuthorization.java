@@ -4,7 +4,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.tdar.core.bean.AbstractPersistable;
 
-@XmlRootElement(name = "institution_authorization")
+@XmlRootElement(name = "Pinstitution_authorization")
 /**
  * Class to manage users who can edit institutions. The goal here is to allow users to "apply" to own an institution, and then add a workflow for staff to
  * authorize editing.
@@ -12,18 +12,18 @@ import org.tdar.core.bean.AbstractPersistable;
  * @author abrin
  *
  */
-public class InstitutionManagementAuthorization extends AbstractPersistable {
+public class PInstitutionManagementAuthorization extends AbstractPersistable {
 
     private PTdarUser user;
     private PInstitution institution;
     private boolean authorized = false;
     private String reason;
 
-    public InstitutionManagementAuthorization() {
+    public PInstitutionManagementAuthorization() {
 
     }
 
-    public InstitutionManagementAuthorization(PInstitution institution, PTdarUser user) {
+    public PInstitutionManagementAuthorization(PInstitution institution, PTdarUser user) {
         this.institution = institution;
         this.user = user;
     }

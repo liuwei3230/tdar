@@ -18,10 +18,10 @@ import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.KeywordType;
 import org.tdar.core.bean.resource.Addressable;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
@@ -53,7 +53,7 @@ import com.opensymphony.xwork2.Preparable;
                 location = "/${keywordType.urlNamespace}/${keyword.id}/${keyword.slug}${slugSuffix}", params = { "ignoreParams", "id,keywordPath,slug" })
 })
 @HttpsOnly
-public class BrowseKeywordController extends AbstractLookupController<Resource> implements Preparable, SlugViewAction {
+public class BrowseKeywordController extends AbstractLookupController<PResource> implements Preparable, SlugViewAction {
 
     private static final long serialVersionUID = 5267144668224536569L;
 

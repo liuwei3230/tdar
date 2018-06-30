@@ -15,7 +15,7 @@ import org.tdar.utils.json.JsonAdminLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-@XmlRootElement(name = "user")
+@XmlRootElement(name = "Puser")
 public class PTdarUser extends PPerson {
 
     private String username;

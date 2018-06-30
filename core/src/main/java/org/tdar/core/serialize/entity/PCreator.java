@@ -93,7 +93,7 @@ public abstract class PCreator<T extends PCreator<?>> implements Persistable, Ha
     @JsonView(JsonLookupFilter.class)
     private String url;
 
-    private Set<Address> addresses = new LinkedHashSet<>();
+    private Set<PAddress> addresses = new LinkedHashSet<>();
 
     private transient Integer maxHeight;
     private transient Integer maxWidth;
@@ -275,11 +275,11 @@ public abstract class PCreator<T extends PCreator<?>> implements Persistable, Ha
 
     public abstract boolean hasNoPersistableValues();
 
-    public Set<Address> getAddresses() {
+    public Set<PAddress> getAddresses() {
         return addresses;
     }
 
-    public void setAddresses(Set<Address> addresses) {
+    public void setAddresses(Set<PAddress> addresses) {
         this.addresses = addresses;
     }
 

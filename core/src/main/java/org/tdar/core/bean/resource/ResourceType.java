@@ -7,6 +7,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Localizable;
 import org.tdar.core.bean.PluralLocalizable;
+import org.tdar.core.serialize.resource.PArchive;
+import org.tdar.core.serialize.resource.PAudio;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PGeospatial;
+import org.tdar.core.serialize.resource.PImage;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.PSensoryData;
+import org.tdar.core.serialize.resource.PVideo;
 import org.tdar.transform.ModsTransformer.DcmiModsTypeMapper;
 import org.tdar.utils.MessageHelper;
 
@@ -305,5 +317,33 @@ public enum ResourceType implements HasLabel, Localizable, PluralLocalizable {
             types.add(rt);
         }
         return types;
+    }
+
+    public Class<? extends PResource> getProxyClass() {
+        switch (this) {
+            case ARCHIVE:
+                return PArchive.class;
+            case AUDIO:
+                return PAudio.class;
+            case CODING_SHEET:
+                return PCodingSheet.class;
+            case DATASET:
+                return PDataset.class;
+            case DOCUMENT:
+                return PDocument.class;
+            case GEOSPATIAL:
+                return PGeospatial.class;
+            case IMAGE:
+                return PImage.class;
+            case ONTOLOGY:
+                return POntology.class;
+            case PROJECT:
+                return PProject.class;
+            case SENSORY_DATA:
+                return PSensoryData.class;
+            case VIDEO:
+                return PVideo.class;
+        }
+        return null;
     }
 }

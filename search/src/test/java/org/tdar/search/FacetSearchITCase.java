@@ -11,8 +11,8 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.keyword.CultureKeyword;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -27,7 +27,7 @@ public class FacetSearchITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetPivotStats() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.setMapFacet(true);
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
@@ -41,7 +41,7 @@ public class FacetSearchITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testHomepagePivotStats() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.setMapFacet(true);
         result.setFacetWrapper(facetWrapper);
@@ -60,7 +60,7 @@ public class FacetSearchITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetByEnum() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
         result.setFacetWrapper(facetWrapper);
@@ -86,7 +86,7 @@ public class FacetSearchITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetByEnumWithLimit() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         ArrayList<ResourceType> lst = new ArrayList<>();
         lst.add(ResourceType.DOCUMENT);
@@ -115,7 +115,7 @@ public class FacetSearchITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetByPersistable() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.facetBy(QueryFieldNames.ACTIVE_CULTURE_KEYWORDS, CultureKeyword.class);
         result.setFacetWrapper(facetWrapper);

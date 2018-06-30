@@ -15,6 +15,7 @@ import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.search.exception.SearchPaginationException;
 import org.tdar.search.query.ProjectionModel;
@@ -32,14 +33,14 @@ import org.tdar.utils.PaginationHelper;
 @Scope("prototype")
 @ParentPackage("default")
 @Namespace("/project")
-public class ProjectViewAction extends AbstractResourceViewAction<Project> implements FacetedResultHandler<Resource>, ResourceFacetedAction {
+public class ProjectViewAction extends AbstractResourceViewAction<Project> implements FacetedResultHandler<PResource>, ResourceFacetedAction {
 
     private static final long serialVersionUID = 974044619477885680L;
     private ProjectionModel projectionModel = ProjectionModel.LUCENE;
     private int startRecord = DEFAULT_START;
     private int recordsPerPage = getDefaultRecordsPerPage();
     private int totalRecords;
-    private List<Resource> results;
+    private List<PResource> results;
     private SortOption secondarySortField;
     private SortOption sortField;
     private String mode = "ProjectBrowse";
@@ -140,13 +141,13 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
     }
 
     @Override
-    public void setResults(List<Resource> results) {
+    public void setResults(List<PResource> results) {
         getLogger().trace("setResults: {}", results);
         this.results = results;
     }
 
     @Override
-    public List<Resource> getResults() {
+    public List<PResource> getResults() {
         return results;
     }
 

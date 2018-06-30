@@ -13,8 +13,8 @@ import org.tdar.core.bean.AbstractPersistable;
  * A downloadauth designates a collection of resources that allow file downloads from unauthenticated users. Instead, the download request includes
  * an API key that effectively serves as an alternate form of authentication.
  */
-@XmlRootElement(name = "DownloadAuthorization")
-public class DownloadAuthorization extends AbstractPersistable {
+@XmlRootElement(name = "PDownloadAuthorization")
+public class PDownloadAuthorization extends AbstractPersistable {
 
     private static final int UUID_BEGIN_INDEX = 24;
 
@@ -27,7 +27,7 @@ public class DownloadAuthorization extends AbstractPersistable {
     };
 
     // zero-arg constructor for hibernate (does not generate key)
-    public DownloadAuthorization() {
+    public PDownloadAuthorization() {
     }
 
     /**
@@ -35,7 +35,7 @@ public class DownloadAuthorization extends AbstractPersistable {
      * 
      * @param resourceCollection
      */
-    public DownloadAuthorization(PResourceCollection resourceCollection) {
+    public PDownloadAuthorization(PResourceCollection resourceCollection) {
         this(resourceCollection, generateSimpleKey());
     }
 
@@ -45,7 +45,7 @@ public class DownloadAuthorization extends AbstractPersistable {
      * @param resourceCollection
      * @param apiKey
      */
-    public DownloadAuthorization(PResourceCollection resourceCollection, String apiKey) {
+    public PDownloadAuthorization(PResourceCollection resourceCollection, String apiKey) {
         this.sharedCollection = resourceCollection;
         this.apiKey = apiKey;
     }

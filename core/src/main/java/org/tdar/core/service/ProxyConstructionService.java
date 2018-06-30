@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
@@ -71,6 +74,7 @@ import org.tdar.core.serialize.resource.PImage;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.POntology;
 import org.tdar.core.serialize.resource.POntologyNode;
+import org.tdar.core.serialize.resource.PProject;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
@@ -93,8 +97,18 @@ public class ProxyConstructionService {
             TdarUser viewer,
             boolean forceObfuscate)
             throws InstantiationException, IllegalAccessException {
+        if (resource == null) {
+            return null;
+        }
+        return constructResource(resource, cls.newInstance(), viewer, forceObfuscate);
+    }
 
-        R r = cls.newInstance();
+    @Transactional(readOnly = true)
+    public <R extends PResource, T extends Resource> R constructResource(T resource, R r,
+            TdarUser viewer,
+            boolean forceObfuscate)
+            throws InstantiationException, IllegalAccessException {
+
         boolean viewConfidentialinfo = authorizationService.canViewConfidentialInformation(viewer, resource);
         Context ctx = new Context(viewer);
         ctx.setAdmin(false);
@@ -311,8 +325,14 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private <P extends PResource, R extends Resource> P createShellResource(R r, Class<P> class1) {
+    public <P extends PResource, R extends Resource> P createShellResource(R r, Class<P> class1) {
         try {
+            if (r == null) {
+                if (PProject.class.isAssignableFrom(class1)) {
+                    return (P) PProject.NULL;
+                }
+                return null;
+            }
             P p = class1.newInstance();
             p.setId(r.getId());
             p.setTitle(r.getTitle());
@@ -328,6 +348,9 @@ public class ProxyConstructionService {
     }
 
     private PCategoryVariable convertCategoryVariable(CategoryVariable categoryVariable) {
+        if (categoryVariable == null) {
+            return null;
+        }
         PCategoryVariable pcv = new PCategoryVariable();
         pcv.setId(categoryVariable.getId());
         pcv.setLabel(categoryVariable.getLabel());
@@ -337,7 +360,7 @@ public class ProxyConstructionService {
     }
 
     private Set<PInformationResourceFile> convertInformationResourceFiles(
-            Set<InformationResourceFile> informationResourceFiles, Context ctx) {
+            Collection<InformationResourceFile> informationResourceFiles, Context ctx) {
         if (CollectionUtils.isEmpty(informationResourceFiles)) {
             return Collections.EMPTY_SET;
         }
@@ -482,7 +505,7 @@ public class ProxyConstructionService {
 
     private PResourceCollection convertResourceCollection(ResourceCollection rc_, int depth_, Context ctx) {
         int depth = depth_ - 1;
-        if (depth < 0) {
+        if (depth < 0 || rc_ == null) {
             return null;
         }
 
@@ -490,6 +513,7 @@ public class ProxyConstructionService {
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), depth, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), depth, ctx));
         rc.setHidden(rc_.isHidden());
+        rc.setId(rc_.getId());
         rc.setName(rc_.getName());
         rc.setDescription(rc_.getDescription());
         rc.setFormattedDescription(rc_.getFormattedDescription());
@@ -548,18 +572,19 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private Set<PResourceCreator> convertResourrceCreator(Set<ResourceCreator> resourceCreators, Context ctx) {
+    private Set<PResourceCreator> convertResourrceCreator(Collection<ResourceCreator> resourceCreators, Context ctx) {
         if (CollectionUtils.isEmpty(resourceCreators)) {
             return Collections.EMPTY_SET;
         }
         Set<PResourceCreator> toReturn = new HashSet<>();
         resourceCreators.forEach(rc_ -> {
-            if (rc_.getCreator().isActive() || rc_.getCreator().isDuplicate()) {
+            Creator creator = rc_.getCreator();
+            if (creator.isActive() || creator.isDuplicate()) {
                 PResourceCreator rc = new PResourceCreator();
                 rc.setId(rc_.getId());
                 rc.setRole(rc_.getRole());
                 rc.setSequenceNumber(rc_.getSequenceNumber());
-                rc.setCreator(createCreator(rc_.getCreator(), ctx));
+                rc.setCreator(createCreator(creator, ctx));
                 toReturn.add(rc);
             }
         });
@@ -571,15 +596,14 @@ public class ProxyConstructionService {
             return null;
         }
         if (creator.getCreatorType() == CreatorType.PERSON) {
-            PPerson person = createPerson((Person) creator, ctx);
-            return person;
+            return createPerson((Person) creator, ctx);
         } else {
             return createInstitution((Institution) creator, ctx);
         }
     }
 
     private PPerson createPerson(Person creator, Context ctx) {
-        if (!creator.isActive() && !creator.isDuplicate()) {
+        if (!creator.isActive() && !creator.isDuplicate() || creator == null) {
             return null;
         }
         PPerson person = new PPerson();
@@ -590,13 +614,13 @@ public class ProxyConstructionService {
     private void updateperson(Person creator, PPerson person, Context ctx) {
         person.setFirstName(creator.getFirstName());
         person.setLastName(creator.getLastName());
-        if (ctx.isPersonEmailObfuscated() == false && ctx.getUser().getId() != person.getId()) {
+        if (ctx.isPersonEmailObfuscated() == false && ctx.getUserId() != person.getId()) {
             person.setEmail(creator.getEmail());
         }
     }
 
     private PInstitution createInstitution(Institution creator, Context ctx) {
-        if (!creator.isActive() && !creator.isDuplicate()) {
+        if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
         PInstitution institution = new PInstitution();
@@ -616,7 +640,7 @@ public class ProxyConstructionService {
         institution.setDateUpdated(creator.getDateUpdated());
     }
 
-    private Set<PLatitudeLongitudeBox> convertLatLong(Set<LatitudeLongitudeBox> latitudeLongitudeBoxes, Context ctx) {
+    private Set<PLatitudeLongitudeBox> convertLatLong(Collection<LatitudeLongitudeBox> latitudeLongitudeBoxes, Context ctx) {
         if (CollectionUtils.isEmpty(latitudeLongitudeBoxes)) {
             return Collections.EMPTY_SET;
         }
@@ -693,21 +717,42 @@ public class ProxyConstructionService {
         return k;
     }
 
-    public Class getClassForResourceClass(Class persistableClass) {
-        if (persistableClass == Document.class) {
-            return PDocument.class;
-        }
-        if (persistableClass == Dataset.class) {
-            return PDataset.class;
-        }
-        if (persistableClass == Image.class) {
-            return PImage.class;
+
+    public PKeyword consructKeyword(Keyword keyword) {
+        // createKeyword(cls, k_, depth, ctx)
+        return null;
+    }
+
+    public <I, J extends Persistable> I construct(J j, Class<J> class1, TdarUser authenticatedUser, boolean b)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        // HACK
+        String cname = class1.getCanonicalName();
+        cname = StringUtils.replace(cname, ".bean.", ".serialize.");
+        String toReturn = StringUtils.substringBeforeLast(cname, ".") + ".P" + StringUtils.substringAfterLast(cname, ".");
+        Class<?> cls = Class.forName(toReturn);
+        if (PResource.class.isAssignableFrom(cls)) {
+            return (I) constructResource((Resource) j, (PResource) cls.newInstance(), authenticatedUser, false);
         }
         return null;
     }
 
-    public PKeyword consructKeyword(Keyword keyword) {
-//        createKeyword(cls, k_, depth, ctx)
-        return null;
+    public Collection<? extends PResourceCreator> convertResourceCreators(Collection<ResourceCreator> findAll, Context ctx) {
+        return convertResourrceCreator(findAll, ctx);
+    }
+
+    public PResourceCollection createShellCollection(ResourceCollection rc, Context ctx) {
+        return convertResourceCollection(rc, 1, ctx);
+    }
+
+    public PTdarUser createShellTdarUser(TdarUser find, Context ctx) {
+        return convertUser(find, ctx);
+    }
+
+    public Set<PLatitudeLongitudeBox> createShellLatitudeLongitue(List<LatitudeLongitudeBox> findAll, Context ctx) {
+        return convertLatLong(findAll, ctx);
+    }
+
+    public Collection<? extends PInformationResourceFile> createInformationResourceFiles(List<InformationResourceFile> findAll, Context ctx) {
+        return convertInformationResourceFiles(findAll, ctx);
     }
 }

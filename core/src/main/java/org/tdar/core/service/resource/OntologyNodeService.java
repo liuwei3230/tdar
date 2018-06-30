@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.OntologyNode;
+import org.tdar.core.serialize.resource.PDataset;
 
 public interface OntologyNodeService {
 
@@ -37,7 +38,7 @@ public interface OntologyNodeService {
      * @param node
      * @return
      */
-    List<Dataset> listDatasetsWithMappingsToNode(OntologyNode node);
+    List<PDataset> listDatasetsWithMappingsToNode(OntologyNode node);
 
     /**
      * Find the parent @link OntologyNode of the specified node

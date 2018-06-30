@@ -23,7 +23,7 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
  * @version $Revision$
  */
 
-@XmlRootElement(name = "institution")
+@XmlRootElement(name = "Pinstitution")
 public class PInstitution extends PCreator<PInstitution> implements Comparable<PInstitution> {
 
 

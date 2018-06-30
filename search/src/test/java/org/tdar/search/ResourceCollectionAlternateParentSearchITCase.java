@@ -12,8 +12,8 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Dataset;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
@@ -55,14 +55,14 @@ public class ResourceCollectionAlternateParentSearchITCase extends AbstractResou
         ReservedSearchParameters rparams = new ReservedSearchParameters();
         SearchParameters sp = new SearchParameters();
         sp.getShares().add(parent);
-        SearchResult<Resource> result = doSearch("", null, sp, rparams);
-        assertTrue("expected to find resource", resultsContainId(result, dsId));
+        SearchResult<PResource> result = doSearch("", null, sp, rparams);
+        assertTrue("expected to find resource", presultsContainId(result, dsId));
 
         rparams = new ReservedSearchParameters();
         sp = new SearchParameters();
         sp.getShares().add(alternate);
         result = doSearch("", null, sp, rparams);
-        assertTrue("expected to find resource (alternate parent)", resultsContainId(result, dsId));
+        assertTrue("expected to find resource (alternate parent)", presultsContainId(result, dsId));
     }
 
     private ResourceCollection createCollection(String name, TdarUser tdarUser) {

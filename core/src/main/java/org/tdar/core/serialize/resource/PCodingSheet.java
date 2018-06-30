@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * 
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  */
-@XmlRootElement(name = "codingSheet")
+@XmlRootElement(name = "PcodingSheet")
 public class PCodingSheet extends PInformationResource  {
 
     private PCategoryVariable categoryVariable;

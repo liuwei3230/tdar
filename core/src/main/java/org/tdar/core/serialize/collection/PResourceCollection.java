@@ -80,10 +80,10 @@ import com.fasterxml.jackson.annotation.JsonView;
  *         It's however, optimized so that the node's children are manifested in a supporting table to optimize rights queries, which will be the most common
  *         lookup.
  */
-@XmlType(name = "collection")
+@XmlType(name = "Pcollection")
 @JsonIgnoreProperties(ignoreUnknown = true, allowGetters = true)
 @JsonInclude(value = Include.NON_NULL)
-@XmlRootElement(name = "resourceCollection")
+@XmlRootElement(name = "PresourceCollection")
 public class PResourceCollection extends AbstractPersistable
         implements DeHydratable, XmlLoggable, HasStatus, Sortable,
         OaiDcProvider, HasName, Slugable, Addressable, Indexable, Viewable, Editable, Hideable, Comparable<PResourceCollection> {
@@ -148,7 +148,7 @@ public class PResourceCollection extends AbstractPersistable
     private transient TreeSet<PResourceCollection> transientChildren = new TreeSet<>(new TitleSortComparator());
     private Date dateUpdated;
     @XmlTransient
-    private Set<CollectionRevisionLog> collectionRevisionLog = new HashSet<>();
+    private Set<PCollectionRevisionLog> collectionRevisionLog = new HashSet<>();
     private Set<Long> resourceIds = new HashSet<>();
     private Set<Long> unmanagedResourceIds = new HashSet<>();
 
@@ -157,13 +157,13 @@ public class PResourceCollection extends AbstractPersistable
     private SortOption sortBy = DEFAULT_SORT_OPTION;
     private SortOption secondarySortBy;
     private DisplayOrientation orientation = DisplayOrientation.LIST;
-    private CollectionDisplayProperties properties;
+    private PCollectionDisplayProperties properties;
 
-    public CollectionDisplayProperties getProperties() {
+    public PCollectionDisplayProperties getProperties() {
         return properties;
     }
 
-    public void setProperties(CollectionDisplayProperties properties) {
+    public void setProperties(PCollectionDisplayProperties properties) {
         this.properties = properties;
     }
 
@@ -515,11 +515,11 @@ public class PResourceCollection extends AbstractPersistable
         this.created = created;
     }
 
-    public Set<CollectionRevisionLog> getCollectionRevisionLog() {
+    public Set<PCollectionRevisionLog> getCollectionRevisionLog() {
         return collectionRevisionLog;
     }
 
-    public void setCollectionRevisionLog(Set<CollectionRevisionLog> collectionRevisionLog) {
+    public void setCollectionRevisionLog(Set<PCollectionRevisionLog> collectionRevisionLog) {
         this.collectionRevisionLog = collectionRevisionLog;
 
     }

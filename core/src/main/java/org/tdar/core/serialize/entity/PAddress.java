@@ -16,7 +16,7 @@ import org.tdar.core.exception.TdarValidationException;
  * @author abrin
  * 
  */
-public class Address extends AbstractPersistable implements Persistable, Validatable {
+public class PAddress extends AbstractPersistable implements Persistable, Validatable {
 
     private String street1;
     private String street2;
@@ -88,10 +88,10 @@ public class Address extends AbstractPersistable implements Persistable, Validat
         this.country = country;
     }
 
-    public Address() {
+    public PAddress() {
     }
 
-    public Address(AddressType type, String street1, String city, String state, String postal, String country) {
+    public PAddress(AddressType type, String street1, String city, String state, String postal, String country) {
         this.type = type;
         this.street1 = street1;
         this.state = state;
@@ -146,7 +146,7 @@ public class Address extends AbstractPersistable implements Persistable, Validat
         return sb.toString();
     }
 
-    public boolean isSameAs(Address address) {
+    public boolean isSameAs(PAddress address) {
         return getHashCodeForComparison() == address.getHashCodeForComparison();
     }
 

@@ -13,7 +13,7 @@ import org.tdar.core.bean.resource.ResourceType;
  * @author Adam Brin
  * @version $Revision: 543$
  */
-@XmlRootElement(name = "geospatial")
+@XmlRootElement(name = "Pgeospatial")
 public class PGeospatial extends PDataset {
 
 

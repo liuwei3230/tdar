@@ -22,7 +22,7 @@ import org.tdar.core.serialize.resource.file.PInformationResourceFile;
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Rev$
  */
-@XmlRootElement(name = "document")
+@XmlRootElement(name = "Pdocument")
 public class PDocument extends PInformationResource {
 
 

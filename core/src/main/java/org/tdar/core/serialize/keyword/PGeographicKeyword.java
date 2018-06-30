@@ -3,6 +3,7 @@ package org.tdar.core.serialize.keyword;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.tdar.core.bean.keyword.GeographicKeyword.Level;
 import org.tdar.core.bean.keyword.KeywordType;
 
 /**
@@ -25,30 +26,6 @@ public class PGeographicKeyword extends AbstractKeyword<PGeographicKeyword> {
     }
 
     public PGeographicKeyword() {
-    }
-
-    public enum Level {
-        CONTINENT("Continent"),
-        COUNTRY("Country"),
-        STATE("State / Territory"),
-        COUNTY("County"),
-        CITY("City"),
-        FIPS_CODE("Fips Code");
-
-        private String label;
-
-        private Level(String label) {
-            this.setLabel(label);
-        }
-
-        private void setLabel(String label) {
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
     }
 
     private Level level;

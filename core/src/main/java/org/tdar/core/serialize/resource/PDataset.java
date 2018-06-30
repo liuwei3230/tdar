@@ -31,7 +31,7 @@ import org.tdar.utils.PersistableUtils;
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Rev$
  */
-@XmlRootElement(name = "dataset")
+@XmlRootElement(name = "Pdataset")
 public class PDataset extends PInformationResource {
 
     private Set<PDataTable> dataTables = new LinkedHashSet<PDataTable>();

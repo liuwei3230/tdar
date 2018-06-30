@@ -29,13 +29,13 @@ import org.tdar.core.bean.keyword.MaterialKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.resource.DocumentType;
 import org.tdar.core.bean.resource.IntegratableOptions;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAccessType;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.UrlService;
@@ -71,7 +71,7 @@ import org.tdar.struts_base.interceptor.annotation.RequiresTdarUserGroup;
 @Scope("prototype")
 @ParentPackage("default")
 @HttpsOnly
-public class AdvancedSearchController extends AbstractAdvancedSearchController implements FacetedResultHandler<Resource> {
+public class AdvancedSearchController extends AbstractAdvancedSearchController implements FacetedResultHandler<PResource> {
 
     private static final long serialVersionUID = -7767557393006858614L;
     private static final String SEARCH_RSS = "/api/search/rss";

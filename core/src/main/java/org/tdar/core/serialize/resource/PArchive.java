@@ -9,7 +9,7 @@ import org.tdar.core.bean.resource.ResourceType;
  * 
  * @author Martin Paulo
  */
-@XmlRootElement(name = "archive")
+@XmlRootElement(name = "Parchive")
 public class PArchive extends PInformationResource {
 
     public PArchive() {

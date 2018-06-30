@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  */
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlRootElement
-@XmlType(name = "citation")
+@XmlType(name = "Pcitation")
 @XmlTransient
 public abstract class Citation extends AbstractPersistable {
     private final static String[] JSON_PROPERTIES = { "id", "text" };

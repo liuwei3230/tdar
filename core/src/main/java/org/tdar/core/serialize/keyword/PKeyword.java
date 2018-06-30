@@ -40,8 +40,8 @@ public interface PKeyword extends Persistable, Indexable, HasLabel, Dedupable, A
 
     public void setDefinition(String definition);
 
-    public Set<ExternalKeywordMapping> getAssertions();
+    public Set<PExternalKeywordMapping> getAssertions();
 
-    public void setAssertions(Set<ExternalKeywordMapping> mappings);
+    public void setAssertions(Set<PExternalKeywordMapping> mappings);
 
 }

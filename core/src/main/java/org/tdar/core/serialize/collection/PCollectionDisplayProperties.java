@@ -13,7 +13,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.VersionType;
 
 @XmlElement("collectionDisplayProperties")
-public class CollectionDisplayProperties implements HasImage, Persistable {
+public class PCollectionDisplayProperties implements HasImage, Persistable {
 
     private transient Integer maxHeight;
     private transient Integer maxWidth;
@@ -28,11 +28,11 @@ public class CollectionDisplayProperties implements HasImage, Persistable {
     private Boolean subCollectionsEnabled = false;
     private Boolean hideCollectionSidebar = false;
 
-    public CollectionDisplayProperties() {
+    public PCollectionDisplayProperties() {
         this(false, false, false, false, false, false, false);
     }
 
-    public CollectionDisplayProperties(boolean whitelable, boolean customHeaderEnabled, boolean customLogoEnabled, boolean featuredResourceEnabled,
+    public PCollectionDisplayProperties(boolean whitelable, boolean customHeaderEnabled, boolean customLogoEnabled, boolean featuredResourceEnabled,
             boolean searchEnabled, boolean subCollectionEnabled, boolean hideCollectionSidebar) {
         this.whitelabel = whitelable;
         this.customDocumentLogoEnabled = customLogoEnabled;

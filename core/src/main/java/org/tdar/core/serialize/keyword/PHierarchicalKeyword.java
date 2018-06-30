@@ -25,7 +25,7 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
  * @version $Rev$
  */
 @XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(name = "hierKwdbase")
+@XmlType(name = "PhierKwdbase")
 @XmlTransient
 public abstract class PHierarchicalKeyword<T extends PHierarchicalKeyword<T>> extends AbstractKeyword<T> {
 

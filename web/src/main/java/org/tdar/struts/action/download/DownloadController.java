@@ -8,6 +8,9 @@ import org.apache.struts2.convention.annotation.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.download.DownloadResult;
 import org.tdar.core.service.download.DownloadService;
 import org.tdar.struts_base.action.TdarActionException;
@@ -29,6 +32,9 @@ public class DownloadController extends AbstractDownloadController implements Pr
     private static final long serialVersionUID = 7548544212676661097L;
 
     private boolean forceAttachment = false;
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+
 
     private ResourceCitationFormatter resourceCitation;
 
@@ -48,7 +54,12 @@ public class DownloadController extends AbstractDownloadController implements Pr
                     isCoverPageIncluded(), this, null));
         }
         setInformationResource(getDownloadTransferObject().getInformationResource());
-        setResourceCitation(new ResourceCitationFormatter(getInformationResource()));
+        try {
+            PResource resource = proxyConstructionService.constructResource(getInformationResource(), getInformationResource().getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+            setResourceCitation(new ResourceCitationFormatter(resource));
+        } catch (Exception e) {
+            throw new TdarRecoverableRuntimeException(e);
+        }
         if (getDownloadTransferObject().getResult() != DownloadResult.SUCCESS) {
             return ERROR;
         }

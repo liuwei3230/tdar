@@ -13,7 +13,7 @@ import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.entity.permissions.Permissions;
 
-public class UserRightsProxy implements Serializable {
+public class PUserRightsProxy implements Serializable {
 
     private String displayName;
     private Long id;
@@ -26,10 +26,10 @@ public class UserRightsProxy implements Serializable {
     private Date until;
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
-    public UserRightsProxy() {
+    public PUserRightsProxy() {
     }
 
-    public UserRightsProxy(UserInvite invite) {
+    public PUserRightsProxy(UserInvite invite) {
         Person user = invite.getUser();
         setEmail(user.getEmail());
         setFirstName(user.getFirstName());
@@ -40,7 +40,7 @@ public class UserRightsProxy implements Serializable {
         setUntilDate(invite.getDateExpires());
     }
 
-    public UserRightsProxy(AuthorizedUser au) {
+    public PUserRightsProxy(AuthorizedUser au) {
         setDisplayName(au.getUser().getProperName());
         setId(au.getUser().getId());
         setPermission(au.getGeneralPermission());

@@ -1,15 +1,19 @@
 package org.tdar.core.service.resource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.dao.resource.OntologyNodeDao;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ServiceInterface;
 
 /**
@@ -58,14 +62,20 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
         return getDao().getAllChildren(selectedOntologyNodes);
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
     /*
      * (non-Javadoc)
      * 
      * @see org.tdar.core.service.resource.OntologyNodeService#listDatasetsWithMappingsToNode(org.tdar.core.bean.resource.OntologyNode)
      */
     @Override
-    public List<Dataset> listDatasetsWithMappingsToNode(OntologyNode node) {
-        return getDao().findDatasetsUsingNode(node);
+    public List<PDataset> listDatasetsWithMappingsToNode(OntologyNode node) {
+        List<PDataset> toReturn = new ArrayList<>();
+        for (Dataset dataset : getDao().findDatasetsUsingNode(node)) {
+            toReturn.add((PDataset) proxyConstructionService.createShellResource(dataset, dataset.getResourceType().getProxyClass()));
+        }
+        return toReturn;
     }
 
     /*

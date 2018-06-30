@@ -28,6 +28,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.query.ProjectionModel;
 import org.tdar.search.query.QueryFieldNames;
@@ -48,7 +49,7 @@ import com.opensymphony.xwork2.Preparable;
 @Namespace("/collection/admin/report")
 @HttpsOnly
 public class CollectionReportViewAction extends AbstractAuthenticatableAction
-        implements FacetedResultHandler<Resource>, PersistableLoadingAction<ResourceCollection>, Preparable {
+        implements FacetedResultHandler<PResource>, PersistableLoadingAction<ResourceCollection>, Preparable {
 
     private static final long serialVersionUID = 5515399574166871914L;
     @Autowired
@@ -57,7 +58,7 @@ public class CollectionReportViewAction extends AbstractAuthenticatableAction
     private FacetWrapper facetWrapper = new FacetWrapper();
     private ResourceCollection resourceCollection;
     private Long id;
-    private List<Resource> results;
+    private List<PResource> results;
 
     @Override
     @Action(value = "{id}", results = { @Result(name = SUCCESS, location = "../report.ftl") })
@@ -181,12 +182,12 @@ public class CollectionReportViewAction extends AbstractAuthenticatableAction
     }
 
     @Override
-    public void setResults(List<Resource> toReturn) {
+    public void setResults(List<PResource> toReturn) {
         this.results = toReturn;
     }
 
     @Override
-    public List<Resource> getResults() {
+    public List<PResource> getResults() {
         return results;
     }
 

@@ -42,13 +42,13 @@ import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.resource.Addressable;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.statistics.CreatorViewStatistic;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.SerializationService;
@@ -94,7 +94,7 @@ import com.opensymphony.xwork2.Preparable;
         @Result(name = TdarActionSupport.BAD_SLUG, type = TdarActionSupport.TDAR_REDIRECT,
                 location = "${creator.id}/${creator.slug}${slugSuffix}", params = { "ignoreParams", "id,slug" })
 })
-public class BrowseCreatorController extends AbstractLookupController<Resource> implements Preparable, SlugViewAction {
+public class BrowseCreatorController extends AbstractLookupController<PResource> implements Preparable, SlugViewAction {
 
     /**
      * 

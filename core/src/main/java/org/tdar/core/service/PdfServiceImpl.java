@@ -30,13 +30,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.tdar.core.bean.entity.Person;
+import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.FileSystemResourceDao;
 import org.tdar.core.exception.PdfCoverPageGenerationException;
-import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.core.serialize.resource.PDocument;
-import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.pdf.PDFMergeTask;
 import org.tdar.core.service.pdf.PDFMergeWrapper;
 import org.tdar.core.service.pdf.PdfFontHelper;
@@ -78,7 +79,7 @@ public class PdfServiceImpl implements PdfService {
      * org.tdar.core.bean.resource.file.InformationResourceFileVersion, org.tdar.core.bean.resource.Document, java.io.File)
      */
     @Override
-    public InputStream mergeCoverPage(TextProvider provider, PPerson submitter, PInformationResourceFileVersion version, PDocument document, File coverPage)
+    public InputStream mergeCoverPage(TextProvider provider, TdarUser submitter, InformationResourceFileVersion version, Document document, File coverPage)
             throws PdfCoverPageGenerationException {
         try {
             logger.debug("IR: {}, {} {}", document, version, version.getExtension());
@@ -175,7 +176,10 @@ public class PdfServiceImpl implements PdfService {
         logger.trace("done with PDF Merge"); // fixme: technically the method is done, but really you've just started the merge operation.
         return inputStream;
     }
-
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
+    
     /**
      * Create the cover page from the template file and the @link resource provided
      * 
@@ -187,9 +191,11 @@ public class PdfServiceImpl implements PdfService {
      * @throws COSVisitorException
      * @throws FileNotFoundException
      * @throws URISyntaxException
+     * @throws IllegalAccessException 
+     * @throws InstantiationException 
      */
-    private File createCoverPage(TextProvider provider, PPerson submitter, File template, PDocument document, String description)
-            throws IOException, FileNotFoundException, URISyntaxException {
+    private File createCoverPage(TextProvider provider, TdarUser submitter, File template, Document document, String description)
+            throws IOException, FileNotFoundException, URISyntaxException, InstantiationException, IllegalAccessException {
         PDDocument doc = PDDocument.load(template);
         PDPage page = null;
         for (Object kid : doc.getDocumentCatalog().getPages()) {
@@ -215,7 +221,7 @@ public class PdfServiceImpl implements PdfService {
         cursorPositionFromBottom = writeOnPage(content, document.getTitle(), PdfFontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN,
                 cursorPositionFromBottom);
         cursorPositionFromBottom = writeOnPage(content, "", PdfFontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN, cursorPositionFromBottom);
-        ResourceCitationFormatter formatter = new ResourceCitationFormatter(document);
+        ResourceCitationFormatter formatter = new ResourceCitationFormatter(proxyConstructionService.constructResource(document, PDocument.class, submitter, false));
         cursorPositionFromBottom = writeLabelPairOnPage(content, MessageHelper.getMessage("pdfService.authors"), formatter.getFormattedAuthorList(),
                 PdfFontHelper.HELVETICA_TWELVE_POINT,
                 LEFT_MARGIN,

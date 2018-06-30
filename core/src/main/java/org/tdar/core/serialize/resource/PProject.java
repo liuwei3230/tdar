@@ -17,7 +17,7 @@ import org.tdar.core.bean.resource.ResourceType;
  * @version $Revision$
  */
 
-@XmlRootElement(name = "project")
+@XmlRootElement(name = "Pproject")
 public class PProject extends PResource implements Sortable, HasStatic {
 
 

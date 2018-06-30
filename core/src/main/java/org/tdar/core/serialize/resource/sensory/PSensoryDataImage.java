@@ -18,7 +18,7 @@ import org.tdar.core.bean.resource.SensoryData;
  * @author abrin
  * 
  */
-public class SensoryDataImage extends AbstractSequenced<SensoryDataImage> {
+public class PSensoryDataImage extends AbstractSequenced<PSensoryDataImage> {
 
     private String filename;
     private String description;

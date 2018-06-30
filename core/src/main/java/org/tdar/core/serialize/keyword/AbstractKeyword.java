@@ -19,14 +19,14 @@ import org.tdar.utils.json.JsonLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
-@XmlType(name = "kwdbase")
+@XmlType(name = "Pkwdbase")
 @XmlTransient
 public abstract class AbstractKeyword<T extends PKeyword> extends AbstractPersistable implements PKeyword, HasStatus, Comparable<T>, Slugable {
 
     @JsonView(JsonLookupFilter.class)
     private String label;
     @JsonView(JsonLookupFilter.class)
-    private Set<ExternalKeywordMapping> assertions = new HashSet<>();
+    private Set<PExternalKeywordMapping> assertions = new HashSet<>();
     private Set<T> synonyms = new HashSet<T>();
     private String definition;
     private Status status = Status.ACTIVE;
@@ -115,11 +115,11 @@ public abstract class AbstractKeyword<T extends PKeyword> extends AbstractPersis
 
     @XmlElementWrapper(name = "assertions")
     @XmlElement(name = "assertion")
-    public Set<ExternalKeywordMapping> getAssertions() {
+    public Set<PExternalKeywordMapping> getAssertions() {
         return assertions;
     }
 
-    public void setAssertions(Set<ExternalKeywordMapping> externalMappings) {
+    public void setAssertions(Set<PExternalKeywordMapping> externalMappings) {
         this.assertions = externalMappings;
     }
 

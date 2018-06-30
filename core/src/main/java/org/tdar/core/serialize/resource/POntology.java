@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @author <a href='mailto:Allen.Lee@asu.edu'>Allen Lee</a>
  * @version $Revision $
  */
-@XmlRootElement(name = "ontology")
+@XmlRootElement(name = "Pontology")
 public class POntology extends PInformationResource  {
 
     private PCategoryVariable categoryVariable;

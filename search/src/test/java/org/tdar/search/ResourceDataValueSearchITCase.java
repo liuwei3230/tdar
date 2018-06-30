@@ -21,6 +21,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.converter.DataValueDocumentConverter;
@@ -88,7 +89,7 @@ public class ResourceDataValueSearchITCase extends AbstractWithIndexIntegrationT
     }
 
     public SearchResult performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
-        SearchResult<Resource> result = new SearchResult<>(max);
+        SearchResult<PResource> result = new SearchResult<>(max);
         AdvancedSearchQueryObject asqo = new AdvancedSearchQueryObject();
         SearchParameters e = new SearchParameters();
         e.getAllFields().add(term);

@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.tdar.core.bean.resource.ResourceType;
 
-@XmlRootElement(name = "video")
+@XmlRootElement(name = "Pvideo")
 /**
  * Represents a "video" resource.
  * 

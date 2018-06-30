@@ -9,6 +9,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
@@ -22,7 +23,7 @@ public class SearchTitleITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetPivotStats() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         AdvancedSearchQueryObject asqo = new AdvancedSearchQueryObject();
         SearchParameters sp = new SearchParameters();
         ArrayList<String> lst = new ArrayList<>();
@@ -30,7 +31,7 @@ public class SearchTitleITCase extends AbstractResourceSearchITCase {
         lst.add("313");
         sp.getApprovedSiteTypeIdLists().add(lst);
         asqo.getSearchParameters().add(sp);
-        LuceneSearchResultHandler<Resource> handler = resourceSearchService.buildAdvancedSearch(asqo, null, result, MessageHelper.getInstance());
+        LuceneSearchResultHandler<PResource> handler = resourceSearchService.buildAdvancedSearch(asqo, null, result, MessageHelper.getInstance());
         logger.debug("title: {}", handler.getSearchTitle());
         logger.debug("phrase: {}", asqo.getSearchPhrase());
         assertEquals(handler.getSearchTitle(), asqo.getSearchPhrase());

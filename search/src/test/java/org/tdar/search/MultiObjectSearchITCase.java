@@ -16,6 +16,7 @@ import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -50,7 +51,7 @@ public class MultiObjectSearchITCase extends AbstractWithIndexIntegrationTestCas
         genericService.saveOrUpdate(collection);
         genericService.saveOrUpdate(dataset);
         searchIndexService.index(workflow, collection, dataset);
-        SearchResult<Resource> result = performSearch("", null, 100);
+        SearchResult<PResource> result = performSearch("", null, 100);
         logger.debug("results:{}", result.getResults());
         assertTrue("should see collection", result.getResults().contains(collection));
         assertTrue("should see dataset", result.getResults().contains(dataset));
@@ -69,7 +70,7 @@ public class MultiObjectSearchITCase extends AbstractWithIndexIntegrationTestCas
         genericService.saveOrUpdate(collection);
         genericService.saveOrUpdate(dataset);
         searchIndexService.index(workflow, collection, dataset);
-        SearchResult<Resource> result = performSearch("", null, 100);
+        SearchResult<PResource> result = performSearch("", null, 100);
         logger.debug("results:{}", result.getResults());
         assertFalse("should see collection", result.getResults().contains(collection));
         assertFalse("should see dataset", result.getResults().contains(dataset));
@@ -84,7 +85,7 @@ public class MultiObjectSearchITCase extends AbstractWithIndexIntegrationTestCas
         collection.setStatus(Status.DRAFT);
         genericService.save(collection);
         searchIndexService.index(workflow, collection, dataset);
-        SearchResult<Resource> result = performSearch("", null, 100);
+        SearchResult<PResource> result = performSearch("", null, 100);
         logger.debug("results:{}", result.getResults());
         assertFalse("should see collection", result.getResults().contains(collection));
     }
@@ -97,7 +98,7 @@ public class MultiObjectSearchITCase extends AbstractWithIndexIntegrationTestCas
         collection.setStatus(Status.DRAFT);
         genericService.save(collection);
         searchIndexService.index(workflow, collection, dataset);
-        SearchResult<Resource> result = performSearch("", null, 100);
+        SearchResult<PResource> result = performSearch("", null, 100);
         logger.debug("results:{}", result.getResults());
         assertFalse("should see collection", result.getResults().contains(collection));
     }
@@ -110,13 +111,13 @@ public class MultiObjectSearchITCase extends AbstractWithIndexIntegrationTestCas
         collection.setStatus(Status.DELETED);
         genericService.save(collection);
         searchIndexService.index(workflow, collection, dataset);
-        SearchResult<Resource> result = performSearch("", null, 100);
+        SearchResult<PResource> result = performSearch("", null, 100);
         logger.debug("results:{}", result.getResults());
         assertFalse("should see collection", result.getResults().contains(collection));
     }
 
-    public SearchResult<Resource> performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
-        SearchResult<Resource> result = new SearchResult<>(max);
+    public SearchResult<PResource> performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
+        SearchResult<PResource> result = new SearchResult<>(max);
         AdvancedSearchQueryObject asqo = new AdvancedSearchQueryObject();
         asqo.setMultiCore(true);
         asqo.setQuery(term);

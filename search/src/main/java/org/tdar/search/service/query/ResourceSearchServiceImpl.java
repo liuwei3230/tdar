@@ -28,10 +28,10 @@ import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.KeywordType;
 import org.tdar.core.bean.resource.Project;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
@@ -64,10 +64,10 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final GenericService genericService;
-    private final SearchService<Resource> searchService;
+    private final SearchService<PResource> searchService;
 
     @Autowired
-    public ResourceSearchServiceImpl(SearchService<Resource> searchService, GenericService genericService) {
+    public ResourceSearchServiceImpl(SearchService<PResource> searchService, GenericService genericService) {
         this.searchService = searchService;
         this.genericService = genericService;
     }
@@ -80,7 +80,7 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> buildCollectionResourceSearch(LuceneSearchResultHandler<Resource> result, TextProvider provider)
+    public LuceneSearchResultHandler<PResource> buildCollectionResourceSearch(LuceneSearchResultHandler<PResource> result, TextProvider provider)
             throws SearchException, IOException {
         QueryBuilder qb = new ResourceCollectionQueryBuilder();
         qb.append(new FieldQueryPart<CollectionResourceSection>(QueryFieldNames.COLLECTION_TYPE, CollectionResourceSection.MANAGED));
@@ -98,15 +98,15 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException {
+    public LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException {
         ResourceQueryBuilder qb = new ResourceQueryBuilder();
         qb.append(new FieldQueryPart<>(QueryFieldNames.PROJECT_ID, indexable.getId()));
         runContainedInQuery(term, user, result, provider, qb);
         return result;
     }
 
-    private void runContainedInQuery(String term, TdarUser user, LuceneSearchResultHandler<Resource> result, TextProvider provider, ResourceQueryBuilder qb)
+    private void runContainedInQuery(String term, TdarUser user, LuceneSearchResultHandler<PResource> result, TextProvider provider, ResourceQueryBuilder qb)
             throws SearchException, IOException {
         ReservedSearchParameters reservedSearchParameters = new ReservedSearchParameters();
         initializeReservedSearchParameters(reservedSearchParameters, user);
@@ -126,8 +126,8 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> buildResourceContainedInSearch(ResourceCollection indexable, String term, TdarUser user,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException {
+    public LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(ResourceCollection indexable, String term, TdarUser user,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException {
         ResourceQueryBuilder qb = new ResourceQueryBuilder();
         List<Long> ids = new ArrayList<>();
         ids.add(indexable.getId());
@@ -147,7 +147,7 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> lookupResource(TdarUser user, ResourceLookupObject searchParams, LuceneSearchResultHandler<Resource> result,
+    public LuceneSearchResultHandler<PResource> lookupResource(TdarUser user, ResourceLookupObject searchParams, LuceneSearchResultHandler<PResource> result,
             TextProvider support) throws SearchException, IOException {
 
         // Construct a Query Builder object, add the data that we want to search for, then execute the search.
@@ -224,8 +224,8 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> buildKeywordQuery(Keyword keyword, KeywordType keywordType, ReservedSearchParameters rsp,
-            LuceneSearchResultHandler<Resource> result,
+    public LuceneSearchResultHandler<PResource> buildKeywordQuery(Keyword keyword, KeywordType keywordType, ReservedSearchParameters rsp,
+            LuceneSearchResultHandler<PResource> result,
             TextProvider provider, TdarUser user) throws SearchException, IOException {
 
         QueryBuilder queryBuilder = new ResourceQueryBuilder();
@@ -245,8 +245,8 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> buildAdvancedSearch(AdvancedSearchQueryObject asqo, TdarUser authenticatedUser,
-            LuceneSearchResultHandler<Resource> result, TextProvider provider) throws SearchException, IOException {
+    public LuceneSearchResultHandler<PResource> buildAdvancedSearch(AdvancedSearchQueryObject asqo, TdarUser authenticatedUser,
+            LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException {
         ResourceQueryBuilder queryBuilder = new ResourceQueryBuilder();
         if (asqo.isMultiCore()) {
             queryBuilder = new MultiCoreQueryBuilder();
@@ -329,7 +329,7 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, FacetedResultHandler<Resource> result,
+    public LuceneSearchResultHandler<PResource> generateQueryForRelatedResources(Creator<?> creator, TdarUser user, FacetedResultHandler<PResource> result,
             TextProvider provider) throws SearchException, IOException {
         QueryBuilder queryBuilder = new ResourceQueryBuilder();
         // result.setRecordsPerPage(MAX_FTQ_RESULTS);
@@ -380,7 +380,7 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
     }
 
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> findByTdarYear(int year, LuceneSearchResultHandler<Resource> result, TextProvider support)
+    public LuceneSearchResultHandler<PResource> findByTdarYear(int year, LuceneSearchResultHandler<PResource> result, TextProvider support)
             throws SearchException, IOException {
         ResourceQueryBuilder q = new ResourceQueryBuilder();
         q.setOperator(Operator.AND);
@@ -398,7 +398,7 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
     }
 
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<Resource> findByResourceType(ResourceType resourceType, LuceneSearchResultHandler<Resource> result, TextProvider support)
+    public LuceneSearchResultHandler<PResource> findByResourceType(ResourceType resourceType, LuceneSearchResultHandler<PResource> result, TextProvider support)
             throws SearchException, IOException {
         ResourceQueryBuilder q = new ResourceQueryBuilder();
         q.setOperator(Operator.AND);

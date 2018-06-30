@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @author Allen Lee
  * @version $Revision$
  */
-@XmlRootElement(name = "person")
+@XmlRootElement(name = "Pperson")
 public class PPerson extends PCreator<PPerson> implements Comparable<PPerson> {
 
     private transient String wildcardName;

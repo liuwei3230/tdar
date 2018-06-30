@@ -63,14 +63,14 @@ import org.tdar.core.serialize.keyword.PMaterialKeyword;
 import org.tdar.core.serialize.keyword.POtherKeyword;
 import org.tdar.core.serialize.keyword.PSiteNameKeyword;
 import org.tdar.core.serialize.keyword.PSiteTypeKeyword;
-import org.tdar.core.serialize.keyword.SuggestedKeyword;
 import org.tdar.core.serialize.keyword.PTemporalKeyword;
+import org.tdar.core.serialize.keyword.SuggestedKeyword;
 import org.tdar.utils.MathUtils;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.jaxb.converters.JAXBPersistableRef;
+import org.tdar.utils.jaxb.converters.JaxbPResourceCollectionRefConverter;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
-import org.tdar.utils.jaxb.converters.JaxbResourceCollectionRefConverter;
 import org.tdar.utils.json.JsonIdNameFilter;
 import org.tdar.utils.json.JsonIntegrationFilter;
 import org.tdar.utils.json.JsonIntegrationSearchResultFilter;
@@ -94,7 +94,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlSeeAlso({ PDocument.class, PInformationResource.class, PProject.class, PCodingSheet.class, PDataset.class, POntology.class,
         PImage.class, PSensoryData.class, PVideo.class, PGeospatial.class, PArchive.class, PAudio.class })
 @XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(name = "resource", propOrder = {})
+@XmlType(name = "Presource", propOrder = {})
 @XmlTransient
 public class PResource implements Persistable,
         Comparable<PResource>, HasName, Indexable, 
@@ -204,7 +204,7 @@ public class PResource implements Persistable,
     private Set<PMaterialKeyword> materialKeywords = new LinkedHashSet<PMaterialKeyword>();
     private Set<PInvestigationType> investigationTypes = new LinkedHashSet<PInvestigationType>();
     private Set<PSiteTypeKeyword> siteTypeKeywords = new LinkedHashSet<PSiteTypeKeyword>();
-    private Set<ResourceRevisionLog> resourceRevisionLog = new HashSet<ResourceRevisionLog>();
+    private Set<PResourceRevisionLog> resourceRevisionLog = new HashSet<PResourceRevisionLog>();
     private Set<PResourceCollection> managedResourceCollections = new LinkedHashSet<>();
     private Set<PResourceCollection> unmanagedResourceCollections = new LinkedHashSet<>();
     private Set<PBookmarkedResource> bookmarkedResources = new LinkedHashSet<>();
@@ -571,12 +571,12 @@ public class PResource implements Persistable,
     }
 
     @XmlTransient
-    public Set<ResourceRevisionLog> getResourceRevisionLog() {
+    public Set<PResourceRevisionLog> getResourceRevisionLog() {
         return resourceRevisionLog;
     }
 
     public void setResourceRevisionLog(
-            Set<ResourceRevisionLog> resourceRevisionLog) {
+            Set<PResourceRevisionLog> resourceRevisionLog) {
         this.resourceRevisionLog = resourceRevisionLog;
     }
 
@@ -966,7 +966,7 @@ public class PResource implements Persistable,
             @XmlElementRef(name = "resourceCollection", type = PResourceCollection.class, required = false),
             @XmlElementRef(name = "resourceCollectionRef", type = JAXBPersistableRef.class, required = false)
     })
-    @XmlJavaTypeAdapter(JaxbResourceCollectionRefConverter.class)
+    @XmlJavaTypeAdapter(JaxbPResourceCollectionRefConverter.class)
     public Set<PResourceCollection> getUnmanagedResourceCollections() {
         return unmanagedResourceCollections;
     }
@@ -980,7 +980,7 @@ public class PResource implements Persistable,
             @XmlElementRef(name = "resourceCollection", type = PResourceCollection.class, required = false),
             @XmlElementRef(name = "resourceCollectionRef", type = JAXBPersistableRef.class, required = false)
     })
-    @XmlJavaTypeAdapter(JaxbResourceCollectionRefConverter.class)
+    @XmlJavaTypeAdapter(JaxbPResourceCollectionRefConverter.class)
     public Set<PResourceCollection> getManagedResourceCollections() {
         return managedResourceCollections;
     }

@@ -17,7 +17,7 @@ import org.tdar.core.bean.resource.ResourceType;
  * 
  * @author Martin Paulo
  */
-@XmlRootElement(name = "audio")
+@XmlRootElement(name = "Paudio")
 public class PAudio extends PInformationResource {
 
     private String software;

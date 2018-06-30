@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
+import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.struts.action.resource.AbstractSupportingResourceViewAction;
 
 public abstract class AbstractOntologyViewAction extends AbstractSupportingResourceViewAction<Ontology> {
@@ -14,7 +15,7 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
     private OntologyNode node;
     private String iri;
     private String redirectIri;
-    private List<Dataset> datasetsWithMappingsToNode;
+    private List<PDataset> datasetsWithMappingsToNode;
 
     protected OntologyNode getNodeByIri() {
         String iri_ = getIri();
@@ -73,11 +74,11 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
         return null;
     }
 
-    public List<Dataset> getDatasetsWithMappingsToNode() {
+    public List<PDataset> getDatasetsWithMappingsToNode() {
         return datasetsWithMappingsToNode;
     }
 
-    public void setDatasetsWithMappingsToNode(List<Dataset> datasetsWithMappingsToNode) {
+    public void setDatasetsWithMappingsToNode(List<PDataset> datasetsWithMappingsToNode) {
         this.datasetsWithMappingsToNode = datasetsWithMappingsToNode;
     }
 

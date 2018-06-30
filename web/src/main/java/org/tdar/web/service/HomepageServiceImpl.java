@@ -22,6 +22,7 @@ import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.cache.HomepageGeographicCache;
 import org.tdar.core.cache.HomepageResourceCountCache;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.SerializationService;
@@ -73,7 +74,7 @@ public class HomepageServiceImpl implements HomepageService {
     @Override
     @Transactional(readOnly = true)
     public synchronized HomepageDetails getSearchAndHomepageGraphs(TdarUser authenticatedUser, AdvancedSearchQueryObject advancedSearchQueryObject,
-            FacetedResultHandler<Resource> result, TextProvider provider) {
+            FacetedResultHandler<PResource> result, TextProvider provider) {
         setupResultForMapSearch(result);
 
         try {
@@ -91,7 +92,7 @@ public class HomepageServiceImpl implements HomepageService {
      */
     @Override
     @Transactional(readOnly = true)
-    public HomepageDetails generateDetails(FacetedResultHandler<Resource> result) {
+    public HomepageDetails generateDetails(FacetedResultHandler<PResource> result) {
         HomepageDetails details = new HomepageDetails();
 
         ObjectMapper mapper = new ObjectMapper();
@@ -138,7 +139,7 @@ public class HomepageServiceImpl implements HomepageService {
      */
     @Override
     @Transactional(readOnly = true)
-    public void setupResultForMapSearch(FacetedResultHandler<Resource> result) {
+    public void setupResultForMapSearch(FacetedResultHandler<PResource> result) {
         result.getFacetWrapper().facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
         result.getFacetWrapper().setMapFacet(true);
     }
@@ -157,7 +158,7 @@ public class HomepageServiceImpl implements HomepageService {
             sp.getCollections().add(genericService.find(ResourceCollection.class, collectionId));
             advancedSearchQueryObject.getSearchParameters().add(sp);
         }
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         result.setFacetWrapper(new FacetWrapper());
         result.setBot(isBot);
         result.setRecordsPerPage(0);

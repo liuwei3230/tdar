@@ -32,12 +32,12 @@ import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
  * @version $Revision$
  */
 
-public class ResourceRevisionLog extends AbstractPersistable {
+public class PResourceRevisionLog extends AbstractPersistable {
 
-    public ResourceRevisionLog() {
+    public PResourceRevisionLog() {
     }
 
-    public ResourceRevisionLog(String message, PResource resource, TdarUser person, RevisionLogType type) {
+    public PResourceRevisionLog(String message, PResource resource, TdarUser person, RevisionLogType type) {
         this.person = person;
         this.timestamp = new Date();
         this.resource = resource;
