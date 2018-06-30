@@ -226,7 +226,7 @@
                 </#if>
             </#if>
             <#local _rid = resource.id?c >
-            <#if resource.class.simpleName == 'ResourceCollection'>
+            <#if resource.class.simpleName == 'PResourceCollection'>
                 <#local _rid = "C${resource.id?c}" >
             </#if>
 
@@ -237,6 +237,7 @@
                     </#if>
                     
                     <@commonr.cartouche resource true><#if resource.hidden!false><i class="icon-eye-close" title="hidden" alt="hidden"></i> </#if></@commonr.cartouche>
+                    <@_listCreators resource />
                     <#if resource.resourceType?has_content>
                         <@view.unapiLink resource  />
                     </#if>
@@ -299,6 +300,7 @@ bookmark indicator, etc..
 <#--list the author/editor/creators of a resource - part of the summary information included in a a search result item -->
     <#macro _listCreators resource_>
         <#assign showSubmitter=true/>
+        
         <#list resource_.primaryCreators![]>
         <span class="authors">
             <#items as creatr>

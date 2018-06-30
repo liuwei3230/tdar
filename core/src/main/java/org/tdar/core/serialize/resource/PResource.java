@@ -816,6 +816,7 @@ public class PResource implements Persistable,
         Set<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getPrimaryCreatorRoles(getResourceType());
         if (resourceCreators != null) {
             for (PResourceCreator creator : resourceCreators) {
+                logger.debug("{} -- {}",creator, creator.getCreator().getStatus() );
                 if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
                     authors.add(creator);
                 }

@@ -25,6 +25,7 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PProject;
 import org.tdar.core.serialize.resource.PResource;
@@ -118,12 +119,12 @@ public class ProjectionTransformer<I extends Indexable> {
         if (orientation == DisplayOrientation.LIST_FULL) {
             logger.trace("begin resource creator");
             r_.getResourceCreators().addAll(proxyConstructionService.convertResourceCreators(datasetDao.findAll(ResourceCreator.class, cIds),ctx));
-            logger.debug("{}", r_.getResourceCreators());
         }
 
         if (r_ instanceof PInformationResource) {
             // add file info
             PInformationResource ir = (PInformationResource) r_;
+            ((PInformationResource) r_).setDate((Integer)doc.getFieldValue(QueryFieldNames.DATE));
 
             String fieldValue = (String) doc.getFieldValue(QueryFieldNames.RESOURCE_ACCESS_TYPE);
             if (fieldValue != null) {
@@ -158,13 +159,6 @@ public class ProjectionTransformer<I extends Indexable> {
 
         logger.trace("begin obfuscation");
 
-//        obfuscationService.getAuthenticationAndAuthorizationService().applyTransientViewableFlag(r_, user, collectionIds);
-//
-//        if (CONFIG.obfuscationInterceptorDisabled()
-//                && PersistableUtils.isNullOrTransient(user)) {
-//            obfuscationService.obfuscate((Obfuscatable) r_, user);
-//        }
-        logger.debug("{}",r_);
         return (I) r_;
     }
 

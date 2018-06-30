@@ -638,6 +638,7 @@ public class ProxyConstructionService {
         institution.setDescription(creator.getDescription());
         institution.setDateCreated(creator.getDateCreated());
         institution.setDateUpdated(creator.getDateUpdated());
+        institution.setStatus(creator.getStatus());
     }
 
     private Set<PLatitudeLongitudeBox> convertLatLong(Collection<LatitudeLongitudeBox> latitudeLongitudeBoxes, Context ctx) {
