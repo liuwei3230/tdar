@@ -11,10 +11,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.SortOption;
-import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PProject;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.search.exception.SearchPaginationException;
@@ -33,7 +33,7 @@ import org.tdar.utils.PaginationHelper;
 @Scope("prototype")
 @ParentPackage("default")
 @Namespace("/project")
-public class ProjectViewAction extends AbstractResourceViewAction<Project> implements FacetedResultHandler<PResource>, ResourceFacetedAction {
+public class ProjectViewAction extends AbstractResourceViewAction<PProject> implements FacetedResultHandler<PResource>, ResourceFacetedAction {
 
     private static final long serialVersionUID = 974044619477885680L;
     private ProjectionModel projectionModel = ProjectionModel.LUCENE;
@@ -69,8 +69,7 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
     }
 
     private void handleSearch() throws TdarActionException {
-        Project project = getPersistable();
-
+        PProject project = (PProject) getResource();
         setSortField(project.getSortBy());
         setSecondarySortField(SortOption.TITLE);
         if (project.getSecondarySortBy() != null) {
@@ -79,7 +78,7 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class, selectedResourceTypes);
 
         try {
-            resourceSearchService.buildResourceContainedInSearch(project, null, getAuthenticatedUser(), this, this);
+            resourceSearchService.buildResourceContainedInSearch(project.getId(), null, getAuthenticatedUser(), this, this);
             bookmarkedResourceService.applyTransientBookmarked(getResults(), getAuthenticatedUser());
             reSortFacets(this, project);
         } catch (SearchPaginationException e) {
@@ -91,8 +90,8 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
     }
 
     @Override
-    public Class<Project> getPersistableClass() {
-        return Project.class;
+    public Class<PProject> getPersistableClass() {
+        return PProject.class;
     }
 
     @Override
@@ -263,4 +262,5 @@ public class ProjectViewAction extends AbstractResourceViewAction<Project> imple
         return Arrays.asList(DisplayOrientation.values());
     }
 
+    
 }

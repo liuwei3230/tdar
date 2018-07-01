@@ -40,15 +40,18 @@ import org.tdar.core.bean.resource.HasAuthorizedUsers;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.ResourceAccessType;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.dao.entity.InstitutionDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.RightsResolver;
 import org.tdar.utils.PersistableUtils;
 
@@ -420,7 +423,7 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
         if (resource instanceof Project || resource instanceof SupportsResource) {
             return true;
         }
-        if (((InformationResource) resource).isPublicallyAccessible()) {
+        if (ResourceAccessType.isPublicallyAccessible((InformationResource) resource)) {
             return true;
         }
         return canDo(person, resource, InternalTdarRights.VIEW_AND_DOWNLOAD_CONFIDENTIAL_INFO, Permissions.VIEW_ALL);
@@ -516,6 +519,15 @@ public class AuthorizationServiceImpl implements Accessible, AuthorizationServic
             return false;
         }
         return canDownload(person, irFileVersion.getInformationResourceFile());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canDownload(TdarUser person, PInformationResourceFileVersion irFileVersion) {
+        if (irFileVersion == null) {
+            return false;
+        }
+        return canDownload(person,resourceCollectionDao.find(InformationResourceFileVersion.class, irFileVersion.getId()).getInformationResourceFile());
     }
 
     /*

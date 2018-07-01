@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.POntologyNode;
 
 public interface OntologyNodeService {
 
-    List<OntologyNode> getAllChildren(OntologyNode ontologyNode);
+    List<POntologyNode> getAllChildren(POntologyNode ontologyNode);
 
     /**
      * Returns a mapping between OntologyNodeS and a List of all their children (recursive).
@@ -35,17 +35,17 @@ public interface OntologyNodeService {
     /**
      * Find all @link Dataset Resources that are mapped to the specified @link OntologyNode
      * 
-     * @param node
+     * @param pOntologyNode
      * @return
      */
-    List<PDataset> listDatasetsWithMappingsToNode(OntologyNode node);
+    List<PDataset> listDatasetsWithMappingsToNode(POntologyNode pOntologyNode);
 
     /**
      * Find the parent @link OntologyNode of the specified node
      * 
-     * @param node
+     * @param pOntologyNode
      * @return
      */
-    OntologyNode getParent(OntologyNode node);
+    POntologyNode getParent(POntologyNode pOntologyNode);
 
 }

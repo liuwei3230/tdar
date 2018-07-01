@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -103,7 +102,6 @@ import org.tdar.core.bean.keyword.SuggestedKeyword;
 import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.util.UrlUtils;
 import org.tdar.core.exception.TdarValidationException;
-import org.tdar.core.serialize.resource.PResource;
 import org.tdar.utils.MathUtils;
 import org.tdar.utils.MessageHelper;
 import org.tdar.utils.PersistableUtils;
@@ -1017,19 +1015,19 @@ public class Resource implements Persistable,
         }
         return resourceCreators;
     }
-
-    /**
-     * @return the resourceCreators with the given ResourceCreatorRole
-     */
-    public Set<ResourceCreator> getResourceCreators(ResourceCreatorRole role) {
-        Set<ResourceCreator> creators = new LinkedHashSet<ResourceCreator>();
-        for (ResourceCreator creator : this.getResourceCreators()) {
-            if (creator.getRole() == role) {
-                creators.add(creator);
-            }
-        }
-        return creators;
-    }
+//
+//    /**
+//     * @return the resourceCreators with the given ResourceCreatorRole
+//     */
+//    public Set<ResourceCreator> getResourceCreators(ResourceCreatorRole role) {
+//        Set<ResourceCreator> creators = new LinkedHashSet<ResourceCreator>();
+//        for (ResourceCreator creator : this.getResourceCreators()) {
+//            if (creator.getRole() == role) {
+//                creators.add(creator);
+//            }
+//        }
+//        return creators;
+//    }
 
     /**
      * @param resourceAnnotations
@@ -1051,56 +1049,56 @@ public class Resource implements Persistable,
         return resourceAnnotations;
     }
 
-    @Transient
-    @XmlTransient
-    public Collection<ResourceCreator> getContentOwners() {
-        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
-
-        // get the applicable resource roles for this resource type
-        List<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getAuthorshipRoles();
-        if (resourceCreators != null) {
-            for (ResourceCreator creator : resourceCreators) {
-                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
-                    authors.add(creator);
-                }
-            }
-
-        }
-        Collections.sort(authors);
-        return authors;
-    }
-
-    public Collection<ResourceCreator> getPrimaryCreators() {
-        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
-
-        // get the applicable resource roles for this resource type
-        Set<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getPrimaryCreatorRoles(getResourceType());
-        if (resourceCreators != null) {
-            for (ResourceCreator creator : resourceCreators) {
-                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
-                    authors.add(creator);
-                }
-            }
-
-        }
-        Collections.sort(authors);
-        return authors;
-    }
-
-    @Transient
-    public Collection<ResourceCreator> getEditors() {
-        List<ResourceCreator> editors = new ArrayList<ResourceCreator>(
-                this.getResourceCreators(ResourceCreatorRole.EDITOR));
-        Iterator<ResourceCreator> iterator = editors.iterator();
-        while (iterator.hasNext()) {
-            ResourceCreator rc = iterator.next();
-            if (rc.getCreator().isDeleted()) {
-                iterator.remove();
-            }
-        }
-        Collections.sort(editors);
-        return editors;
-    }
+//    @Transient
+//    @XmlTransient
+//    public Collection<ResourceCreator> getContentOwners() {
+//        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
+//
+//        // get the applicable resource roles for this resource type
+//        List<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getAuthorshipRoles();
+//        if (resourceCreators != null) {
+//            for (ResourceCreator creator : resourceCreators) {
+//                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
+//                    authors.add(creator);
+//                }
+//            }
+//
+//        }
+//        Collections.sort(authors);
+//        return authors;
+//    }
+//
+//    public Collection<ResourceCreator> getPrimaryCreators() {
+//        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
+//
+//        // get the applicable resource roles for this resource type
+//        Set<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getPrimaryCreatorRoles(getResourceType());
+//        if (resourceCreators != null) {
+//            for (ResourceCreator creator : resourceCreators) {
+//                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
+//                    authors.add(creator);
+//                }
+//            }
+//
+//        }
+//        Collections.sort(authors);
+//        return authors;
+//    }
+//
+//    @Transient
+//    public Collection<ResourceCreator> getEditors() {
+//        List<ResourceCreator> editors = new ArrayList<ResourceCreator>(
+//                this.getResourceCreators(ResourceCreatorRole.EDITOR));
+//        Iterator<ResourceCreator> iterator = editors.iterator();
+//        while (iterator.hasNext()) {
+//            ResourceCreator rc = iterator.next();
+//            if (rc.getCreator().isDeleted()) {
+//                iterator.remove();
+//            }
+//        }
+//        Collections.sort(editors);
+//        return editors;
+//    }
 
     /**
      * @param managedGeographicKeywords
@@ -1253,22 +1251,6 @@ public class Resource implements Persistable,
         this.managedResourceCollections = mrc;
     }
 
-    // @Transient
-    // public Set<ResourceCollection> getRightsBasedResourceCollections() {
-    // Set<ResourceCollection> collections = new HashSet<>();
-    // if (CollectionUtils.isNotEmpty(getManagedResourceCollections())) {
-    // collections.addAll(getManagedResourceCollections());
-    // }
-    // Iterator<ResourceCollection> iterator = collections.iterator();
-    // while (iterator.hasNext()) {
-    // ResourceCollection next = iterator.next();
-    // if (next == null || CollectionUtils.isEmpty(next.getManagedResources())) {
-    // iterator.remove();
-    // }
-    // }
-    // return collections;
-    // }
-
     @Override
     @Transient
     @XmlTransient
@@ -1334,16 +1316,6 @@ public class Resource implements Persistable,
         return true;
     }
 
-    @Transient
-    public Set<ResourceCollection> getVisibleSharedResourceCollections() {
-        Set<ResourceCollection> collections = new LinkedHashSet<>();
-        for (ResourceCollection collection : managedResourceCollections) {
-            if (collection.isVisibleAndActive()) {
-                collections.add((ResourceCollection) collection);
-            }
-        }
-        return collections;
-    }
 
     /**
      * @return the externalId
@@ -1700,16 +1672,6 @@ public class Resource implements Persistable,
 
     public void setFormattedDescription(String formattedDescription) {
         this.formattedDescription = formattedDescription;
-    }
-
-    public Collection<ResourceCollection> getVisibleUnmanagedResourceCollections() {
-        Set<ResourceCollection> collections = new LinkedHashSet<>();
-        for (ResourceCollection collection : getUnmanagedResourceCollections()) {
-            if (collection.isVisibleAndActive()) {
-                collections.add(collection);
-            }
-        }
-        return collections;
     }
 
     @Transient

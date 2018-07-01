@@ -98,10 +98,10 @@ public class ResourceSearchServiceImpl extends AbstractSearchService implements 
      */
     @Override
     @Transactional(readOnly = true)
-    public LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
+    public LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Long id, String term, TdarUser user,
             LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException {
         ResourceQueryBuilder qb = new ResourceQueryBuilder();
-        qb.append(new FieldQueryPart<>(QueryFieldNames.PROJECT_ID, indexable.getId()));
+        qb.append(new FieldQueryPart<>(QueryFieldNames.PROJECT_ID, id));
         runContainedInQuery(term, user, result, provider, qb);
         return result;
     }

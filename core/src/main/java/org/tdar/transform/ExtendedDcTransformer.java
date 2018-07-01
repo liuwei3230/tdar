@@ -430,7 +430,7 @@ public abstract class ExtendedDcTransformer<R extends PResource> implements Tran
     }
 
     public static QualifiedDublinCoreDocument transformAny(PResource resource) {
-        ResourceType resourceType = ResourceType.fromClass(resource.getClass());
+        ResourceType resourceType = resource.getResourceType();
         if (resourceType == null) {
             throw new TdarRecoverableRuntimeException("transformer.unsupported_type");
         }

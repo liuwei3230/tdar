@@ -16,6 +16,7 @@ public class Context {
     private boolean institutionEmailObfuscated = false;
     private boolean personEmailObfuscated = false;
     private boolean latLongObfuscated = false;
+    private boolean mappedMetadataIncluded;
 
     public boolean isAdmin() {
         return admin;
@@ -91,5 +92,9 @@ public class Context {
         return null;
         } 
         return getUser().getId();
+    }
+
+    public boolean isMappedMetadaataIncluded() {
+        return mappedMetadataIncluded;
     }
 }

@@ -3,24 +3,25 @@ package org.tdar.struts.action.ontology;
 import java.util.List;
 import java.util.Objects;
 
-import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.struts.action.resource.AbstractSupportingResourceViewAction;
 
-public abstract class AbstractOntologyViewAction extends AbstractSupportingResourceViewAction<Ontology> {
+public abstract class AbstractOntologyViewAction extends AbstractSupportingResourceViewAction<POntology> {
 
     private static final long serialVersionUID = -7901012726097964225L;
-    private OntologyNode node;
+    private POntologyNode node;
     private String iri;
     private String redirectIri;
     private List<PDataset> datasetsWithMappingsToNode;
 
-    protected OntologyNode getNodeByIri() {
+    protected POntologyNode getNodeByIri() {
         String iri_ = getIri();
         getLogger().trace("id: {} iri: {} slug: {}", getId(), iri_, getSlug());
-        OntologyNode node_ = getOntology().getNodeByIri(OntologyNode.normalizeIri(iri_));
+        POntologyNode node_ = getOntology().getNodeByIri(OntologyNode.normalizeIri(iri_));
         if (node_ == null) {
             node_ = fallbackCheckForIri(iri_);
         }
@@ -28,18 +29,18 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
         return node_;
     }
 
-    protected OntologyNode getNodeBySlug() {
+    protected POntologyNode getNodeBySlug() {
         String iri_ = getIri();
         getLogger().trace("id: {} iri: {} slug: {}", getId(), iri_, getSlug());
-        OntologyNode node_ = getOntology().getNodeBySlug(iri_);
+        POntologyNode node_ = getOntology().getNodeBySlug(iri_);
         return node_;
     }
 
-    public OntologyNode getNode() {
+    public POntologyNode getNode() {
         return node;
     }
 
-    public void setNode(OntologyNode node) {
+    public void setNode(POntologyNode node) {
         this.node = node;
     }
 
@@ -51,7 +52,7 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
         this.iri = iri;
     }
 
-    public Ontology getOntology() {
+    public POntology getOntology() {
         return getPersistable();
     }
 
@@ -62,9 +63,9 @@ public abstract class AbstractOntologyViewAction extends AbstractSupportingResou
      * @param node_
      * @return
      */
-    protected OntologyNode fallbackCheckForIri(String normalizeIri) {
+    protected POntologyNode fallbackCheckForIri(String normalizeIri) {
         getLogger().trace("normalizedIri:{}", normalizeIri);
-        for (OntologyNode node_ : getOntology().getOntologyNodes()) {
+        for (POntologyNode node_ : getOntology().getOntologyNodes()) {
             String iri_ = node_.getNormalizedIri().replaceAll("[\\(\\)\\\\.']", "");
             getLogger().trace("|{}|<--{}-->|{}|", iri_, Objects.equals(iri_, normalizeIri), normalizeIri);
             if (Objects.equals(normalizeIri, iri_)) {

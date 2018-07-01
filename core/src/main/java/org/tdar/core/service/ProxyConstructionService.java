@@ -1,10 +1,12 @@
 package org.tdar.core.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -33,7 +35,6 @@ import org.tdar.core.bean.resource.CodingRule;
 import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
@@ -43,6 +44,8 @@ import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.dao.base.GenericDao;
+import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
 import org.tdar.core.serialize.collection.PResourceCollection;
@@ -55,6 +58,7 @@ import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.entity.PTdarUser;
 import org.tdar.core.serialize.keyword.PCultureKeyword;
+import org.tdar.core.serialize.keyword.PExternalKeywordMapping;
 import org.tdar.core.serialize.keyword.PGeographicKeyword;
 import org.tdar.core.serialize.keyword.PHierarchicalKeyword;
 import org.tdar.core.serialize.keyword.PInvestigationType;
@@ -70,7 +74,6 @@ import org.tdar.core.serialize.resource.PCodingRule;
 import org.tdar.core.serialize.resource.PCodingSheet;
 import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.serialize.resource.PDocument;
-import org.tdar.core.serialize.resource.PImage;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.POntology;
 import org.tdar.core.serialize.resource.POntologyNode;
@@ -85,12 +88,18 @@ import org.tdar.core.serialize.resource.datatable.PDataTableRelationship;
 import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.external.AuthorizationService;
+import org.tdar.core.service.resource.ResourceService;
 
 @Service
 public class ProxyConstructionService {
 
     @Autowired
     private AuthorizationService authorizationService;
+    @Autowired
+    private ResourceService resourceService;
+
+    @Autowired
+    private GenericDao genericDao;
 
     @Transactional(readOnly = true)
     public <R extends PResource, T extends Resource> R constructResource(T resource, Class<R> cls,
@@ -193,6 +202,14 @@ public class ProxyConstructionService {
             // ir.setFileProxies(iresource.getFileProxies());
             ir.setTransientAccessType(iresource.getTransientAccessType());
 
+            if (ctx.isMappedMetadaataIncluded()) {
+                Map<DataTableColumn, String> map = resourceService.getMappedDataForInformationResource((InformationResource) resource, true);
+                map.entrySet().forEach(e -> {
+                    ir.getMappedData().put(convertDataTableColumn(e.getKey()), e.getValue());
+
+                });
+            }
+
             if (ir instanceof PDataset) {
                 PDataset doc = (PDataset) ir;
                 Dataset doc_ = (Dataset) iresource;
@@ -244,28 +261,32 @@ public class ProxyConstructionService {
         return r;
     }
 
+    private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_) {
+        PDataTableColumn c = new PDataTableColumn();
+        c.setName(dtc_.getName());
+        c.setColumnDataType(dtc_.getColumnDataType());
+        c.setColumnEncodingType(dtc_.getColumnEncodingType());
+        c.setMeasurementUnit(dtc_.getMeasurementUnit());
+        c.setDescription(dtc_.getDescription());
+        c.setDisplayName(dtc_.getDisplayName());
+        c.setLength(dtc_.getLength());
+        c.setDelimiterValue(dtc_.getDelimiterValue());
+        c.setIgnoreFileExtension(dtc_.isIgnoreFileExtension());
+        c.setVisible(dtc_.isVisible());
+        c.setMappingColumn(dtc_.isMappingColumn());
+        c.setCategoryVariable(convertCategoryVariable(dtc_.getCategoryVariable()));
+        c.setTempSubCategoryVariable(convertCategoryVariable(dtc_.getTempSubCategoryVariable()));
+        c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class));
+        c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class));
+        c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class));
+        c.setImportOrder(dtc_.getImportOrder());
+        return c;
+    }
+
     private Set<PDataTableColumn> convertDataTableColumns(Collection<DataTableColumn> list) {
         HashSet<PDataTableColumn> toReturn = new HashSet<>();
         list.forEach(dtc_ -> {
-            PDataTableColumn c = new PDataTableColumn();
-            c.setName(dtc_.getName());
-            c.setColumnDataType(dtc_.getColumnDataType());
-            c.setColumnEncodingType(dtc_.getColumnEncodingType());
-            c.setMeasurementUnit(dtc_.getMeasurementUnit());
-            c.setDescription(dtc_.getDescription());
-            c.setDisplayName(dtc_.getDisplayName());
-            c.setLength(dtc_.getLength());
-            c.setDelimiterValue(dtc_.getDelimiterValue());
-            c.setIgnoreFileExtension(dtc_.isIgnoreFileExtension());
-            c.setVisible(dtc_.isVisible());
-            c.setMappingColumn(dtc_.isMappingColumn());
-            c.setCategoryVariable(convertCategoryVariable(dtc_.getCategoryVariable()));
-            c.setTempSubCategoryVariable(convertCategoryVariable(dtc_.getTempSubCategoryVariable()));
-            c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class));
-            c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class));
-            c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class));
-            c.setImportOrder(dtc_.getImportOrder());
-            toReturn.add(c);
+            toReturn.add(convertDataTableColumn(dtc_));
         });
         return toReturn;
     }
@@ -287,7 +308,10 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private POntologyNode convertOntologyNode(OntologyNode ontologyNode) {
+    public POntologyNode convertOntologyNode(OntologyNode ontologyNode) {
+        if (ontologyNode == null) {
+            return null;
+        }
         POntologyNode n = new POntologyNode();
         n.setIntervalStart(ontologyNode.getIntervalStart());
         n.setIntervalEnd(ontologyNode.getIntervalEnd());
@@ -315,14 +339,19 @@ public class ProxyConstructionService {
         }
         Set<PDataTable> toReturn = new HashSet<>();
         dataTables.forEach(dt_ -> {
-            PDataTable dt = new PDataTable();
-            dt.setDescription(dt_.getDescription());
-            dt.setDisplayName(dt_.getDisplayName());
-            dt.setId(dt_.getId());
-            dt.setImportOrder(dt_.getImportOrder());
-            dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns())));
+            convertDataTable(dt_);
         });
         return toReturn;
+    }
+
+    private PDataTable convertDataTable(DataTable dt_) {
+        PDataTable dt = new PDataTable();
+        dt.setDescription(dt_.getDescription());
+        dt.setDisplayName(dt_.getDisplayName());
+        dt.setId(dt_.getId());
+        dt.setImportOrder(dt_.getImportOrder());
+        dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns())));
+        return dt;
     }
 
     public <P extends PResource, R extends Resource> P createShellResource(R r, Class<P> class1) {
@@ -708,6 +737,14 @@ public class ProxyConstructionService {
         k.setId(k.getId());
         k.setDefinition(k.getDefinition());
         k.setStatus(k_.getStatus());
+        k_.getAssertions().forEach(a_ -> {
+            PExternalKeywordMapping a = new PExternalKeywordMapping();
+            a.setId(a_.getId());
+            a.setLabel(a_.getLabel());
+            a.setRelation(a_.getRelation());
+            a.setRelationType(a_.getRelationType());
+            k.getAssertions().add(a);
+        });
         if (k instanceof PHierarchicalKeyword) {
             L parent = (L) ((HierarchicalKeyword) k_).getParent();
             if (parent != null) {
@@ -718,23 +755,31 @@ public class ProxyConstructionService {
         return k;
     }
 
-
-    public PKeyword consructKeyword(Keyword keyword) {
-        // createKeyword(cls, k_, depth, ctx)
-        return null;
+    public PKeyword consructKeyword(Keyword keyword) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        if (keyword == null) {
+            return null;
+        }
+        Class<? extends PKeyword> serializedClass = (Class<? extends PKeyword>) getSerializedClass(keyword.getClass());
+        Context ctx = new Context(null);
+        return createKeyword(serializedClass, keyword, 1, ctx);
     }
 
     public <I, J extends Persistable> I construct(J j, Class<J> class1, TdarUser authenticatedUser, boolean b)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // HACK
-        String cname = class1.getCanonicalName();
-        cname = StringUtils.replace(cname, ".bean.", ".serialize.");
-        String toReturn = StringUtils.substringBeforeLast(cname, ".") + ".P" + StringUtils.substringAfterLast(cname, ".");
-        Class<?> cls = Class.forName(toReturn);
+        Class<?> cls = getSerializedClass(class1);
         if (PResource.class.isAssignableFrom(cls)) {
             return (I) constructResource((Resource) j, (PResource) cls.newInstance(), authenticatedUser, false);
         }
         return null;
+    }
+
+    private <J extends Persistable> Class<?> getSerializedClass(Class<J> class1) throws ClassNotFoundException {
+        String cname = class1.getCanonicalName();
+        cname = StringUtils.replace(cname, ".bean.", ".serialize.");
+        String toReturn = StringUtils.substringBeforeLast(cname, ".") + ".P" + StringUtils.substringAfterLast(cname, ".");
+        Class<?> cls = Class.forName(toReturn);
+        return cls;
     }
 
     public Collection<? extends PResourceCreator> convertResourceCreators(Collection<ResourceCreator> findAll, Context ctx) {
@@ -756,4 +801,58 @@ public class ProxyConstructionService {
     public Collection<? extends PInformationResourceFile> createInformationResourceFiles(List<InformationResourceFile> findAll, Context ctx) {
         return convertInformationResourceFiles(findAll, ctx);
     }
+
+    /**
+     * P p = null;
+     * Class
+     * <P>
+     * persistableClass = pc.getPersistableClass();
+     * 
+     * // get the ID
+     * Long id = pc.getId();
+     * getLogger().trace("{} {}", persistableClass, id);
+     * // if we're not null or transient, somehow we've been initialized wrongly
+     * if (PersistableUtils.isNotNullOrTransient(pc.getPersistable())) {
+     * getLogger().error("item id should not be set yet -- persistable.id:{}\t controller.id:{}", pc.getPersistable().getId(), id);
+     * }
+     * // if the ID is not set, don't try and load/set it
+     * else if (PersistableUtils.isNotNullOrTransient(id)) {
+     * p = getGenericService().find(persistableClass, id);
+     * pc.setPersistable(p);
+     * }
+     * 
+     * logRequest(pc, type, p);
+     * checkValidRequest(pc);
+     * 
+     * @param class1
+     * @param id
+     * @param msg
+     * @param user
+     * @return
+     * @throws Exception
+     */
+    public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<Resource> support, TdarUser user)
+            throws Exception {
+        if (id == null) {
+            throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
+        }
+        if (Resource.class.isAssignableFrom(class1)) {
+            Resource r = (Resource) genericDao.find(class1, id);
+            if (r == null) {
+                throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
+            }
+
+            if (support != null && support.authorize(r, user) == false) {
+                throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
+            }
+            return (Q) constructResource(r, r.getResourceType().getProxyClass(), user, false);
+        }
+        return null;
+    }
+
+    public PDataTable loadDataTable(Long dataTableId) {
+        DataTable dataTable = genericDao.find(DataTable.class, dataTableId);
+        return convertDataTable(dataTable);
+    }
+
 }

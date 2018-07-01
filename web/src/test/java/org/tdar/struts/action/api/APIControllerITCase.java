@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -271,7 +272,8 @@ public class APIControllerITCase extends AbstractAdminControllerITCase implement
         assertEquals(Action.SUCCESS, uploadStatus);
         assertEquals(StatusCode.CREATED, controller.getStatus());
         Image img = genericService.find(Image.class, controller.getId());
-        assertFalse(img.getFilesWithRestrictions(true).isEmpty());
+        fail();
+//        assertFalse(img.getFilesWithRestrictions(true).isEmpty());
         account = genericService.find(BillingAccount.class, actId);
         logger.debug("files: {}", account.getFilesUsed());
         logger.debug("mb: {}", account.getSpaceUsedInMb());

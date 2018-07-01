@@ -123,8 +123,9 @@ public class DataTableServiceImpl extends ServiceInterface.TypedDaoBase<DataTabl
      */
     @Override
     @Transactional(readOnly = true)
-    public List<DataTable> findDataTablesUsingResource(Resource resource) {
-        return getDao().findDataTablesUsingResource(resource);
+    public List<DataTable> findDataTablesUsingResource(Long id) {
+        Resource resource = getDao().find(Resource.class, id);
+        return findDataTablesUsingResource(resource);
     }
 
     /*
@@ -177,5 +178,13 @@ public class DataTableServiceImpl extends ServiceInterface.TypedDaoBase<DataTabl
         logger.trace("unique missing: {}", uniqueValues);
         return uniqueValues;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DataTable> findDataTablesUsingResource(Resource resource) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
 }

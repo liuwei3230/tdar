@@ -39,7 +39,7 @@ public interface ResourceSearchService {
      * @throws SolrServerException
      * @throws ParseException
      */
-    LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Project indexable, String term, TdarUser user,
+    LuceneSearchResultHandler<PResource> buildResourceContainedInSearch(Long id, String term, TdarUser user,
             LuceneSearchResultHandler<PResource> result, TextProvider provider) throws SearchException, IOException;
 
     /**

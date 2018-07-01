@@ -2,6 +2,7 @@ package org.tdar.core.bean.entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -287,4 +288,39 @@ public enum ResourceCreatorRole implements HasLabel, Localizable {
                 return false;
         }
     }
+
+    public Collection<ResourceCreator> getContentOwners(List<ResourceCreator> reasourceCreators) {
+        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
+
+        // get the applicable resource roles for this resource type
+        List<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getAuthorshipRoles();
+        if (reasourceCreators != null) {
+            for (ResourceCreator creator : reasourceCreators) {
+                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
+                    authors.add(creator);
+                }
+            }
+
+        }
+        Collections.sort(authors);
+        return authors;
+    }
+
+    public static Collection<ResourceCreator> getPrimaryCreators(Collection<ResourceCreator> set, ResourceType resourceType) {
+        List<ResourceCreator> authors = new ArrayList<ResourceCreator>();
+
+        // get the applicable resource roles for this resource type
+        Set<ResourceCreatorRole> primaryRoles = ResourceCreatorRole.getPrimaryCreatorRoles(resourceType);
+        if (set != null) {
+            for (ResourceCreator creator : set) {
+                if (primaryRoles.contains(creator.getRole()) && !creator.getCreator().isDeleted()) {
+                    authors.add(creator);
+                }
+            }
+
+        }
+        Collections.sort(authors);
+        return authors;
+    }
+
 }

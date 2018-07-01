@@ -59,4 +59,6 @@ public interface DataTableService {
 
     DataTable find(Long dataTableId);
 
+    List<DataTable> findDataTablesUsingResource(Long id);
+
 }

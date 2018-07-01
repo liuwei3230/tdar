@@ -9,6 +9,8 @@ import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.dao.integration.IntegrationOntologySearchResult;
 import org.tdar.core.dao.integration.search.OntologySearchFilter;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.core.service.resource.ontology.OntologyNodeWrapper;
 
 public interface OntologyService {
@@ -39,11 +41,11 @@ public interface OntologyService {
     /**
      * Filters a List of @link OntologyNode entries to to just the direct children of the @link OntologyNode.
      * 
-     * @param allNodes
-     * @param parent
+     * @param list
+     * @param node
      * @return
      */
-    List<OntologyNode> getChildren(List<OntologyNode> allNodes, OntologyNode parent);
+    List<POntologyNode> getChildren(List<POntologyNode> list, POntologyNode node);
 
     /**
      * Returns @link OntologyNode entries that are at the root of their trees (i.e. first Branches; their parent is the root).
@@ -80,7 +82,7 @@ public interface OntologyService {
 
     IntegrationOntologySearchResult findOntologies(OntologySearchFilter searchFilter);
 
-    OntologyNodeWrapper prepareOntologyJson(Ontology ontology);
+    OntologyNodeWrapper prepareOntologyJson(POntology ontology);
 
     Ontology find(Long id);
 

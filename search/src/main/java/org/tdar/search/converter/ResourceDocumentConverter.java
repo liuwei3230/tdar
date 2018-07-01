@@ -34,6 +34,7 @@ import org.tdar.core.bean.resource.IntegratableOptions;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.ResourceAccessType;
 import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
@@ -128,7 +129,7 @@ public class ResourceDocumentConverter extends AbstractSolrDocumentConverter {
                 doc.setField(QueryFieldNames.RESOURCE_PROVIDER_ID, ir.getResourceProviderInstitution().getId());
             }
 
-            doc.setField(QueryFieldNames.RESOURCE_ACCESS_TYPE, ir.getResourceAccessType().name());
+            doc.setField(QueryFieldNames.RESOURCE_ACCESS_TYPE, ResourceAccessType.getResourceAccessType(ir).name());
         }
 
         if (resource instanceof Document) {
@@ -301,7 +302,8 @@ public class ResourceDocumentConverter extends AbstractSolrDocumentConverter {
             map.get(ResourceCreatorRole.RESOURCE_PROVIDER).add(informationRessource.getResourceProviderInstitution());
             map.get(ResourceCreatorRole.PUBLISHER).add(informationRessource.getPublisher());
         }
-        doc.setField(QueryFieldNames.RESOURCE_CREATOR_ROLE_IDS, PersistableUtils.extractIds(resource.getPrimaryCreators()));
+        doc.setField(QueryFieldNames.RESOURCE_CREATOR_ROLE_IDS,
+                PersistableUtils.extractIds(ResourceCreatorRole.getPrimaryCreators(resource.getResourceCreators(), resource.getResourceType())));
 
         map.get(ResourceCreatorRole.SUBMITTER).add(resource.getSubmitter());
         map.get(ResourceCreatorRole.UPDATER).add(resource.getUpdatedBy());

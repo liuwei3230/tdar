@@ -29,6 +29,9 @@ import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.dao.resource.OntologyNodeDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ontology.OntologyNodeWrapper;
 import org.tdar.utils.PersistableUtils;
 
@@ -81,13 +84,17 @@ public class OntologyServiceITCase extends AbstractIntegrationTestCase {
         assertEquals("Paint", name);
     }
 
+    @Autowired
+    ProxyConstructionService pcs;
+    
     @Test
     @Rollback(true)
-    public void testJsonSerialization() throws IOException {
+    public void testJsonSerialization() throws IOException, InstantiationException, IllegalAccessException {
         Ontology ont = createOntology();
         File file = createOwlFile(ont, "not_flat.txt");
         ont = addFileToResource(ont, file);
-        OntologyNodeWrapper wrapper = ontologyService.prepareOntologyJson(ont);
+        POntology pOntology = pcs.constructResource(ont, POntology.class, null, false);
+        OntologyNodeWrapper wrapper = ontologyService.prepareOntologyJson(pOntology);
         logger.debug(wrapper.getDisplayName());
         assertEquals("Paint", wrapper.getDisplayName());
         assertEquals(9, wrapper.getChildren().size());
@@ -223,8 +230,8 @@ public class OntologyServiceITCase extends AbstractIntegrationTestCase {
         ontology.setId(3656L);
         node.setOntology(ontology);
         node.setIndex("1.2.3.1.76.77.78.79");
-
-        OntologyNode parent = ontologyNodeService.getParent(node);
+        POntologyNode pnode = pcs.convertOntologyNode(node);
+        POntologyNode parent = ontologyNodeService.getParent(pnode);
         assertNull(parent);
 
     }

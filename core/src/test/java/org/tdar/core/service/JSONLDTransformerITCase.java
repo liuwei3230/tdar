@@ -43,6 +43,9 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
         SchemaOrgResourceTransformer transformer = new SchemaOrgResourceTransformer();
 
         for (Resource r : genericService.findAll(Resource.class)) {
+            if (r == null) {
+                continue;
+            }
             logger.debug("//  {} - {}", r.getId(), r.getResourceType());
             PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
             logger.debug(transformer.convert(serializationService, rr));
@@ -91,7 +94,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testKeywords() throws IOException, ClassNotFoundException {
+    public void testKeywords() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         SchemaOrgKeywordTransformer transformer = new SchemaOrgKeywordTransformer();
         CultureKeyword random = genericService.find(CultureKeyword.class, 4L);
         ExternalKeywordMapping assertion = new ExternalKeywordMapping(HTTP_WWW_TEST_COM, RelationType.DCTERMS_IS_REPLACED_BY);

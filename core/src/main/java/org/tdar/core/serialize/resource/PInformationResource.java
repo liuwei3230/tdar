@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Transient;
@@ -85,37 +87,23 @@ public abstract class PInformationResource extends PResource {
     }
 
     private PProject project;
-
     private Set<PInformationResourceFile> informationResourceFiles = new LinkedHashSet<>();
-
     private Language metadataLanguage;
-
     private Language resourceLanguage;
-
     private LicenseType licenseType;
-
     private String licenseText;
-
     private String doi;
-
     private boolean externalReference;
-
     private String copyLocation;
-
     private Date lastUploaded;
-
     private Integer date = -1;
-
     private Integer dateNormalized = -1;
-
     private PInstitution resourceProviderInstitution;
-
     private PInstitution publisher;
-
     private String publisherLocation;
-
     private PCreator<?> copyrightHolder;
-
+    private Map<PDataTableColumn, String> mappedData = new HashMap<>();
+    
     public static final String INVESTIGATION_TYPE_INHERITANCE_TOGGLE = "inheriting_investigation_information";
     public static final String SITE_NAME_INHERITANCE_TOGGLE = "inheriting_site_information";
     public static final String MATERIAL_TYPE_INHERITANCE_TOGGLE = "inheriting_material_information";
@@ -877,5 +865,13 @@ public abstract class PInformationResource extends PResource {
 
     public void setTransientAccessType(ResourceAccessType transientAccessType) {
         this.transientAccessType = transientAccessType;
+    }
+
+    public Map<PDataTableColumn, String> getMappedData() {
+        return mappedData;
+    }
+
+    public void setMappedData(Map<PDataTableColumn, String> mappedData) {
+        this.mappedData = mappedData;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Dataset;
+import org.tdar.core.bean.resource.ResourceAccessType;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.DatasetService;
@@ -57,7 +58,7 @@ public class DataTableBrowseController extends AbstractAuthenticatableAction {
             return ERROR;
         }
         Dataset dataset = dataTable.getDataset();
-        if (dataset.isPublicallyAccessible() || authorizationService.canViewConfidentialInformation(getAuthenticatedUser(), dataset)) {
+        if (ResourceAccessType.isPublicallyAccessible(dataset) || authorizationService.canViewConfidentialInformation(getAuthenticatedUser(), dataset)) {
             ResultMetadataWrapper selectAllFromDataTable = ResultMetadataWrapper.NULL;
             try {
                 selectAllFromDataTable = datasetService.selectAllFromDataTable(dataTable, getStartRecord(), getRecordsPerPage(), true,

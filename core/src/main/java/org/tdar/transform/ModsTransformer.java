@@ -12,38 +12,38 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.coverage.CoverageDate;
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
-import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
-import org.tdar.core.bean.entity.Person;
-import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
-import org.tdar.core.bean.keyword.CultureKeyword;
-import org.tdar.core.bean.keyword.GeographicKeyword;
-import org.tdar.core.bean.keyword.InvestigationType;
-import org.tdar.core.bean.keyword.Keyword;
-import org.tdar.core.bean.keyword.MaterialKeyword;
-import org.tdar.core.bean.keyword.OtherKeyword;
-import org.tdar.core.bean.keyword.SiteNameKeyword;
-import org.tdar.core.bean.keyword.SiteTypeKeyword;
-import org.tdar.core.bean.keyword.TemporalKeyword;
-import org.tdar.core.bean.resource.Archive;
-import org.tdar.core.bean.resource.Audio;
-import org.tdar.core.bean.resource.CodingSheet;
-import org.tdar.core.bean.resource.Dataset;
-import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.DocumentType;
-import org.tdar.core.bean.resource.Geospatial;
-import org.tdar.core.bean.resource.Image;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Ontology;
-import org.tdar.core.bean.resource.Project;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
-import org.tdar.core.bean.resource.SensoryData;
-import org.tdar.core.bean.resource.Video;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.coverage.PCoverageDate;
+import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PPerson;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.keyword.PCultureKeyword;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
+import org.tdar.core.serialize.keyword.PInvestigationType;
+import org.tdar.core.serialize.keyword.PKeyword;
+import org.tdar.core.serialize.keyword.PMaterialKeyword;
+import org.tdar.core.serialize.keyword.POtherKeyword;
+import org.tdar.core.serialize.keyword.PSiteNameKeyword;
+import org.tdar.core.serialize.keyword.PSiteTypeKeyword;
+import org.tdar.core.serialize.keyword.PTemporalKeyword;
+import org.tdar.core.serialize.resource.PArchive;
+import org.tdar.core.serialize.resource.PAudio;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PGeospatial;
+import org.tdar.core.serialize.resource.PImage;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.PSensoryData;
+import org.tdar.core.serialize.resource.PVideo;
 import org.tdar.core.service.UrlService;
 import org.tdar.utils.XmlEscapeHelper;
 
@@ -60,7 +60,7 @@ import edu.asu.lib.mods.ModsElementContainer.TitleInfo;
 import edu.asu.lib.mods.ModsElementContainer.TypeOfResourceValue;
 import gov.loc.mods.v3.NameTypeAttribute;
 
-public abstract class ModsTransformer<R extends Resource> implements
+public abstract class ModsTransformer<R extends PResource> implements
         Transformer<R, ModsDocument> {
 
     @SuppressWarnings("unused")
@@ -76,25 +76,25 @@ public abstract class ModsTransformer<R extends Resource> implements
         title.addTitle(getX().stripNonValidXMLCharacters(source.getTitle()));
 
         // add resource creators
-        ArrayList<ResourceCreator> creators = new ArrayList<ResourceCreator>(source.getResourceCreators());
+        ArrayList<PResourceCreator> creators = new ArrayList<>(source.getResourceCreators());
         Collections.sort(creators);
 
         // FIXME: (1) mods roles may not be creator roles
         // (2) this does not properly handle editors (see references below)
         // (3) what about the populate Author method that's defined below
-        for (ResourceCreator resourceCreator : creators) {
+        for (PResourceCreator resourceCreator : creators) {
             addResourceCreator(mods, resourceCreator);
         }
 
         // add geographic subjects
-        Set<GeographicKeyword> geoTerms = source.getActiveGeographicKeywords();
-        for (GeographicKeyword geoTerm : geoTerms) {
+        Set<PGeographicKeyword> geoTerms = source.getActiveGeographicKeywords();
+        for (PGeographicKeyword geoTerm : geoTerms) {
             createTopic(mods, geoTerm);
         }
 
         // add temporal subjects
-        Set<TemporalKeyword> locTemporalTerms = source.getActiveTemporalKeywords();
-        for (TemporalKeyword temporalTerm : locTemporalTerms) {
+        Set<PTemporalKeyword> locTemporalTerms = source.getActiveTemporalKeywords();
+        for (PTemporalKeyword temporalTerm : locTemporalTerms) {
             Subject sub = mods.createSubject();
             // sub.getElementType().setHref(UrlService.absoluteSecureUrl(temporalTerm));
             sub.setAttribute("href", UrlService.absoluteSecureUrl(temporalTerm));
@@ -102,57 +102,57 @@ public abstract class ModsTransformer<R extends Resource> implements
         }
 
         // add culture subjects
-        Set<CultureKeyword> cultureTerms = source.getActiveCultureKeywords();
-        for (CultureKeyword cultureTerm : cultureTerms) {
+        Set<PCultureKeyword> cultureTerms = source.getActiveCultureKeywords();
+        for (PCultureKeyword cultureTerm : cultureTerms) {
             createTopic(mods, cultureTerm);
         }
 
         // add site name subjects
-        Set<SiteNameKeyword> siteNameTerms = source.getActiveSiteNameKeywords();
-        for (SiteNameKeyword siteNameTerm : siteNameTerms) {
+        Set<PSiteNameKeyword> siteNameTerms = source.getActiveSiteNameKeywords();
+        for (PSiteNameKeyword siteNameTerm : siteNameTerms) {
             createTopic(mods, siteNameTerm);
         }
 
         // add site name subjects
-        Set<SiteTypeKeyword> siteTypeTerms = source.getActiveSiteTypeKeywords();
-        for (SiteTypeKeyword siteTypeTerm : siteTypeTerms) {
+        Set<PSiteTypeKeyword> siteTypeTerms = source.getActiveSiteTypeKeywords();
+        for (PSiteTypeKeyword siteTypeTerm : siteTypeTerms) {
             createTopic(mods, siteTypeTerm);
         }
 
         // add site name subjects
-        Set<MaterialKeyword> materialKeywords = source.getActiveMaterialKeywords();
-        for (MaterialKeyword materialKeyword : materialKeywords) {
+        Set<PMaterialKeyword> materialKeywords = source.getActiveMaterialKeywords();
+        for (PMaterialKeyword materialKeyword : materialKeywords) {
             createTopic(mods, materialKeyword);
         }
 
         // add other subjects
-        Set<OtherKeyword> otherTerms = source.getActiveOtherKeywords();
-        for (OtherKeyword otherTerm : otherTerms) {
+        Set<POtherKeyword> otherTerms = source.getActiveOtherKeywords();
+        for (POtherKeyword otherTerm : otherTerms) {
             createTopic(mods, otherTerm);
         }
 
         // add other subjects
-        Set<InvestigationType> investigationTypes = source.getActiveInvestigationTypes();
-        for (InvestigationType otherTerm : investigationTypes) {
+        Set<PInvestigationType> investigationTypes = source.getActiveInvestigationTypes();
+        for (PInvestigationType otherTerm : investigationTypes) {
             createTopic(mods, otherTerm);
         }
 
-        for (LatitudeLongitudeBox longLat : source.getActiveLatitudeLongitudeBoxes()) {
+        for (PLatitudeLongitudeBox longLat : source.getActiveLatitudeLongitudeBoxes()) {
             Subject sub = mods.createSubject();
             List<String> coords = new ArrayList<>();
-            coords.add("MaxY: ".concat(longLat.getObfuscatedNorth().toString()));
-            coords.add("MinY: ".concat(longLat.getObfuscatedSouth().toString()));
+            coords.add("MaxY: ".concat(longLat.getNorth().toString()));
+            coords.add("MinY: ".concat(longLat.getSouth().toString()));
             coords.add("MaxX: "
-                    .concat(longLat.getObfuscatedEast().toString()));
+                    .concat(longLat.getEast().toString()));
             coords.add("MinX: "
-                    .concat(longLat.getObfuscatedWest().toString()));
+                    .concat(longLat.getWest().toString()));
             sub.addCartographics(coords, "wgs84", null);
         }
 
         mods.addIdentifier(getX().stripNonValidXMLCharacters(UrlService.absoluteUrl(source)), "uri", false, null);
         mods.addIdentifier(source.getId().toString(), "tdarId", false, null);
-        if (source instanceof InformationResource) {
-            InformationResource ir = (InformationResource) source;
+        if (source instanceof PInformationResource) {
+            PInformationResource ir = (PInformationResource) source;
             if (StringUtils.isNotBlank(ir.getDoi())) {
                 mods.addIdentifier(ir.getDoi(), "doi", false, null);
             }
@@ -160,7 +160,7 @@ public abstract class ModsTransformer<R extends Resource> implements
                 mods.addIdentifier(ir.getExternalId(), "doi", false, null);
             }
         }
-        for (CoverageDate date : source.getCoverageDates()) {
+        for (PCoverageDate date : source.getCoverageDates()) {
             Subject sub = mods.createSubject();
             sub.addTemporal(getX().stripNonValidXMLCharacters(date.toString()));
         }
@@ -170,26 +170,26 @@ public abstract class ModsTransformer<R extends Resource> implements
         return mods;
     }
 
-    private void createTopic(ModsDocument mods, Keyword otherTerm) {
+    private void createTopic(ModsDocument mods, PKeyword otherTerm) {
         Subject sub = mods.createSubject();
         // sub.getElementType().setHref(UrlService.absoluteUrl(otherTerm));
         sub.setAttribute("href", UrlService.absoluteSecureUrl(otherTerm));
         sub.addTopic(getX().stripNonValidXMLCharacters(otherTerm.getLabel()));
     }
 
-    protected void addResourceCreator(ModsElementContainer mods, ResourceCreator resourceCreator) {
+    protected void addResourceCreator(ModsElementContainer mods, PResourceCreator resourceCreator) {
         Name name = mods.createName();
         if (resourceCreator.getRole() != null) {
             name.addRole(resourceCreator.getRole().getLabel(), false, null);
         }
 
-        Creator creator = resourceCreator.getCreator();
+        PCreator creator = resourceCreator.getCreator();
         name.addDisplayForm(creator.getProperName());
         name.setAttribute("href", UrlService.absoluteSecureUrl(creator));
 
         if (creator.getCreatorType() == CreatorType.PERSON) {
             name.setNameType(NameTypeAttribute.PERSONAL);
-            Person person = (Person) creator;
+            PPerson person = (PPerson) creator;
             name.addNamePart(getX().stripNonValidXMLCharacters(person.getFirstName()), NamePartTypeValue.given);
             name.addNamePart(getX().stripNonValidXMLCharacters(person.getLastName()), NamePartTypeValue.family);
             if (person.getInstitution() != null) {
@@ -201,14 +201,14 @@ public abstract class ModsTransformer<R extends Resource> implements
         }
     }
 
-    public static class InformationResourceTransformer<I extends InformationResource>
+    public static class InformationResourceTransformer<I extends PInformationResource>
             extends ModsTransformer<I> {
 
         @Override
         public ModsDocument transform(I source) {
             ModsDocument mods = super.transform(source);
 
-            for (ResourceCreator resourceCreator : source.getResourceCreators()) {
+            for (PResourceCreator resourceCreator : source.getResourceCreators()) {
                 if (resourceCreator.getRole() == ResourceCreatorRole.CONTACT) {
                     mods.getOriginInfo().addPublisher(getX().stripNonValidXMLCharacters(resourceCreator.getCreator().getProperName()));
                 }
@@ -248,16 +248,16 @@ public abstract class ModsTransformer<R extends Resource> implements
     }
 
     public static class DocumentTransformer
-            extends InformationResourceTransformer<Document> {
+            extends InformationResourceTransformer<PDocument> {
 
         @Override
-        protected void populateAuthorSection(Document source, ModsDocument mods) {
+        protected void populateAuthorSection(PDocument source, ModsDocument mods) {
             // TODO we dont' do anything here. but we override it so the parent doesn't implement this
         }
 
         @SuppressWarnings("deprecation")
         @Override
-        public ModsDocument transform(Document source) {
+        public ModsDocument transform(PDocument source) {
             ModsDocument mods = super.transform(source);
 
             String abst = source.getDescription();
@@ -415,43 +415,43 @@ public abstract class ModsTransformer<R extends Resource> implements
 
     }
 
-    public static class DatasetTransformer extends ModsTransformer<Dataset> {
+    public static class DatasetTransformer extends ModsTransformer<PDataset> {
         // marker class
     }
 
-    public static class CodingSheetTransformer extends ModsTransformer<CodingSheet> {
+    public static class CodingSheetTransformer extends ModsTransformer<PCodingSheet> {
         // marker class
     }
 
-    public static class ImageTransformer extends ModsTransformer<Image> {
+    public static class ImageTransformer extends ModsTransformer<PImage> {
         // marker class
     }
 
-    public static class SensoryDataTransformer extends ModsTransformer<SensoryData> {
+    public static class SensoryDataTransformer extends ModsTransformer<PSensoryData> {
         // marker class
     }
 
-    public static class OntologyTransformer extends ModsTransformer<Ontology> {
+    public static class OntologyTransformer extends ModsTransformer<POntology> {
         // marker class
     }
 
-    public static class ProjectTransformer extends ModsTransformer<Project> {
+    public static class ProjectTransformer extends ModsTransformer<PProject> {
         // marker class
     }
 
-    public static class ArchiveTransformer extends ModsTransformer<Archive> {
+    public static class ArchiveTransformer extends ModsTransformer<PArchive> {
         // marker class
     }
 
-    public static class AudioTransformer extends ModsTransformer<Audio> {
+    public static class AudioTransformer extends ModsTransformer<PAudio> {
         // marker class
     }
 
-    public static class VideoTransformer extends ModsTransformer<Video> {
+    public static class VideoTransformer extends ModsTransformer<PVideo> {
         // marker class
     }
 
-    public static class GeospatialTransformer extends ModsTransformer<Geospatial> {
+    public static class GeospatialTransformer extends ModsTransformer<PGeospatial> {
         // marker class
     }
 
@@ -477,34 +477,34 @@ public abstract class ModsTransformer<R extends Resource> implements
 
     }
 
-    public static ModsDocument transformAny(Resource resource) {
-        ResourceType resourceType = ResourceType.fromClass(resource.getClass());
+    public static ModsDocument transformAny(PResource resource) {
+        ResourceType resourceType = resource.getResourceType();
         if (resourceType == null) {
             throw new TdarRecoverableRuntimeException("transformer.unsupported_type");
         }
         switch (resourceType) {
             case CODING_SHEET:
-                return new CodingSheetTransformer().transform((CodingSheet) resource);
+                return new CodingSheetTransformer().transform((PCodingSheet) resource);
             case DATASET:
-                return new DatasetTransformer().transform((Dataset) resource);
+                return new DatasetTransformer().transform((PDataset) resource);
             case DOCUMENT:
-                return new DocumentTransformer().transform((Document) resource);
+                return new DocumentTransformer().transform((PDocument) resource);
             case IMAGE:
-                return new ImageTransformer().transform((Image) resource);
+                return new ImageTransformer().transform((PImage) resource);
             case ONTOLOGY:
-                return new OntologyTransformer().transform((Ontology) resource);
+                return new OntologyTransformer().transform((POntology) resource);
             case PROJECT:
-                return new ProjectTransformer().transform((Project) resource);
+                return new ProjectTransformer().transform((PProject) resource);
             case SENSORY_DATA:
-                return new SensoryDataTransformer().transform((SensoryData) resource);
+                return new SensoryDataTransformer().transform((PSensoryData) resource);
             case VIDEO:
-                return new VideoTransformer().transform((Video) resource);
+                return new VideoTransformer().transform((PVideo) resource);
             case GEOSPATIAL:
-                return new GeospatialTransformer().transform((Geospatial) resource);
+                return new GeospatialTransformer().transform((PGeospatial) resource);
             case ARCHIVE:
-                return new ArchiveTransformer().transform((Archive) resource);
+                return new ArchiveTransformer().transform((PArchive) resource);
             case AUDIO:
-                return new AudioTransformer().transform((Audio) resource);
+                return new AudioTransformer().transform((PAudio) resource);
             default:
                 break;
         }
