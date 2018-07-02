@@ -646,6 +646,7 @@ public class ProxyConstructionService {
         if (ctx.isPersonEmailObfuscated() == false && ctx.getUserId() != person.getId()) {
             person.setEmail(creator.getEmail());
         }
+        updateCreator(person, creator);
     }
 
     private PInstitution createInstitution(Institution creator, Context ctx) {
@@ -734,8 +735,8 @@ public class ProxyConstructionService {
             throws InstantiationException, IllegalAccessException {
         K k = cls.newInstance();
         k.setLabel(k_.getLabel());
-        k.setId(k.getId());
-        k.setDefinition(k.getDefinition());
+        k.setId(k_.getId());
+        k.setDefinition(k_.getDefinition());
         k.setStatus(k_.getStatus());
         k_.getAssertions().forEach(a_ -> {
             PExternalKeywordMapping a = new PExternalKeywordMapping();
