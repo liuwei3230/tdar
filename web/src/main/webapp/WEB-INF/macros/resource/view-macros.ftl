@@ -568,7 +568,7 @@ View freemarker macros
                                        src="<@s.url value="/files/sm/${irfile.latestThumbnail.id?c}"/>" <#t>
                                    </#if>
                                    onError="this.src = '<@s.url value="/images/image_unavailable_t.gif"/>';" <#t>
-                                   data-url="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
+                                   data-url="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>" <#t>
                                    <#if !irfile.public>data-access-rights="${irfile.restriction.label}"</#if>> <#lt>
                           </span>
                         </div>
@@ -601,7 +601,7 @@ View freemarker macros
                 <div>
             <span id="imageContainer">
             <img id="bigImage" alt="#${irfile_index} - ${irfile.filename!''}" title="#${irfile_index} - ${irfile.filename!''}"
-                 src="<@s.url value="/filestore/get/${irfile.informationResource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
+                 src="<@s.url value="/filestore/get/${resource.id?c}/${irfile.zoomableVersion.id?c}"/>"/>
             <#if !irfile.public><span id="confidentialLabel">This file is <em>${irfile.restriction.label}</em>, but you have rights to see it.</span></#if>
                 </div>
                 <div id="downloadText">
