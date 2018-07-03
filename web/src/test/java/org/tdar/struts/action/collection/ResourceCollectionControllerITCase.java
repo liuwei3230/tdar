@@ -44,6 +44,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.collection.CollectionRightsComparator;
@@ -147,9 +148,10 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        logger.info("results: {} ", vc.getResults());
-        assertTrue(vc.getResults().contains(normal));
-        assertTrue(vc.getResults().contains(draft));
+        List<Long> results = PersistableUtils.extractIds(vc.getResults());
+        logger.info("results: {} ", results);
+        assertTrue(results.contains(normal.getId()));
+        assertTrue(results.contains(draft.getId()));
         genericService.delete(vc.getResourceCollection().getAuthorizedUsers());
     }
 
@@ -515,8 +517,8 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
 
         controller_.setRecordsPerPage(1000);
         assertEquals(Action.SUCCESS, controller_.browseCollections());
-        List<ResourceCollection> collections_ = controller_.getResults();
-        for (ResourceCollection result : collections_) {
+        List<PResourceCollection> collections_ = controller_.getResults();
+        for (PResourceCollection result : collections_) {
             if (result != null) {
                 logger.debug("{} {} {} {} ", result.getId(), result.isHidden());
             }
@@ -597,9 +599,10 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         BrowseCollectionController browseController = generateNewInitializedController(BrowseCollectionController.class, testPerson);
         browseController.setRecordsPerPage(Integer.MAX_VALUE);
         browseController.browseCollections();
-        logger.debug("results:{}", PersistableUtils.extractIds(browseController.getResults()));
-        assertTrue("should see child collection of hidden parent", browseController.getResults().contains(collection2));
-        assertFalse("should not see hidden collection", browseController.getResults().contains(collection1));
+        List<Long> results = PersistableUtils.extractIds(browseController.getResults());
+        logger.debug("results:{}", results);
+        assertTrue("should see child collection of hidden parent", results.contains(collection2.getId()));
+        assertFalse("should not see hidden collection", results.contains(collection1.getId()));
     }
 
     @Test
@@ -713,7 +716,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.prepare();
         assertEquals(CollectionViewAction.SUCCESS, vc.view());
         logger.info("results: {}", vc.getResults());
-        assertTrue(vc.getResults().contains(document));
+        assertTrue(PersistableUtils.extractIds(vc.getResults()).contains(document.getId()));
     }
 
     @Test
@@ -734,8 +737,9 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(collection.getSlug());
         vc.prepare();
         logger.info(vc.view());
-        assertTrue(vc.getResults().contains(draftDocument));
-        assertTrue(vc.getResults().contains(activeDocument));
+        List<Long> results = PersistableUtils.extractIds(vc.getResults());
+        assertTrue(results.contains(draftDocument.getId()));
+        assertTrue(results.contains(activeDocument.getId()));
 
         vc = generateNewController(CollectionViewAction.class);
         initAnonymousUser(vc);
@@ -743,8 +747,9 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(collection.getSlug());
         vc.prepare();
         vc.view();
-        assertFalse(vc.getResults().contains(draftDocument));
-        assertTrue(vc.getResults().contains(activeDocument));
+        results = PersistableUtils.extractIds(vc.getResults());
+        assertFalse(results.contains(draftDocument.getId()));
+        assertTrue(results.contains(activeDocument.getId()));
     }
 
     @Test
@@ -1102,7 +1107,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(slug);
         vc.prepare();
         vc.view();
-        assertTrue("resource should be viewable", ((Viewable) (vc.getResults().get(0))).isViewable());
+        assertTrue("resource should be viewable", PersistableUtils.extractIds(vc.getResults()).contains(project.getId()));
         registeredUser = null;
         registeredUser = genericService.find(TdarUser.class, ruid);
         // now make the registeredUser a non-contributor. make sure they can see the resource (TDAR-2028)
@@ -1114,7 +1119,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(slug);
         vc.prepare();
         vc.view();
-        assertTrue("resource should be viewable", ((Viewable) vc.getResults().get(0)).isViewable());
+        assertTrue("resource should be viewable", PersistableUtils.extractIds(vc.getResults()).contains(project.getId()));
     }
 
     /**

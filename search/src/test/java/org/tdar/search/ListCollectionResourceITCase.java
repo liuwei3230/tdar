@@ -11,6 +11,7 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.resource.ResourceService;
@@ -28,7 +29,7 @@ import org.tdar.utils.PersistableUtils;
 public class ListCollectionResourceITCase extends AbstractResourceSearchITCase {
 
     @Autowired
-    CreatorSearchService<Creator<?>> creatorSearchService;
+    CreatorSearchService<PCreator<?>> creatorSearchService;
 
     @Autowired
     ResourceService resourceService;

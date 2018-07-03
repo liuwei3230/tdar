@@ -13,6 +13,7 @@ import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
@@ -45,8 +46,8 @@ public class CollectionSearchServiceImpl extends AbstractSearchService implement
      * org.tdar.search.bean.CollectionSearchQueryObject, org.tdar.search.query.LuceneSearchResultHandler, com.opensymphony.xwork2.TextProvider)
      */
     @Override
-    public LuceneSearchResultHandler<ResourceCollection> buildResourceCollectionQuery(TdarUser authenticatedUser, CollectionSearchQueryObject query,
-            LuceneSearchResultHandler<ResourceCollection> result, TextProvider provider) throws SearchException, IOException {
+    public LuceneSearchResultHandler<PResourceCollection> buildResourceCollectionQuery(TdarUser authenticatedUser, CollectionSearchQueryObject query,
+            LuceneSearchResultHandler<PResourceCollection> result, TextProvider provider) throws SearchException, IOException {
         ResourceCollectionQueryBuilder queryBuilder = new ResourceCollectionQueryBuilder();
         queryBuilder.setCreatorCreatedEmphasized(true);
         queryBuilder.setOperator(Operator.AND);
@@ -121,8 +122,8 @@ public class CollectionSearchServiceImpl extends AbstractSearchService implement
      * org.tdar.search.bean.CollectionSearchQueryObject, org.tdar.search.query.LuceneSearchResultHandler, com.opensymphony.xwork2.TextProvider)
      */
     @Override
-    public LuceneSearchResultHandler<ResourceCollection> lookupCollection(TdarUser authenticatedUser, CollectionSearchQueryObject csqo,
-            LuceneSearchResultHandler<ResourceCollection> result, TextProvider provider) throws SearchException, IOException {
+    public LuceneSearchResultHandler<PResourceCollection> lookupCollection(TdarUser authenticatedUser, CollectionSearchQueryObject csqo,
+            LuceneSearchResultHandler<PResourceCollection> result, TextProvider provider) throws SearchException, IOException {
         ResourceCollectionQueryBuilder q = new ResourceCollectionQueryBuilder();
         q.setCreatorCreatedEmphasized(true);
         q.setOperator(Operator.AND);

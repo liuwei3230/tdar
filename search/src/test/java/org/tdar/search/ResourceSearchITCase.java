@@ -64,6 +64,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.serialize.resource.PInformationResource;
@@ -94,7 +95,7 @@ import org.tdar.utils.range.DateRange;
 public class ResourceSearchITCase extends AbstractResourceSearchITCase {
 
     @Autowired
-    CreatorSearchService<Creator<?>> creatorSearchService;
+    CreatorSearchService<PCreator<?>> creatorSearchService;
 
     @Autowired
     ResourceService resourceService;
@@ -376,7 +377,7 @@ public class ResourceSearchITCase extends AbstractResourceSearchITCase {
 
             } else {
                 logger.debug("resourceid:{} contents of resource:", resource.getId(), ((PResource) resource).getActiveCultureKeywords());
-                assertTrue("expecting site type for resource:", ((PResource) resource).getActiveCultureKeywords().contains(keyword.getId()));
+                assertTrue("expecting site type for resource:", PersistableUtils.extractIds(((PResource) resource).getActiveCultureKeywords()).contains(keyword.getId()));
             }
         }
     }
@@ -396,6 +397,7 @@ public class ResourceSearchITCase extends AbstractResourceSearchITCase {
             if (resource instanceof PInformationResource) {
                 resourceCount++;
                 PInformationResource informationResource = (PInformationResource) resource;
+                logger.debug("{} / {} / {}", projectId, informationResource, informationResource.getProject());
                 assertEquals("informationResource should belong to project we just searched for", projectId, informationResource.getProjectId());
             }
         }
@@ -718,15 +720,17 @@ public class ResourceSearchITCase extends AbstractResourceSearchITCase {
         params.setOperator(Operator.OR);
 
         SearchResult<PResource> result = doSearch(null, null, params, null);
-        assertTrue(result.getResults().contains(doc1));
-        assertTrue(result.getResults().contains(doc2));
-        logger.debug("results:{}", result.getResults());
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        assertTrue(results.contains(doc1.getId()));
+        assertTrue(results.contains(doc2.getId()));
+        logger.debug("results:{}", results);
 
         params.setOperator(Operator.AND);
         result = doSearch(null, null, params, null);
-        logger.debug("results:{}", result.getResults());
-        assertFalse(result.getResults().contains(doc1));
-        assertFalse(result.getResults().contains(doc2));
+        results = PersistableUtils.extractIds(result.getResults());
+        logger.debug("results:{}", results);
+        assertFalse(results.contains(doc1.getId()));
+        assertFalse(results.contains(doc2.getId()));
     }
 
     @Test
@@ -856,7 +860,8 @@ public class ResourceSearchITCase extends AbstractResourceSearchITCase {
         // skeleton lists should have been loaded w/ sparse records...
         // assertEquals(proj.getTitle(), sp.getProjects().get(0).getTitle());
         assertEquals(colname, ((ResourceCollection) sp.getShares().get(0)).getName());
-        assertTrue(result.getResults().contains(proj));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        assertTrue(results.contains(proj.getId()));
         // assertEquals(proj.getId(), sp.getProjects().get(0).getId());
         // assertEquals(coll.getId(), sp.getCollections().get(1).getId());
     }
@@ -1260,9 +1265,10 @@ public class ResourceSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(document);
         setupTestDocuments();
         SearchResult<PResource> result = doSearch(resourceTitle);
-        logger.info("results:{}", result.getResults());
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        logger.info("results:{}", results);
         assertContains(document, result);
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test

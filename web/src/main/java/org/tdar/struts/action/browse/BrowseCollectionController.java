@@ -16,11 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.bean.CollectionSearchQueryObject;
@@ -47,7 +47,7 @@ import org.tdar.utils.PersistableUtils;
 @Component
 @Scope("prototype")
 @HttpsOnly
-public class BrowseCollectionController extends AbstractLookupController<ResourceCollection> {
+public class BrowseCollectionController extends AbstractLookupController<PResourceCollection> {
 
     public static final String COLLECTIONS = "collections";
     public static final String EXPLORE = "explore";

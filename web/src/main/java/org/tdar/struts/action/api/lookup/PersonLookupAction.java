@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.service.query.CreatorSearchService;
@@ -32,7 +33,7 @@ import org.tdar.utils.json.JsonLookupFilter;
 @ParentPackage("default")
 @Component
 @Scope("prototype")
-public class PersonLookupAction extends AbstractLookupController<Person> {
+public class PersonLookupAction extends AbstractLookupController<PPerson> {
 
     private static final long serialVersionUID = 8578701377110641153L;
 
@@ -44,7 +45,7 @@ public class PersonLookupAction extends AbstractLookupController<Person> {
     private String term;
 
     @Autowired
-    private CreatorSearchService<Person> creatorSearchService;
+    private CreatorSearchService<PPerson> creatorSearchService;
 
     @Action(value = "person", results = {
             @Result(name = SUCCESS, type = JSONRESULT)

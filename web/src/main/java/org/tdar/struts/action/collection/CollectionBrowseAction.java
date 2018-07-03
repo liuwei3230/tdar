@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.CollectionResourceSection;
-import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.service.query.CollectionSearchService;
@@ -29,7 +29,7 @@ import com.opensymphony.xwork2.Preparable;
 @Component
 @Scope("prototype")
 @HttpsOnly
-public class CollectionBrowseAction extends AbstractLookupController<ResourceCollection> implements Preparable {
+public class CollectionBrowseAction extends AbstractLookupController<PResourceCollection> implements Preparable {
 
     private static final long serialVersionUID = 1943741795132888657L;
 

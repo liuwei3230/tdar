@@ -15,6 +15,7 @@ import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.search.bean.PersonSearchOption;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.query.LuceneSearchResultHandler;
@@ -33,7 +34,7 @@ import com.opensymphony.xwork2.TextProvider;
 
 @Service
 @Transactional
-public class CreatorSearchServiceImpl<I extends Creator<?>> extends AbstractSearchService implements CreatorSearchService<I> {
+public class CreatorSearchServiceImpl<I extends PCreator<?>> extends AbstractSearchService implements CreatorSearchService<I> {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 

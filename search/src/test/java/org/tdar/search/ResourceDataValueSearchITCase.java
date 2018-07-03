@@ -3,6 +3,7 @@ package org.tdar.search;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -31,6 +32,7 @@ import org.tdar.search.query.SearchResult;
 import org.tdar.search.service.CoreNames;
 import org.tdar.search.service.query.ResourceSearchService;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class ResourceDataValueSearchITCase extends AbstractWithIndexIntegrationTestCase {
 
@@ -81,11 +83,12 @@ public class ResourceDataValueSearchITCase extends AbstractWithIndexIntegrationT
 
     private void searchFor(Dataset dataset, String term) throws IOException, SearchException, SearchIndexException {
         SearchResult result = performSearch(term, null, 100);
-        result.getResults().forEach(r -> {
+        List results = result.getResults();
+        results.forEach(r -> {
             logger.debug(" - {}", r);
         });
-        assertNotEmpty("should have results", result.getResults());
-        assertTrue(result.getResults().contains(dataset));
+        assertNotEmpty("should have results", results);
+        assertTrue(PersistableUtils.extractIds(results).contains(dataset.getId()));
     }
 
     public SearchResult performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
@@ -29,7 +30,7 @@ import org.tdar.struts_base.action.TdarActionException;
 @Scope("prototype")
 @ParentPackage("default")
 @HttpsOnly
-public class CollectionSearchAction extends AbstractLookupController<ResourceCollection> {
+public class CollectionSearchAction extends AbstractLookupController<PResourceCollection> {
 
     private static final long serialVersionUID = -4107940683143336985L;
 

@@ -49,9 +49,10 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
 
         setupTestDocuments();
         SearchResult<PResource> result = doSearch(resourceTitle);
-        logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        logger.info("results:{}", results);
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -65,9 +66,10 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         SearchParameters params = new SearchParameters();
         params.getTitles().add(resourceTitle);
         SearchResult<PResource> result = doSearch("", null, params, null);
-        logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        logger.info("results:{}", results);
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -81,9 +83,10 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         SearchParameters params = new SearchParameters();
         params.getTitles().add(resourceTitle.replaceAll("\\-", ""));
         SearchResult<PResource> result = doSearch("", null, params, null);
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
         logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -125,7 +128,8 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         setupTestDocuments();
         SearchResult<PResource> result = doSearch("what fun 33-Cu-314");
         logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.entity.Institution;
+import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.service.SearchUtils;
@@ -28,13 +29,13 @@ import org.tdar.utils.json.JsonLookupFilter;
 @ParentPackage("default")
 @Component
 @Scope("prototype")
-public class InstitutionLookupAction extends AbstractLookupController<Institution> {
+public class InstitutionLookupAction extends AbstractLookupController<PInstitution> {
 
     private static final long serialVersionUID = -6332785137761675803L;
 
     private String institution;
     @Autowired
-    private CreatorSearchService creatorSearchService;
+    private CreatorSearchService<PInstitution> creatorSearchService;
 
     @Action(value = "institution", results = {
             @Result(name = SUCCESS, type = JSONRESULT)

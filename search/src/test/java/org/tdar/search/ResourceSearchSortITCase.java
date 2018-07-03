@@ -20,6 +20,7 @@ import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
+import org.tdar.utils.PersistableUtils;
 
 public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
 
@@ -82,14 +83,15 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
                 logger.debug("{} {}", r.getId(), r.getName());
             }
         }
-        int i = results.indexOf(project);
-        assertEquals(i + 1, results.indexOf(a));
-        assertEquals(i + 2, results.indexOf(b));
-        assertEquals(i + 3, results.indexOf(c));
-        assertEquals(i + 4, results.indexOf(project2));
-        assertEquals(i + 5, results.indexOf(aa));
-        assertEquals(i + 6, results.indexOf(d));
-        assertEquals(i + 7, results.indexOf(e));
+        List<Long> ids = PersistableUtils.extractIds(results);
+        int i = ids.indexOf(project.getId());
+        assertEquals(i + 1, ids.indexOf(a.getId()));
+        assertEquals(i + 2, ids.indexOf(b.getId()));
+        assertEquals(i + 3, ids.indexOf(c.getId()));
+        assertEquals(i + 4, ids.indexOf(project2.getId()));
+        assertEquals(i + 5, ids.indexOf(aa.getId()));
+        assertEquals(i + 6, ids.indexOf(d.getId()));
+        assertEquals(i + 7, ids.indexOf(e.getId()));
     }
 
     @Test

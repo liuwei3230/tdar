@@ -120,7 +120,7 @@ public class ProjectionTransformer<I extends Indexable> {
             logger.trace("begin resource creator");
             r_.getResourceCreators().addAll(proxyConstructionService.convertResourceCreators(datasetDao.findAll(ResourceCreator.class, cIds),ctx));
         }
-
+//        logger.debug("{} - {} {}", r_.getResourceType(), r_.getClass(), r_);
         if (r_ instanceof PInformationResource) {
             // add file info
             PInformationResource ir = (PInformationResource) r_;
@@ -139,11 +139,13 @@ public class ProjectionTransformer<I extends Indexable> {
 
             // setup project
             String ptitle = (String) doc.getFieldValue(QueryFieldNames.PROJECT_TITLE);
+            Long projectId = (Long) doc.getFieldValue(QueryFieldNames.PROJECT_ID);
             ir.setDate((Integer) doc.getFieldValue(QueryFieldNames.DATE));
-            if (StringUtils.isNotBlank(ptitle)) {
+            logger.debug("{} - {}" , ptitle, projectId);
+            if (StringUtils.isNotBlank(ptitle) || projectId != null) {
                 PProject project = new PProject();
                 project.setTitle(ptitle);
-                project.setId((Long) doc.getFieldValue(QueryFieldNames.PROJECT_ID));
+                project.setId(projectId);
                 ir.setProject(project);
             }
 

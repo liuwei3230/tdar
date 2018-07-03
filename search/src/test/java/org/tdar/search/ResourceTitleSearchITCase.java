@@ -18,6 +18,7 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ObjectType;
 import org.tdar.search.bean.ReservedSearchParameters;
@@ -39,13 +40,13 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         sp.setTitles(Arrays.asList("USAF"));
         SearchResult<PResource> result = doSearch(null, null, sp, null);
 
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
         doc.setTitle("USAF");
         updateAndIndex(doc);
         sp = new SearchParameters();
         sp.setTitles(Arrays.asList("usaf"));
         result = doSearch(null, null, sp, null);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @SuppressWarnings("deprecation")
@@ -87,9 +88,9 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
             logger.debug("results: {}", r);
         }
 
-        assertTrue("controller should not contain titles with MACROFLORAL", CollectionUtils.containsAny(results, badMatches));
+        assertTrue("controller should not contain titles with MACROFLORAL", CollectionUtils.containsAny(PersistableUtils.extractIds(results), PersistableUtils.extractIds(badMatches)));
         assertTrue("controller should not contain titles with MACROFLORAL",
-                CollectionUtils.containsAll(results.subList(results.size() - 3, results.size()), badMatches));
+                CollectionUtils.containsAll(PersistableUtils.extractIds(results.subList(results.size() - 3, results.size())), PersistableUtils.extractIds(badMatches)));
 
     }
 
@@ -108,7 +109,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
 
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
-        assertEquals(doc, result.getResults().iterator().next());
+        assertEquals(doc.getId(), result.getResults().iterator().next().getId());
     }
 
     @Test
@@ -125,7 +126,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         SearchResult<PResource> result = doSearch(null, null, sp, null);
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
-        assertEquals(doc, result.getResults().iterator().next());
+        assertEquals(doc.getId(), result.getResults().iterator().next().getId());
     }
 
     @SuppressWarnings("deprecation")
@@ -271,7 +272,12 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         for (int i = 0; i < titles.length; i++) {
             String title = titles[i];
             Integer cat = cats[i];
-            CodingSheet cs = createAndSaveNewInformationResource(CodingSheet.class, getUser(), title);
+            CodingSheet cs = new CodingSheet();
+            cs.setStatus(Status.ACTIVE);
+            cs.markUpdated(getUser());
+            cs.setTitle(title);
+            cs.setDescription(title);
+            cs.setDate(2018);
             allSheets.add(cs);
             if (cat != null) {
                 cs.setCategoryVariable(genericService.find(CategoryVariable.class, (long) cat));
@@ -280,8 +286,6 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
                 logger.info("{} {}", cs, cs.getCategoryVariable().getId());
                 sheets.add(cs);
             }
-            cs = null;
-
         }
         genericService.saveOrUpdate(allSheets);
         genericService.synchronize();
@@ -319,7 +323,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         SearchParameters sp = new SearchParameters();
         sp.getTitles().add(projectTitle);
         SearchResult<PResource> result = doSearch(null, null, sp, null);
-        result.getResults().contains(project);
+        PersistableUtils.extractIds(result.getResults()).contains(project.getId());
     }
 
     @SuppressWarnings("deprecation")

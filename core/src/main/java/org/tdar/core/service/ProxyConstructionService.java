@@ -11,6 +11,8 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
+import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
@@ -57,6 +60,7 @@ import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.entity.PTdarUser;
+import org.tdar.core.serialize.integration.PDataIntegrationWorkflow;
 import org.tdar.core.serialize.keyword.PCultureKeyword;
 import org.tdar.core.serialize.keyword.PExternalKeywordMapping;
 import org.tdar.core.serialize.keyword.PGeographicKeyword;
@@ -100,6 +104,9 @@ public class ProxyConstructionService {
 
     @Autowired
     private GenericDao genericDao;
+    
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
 
     @Transactional(readOnly = true)
     public <R extends PResource, T extends Resource> R constructResource(T resource, Class<R> cls,
@@ -178,7 +185,7 @@ public class ProxyConstructionService {
             ir.setDate(iresource.getDate());
             ir.setDateNormalized(iresource.getDateNormalized());
             ir.setResourceProviderInstitution(createInstitution(iresource.getResourceProviderInstitution(), ctx));
-            // ir.setProject(iresource.getProject());
+            ir.setProject(constructResource(iresource.getProject(), PProject.class, ctx.getUser(), false));
             ir.setExternalReference(iresource.isExternalReference());
             ir.setLastUploaded(iresource.getLastUploaded());
             ir.setInformationResourceFiles(convertInformationResourceFiles(iresource.getInformationResourceFiles(), ctx));
@@ -524,8 +531,8 @@ public class ProxyConstructionService {
         }
         Set<PResourceCollection> toReturn = new HashSet<>();
         collections.forEach(rc_ -> {
-            if (rc_.isActive() || rc_.isDraft() && authorizationService.canView(ctx.getUser(), rc_)) {
-                PResourceCollection rc = convertResourceCollection(rc_, depth, ctx);
+            PResourceCollection rc = convertResourceCollection(rc_, depth, ctx);
+            if (rc_.isActive() || rc_.isDraft() && rc != null) {
                 toReturn.add(rc);
             }
         });
@@ -538,6 +545,11 @@ public class ProxyConstructionService {
             return null;
         }
 
+        boolean viewable = authorizationService.canView(ctx.getUser(), rc_);
+        logger.debug("viewable: {} / {} / {}", viewable, ctx.getUser(), rc_);
+        if (!viewable) {
+            return null;
+        }
         PResourceCollection rc = new PResourceCollection();
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), depth, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), depth, ctx));
@@ -646,6 +658,7 @@ public class ProxyConstructionService {
         if (ctx.isPersonEmailObfuscated() == false && ctx.getUserId() != person.getId()) {
             person.setEmail(creator.getEmail());
         }
+        person.setInstitution(createInstitution(creator.getInstitution(), ctx));
         updateCreator(person, creator);
     }
 
@@ -697,7 +710,7 @@ public class ProxyConstructionService {
     }
 
     private PTdarUser convertUser(TdarUser creator, Context ctx) {
-        if (!creator.isActive() && !creator.isDuplicate()) {
+        if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
         PTdarUser user = new PTdarUser();
@@ -772,7 +785,38 @@ public class ProxyConstructionService {
         if (PResource.class.isAssignableFrom(cls)) {
             return (I) constructResource((Resource) j, (PResource) cls.newInstance(), authenticatedUser, false);
         }
+        Context ctx = new Context(authenticatedUser);
+        if (PResourceCollection.class.isAssignableFrom(cls)) {
+            return (I) convertResourceCollection((ResourceCollection) j, 1, ctx);
+        }
+        if (PCreator.class.isAssignableFrom(cls)) {
+            return (I) createCreator((Creator<?>) j, ctx);
+        }
+        if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
+            return (I) createIntegration((DataIntegrationWorkflow) j, ctx);
+        }
         return null;
+    }
+
+    private PDataIntegrationWorkflow createIntegration(DataIntegrationWorkflow work_, Context ctx) {
+        boolean viewable = authorizationService.canView(ctx.getUser(), work_);
+        logger.debug("viewable: {} / {} / {}", viewable, ctx.getUser(), work_);
+        if (!viewable) {
+            return null;
+        }
+
+        PDataIntegrationWorkflow work = new PDataIntegrationWorkflow();
+        work.setTitle(work_.getTitle());
+        work.setId(work_.getId());
+        work.setDescription(work_.getDescription());
+        work.setJsonData(work_.getJsonData());
+        work.setSubmitter(work_.getSubmitter());
+        work.setDateUpdated(work_.getDateUpdated());
+        work.setDateCreated(work_.getDateCreated());
+        work.setHidden(work_.isHidden());
+        work.setAuthorizedUsers(work_.getAuthorizedUsers());
+        work.setEditable(work_.isEditable());
+        return work;
     }
 
     private <J extends Persistable> Class<?> getSerializedClass(Class<J> class1) throws ClassNotFoundException {

@@ -13,11 +13,13 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.Permissions;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class CollectionLookupITCase extends AbstractCollectionSearchTestCase {
 
@@ -25,15 +27,15 @@ public class CollectionLookupITCase extends AbstractCollectionSearchTestCase {
     @Rollback(true)
     public void testCollectionLookup() throws IOException, SearchException, SearchIndexException {
         setupCollections();
-        SearchResult<ResourceCollection> results = search(null, null, "Kin");
-        for (ResourceCollection collection : results.getResults()) {
+        SearchResult<PResourceCollection> results = search(null, null, "Kin");
+        for (PResourceCollection collection : results.getResults()) {
             logger.info("{}", collection);
             if (collection != null) {
                 assertFalse(collection.getTitle().equals("Kleis"));
             }
         }
         results = search(null, null, "Kintigh - C");
-        for (ResourceCollection collection : results.getResults()) {
+        for (PResourceCollection collection : results.getResults()) {
             logger.info("{}", collection);
             if (collection != null) {
                 assertTrue(collection.getTitle().contains("Kintigh - C"));
@@ -42,9 +44,9 @@ public class CollectionLookupITCase extends AbstractCollectionSearchTestCase {
 
     }
 
-    private SearchResult<ResourceCollection> search(TdarUser user, Permissions permission, String title)
+    private SearchResult<PResourceCollection> search(TdarUser user, Permissions permission, String title)
             throws SearchException, IOException {
-        SearchResult<ResourceCollection> results = new SearchResult<>(100);
+        SearchResult<PResourceCollection> results = new SearchResult<>(100);
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
         csqo.setPermission(permission);
         csqo.getTitles().add(title);
@@ -56,8 +58,8 @@ public class CollectionLookupITCase extends AbstractCollectionSearchTestCase {
     @Rollback(true)
     public void testCollectionLookupUnauthenticated() throws SearchException, SearchIndexException, IOException {
         setupCollections();
-        SearchResult<ResourceCollection> result = search(null, null, "Kintigh - C");
-        for (ResourceCollection collection : result.getResults()) {
+        SearchResult<PResourceCollection> result = search(null, null, "Kintigh - C");
+        for (PResourceCollection collection : result.getResults()) {
             logger.info("{}", collection);
             if (collection != null) {
                 assertTrue(collection.getTitle().contains("Kintigh - C"));
@@ -82,48 +84,48 @@ public class CollectionLookupITCase extends AbstractCollectionSearchTestCase {
     @Rollback(true)
     public void testInvisibleCollectionLookupFoundByBasicOwner() throws SearchException, IOException, SearchIndexException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), null);
-        SearchResult<ResourceCollection> result = search(null, null, "test");
-        assertTrue(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(null, null, "test");
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     @Test
     @Rollback(true)
     public void testInvisibleCollectionLookupFoundByBasicUser() throws SearchException, SearchIndexException, IOException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), Permissions.ADD_TO_COLLECTION);
-        SearchResult<ResourceCollection> result = search(getBasicUser(), null, "test");
-        assertTrue(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(getBasicUser(), null, "test");
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     @Test
     @Rollback(true)
     public void testInvisibleCollectionLookupFoundByBasicUserForModification() throws SearchException, SearchIndexException, IOException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), Permissions.REMOVE_FROM_COLLECTION);
-        SearchResult<ResourceCollection> result = search(getBasicUser(), Permissions.ADMINISTER_COLLECTION, "test");
-        assertFalse(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(getBasicUser(), Permissions.ADMINISTER_COLLECTION, "test");
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     @Test
     @Rollback(true)
     public void testInvisibleShareLookupFoundByBasicOwner() throws SearchException, SearchIndexException, IOException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), Permissions.VIEW_ALL);
-        SearchResult<ResourceCollection> result = search(null, null, "test");
-        assertTrue(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(null, null, "test");
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     @Test
     @Rollback(true)
     public void testInvisibleShareLookupFoundByBasicUser() throws SearchException, SearchIndexException, IOException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), Permissions.VIEW_ALL);
-        SearchResult<ResourceCollection> result = search(getBasicUser(), null, "test");
-        assertTrue(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(getBasicUser(), null, "test");
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     @Test
     @Rollback(true)
     public void testInvisibleShareLookupFoundByBasicUserForModification() throws SearchException, SearchIndexException, IOException {
         ResourceCollection e = setupResourceCollectionForPermissionsTests(getAdminUser(), false, getBasicUser(), Permissions.VIEW_ALL);
-        SearchResult<ResourceCollection> result = search(getBasicUser(), Permissions.ADMINISTER_COLLECTION, "test");
-        assertFalse(result.getResults().contains(e));
+        SearchResult<PResourceCollection> result = search(getBasicUser(), Permissions.ADMINISTER_COLLECTION, "test");
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(e.getId()));
     }
 
     private ResourceCollection setupResourceCollectionForPermissionsTests(TdarUser owner, boolean visible, TdarUser user, Permissions permission)

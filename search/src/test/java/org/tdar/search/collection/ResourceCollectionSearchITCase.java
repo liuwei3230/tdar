@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.queryparser.classic.QueryParser.Operator;
@@ -15,12 +16,14 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.permissions.Permissions;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
 import org.tdar.search.service.query.CollectionSearchService;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTestCase {
 
@@ -57,7 +60,7 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         init();
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
         csqo.getAllFields().add("Australia");
-        SearchResult<ResourceCollection> result = new SearchResult<>();
+        SearchResult<PResourceCollection> result = new SearchResult<>();
         collectionSearchService.buildResourceCollectionQuery(getEditorUser(), csqo, result, MessageHelper.getInstance());
         logger.debug("{}", result.getResults());
         assertNotEmpty("should have results", result.getResults());
@@ -69,9 +72,9 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
     public void testBasicCollectionSearch() throws SearchException, SearchIndexException, IOException {
         init();
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
-        SearchResult<ResourceCollection> result = runQuery(null, csqo);
+        SearchResult<PResourceCollection> result = runQuery(null, csqo);
         assertNotEmpty("should have results", result.getResults());
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
             logger.debug("{} {}", c.getId(), c);
         }
     }
@@ -108,20 +111,21 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         logger.debug(" {} ~~ {} {}", bool, collection, addToShare);
         csqo.getTitles().add("testRemove");
         csqo.setPermission(addToShare);
-        SearchResult<ResourceCollection> result = runQuery(getBasicUser(), csqo);
+        SearchResult<PResourceCollection> result = runQuery(getBasicUser(), csqo);
         if (bool) {
             assertNotEmpty("should have results", result.getResults());
         } else {
             assertEmpty("should not have results", result.getResults());
         }
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
             logger.debug("{} {}", c.getId(), c);
             logger.debug("\t{}", c.getAuthorizedUsers());
         }
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
         if (bool) {
-            assertTrue(result.getResults().contains(collection));
+            assertTrue(results.contains(collection.getId()));
         } else {
-            assertFalse(result.getResults().contains(collection));
+            assertFalse(results.contains(collection.getId()));
 
         }
     }
@@ -132,10 +136,13 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         init();
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
         csqo.setLimitToTopLevel(false);
-        SearchResult<ResourceCollection> result = runQuery(getAdminUser(), csqo);
+        SearchResult<PResourceCollection> result = runQuery(getAdminUser(), csqo);
         assertNotEmpty("should have results", result.getResults());
         boolean seen = false;
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
+            if ( c == null) {
+                continue;
+            }
             logger.debug("{} {}", c.getId(), c);
             if (c.getId().equals(1002L)) {
                 seen = true;
@@ -148,7 +155,7 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         assertNotEmpty("should have results", result.getResults());
 
         seen = false;
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
             logger.debug("{} {}", c.getId(), c);
             if (c.getId().equals(1002L)) {
                 logger.debug("parent: {}", c.getParent());
@@ -166,9 +173,9 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         // test basic user
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
         TdarUser user = createAndSaveNewUser();
-        SearchResult<ResourceCollection> result = runQuery(user, csqo);
+        SearchResult<PResourceCollection> result = runQuery(user, csqo);
         assertNotEmpty("should have results", result.getResults());
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
             logger.debug("{} {} {}", c.getId(), c, c.isHidden());
             assertFalse("should not be hidden", c.isHidden());
         }
@@ -177,7 +184,10 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         csqo = new CollectionSearchQueryObject();
         result = runQuery(getBasicUser(), csqo);
         assertNotEmpty("should have results", result.getResults());
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
+            if (c == null) {
+                continue;
+            }
             logger.debug("{} {} {}", c.getId(), c, c.isHidden());
         }
 
@@ -190,21 +200,22 @@ public class ResourceCollectionSearchITCase extends AbstractCollectionSearchTest
         CollectionSearchQueryObject csqo = new CollectionSearchQueryObject();
         csqo.getAllFields().add("Kintigh");
         csqo.getAllFields().add("KBP");
-        SearchResult<ResourceCollection> result = runQuery(null, csqo);
+        SearchResult<PResourceCollection> result = runQuery(null, csqo);
         assertTrue("AND Search should find 0 results", CollectionUtils.isEmpty(result.getResults()));
         csqo.setOperator(Operator.OR);
 
         result = runQuery(null, csqo);
-        for (ResourceCollection c : result.getResults()) {
+        for (PResourceCollection c : result.getResults()) {
             logger.debug("{} {}", c.getId(), c.getTitle());
             assertTrue("title contains kbp or kintigh", c.getTitle().contains("KBP") || c.getTitle().contains("Kintigh"));
         }
     }
 
-    private SearchResult<ResourceCollection> runQuery(TdarUser user, CollectionSearchQueryObject csqo)
+    private SearchResult<PResourceCollection> runQuery(TdarUser user, CollectionSearchQueryObject csqo)
             throws SearchException, SearchIndexException, IOException {
-        SearchResult<ResourceCollection> result = new SearchResult<>();
+        SearchResult<PResourceCollection> result = new SearchResult<>();
         result.setRecordsPerPage(100);
+        result.setAuthenticatedUser(user);
         collectionSearchService.buildResourceCollectionQuery(user, csqo, result, MessageHelper.getInstance());
         return result;
     }

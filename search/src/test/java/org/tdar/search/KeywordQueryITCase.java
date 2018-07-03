@@ -13,6 +13,7 @@ import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -32,7 +33,7 @@ public class KeywordQueryITCase extends AbstractWithIndexIntegrationTestCase {
     GenericKeywordService genericKeywordService;
 
     @Autowired
-    KeywordSearchService<Keyword> keywordSearchService;
+    KeywordSearchService<PKeyword> keywordSearchService;
 
     public void reindex() {
         searchIndexService.purgeAll(LookupSource.KEYWORD);
@@ -47,8 +48,8 @@ public class KeywordQueryITCase extends AbstractWithIndexIntegrationTestCase {
         genericService.save(kwd);
         searchIndexService.index(kwd);
         logger.debug("ID:{}", kwd.getId());
-        SearchResult<Keyword> result = processSearch("Pima County", "GeographicKeyword", 2);
-        List<Keyword> resources = result.getResults();
+        SearchResult<PKeyword> result = processSearch("Pima County", "GeographicKeyword", 2);
+        List<PKeyword> resources = result.getResults();
         logger.debug("{}", PersistableUtils.extractIds(resources));
         assertTrue("at least one keyword", resources.size() > 0);
 
@@ -67,13 +68,13 @@ public class KeywordQueryITCase extends AbstractWithIndexIntegrationTestCase {
     @Test
     public void testKeywordLookup() throws SearchException, SearchIndexException, IOException {
 
-        SearchResult<Keyword> result = processSearch("Folsom", "CultureKeyword", 2);
-        List<Keyword> resources = result.getResults();
+        SearchResult<PKeyword> result = processSearch("Folsom", "CultureKeyword", 2);
+        List<PKeyword> resources = result.getResults();
         assertTrue("at least one document", resources.size() >= 1);
     }
 
-    private SearchResult<Keyword> processSearch(String term, String type, int min) throws SearchException, SearchIndexException, IOException {
-        SearchResult<Keyword> result = new SearchResult<>();
+    private SearchResult<PKeyword> processSearch(String term, String type, int min) throws SearchException, SearchIndexException, IOException {
+        SearchResult<PKeyword> result = new SearchResult<>();
         keywordSearchService.findKeyword(term, type, result, MessageHelper.getInstance(), min);
         return result;
     }
@@ -85,8 +86,8 @@ public class KeywordQueryITCase extends AbstractWithIndexIntegrationTestCase {
         genericService.saveOrUpdate(keyword);
         searchIndexService.indexAll(new QuietIndexReciever(), Arrays.asList(LookupSource.KEYWORD), getAdminUser());
 
-        SearchResult<Keyword> result = processSearch("18-ST-389", "SiteNameKeyword", 2);
-        List<Keyword> resources = result.getResults();
+        SearchResult<PKeyword> result = processSearch("18-ST-389", "SiteNameKeyword", 2);
+        List<PKeyword> resources = result.getResults();
         assertTrue("at least one document", resources.size() >= 1);
 
         result = processSearch("18ST389", "SiteNameKeyword", 2);

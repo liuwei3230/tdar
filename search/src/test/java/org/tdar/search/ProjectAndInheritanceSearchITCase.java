@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.query.SearchResult;
+import org.tdar.utils.PersistableUtils;
 
 public class ProjectAndInheritanceSearchITCase extends AbstractResourceSearchITCase {
 
@@ -55,7 +57,8 @@ public class ProjectAndInheritanceSearchITCase extends AbstractResourceSearchITC
         rparams.getApprovedCultureKeywordIdLists().get(0).add(ck.getId().toString());
         rparams.setObjectTypes(Arrays.asList(ObjectType.PROJECT));
         SearchResult<PResource> result = doSearch(null, null, rparams, null);
-        assertTrue(result.getResults().contains(project));
+        List<PResource> results = result.getResults();
+        assertTrue(PersistableUtils.extractIds(results).contains(project.getId()));
     }
 
 }

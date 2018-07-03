@@ -44,7 +44,6 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.Sortable;
 import org.tdar.core.bean.Updatable;
 import org.tdar.core.bean.Validatable;
-import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.XmlLoggable;
 import org.tdar.core.bean.resource.Addressable;
 import org.tdar.core.bean.resource.Status;
@@ -86,7 +85,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlRootElement(name = "PresourceCollection")
 public class PResourceCollection extends AbstractPersistable
         implements DeHydratable, XmlLoggable, HasStatus, Sortable,
-        OaiDcProvider, HasName, Slugable, Addressable, Indexable, Viewable, Editable, Hideable, Comparable<PResourceCollection> {
+        OaiDcProvider, HasName, Slugable, Addressable, Indexable, Editable, Hideable, Comparable<PResourceCollection> {
 
     public static final SortOption DEFAULT_SORT_OPTION = SortOption.TITLE;
 
@@ -166,8 +165,6 @@ public class PResourceCollection extends AbstractPersistable
     public void setProperties(PCollectionDisplayProperties properties) {
         this.properties = properties;
     }
-
-    private transient boolean viewable;
 
     @JsonView(JsonLookupFilter.class)
     private String name;
@@ -337,17 +334,6 @@ public class PResourceCollection extends AbstractPersistable
     @Override
     public String getSlug() {
         return UrlUtils.slugify(getName());
-    }
-
-    @XmlTransient
-    @Override
-    public boolean isViewable() {
-        return viewable;
-    }
-
-    @Override
-    public void setViewable(boolean viewable) {
-        this.viewable = viewable;
     }
 
     public boolean isSupportsThumbnails() {
