@@ -11,6 +11,8 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.bean.ReservedSearchParameters;
@@ -27,7 +29,7 @@ import org.tdar.utils.PersistableUtils;
 public class ListCollectionResourceITCase extends AbstractResourceSearchITCase {
 
     @Autowired
-    CreatorSearchService<Creator<?>> creatorSearchService;
+    CreatorSearchService<PCreator<?>> creatorSearchService;
 
     @Autowired
     ResourceService resourceService;
@@ -51,14 +53,14 @@ public class ListCollectionResourceITCase extends AbstractResourceSearchITCase {
 
         ResourceLookupObject resourceLookupObject = new ResourceLookupObject(term, projectId, includeParent, collectionId, shareId, categoryId, permission,
                 reservedSearchParameters);
-        LuceneSearchResultHandler<Resource> result = new SearchResult<>();
+        LuceneSearchResultHandler<PResource> result = new SearchResult<>();
         resourceSearchService.lookupResource(getAdminUser(), resourceLookupObject, result, MessageHelper.getInstance());
 
         assertNotEmpty("There were results found", result.getResults());
         getLogger().debug("Results are {}", result);
         getLogger().debug("Results are {}", result.getResults());
-        Map<Long, Resource> createIdMap = PersistableUtils.createIdMap(result.getResults());
-        Resource resource = createIdMap.get(5000L);
+        Map<Long, PResource> createIdMap = PersistableUtils.createIdMap(result.getResults());
+        PResource resource = createIdMap.get(5000L);
         assertEmpty("should have 0 managed collections", resource.getManagedResourceCollections());
         assertNotEmpty("should have at least one unmanaged collection", resource.getUnmanagedResourceCollections());
     }

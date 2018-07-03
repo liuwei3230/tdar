@@ -14,10 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.CodingSheet;
-import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.core.service.resource.CodingSheetService;
 import org.tdar.core.service.resource.OntologyNodeService;
 import org.tdar.core.service.resource.OntologyService;
@@ -41,11 +44,11 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
     @Autowired
     private transient CodingSheetService codingSheetService;
 
-    private List<CodingSheet> codingSheetsWithMappings = new ArrayList<CodingSheet>();
-    private OntologyNode parentNode;
-    private List<OntologyNode> children;
+    private List<PCodingSheet> codingSheetsWithMappings = new ArrayList<>();
+    private POntologyNode parentNode;
+    private List<POntologyNode> children;
     private String iri;
-    private List<Dataset> datasetsWithMappingsToNode;
+    private List<PDataset> datasetsWithMappingsToNode;
 
     @HttpsOnly
     @Action(value = "{id}/node/{iri}",
@@ -54,15 +57,6 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
                     @Result(name = SUCCESS, location = "../ontology/view-node.ftl")
             })
     public String node() throws TdarActionException {
-        try {
-            getCodingSheetsWithMappings().addAll(codingSheetService.findAllUsingOntology(getOntology()));
-            setParentNode(ontologyNodeService.getParent(getNode()));
-
-            setDatasetsWithMappingsToNode(ontologyNodeService.listDatasetsWithMappingsToNode(getNode()));
-            setChildren(getChildElements(getNode()));
-        } catch (Exception e) {
-            getLogger().warn("{}", e, e);
-        }
         return SUCCESS;
     }
 
@@ -78,32 +72,41 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
         if (getNode() == null) {
             abort(StatusCode.NOT_FOUND, getText("ontologyController.node_not_found", Arrays.asList(getIri())));
         }
+        try {
+            getCodingSheetsWithMappings().addAll(codingSheetService.findAllUsingOntology(getId()));
+            setParentNode(ontologyNodeService.getParent(getNode()));
+
+            setDatasetsWithMappingsToNode(ontologyNodeService.listDatasetsWithMappingsToNode(getNode()));
+            setChildren(getChildElements(getNode()));
+        } catch (Exception e) {
+            getLogger().warn("{}", e, e);
+        }
     }
 
-    public List<OntologyNode> getChildren() {
+    public List<POntologyNode> getChildren() {
         return children;
     }
 
-    public void setChildren(List<OntologyNode> children) {
+    public void setChildren(List<POntologyNode> children) {
         this.children = children;
     }
 
-    public OntologyNode getParentNode() {
+    public POntologyNode getParentNode() {
         return parentNode;
     }
 
-    public void setParentNode(OntologyNode parentNode) {
+    public void setParentNode(POntologyNode parentNode) {
         this.parentNode = parentNode;
     }
 
-    public List<OntologyNode> getChildElements(OntologyNode node) {
+    public List<POntologyNode> getChildElements(POntologyNode node) {
         getLogger().trace("get children:" + node);
         return ontologyService.getChildren(getOntology().getOntologyNodes(), node);
     }
 
-    public List<OntologyNode> getChildElements(String index) {
+    public List<POntologyNode> getChildElements(String index) {
         getLogger().trace("get children: {}", index);
-        for (OntologyNode node : getOntology().getOntologyNodes()) {
+        for (POntologyNode node : getOntology().getOntologyNodes()) {
             if (node.getIndex().equals(index)) {
                 return ontologyService.getChildren(getOntology().getOntologyNodes(), node);
             }
@@ -119,23 +122,23 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
         this.iri = iri;
     }
 
-    public List<Dataset> getDatasetsWithMappingsToNode() {
+    public List<PDataset> getDatasetsWithMappingsToNode() {
         return datasetsWithMappingsToNode;
     }
 
-    public void setDatasetsWithMappingsToNode(List<Dataset> datasetsWithMappingsToNode) {
+    public void setDatasetsWithMappingsToNode(List<PDataset> datasetsWithMappingsToNode) {
         this.datasetsWithMappingsToNode = datasetsWithMappingsToNode;
     }
 
-    public Ontology getOntology() {
-        return (Ontology) getResource();
+    public POntology getOntology() {
+        return getPersistable();
     }
 
     @Override
     protected void handleSlug() {
         String normalizeIri = OntologyNode.normalizeIri(getIri());
         getLogger().trace("iri:{} --> {}", getIri(), normalizeIri);
-        OntologyNode node_ = getOntology().getNodeByIri(normalizeIri);
+        POntologyNode node_ = getOntology().getNodeByIri(normalizeIri);
         getLogger().trace("node:{}", node_);
         if (node_ == null) {
             node_ = fallbackCheckForIri(normalizeIri);
@@ -146,16 +149,17 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
         }
     }
 
-    public List<CodingSheet> getCodingSheetsWithMappings() {
+    public List<PCodingSheet> getCodingSheetsWithMappings() {
         return codingSheetsWithMappings;
     }
 
-    public void setCodingSheetsWithMappings(List<CodingSheet> codingSheetsWithMappings) {
+    public void setCodingSheetsWithMappings(List<PCodingSheet> codingSheetsWithMappings) {
         this.codingSheetsWithMappings = codingSheetsWithMappings;
     }
 
     @Override
-    public Class<Ontology> getPersistableClass() {
-        return Ontology.class;
+    public Class<POntology> getPersistableClass() {
+        return POntology.class;
     }
+
 }

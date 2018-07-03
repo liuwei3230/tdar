@@ -12,8 +12,8 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.TestConstants;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.FileAccessRestriction;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -31,7 +31,7 @@ public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchIT
         searchIndexService.index(document);
         SearchParameters params = new SearchParameters();
         params.getContents().add("fun'");
-        SearchResult<Resource> result = doSearch("", null, params, null);
+        SearchResult<PResource> result = doSearch("", null, params, null);
         Long id = document.getId();
         List<Long> ids = PersistableUtils.extractIds(result.getResults());
         logger.info("results:{}", result.getResults());
@@ -61,7 +61,7 @@ public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchIT
         searchIndexService.index(document);
         SearchParameters params = new SearchParameters();
         params.getContents().add("fun");
-        SearchResult<Resource> result = doSearch("", null, params, null);
+        SearchResult<PResource> result = doSearch("", null, params, null);
         logger.info("results:{}", result.getResults());
         assertFalse(result.getResults().contains(document));
         params = new SearchParameters();
@@ -79,7 +79,7 @@ public class ResourceFIleAttachmentSearchITCase extends AbstractResourceSearchIT
         searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getFilenames().add(TestConstants.TEST_DOCUMENT_NAME);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         boolean seen = false;
         for (Indexable res : result.getResults()) {
             if (res.getId().equals(doc.getId())) {

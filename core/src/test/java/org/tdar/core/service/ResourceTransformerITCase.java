@@ -9,7 +9,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-import org.tdar.TestConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.core.bean.AbstractIntegrationTestCase;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
@@ -18,29 +18,22 @@ import org.tdar.core.bean.keyword.OtherKeyword;
 import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.resource.Document;
-import org.tdar.transform.EMLDocumentTransformer;
+import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.transform.ExtendedDcTransformer;
 import org.tdar.transform.ModsTransformer;
 
-import edu.asu.lib.eml.EMLDocument;
 import edu.asu.lib.jaxb.JaxbDocumentWriter;
 import edu.asu.lib.mods.ModsDocument;
 import edu.asu.lib.qdc.QualifiedDublinCoreDocument;
 
 public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
 
-    @Test
-    public void serializeEML() throws JAXBException {
-        Document resource = genericService.find(Document.class, Long.parseLong(TestConstants.TEST_DOCUMENT_ID));
-        EMLDocument doc = EMLDocumentTransformer.transformAny(resource);
-        StringWriter writer = new StringWriter();
-        JaxbDocumentWriter.write(doc, writer, true);
-        logger.debug(writer.toString());
 
-    }
-
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
     @Test
-    public void transformDC() throws JAXBException {
+    public void transformDC() throws JAXBException, InstantiationException, IllegalAccessException {
         Document d = new Document();
         d.getInvestigationTypes().add(new InvestigationType("bacd"));
         d.getSiteNameKeywords().add(new SiteNameKeyword("siteName"));
@@ -49,7 +42,8 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         d.getSiteTypeKeywords().add(new SiteTypeKeyword("SiteType"));
         d.getResourceCreators().add(new ResourceCreator(getBasicUser(), ResourceCreatorRole.AUTHOR));
         d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.CONTRIBUTOR));
-        QualifiedDublinCoreDocument transformAny = ExtendedDcTransformer.transformAny(d);
+        PDocument dd = proxyConstructionService.constructResource(d, PDocument.class, getBasicUser(), true);
+        QualifiedDublinCoreDocument transformAny = ExtendedDcTransformer.transformAny(dd);
         StringWriter writer = new StringWriter();
         JaxbDocumentWriter.write(transformAny, writer, true);
         String str = writer.toString();
@@ -60,8 +54,11 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         assertEquals("see only one contrib", 1, StringUtils.countMatches(str, getAdminUser().getName()));
     }
 
+    @Autowired
+    ProxyConstructionService pcs;
+    
     @Test
-    public void transformMods() throws JAXBException {
+    public void transformMods() throws JAXBException, InstantiationException, IllegalAccessException {
         Document d = new Document();
         d.getInvestigationTypes().add(new InvestigationType("bacd"));
         d.getOtherKeywords().add(new OtherKeyword("otehr key"));
@@ -73,7 +70,8 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         d.getResourceCreators().add(new ResourceCreator(getBasicUser(), ResourceCreatorRole.AUTHOR));
         d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.CONTRIBUTOR));
         // d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.EDITOR));
-        ModsDocument transformAny = ModsTransformer.transformAny(d);
+        PDocument pd = pcs.constructResource(d, PDocument.class, null, false);
+        ModsDocument transformAny = ModsTransformer.transformAny(pd);
         StringWriter writer = new StringWriter();
         JaxbDocumentWriter.write(transformAny, writer, true);
         String str = writer.toString();

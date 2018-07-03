@@ -17,7 +17,7 @@ import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.struts.action.browse.BrowseCreatorController;
 import org.tdar.struts_base.action.TdarActionException;
 
@@ -104,7 +104,7 @@ public class BrowseControllerITCase extends AbstractSearchControllerITCase {
         controller.setSlug(institution.getSlug());
         controller.prepare();
         controller.browseCreators();
-        List<Resource> results = controller.getResults();
+        List<PResource> results = controller.getResults();
         assertTrue(results.contains(doc));
     }
 

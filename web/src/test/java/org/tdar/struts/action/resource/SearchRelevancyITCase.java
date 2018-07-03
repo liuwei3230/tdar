@@ -1,6 +1,7 @@
 package org.tdar.struts.action.resource;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -120,7 +121,8 @@ public class SearchRelevancyITCase extends AbstractControllerITCase {
         // we should get back **something**
         Assert.assertTrue("search results should not be empty", controller.getResults().size() > 0);
         logger.debug("result count for " + SEMI_UNIQUE_NAME + ":" + controller.getResults().size());
-        logger.debug("pdf indexablecontent:" + resourceWithAttachmentMatch.getContent());
+        fail();
+//        logger.debug("pdf indexablecontent:" + resourceWithAttachmentMatch.getContent());
 
         int indexOfTitleMatch = controller.getResults().indexOf(resourceWithTitleMatch);
         int indexOfKeywordMatch = controller.getResults().indexOf(resourceWithKeywordMatch);

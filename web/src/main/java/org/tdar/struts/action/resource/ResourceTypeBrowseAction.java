@@ -12,8 +12,8 @@ import org.apache.struts2.convention.annotation.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.service.query.ResourceSearchService;
 import org.tdar.struts.action.AbstractLookupController;
@@ -36,7 +36,7 @@ import com.opensymphony.xwork2.Preparable;
 @Component
 @Scope("prototype")
 @HttpsOnly
-public class ResourceTypeBrowseAction extends AbstractLookupController<Resource> implements Preparable {
+public class ResourceTypeBrowseAction extends AbstractLookupController<PResource> implements Preparable {
 
     private static final long serialVersionUID = 1L;
 

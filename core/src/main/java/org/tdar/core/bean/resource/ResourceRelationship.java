@@ -38,7 +38,7 @@ public class ResourceRelationship extends AbstractPersistable {
     @Column(name = "relationship_type", length = FieldLength.FIELD_LENGTH_255)
     private ResourceRelationshipType type;
 
-    private enum ResourceRelationshipType implements HasLabel, Localizable {
+    public enum ResourceRelationshipType implements HasLabel, Localizable {
         REFERENCES("References"),
         REPLACES("Replaces"),
         VERSION_OF("Version Of");

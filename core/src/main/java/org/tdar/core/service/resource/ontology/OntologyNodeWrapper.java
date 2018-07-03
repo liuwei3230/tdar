@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.tdar.core.bean.resource.OntologyNode;
+import org.tdar.core.serialize.resource.POntologyNode;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
@@ -21,7 +21,7 @@ public class OntologyNodeWrapper implements Serializable {
     public OntologyNodeWrapper() {
     }
 
-    public OntologyNodeWrapper(OntologyNode c) {
+    public OntologyNodeWrapper(POntologyNode c) {
         this.iri = c.getIri();
         this.displayName = c.getDisplayName();
         this.id = c.getId();

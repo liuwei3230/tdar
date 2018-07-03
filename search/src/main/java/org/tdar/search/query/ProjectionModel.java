@@ -8,7 +8,6 @@ import java.util.List;
 public enum ProjectionModel {
     HIBERNATE_DEFAULT,
     LUCENE_ID_ONLY,
-    RESOURCE_PROXY,
     LUCENE;
 
     private List<String> projections = new ArrayList<>();

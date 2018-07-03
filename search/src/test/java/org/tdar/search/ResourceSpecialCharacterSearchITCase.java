@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -48,10 +48,11 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         searchIndexService.index(document);
 
         setupTestDocuments();
-        SearchResult<Resource> result = doSearch(resourceTitle);
-        logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        SearchResult<PResource> result = doSearch(resourceTitle);
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        logger.info("results:{}", results);
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -64,10 +65,11 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         setupTestDocuments();
         SearchParameters params = new SearchParameters();
         params.getTitles().add(resourceTitle);
-        SearchResult<Resource> result = doSearch("", null, params, null);
-        logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        SearchResult<PResource> result = doSearch("", null, params, null);
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        logger.info("results:{}", results);
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -80,10 +82,11 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         setupTestDocuments();
         SearchParameters params = new SearchParameters();
         params.getTitles().add(resourceTitle.replaceAll("\\-", ""));
-        SearchResult<Resource> result = doSearch("", null, params, null);
+        SearchResult<PResource> result = doSearch("", null, params, null);
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
         logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 
     @Test
@@ -102,8 +105,8 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         setupTestDocuments();
         SearchParameters params = new SearchParameters();
         params.getSiteNames().add(label);
-        SearchResult<Resource> result = doSearch("", null, params, null);
-        List<Resource> results = result.getResults();
+        SearchResult<PResource> result = doSearch("", null, params, null);
+        List<PResource> results = result.getResults();
         List<Long> ids = PersistableUtils.extractIds(results);
         logger.info("results:{}", results);
         assertTrue(ids.contains(id));
@@ -123,9 +126,10 @@ public class ResourceSpecialCharacterSearchITCase extends AbstractResourceSearch
         document.getSiteNameKeywords().add(snk);
         searchIndexService.index(document);
         setupTestDocuments();
-        SearchResult<Resource> result = doSearch("what fun 33-Cu-314");
+        SearchResult<PResource> result = doSearch("what fun 33-Cu-314");
         logger.info("results:{}", result.getResults());
-        assertTrue(result.getResults().contains(document));
-        assertTrue(result.getResults().get(0).equals(document) || result.getResults().get(1).equals(document));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        assertTrue(results.contains(document.getId()));
+        assertTrue(results.get(0).equals(document.getId()) || results.get(1).equals(document.getId()));
     }
 }

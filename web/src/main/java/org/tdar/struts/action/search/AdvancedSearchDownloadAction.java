@@ -23,13 +23,13 @@ import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.entity.Creator;
-import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.UrlService;
 import org.tdar.core.service.excel.ExcelWorkbookWriter;
 import org.tdar.search.query.ProjectionModel;
@@ -110,12 +110,12 @@ public class AdvancedSearchDownloadAction extends AbstractAdvancedSearchControll
                 startRecord = getNextPageStartRecord();
                 setStartRecord(getNextPageStartRecord()); // resetting for
                                                           // next search
-                for (Resource result : getResults()) {
+                for (PResource result : getResults()) {
                     rowNum++;
                     if (currentRecord++ > maxRow) {
                         break;
                     }
-                    Resource r = result;
+                    PResource r = result;
 
                     if (r == null) {
                         continue;
@@ -144,7 +144,7 @@ public class AdvancedSearchDownloadAction extends AbstractAdvancedSearchControll
         }
     }
 
-    private void writeRow(Resource r, int rowNum, ExcelWorkbookWriter excelWriter, Sheet sheet) {
+    private void writeRow(PResource r, int rowNum, ExcelWorkbookWriter excelWriter, Sheet sheet) {
         Integer dateCreated = null;
         Integer numFiles = 0;
         List<String> filenames = new ArrayList<>();
@@ -161,20 +161,19 @@ public class AdvancedSearchDownloadAction extends AbstractAdvancedSearchControll
                 collections.add(rc.getName());
             }
         });
-        if (r instanceof InformationResource) {
-            InformationResource ir = (InformationResource) r;
+        if (r instanceof PInformationResource) {
+            PInformationResource ir = (PInformationResource) r;
             dateCreated = ir.getDate();
             numFiles = ir.getTotalNumberOfFiles();
-            for (InformationResourceFileVersion file : ir.getLatestUploadedVersions()) {
+            for (PInformationResourceFileVersion file : ir.getLatestUploadedVersions()) {
                 filenames.add(file.getFilename());
             }
-            InformationResource ires = ((InformationResource) r);
-            location = ires.getCopyLocation();
-            projectName = ires.getProjectTitle();
+            location = ir.getCopyLocation();
+            projectName = ir.getProjectTitle();
 
         }
-        List<Creator<?>> authors = new ArrayList<>();
-        for (ResourceCreator creator : r.getPrimaryCreators()) {
+        List<PCreator<?>> authors = new ArrayList<>();
+        for (PResourceCreator creator : r.getPrimaryCreators()) {
             authors.add(creator.getCreator());
         }
 

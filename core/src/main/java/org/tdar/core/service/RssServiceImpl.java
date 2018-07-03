@@ -27,17 +27,17 @@ import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.OaiDcProvider;
 import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Viewable;
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
-import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.keyword.Keyword;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.file.InformationResourceFile;
-import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.cache.Caches;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.keyword.PKeyword;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFile;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.search.query.SearchResultHandler;
 import org.tdar.utils.MessageHelper;
@@ -219,9 +219,9 @@ public class RssServiceImpl implements Serializable, RssService {
                 description.setValue(cleanStringForXML(oaiResource.getDescription()));
             }
             List<SyndPerson> authors = new ArrayList<SyndPerson>();
-            if (resource_ instanceof Resource) {
-                Resource resource = (Resource) resource_;
-                for (ResourceCreator creator : resource.getPrimaryCreators()) {
+            if (resource_ instanceof PResource) {
+                PResource resource = (PResource) resource_;
+                for (PResourceCreator creator : resource.getPrimaryCreators()) {
                     SyndPerson person = new SyndPersonImpl();
                     String name = cleanStringForXML(creator.getCreator().getProperName());
                     if (StringUtils.isNotBlank(name)) {
@@ -235,7 +235,7 @@ public class RssServiceImpl implements Serializable, RssService {
 
                 // NOTE: this may not display info if we're using a ResourceProxy b/c it doesn't query keywords
                 List<SyndCategory> categories = new ArrayList<>();
-                for (Keyword kwd : resource.getAllActiveKeywords()) {
+                for (PKeyword kwd : resource.getAllActiveKeywords()) {
                     SyndCategory cat = new SyndCategoryImpl();
                     cat.setName(cleanStringForXML(kwd.getLabel()));
                     cat.setTaxonomyUri(kwd.getDetailUrl());
@@ -274,14 +274,14 @@ public class RssServiceImpl implements Serializable, RssService {
      * @param resource
      * @return
      */
-    private <I extends Indexable> boolean addFileEnclosures(SearchResultHandler<I> handler, I resource_, SyndEntry entry, Resource resource) {
+    private <I extends Indexable> boolean addFileEnclosures(SearchResultHandler<I> handler, I resource_, SyndEntry entry, PResource resource) {
         boolean hasRestrictions = resource.hasConfidentialFiles();
-        if (resource_ instanceof InformationResource) {
-            InformationResource informationResource = (InformationResource) resource_;
+        if (resource_ instanceof PInformationResource) {
+            PInformationResource informationResource = (PInformationResource) resource_;
             if (informationResource.getLatestUploadedVersions().size() > 0) {
-                for (InformationResourceFile file : informationResource.getVisibleFiles()) {
+                for (PInformationResourceFile file : informationResource.getVisibleFiles()) {
                     addEnclosure(handler.getAuthenticatedUser(), entry, informationResource, file.getLatestUploadedVersion());
-                    InformationResourceFileVersion thumb = file.getLatestThumbnail();
+                    PInformationResourceFileVersion thumb = file.getLatestThumbnail();
                     if (thumb != null) {
                         addEnclosure(handler.getAuthenticatedUser(), entry, informationResource, thumb);
                     }
@@ -299,19 +299,19 @@ public class RssServiceImpl implements Serializable, RssService {
      * @param resource
      * @param hasRestrictions
      */
-    private void addGeoRssLatLongBox(GeoRssMode mode, SyndEntry entry, Resource resource, boolean hasRestrictions) {
-        LatitudeLongitudeBox latLong = resource.getFirstActiveLatitudeLongitudeBox();
+    private void addGeoRssLatLongBox(GeoRssMode mode, SyndEntry entry, PResource resource, boolean hasRestrictions) {
+        PLatitudeLongitudeBox latLong = resource.getFirstActiveLatitudeLongitudeBox();
         /*
          * If LatLong is not purposefully Obfuscated and we don't have confidential files then ...
          */
         if ((latLong != null) && latLong.isObfuscatedObjectDifferent() == false && hasRestrictions == false) {
             GeoRSSModule geoRss = new SimpleModuleImpl();
             if (mode == GeoRssMode.ENVELOPE) {
-                geoRss.setGeometry(new Envelope(latLong.getObfuscatedSouth(), latLong.getObfuscatedWest(),
-                        latLong.getObfuscatedNorth(), latLong.getObfuscatedEast()));
+                geoRss.setGeometry(new Envelope(latLong.getSouth(), latLong.getWest(),
+                        latLong.getNorth(), latLong.getEast()));
             }
             if (mode == GeoRssMode.POINT) {
-                geoRss.setPosition(new Position(latLong.getObfuscatedCenterLatitude(), latLong.getObfuscatedCenterLongitude()));
+                geoRss.setPosition(new Position(latLong.getCenterLatitude(), latLong.getCenterLongitude()));
             }
             entry.getModules().add(geoRss);
         }
@@ -324,7 +324,7 @@ public class RssServiceImpl implements Serializable, RssService {
      * @param entry
      * @param version
      */
-    private void addEnclosure(TdarUser user, SyndEntry entry, InformationResource ir, InformationResourceFileVersion version) {
+    private void addEnclosure(TdarUser user, SyndEntry entry, PInformationResource ir, PInformationResourceFileVersion version) {
         if (version == null) {
             return;
         }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.keyword.Keyword;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.service.SearchUtils;
@@ -30,7 +31,7 @@ import org.tdar.utils.json.JsonLookupFilter;
 @ParentPackage("default")
 @Component
 @Scope("prototype")
-public class KeywordLookupAction extends AbstractLookupController<Keyword> {
+public class KeywordLookupAction extends AbstractLookupController<PKeyword> {
 
     private static final long serialVersionUID = 1614951978147004418L;
 
@@ -38,7 +39,7 @@ public class KeywordLookupAction extends AbstractLookupController<Keyword> {
     private String term;
 
     @Autowired
-    KeywordSearchService<Keyword> keywordSearchService;
+    KeywordSearchService<PKeyword> keywordSearchService;
 
     @Action(value = "keyword", results = {
             @Result(name = SUCCESS, type = JSONRESULT)
@@ -55,7 +56,7 @@ public class KeywordLookupAction extends AbstractLookupController<Keyword> {
         }
 
         if (!SearchUtils.checkMinString(getTerm(), getMinLookupLength())) {
-            setResults(new ArrayList<Keyword>());
+            setResults(new ArrayList<PKeyword>());
             jsonifyResult(JsonLookupFilter.class);
             getLogger().trace("returning ... too short?" + getTerm());
             return SUCCESS;

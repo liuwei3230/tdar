@@ -25,6 +25,7 @@ import org.tdar.core.cache.HomepageGeographicCache;
 import org.tdar.core.cache.HomepageResourceCountCache;
 import org.tdar.core.dao.resource.ResourceTypeStatusInfo;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.search.query.SearchResultHandler;
@@ -282,9 +283,9 @@ public interface ResourceService {
 
     ScrollableResults findMappedResources(Project p);
 
-    String getGoogleScholarTags(Resource resource);
+    String getGoogleScholarTags(PResource pResource);
 
-    String getSchemaOrgJsonLD(Resource resource);
+    String getSchemaOrgJsonLD(PResource resource);
 
     void updateBatch(BillingAccount account, ResourceCollection collectionToAdd, List<Long> ids, List<Integer> dates, List<String> titles,
             List<String> descriptions, TdarUser authenticatedUser);

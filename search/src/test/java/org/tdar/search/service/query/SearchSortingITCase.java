@@ -23,10 +23,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.AbstractWithIndexIntegrationTestCase;
 import org.tdar.core.bean.SortOption;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.QuietIndexReciever;
 import org.tdar.search.bean.ObjectType;
 import org.tdar.search.exception.SearchException;
@@ -80,19 +81,19 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
 
     private static List<SortTestStruct> sortTests = new ArrayList<SortTestStruct>();
 
-    public static Comparator<Resource> titleComparator = ComparatorUtils.nullLowComparator(new TitleSortComparator());
+    public static Comparator<PResource> titleComparator = ComparatorUtils.nullLowComparator(new TitleSortComparator());
 
-    public static Comparator<Resource> idComparator = ComparatorUtils.nullLowComparator(new Comparator<Resource>() {
+    public static Comparator<PResource> idComparator = ComparatorUtils.nullLowComparator(new Comparator<PResource>() {
         @Override
-        public int compare(Resource item1, Resource item2) {
+        public int compare(PResource item1, PResource item2) {
             return item1.getId().compareTo(item2.getId());
         }
     });
 
     // kill me now.
-    public static Comparator<Resource> projectComparator = new Comparator<Resource>() {
+    public static Comparator<PResource> projectComparator = new Comparator<PResource>() {
         @Override
-        public int compare(Resource item1, Resource item2) {
+        public int compare(PResource item1, PResource item2) {
             String title1 = getProjectTitle(item1);
             String title2 = getProjectTitle(item2);
 
@@ -101,16 +102,16 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
 
     };
 
-    public static String getProjectTitle(Resource item1) {
+    public static String getProjectTitle(PResource item1) {
         String title1 = "";
         if (item1 == null) {
             return title1;
         }
-        if (item1 instanceof Project) {
-            title1 = ((Project) item1).getProjectTitle();
+        if (item1 instanceof PProject) {
+            title1 = ((PProject) item1).getProjectTitle();
         }
-        if (item1 instanceof InformationResource) {
-            title1 = ((InformationResource) item1).getProjectTitle();
+        if (item1 instanceof PInformationResource) {
+            title1 = ((PInformationResource) item1).getProjectTitle();
         }
         return title1;
     }
@@ -129,11 +130,11 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
 
     @Test
     public void testYearSorting() throws ParseException, SearchException, SearchIndexException, IOException {
-        Comparator<Resource> yearComparator = new Comparator<Resource>() {
+        Comparator<PResource> yearComparator = new Comparator<PResource>() {
             @Override
-            public int compare(Resource arg0, Resource arg1) {
-                InformationResource ir1 = (InformationResource) arg0;
-                InformationResource ir2 = (InformationResource) arg1;
+            public int compare(PResource arg0, PResource arg1) {
+                PInformationResource ir1 = (PInformationResource) arg0;
+                PInformationResource ir2 = (PInformationResource) arg1;
                 logger.debug("comparing {} vs. {}", ir1.getDate(), ir2.getDate());
                 return ObjectUtils.compare(ir1.getDate(), ir2.getDate());
             }
@@ -155,15 +156,15 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
     @SuppressWarnings({ "unused", "rawtypes" })
     @Test
     public void testDateSorting() throws ParseException, SearchException, SearchIndexException, IOException {
-        DesignatedComparable<Resource> dateCreatedComparator = new DesignatedComparable<Resource>() {
+        DesignatedComparable<PResource> dateCreatedComparator = new DesignatedComparable<PResource>() {
             @Override
-            public Comparable getComparableFor(Resource t) {
+            public Comparable getComparableFor(PResource t) {
                 return t.getDateCreated();
             }
         };
-        DesignatedComparable<Resource> dateUpdatedComparator = new DesignatedComparable<Resource>() {
+        DesignatedComparable<PResource> dateUpdatedComparator = new DesignatedComparable<PResource>() {
             @Override
-            public Comparable getComparableFor(Resource t) {
+            public Comparable getComparableFor(PResource t) {
                 Date now = t.getDateUpdated();
                 Date nearest = DateUtils.round(now, Calendar.SECOND);
                 return nearest;
@@ -176,10 +177,10 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
 
     @Test
     public void testResourceTypeSorting() throws ParseException, SearchException, SearchIndexException, IOException {
-        DesignatedComparable<Resource> resourceTypeComparator = new DesignatedComparable<Resource>() {
+        DesignatedComparable<PResource> resourceTypeComparator = new DesignatedComparable<PResource>() {
             @SuppressWarnings("rawtypes")
             @Override
-            public Comparable getComparableFor(Resource t) {
+            public Comparable getComparableFor(PResource t) {
                 return ObjectType.from(t.getResourceType()).getSortName();
             }
         };
@@ -239,16 +240,16 @@ public class SearchSortingITCase extends AbstractWithIndexIntegrationTestCase {
         assertSortOrder(SortOption.PROJECT, projectComparator);
     }
 
-    private void assertSortOrder(SortOption sortOption, Comparator<Resource> comparator)
+    private void assertSortOrder(SortOption sortOption, Comparator<PResource> comparator)
             throws ParseException, SearchException, SearchIndexException, IOException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         result.setSortField(sortOption);
         searchService.handleSearch(setupQueryBuilder(), result, MessageHelper.getInstance());
-        List<Resource> resources = result.getResults();
+        List<PResource> resources = result.getResults();
         assertFalse("results should not be empty", resources.isEmpty());
         for (int i = 0; i < (resources.size() - 2); i++) {
-            Resource item1 = resources.get(i);
-            Resource item2 = resources.get(i + 1);
+            PResource item1 = resources.get(i);
+            PResource item2 = resources.get(i + 1);
             String msg = String.format("when sorting by %s, item1:[%s] should appear before item2:[%s] ", sortOption, item1, item2);
             if (sortOption.isReversed()) {
                 assertTrue(msg, comparator.compare(item1, item2) >= 0);

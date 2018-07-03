@@ -1,16 +1,22 @@
 package org.tdar.core.service.resource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.dao.resource.OntologyNodeDao;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.POntologyNode;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ServiceInterface;
+import org.tdar.utils.PersistableUtils;
 
 /**
  * Transactional service providing persistence access to OntologyNodeS.
@@ -29,6 +35,15 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
      * @see org.tdar.core.service.resource.OntologyNodeService#getAllChildren(org.tdar.core.bean.resource.OntologyNode)
      */
     @Override
+    public List<POntologyNode> getAllChildren(POntologyNode ontologyNode) {
+        OntologyNode find = getDao().find(ontologyNode.getId());
+        List<POntologyNode> toReturn = new ArrayList<>();
+        for (OntologyNode node : getDao().getAllChildren(find)) {
+            toReturn.add(proxyConstructionService.convertOntologyNode(node));
+        }
+        return toReturn;
+    }
+
     public List<OntologyNode> getAllChildren(OntologyNode ontologyNode) {
         return getDao().getAllChildren(ontologyNode);
     }
@@ -58,14 +73,22 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
         return getDao().getAllChildren(selectedOntologyNodes);
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+
     /*
      * (non-Javadoc)
      * 
      * @see org.tdar.core.service.resource.OntologyNodeService#listDatasetsWithMappingsToNode(org.tdar.core.bean.resource.OntologyNode)
      */
     @Override
-    public List<Dataset> listDatasetsWithMappingsToNode(OntologyNode node) {
-        return getDao().findDatasetsUsingNode(node);
+    public List<PDataset> listDatasetsWithMappingsToNode(POntologyNode node_) {
+        List<PDataset> toReturn = new ArrayList<>();
+        OntologyNode node = getDao().find(OntologyNode.class, node_.getId());
+        for (Dataset dataset : getDao().findDatasetsUsingNode(node)) {
+            toReturn.add((PDataset) proxyConstructionService.createShellResource(dataset, dataset.getResourceType().getProxyClass()));
+        }
+        return toReturn;
     }
 
     /*
@@ -74,7 +97,14 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
      * @see org.tdar.core.service.resource.OntologyNodeService#getParent(org.tdar.core.bean.resource.OntologyNode)
      */
     @Override
-    public OntologyNode getParent(OntologyNode node) {
-        return getDao().getParentNode(node);
+    public POntologyNode getParent(POntologyNode node) {
+        if (PersistableUtils.isNullOrTransient(node)) {
+            return null;
+        }
+        OntologyNode toReturn = getDao().getParentNode(node.getId());
+        if (toReturn == null) {
+            return null;
+        }
+        return proxyConstructionService.convertOntologyNode(toReturn);
     }
 }

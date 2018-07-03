@@ -24,6 +24,8 @@ import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.DocumentCitationFormatTestCase;
 import org.tdar.core.bean.resource.DocumentType;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.filestore.PairtreeFilestore;
 import org.tdar.utils.MessageHelper;
 
@@ -63,6 +65,9 @@ public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
         setupAndTest("Remote Sensing Methodology and the Chaco Canyon Prehistoric Road System");
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+
     @Test
     @Rollback(true)
     @Ignore("test for TDAR-1805")
@@ -78,7 +83,9 @@ public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
         Document document = generateAndStoreVersion(Document.class, "1-01.PDF", f, store);
         InformationResourceFileVersion originalVersion = document.getLatestUploadedVersion();
         // setup document
-        DocumentCitationFormatTestCase.setupDocumentWithAllFields(document, DocumentType.BOOK);
+        
+        PDocument d = proxyConstructionService.constructResource(document, PDocument.class, null, false);
+        DocumentCitationFormatTestCase.setupDocumentWithAllFields(d, DocumentType.BOOK);
         for (ResourceCreator c : document.getResourceCreators()) {
             genericService.saveOrUpdate(c.getCreator());
             genericService.saveOrUpdate(c);

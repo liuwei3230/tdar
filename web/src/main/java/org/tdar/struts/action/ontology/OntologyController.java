@@ -51,7 +51,7 @@ public class OntologyController extends AbstractSupportingInformationResourceCon
     @Override
     protected void loadCustomMetadata() throws TdarActionException {
         super.loadCustomMetadata();
-        getCodingSheetsWithMappings().addAll(codingSheetService.findAllUsingOntology(getOntology()));
+//        getCodingSheetsWithMappings().addAll(codingSheetService.findAllUsingOntology(getOntology()));
     }
 
     @Override

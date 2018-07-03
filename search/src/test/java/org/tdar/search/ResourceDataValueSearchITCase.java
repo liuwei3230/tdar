@@ -3,6 +3,7 @@ package org.tdar.search;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -21,6 +22,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.datatable.DataTableColumnEncodingType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.converter.DataValueDocumentConverter;
@@ -30,6 +32,7 @@ import org.tdar.search.query.SearchResult;
 import org.tdar.search.service.CoreNames;
 import org.tdar.search.service.query.ResourceSearchService;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class ResourceDataValueSearchITCase extends AbstractWithIndexIntegrationTestCase {
 
@@ -80,15 +83,16 @@ public class ResourceDataValueSearchITCase extends AbstractWithIndexIntegrationT
 
     private void searchFor(Dataset dataset, String term) throws IOException, SearchException, SearchIndexException {
         SearchResult result = performSearch(term, null, 100);
-        result.getResults().forEach(r -> {
+        List results = result.getResults();
+        results.forEach(r -> {
             logger.debug(" - {}", r);
         });
-        assertNotEmpty("should have results", result.getResults());
-        assertTrue(result.getResults().contains(dataset));
+        assertNotEmpty("should have results", results);
+        assertTrue(PersistableUtils.extractIds(results).contains(dataset.getId()));
     }
 
     public SearchResult performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
-        SearchResult<Resource> result = new SearchResult<>(max);
+        SearchResult<PResource> result = new SearchResult<>(max);
         AdvancedSearchQueryObject asqo = new AdvancedSearchQueryObject();
         SearchParameters e = new SearchParameters();
         e.getAllFields().add(term);

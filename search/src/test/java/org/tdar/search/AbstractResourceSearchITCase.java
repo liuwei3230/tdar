@@ -31,6 +31,8 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.resource.ResourceService;
@@ -146,7 +148,7 @@ public abstract class AbstractResourceSearchITCase extends AbstractWithIndexInte
         return docId;
     }
 
-    public SearchResult<Resource> doSearch(String text, TdarUser user, SearchParameters params_, ReservedSearchParameters reservedParams,
+    public SearchResult<PResource> doSearch(String text, TdarUser user, SearchParameters params_, ReservedSearchParameters reservedParams,
             SortOption... option) throws SearchException, IOException {
         asqo = new AdvancedSearchQueryObject();
         SearchParameters params = params_;
@@ -156,7 +158,7 @@ public abstract class AbstractResourceSearchITCase extends AbstractWithIndexInte
         if (StringUtils.isNotBlank(text)) {
             params.getAllFields().add(text);
         }
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         if (option != null && option.length > 0) {
             result.setSortField(option[0]);
         }
@@ -170,16 +172,21 @@ public abstract class AbstractResourceSearchITCase extends AbstractWithIndexInte
         return result;
     }
 
-    public SearchResult<Resource> doSearch(String text, TdarUser user, SearchParameters params_, ReservedSearchParameters reservedParams)
+    public SearchResult<PResource> doSearch(String text, TdarUser user, SearchParameters params_, ReservedSearchParameters reservedParams)
             throws SearchException, IOException {
         return doSearch(text, user, params_, reservedParams, null);
     }
 
-    public SearchResult<Resource> doSearch(String text) throws SearchException, IOException {
+    public SearchResult<PResource> doSearch(String text) throws SearchException, IOException {
         return doSearch(text, null, null, null, null);
     }
 
     public boolean resultsContainId(SearchResult<? extends Resource> result, long l) {
+        List<Long> extractIds = PersistableUtils.extractIds(result.getResults());
+        return extractIds.contains(l);
+    }
+
+    public boolean presultsContainId(SearchResult<? extends PResource> result, long l) {
         List<Long> extractIds = PersistableUtils.extractIds(result.getResults());
         return extractIds.contains(l);
     }
@@ -204,10 +211,10 @@ public abstract class AbstractResourceSearchITCase extends AbstractWithIndexInte
             throws IOException, SearchException, SearchIndexException {
         SearchParameters sp = new SearchParameters();
         sp.getProjects().add(sparseProject(projectId));
-        SearchResult<Resource> result = doSearch(null, null, sp, null, sortField);
+        SearchResult<PResource> result = doSearch(null, null, sp, null, sortField);
         // logger.info("{}", result.getResults());
-        for (Resource d : result.getResults()) {
-            InformationResource ir = (InformationResource) d;
+        for (PResource d : result.getResults()) {
+            PInformationResource ir = (PInformationResource) d;
             logger.debug("{} {} {}", ir.getDate(), ir.getId(), ir);
         }
         Indexable found = result.getResults().iterator().next();
@@ -237,18 +244,18 @@ public abstract class AbstractResourceSearchITCase extends AbstractWithIndexInte
         return document;
     }
 
-    public SearchResult<Resource> performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
+    public SearchResult<PResource> performSearch(String term, TdarUser user, int max) throws IOException, SearchException, SearchIndexException {
         return performSearch(term, null, null, null, null, user, null, null, max);
     }
 
-    public SearchResult<Resource> performSearch(String term, Long projectId, Long collectionId, Boolean includeParent, Long categoryId, TdarUser user,
+    public SearchResult<PResource> performSearch(String term, Long projectId, Long collectionId, Boolean includeParent, Long categoryId, TdarUser user,
             ReservedSearchParameters reservedSearchParameters, int max) throws IOException, SearchException, SearchIndexException {
         return performSearch(term, projectId, collectionId, includeParent, categoryId, user, reservedSearchParameters, null, max);
     }
 
-    public SearchResult<Resource> performSearch(String term, Long projectId, Long collectionId, Boolean includeParent, Long categoryId, TdarUser user,
+    public SearchResult<PResource> performSearch(String term, Long projectId, Long collectionId, Boolean includeParent, Long categoryId, TdarUser user,
             ReservedSearchParameters reservedSearchParameters, Permissions permission, int max) throws IOException, SearchException, SearchIndexException {
-        SearchResult<Resource> result = new SearchResult<>(max);
+        SearchResult<PResource> result = new SearchResult<>(max);
         logger.debug("{}, {}", resourceSearchService, MessageHelper.getInstance());
         ResourceLookupObject rl = new ResourceLookupObject(term, projectId, includeParent, null, collectionId, categoryId, permission,
                 reservedSearchParameters);

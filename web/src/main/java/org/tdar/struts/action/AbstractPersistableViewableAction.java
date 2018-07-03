@@ -333,18 +333,6 @@ public abstract class AbstractPersistableViewableAction<P extends Persistable> e
         return InternalTdarRights.VIEW_ANYTHING;
     }
 
-    protected void reSortFacets(ResourceFacetedAction handler, Sortable persistable) {
-        // sort facets A-Z unless sortOption explicitly otherwise
-        if (PersistableUtils.isNotNullOrTransient(getPersistable()) && CollectionUtils.isNotEmpty(handler.getResourceTypeFacets())) {
-            Collections.sort(handler.getResourceTypeFacets(), new Comparator<Facet>() {
-                @Override
-                public int compare(Facet o1, Facet o2) {
-                    return o1.getRaw().compareTo(o2.getRaw());
-                }
-            });
-        }
-    }
-
     /**
      * Is the specified public file available for the current resource
      * 

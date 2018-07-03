@@ -18,6 +18,8 @@ import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.ExternalKeywordMapping;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.keyword.PKeyword;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.transform.jsonld.SchemaOrgCreatorTransformer;
 import org.tdar.transform.jsonld.SchemaOrgKeywordTransformer;
 import org.tdar.transform.jsonld.SchemaOrgResourceTransformer;
@@ -32,15 +34,21 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
     SerializationService serializationService;
     @Autowired
     GenericService genericService;
-
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
     @Test
     @Rollback
-    public void testResources() throws IOException, ClassNotFoundException {
+    public void testResources() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         SchemaOrgResourceTransformer transformer = new SchemaOrgResourceTransformer();
 
         for (Resource r : genericService.findAll(Resource.class)) {
+            if (r == null) {
+                continue;
+            }
             logger.debug("//  {} - {}", r.getId(), r.getResourceType());
-            logger.debug(transformer.convert(serializationService, r));
+            PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+            logger.debug(transformer.convert(serializationService, rr));
         }
     }
 
@@ -59,7 +67,8 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
         genericService.saveOrUpdate(map);
         genericService.saveOrUpdate(gk);
         genericService.saveOrUpdate(r);
-        String json = transformer.convert(serializationService, r);
+        PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+        String json = transformer.convert(serializationService, rr);
         logger.debug(json);
         assertTrue(json.contains("petra"));
     }
@@ -85,12 +94,13 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testKeywords() throws IOException, ClassNotFoundException {
+    public void testKeywords() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         SchemaOrgKeywordTransformer transformer = new SchemaOrgKeywordTransformer();
         CultureKeyword random = genericService.find(CultureKeyword.class, 4L);
         ExternalKeywordMapping assertion = new ExternalKeywordMapping(HTTP_WWW_TEST_COM, RelationType.DCTERMS_IS_REPLACED_BY);
         random.getAssertions().add(assertion);
-        String json = transformer.convert(serializationService, random);
+        PKeyword rr = proxyConstructionService.consructKeyword(random);
+        String json = transformer.convert(serializationService, rr);
         logger.debug(json);
         assertTrue("json contains URL", json.contains(HTTP_WWW_TEST_COM));
         assertTrue("json contains short term", json.contains(RelationType.DCTERMS_IS_REPLACED_BY.getShortTerm()));

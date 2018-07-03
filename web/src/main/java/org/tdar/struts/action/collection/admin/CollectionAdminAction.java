@@ -28,6 +28,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -57,7 +58,7 @@ import com.opensymphony.xwork2.Preparable;
         @Namespace("/collection/admin"),
         @Namespace("/share/admin")
 })
-public class CollectionAdminAction extends AbstractCollectionAdminAction implements Preparable, FacetedResultHandler<Resource> {
+public class CollectionAdminAction extends AbstractCollectionAdminAction implements Preparable, FacetedResultHandler<PResource> {
 
     private static final long serialVersionUID = -4060598709570483884L;
     @Autowired
@@ -80,7 +81,7 @@ public class CollectionAdminAction extends AbstractCollectionAdminAction impleme
     private int totalRecords;
     private int startRecord = 0;
 
-    private List<Resource> results;
+    private List<PResource> results;
     private SortOption secondarySortField;
     private SortOption sortField = SortOption.TITLE;
     private String mode = "CollectionAdminBrowse";
@@ -170,11 +171,11 @@ public class CollectionAdminAction extends AbstractCollectionAdminAction impleme
         this.startRecord = startRecord;
     }
 
-    public List<Resource> getResults() {
+    public List<PResource> getResults() {
         return results;
     }
 
-    public void setResults(List<Resource> results) {
+    public void setResults(List<PResource> results) {
         this.results = results;
     }
 

@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.entity.ResourceCreator;
+import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.service.GenericService;
@@ -91,7 +93,8 @@ public class ResourceComparisonAction extends AbstractAuthenticatableAction impl
                 geographic.addAll(PersistableUtils.extractIds(r.getActiveGeographicKeywords()));
                 siteNames.addAll(PersistableUtils.extractIds(r.getActiveSiteNameKeywords()));
                 siteTypes.addAll(PersistableUtils.extractIds(r.getActiveSiteTypeKeywords()));
-                creators.addAll(PersistableUtils.extractIds(r.getPrimaryCreators()));
+                Collection<ResourceCreator> pcs = ResourceCreatorRole.getPrimaryCreators(r.getResourceCreators(), r.getResourceType());
+                creators.addAll(PersistableUtils.extractIds(pcs));
                 individualRoles.addAll(PersistableUtils.extractIds(r.getActiveIndividualAndInstitutionalCredit()));
                 latitudeLongitude.addAll(PersistableUtils.extractIds(r.getActiveLatitudeLongitudeBoxes()));
                 notes.addAll(PersistableUtils.extractIds(r.getActiveResourceNotes()));
@@ -109,7 +112,7 @@ public class ResourceComparisonAction extends AbstractAuthenticatableAction impl
                 siteNames = intersection(siteNames, toSet(r.getActiveSiteNameKeywords()));
                 siteTypes = intersection(siteTypes, toSet(r.getActiveSiteTypeKeywords()));
 
-                creators = intersection(creators, new HashSet<>(toSet(r.getPrimaryCreators())));
+                creators = intersection(creators, new HashSet<>(toSet(ResourceCreatorRole.getPrimaryCreators(r.getResourceCreators(), r.getResourceType()))));
                 individualRoles = intersection(individualRoles, toSet(r.getActiveIndividualAndInstitutionalCredit()));
                 latitudeLongitude = intersection(latitudeLongitude, toSet(r.getActiveLatitudeLongitudeBoxes()));
                 notes = intersection(notes, toSet(r.getActiveResourceNotes()));

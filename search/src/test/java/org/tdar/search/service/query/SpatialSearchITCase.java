@@ -30,6 +30,7 @@ import org.tdar.search.query.part.FieldQueryPart;
 import org.tdar.search.query.part.SpatialQueryPart;
 import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
 
@@ -90,7 +91,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
     public void testGeoDocNotFoundTexasAZ() throws SearchException, SearchIndexException, IOException, ParseException {
         Document doc = createGeoDoc("dyess", 32.388, -99.885, 32.474, -99.796);
         SearchResult<Resource> result = performGeoSearch(31.50362930577303, -114.78515625, 33.284619968887675, -112.67578125);
-        assertFalse(result.getResults().contains(doc));
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     /**
@@ -131,8 +132,9 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         logger.info("searchScale:{}", searchBox.getScale());
         logger.info("bb1Scale:{}", doc.getFirstActiveLatitudeLongitudeBox().getScale());
         logger.info("bb2Scale:{}", doc2.getFirstActiveLatitudeLongitudeBox().getScale());
-        assertFalse(result.getResults().contains(doc));
-        assertTrue(result.getResults().contains(doc2));
+        List<Long> results = PersistableUtils.extractIds(result.getResults());
+        assertFalse(results.contains(doc.getId()));
+        assertTrue(results.contains(doc2.getId()));
         assertTrue((searchBox.getScale() + SpatialQueryPart.SCALE_RANGE) < doc.getFirstActiveLatitudeLongitudeBox().getScale());
 
     }
@@ -144,7 +146,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         // document w/ coords that abut the prime meridian
         Document doc = createGeoDoc("foo", 1d, 0d, 1.1d, 5d);
         SearchResult<Resource> result = performGeoSearch(-10d, -10d, 10d, 10d);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -155,7 +157,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         Document doc = createGeoDoc("foo", 12.726084296948184, -7.646484375, 21.37124437061831, 3.427734375);
         // box around Micronesia
         SearchResult<Resource> result = performGeoSearch(-14.602, -30d, 20.617, 146.154);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -168,7 +170,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         assertFalse(result.getResults().contains(doc));
         // should be TRUE????
         result = performGeoSearch(-10d, -10d, 10d, 10d);
-        assertFalse(result.getResults().contains(doc));
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
 
     }
 
@@ -182,7 +184,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         assertFalse(result.getResults().contains(doc));
         // should be TRUE????
         result = performGeoSearch(-10d, -10d, 10d, 10d);
-        assertFalse(result.getResults().contains(doc));
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
 
     }
 
@@ -192,7 +194,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         // document outside our search bounds.
         Document doc = createGeoDoc("foo", 1d, 168d, 2d, 169d);
         SearchResult<Resource> result = performGeoSearch(-10d, -170d, 10d, 170d);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -201,7 +203,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
     public void testGeoSearchFoundWhenSpanningEquator() throws SearchException, SearchIndexException, IOException, ParseException {
         Document doc = createGeoDoc("foo", 0d, 5d, 1d, 6d);
         SearchResult<Resource> result = performGeoSearch(-10d, -10d, 10d, 10d);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -210,14 +212,14 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
     public void testGeoSearchNotFoundWhenSpanningEquator() throws SearchException, SearchIndexException, IOException, ParseException {
         Document doc = createGeoDoc("foo", 11d, 5d, 12d, 6d);
         SearchResult<Resource> result = performGeoSearch(-10d, -10d, 10d, 10d);
-        assertFalse(result.getResults().contains(doc));
+        assertFalse(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Rollback
     public void testGeoSearchWithDocumentThatSpansAntiMeridian() throws SearchException, SearchIndexException, IOException, ParseException {
         Document doc = createGeoDoc("antimeridian doc", 1d, -170d, 2d, 170d);
         SearchResult<Resource> result = performGeoSearch(-10d, -160d, 10d, 160d);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -227,9 +229,9 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         Document doc2 = createGeoDoc("Monte Patria", -30.8692253480408, -70.77944444444444d, -30.741835717889778d, -70.6146240234375d);
         Document doc3 = createGeoDoc("Isla Gordon", -54.987070078948776d, -69.67527777777778d, -54.91451400766525d, -69.510498046875d);
         SearchResult<Resource> result = performGeoSearch(-56.36527777777778d, -76.2890625d, -16.97274101999902d, -66.97265625d);
-        assertTrue(result.getResults().contains(doc1));
-        assertTrue(result.getResults().contains(doc2));
-        assertTrue(result.getResults().contains(doc3));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc1.getId()));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc2.getId()));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc3.getId()));
     }
 
     @Test
@@ -238,8 +240,8 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         Document doc = createGeoDoc("Nuuk", 64.17472222222223d, -51.73888888888889d, 64.17500000000001d, -51.7385d);
         Document doc2 = createGeoDoc("Nord", 81.69784444971418d, -17.226666666666667d, 81.82379431564337d, -15.46875d);
         SearchResult<Resource> result = performGeoSearch(57.70414723434193d, -75.234375, 83.71554430601263d, -12.65625d);
-        assertTrue(result.getResults().contains(doc));
-        assertTrue(result.getResults().contains(doc2));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc2.getId()));
     }
 
     @Test
@@ -247,7 +249,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
     public void testGeoSearchThatSpansIceland() throws SearchException, SearchIndexException, IOException, ParseException {
         Document doc = createGeoDoc("Stafnsvötn", 65.18518697818304d, -18.776578903198242d, 65.18614154408306d, -18.773725032806396d);
         SearchResult<Resource> result = performGeoSearch(63.35212928507874d, -24.345703125d, 66.8265202749748d, -13.271484375d);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @Test
@@ -303,7 +305,7 @@ public class SpatialSearchITCase extends AbstractWithIndexIntegrationTestCase {
         rqb.append(searchPart);
         SearchResult<Resource> result = new SearchResult<>();
         searchService.handleSearch(rqb, result, MessageHelper.getInstance());
-        assertTrue(result.getResults().contains(file));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(file.getId()));
     }
 
 }

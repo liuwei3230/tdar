@@ -5,8 +5,8 @@ import java.net.URLEncoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.configuration.TdarConfiguration;
 
 public class OpenUrlFormatter {
@@ -16,7 +16,7 @@ public class OpenUrlFormatter {
     private final static transient Logger logger = LoggerFactory.getLogger(OpenUrlFormatter.class);
 
     @SuppressWarnings("deprecation")
-    public static String toOpenURL(Resource resource) {
+    public static String toOpenURL(PResource resource) {
         StringBuilder sb = new StringBuilder();
         try {
             TdarConfiguration conf = TdarConfiguration.getInstance();
@@ -28,8 +28,8 @@ public class OpenUrlFormatter {
             }
             String genre = resource.getResourceType().getOpenUrlGenre();
             String title = resource.getName();
-            if (resource instanceof Document) {
-                Document doc = ((Document) resource);
+            if (resource instanceof PDocument) {
+                PDocument doc = ((PDocument) resource);
                 switch (doc.getDocumentType()) {
                     case BOOK_SECTION:
                         if (StringUtils.isNotBlank(doc.getBookTitle())) {

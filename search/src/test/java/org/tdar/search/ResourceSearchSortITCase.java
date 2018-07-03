@@ -12,13 +12,15 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
+import org.tdar.utils.PersistableUtils;
 
 public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
 
@@ -71,24 +73,25 @@ public class ResourceSearchSortITCase extends AbstractResourceSearchITCase {
         List<Resource> res = Arrays.asList(project, project2, a, b, c, d, e, aa);
         searchIndexService.indexCollection(res);
 
-        SearchResult<Resource> result = doSearch("", null, null, null, SortOption.PROJECT);
-        List<Resource> results = result.getResults();
-        for (Resource r : results) {
-            if (r instanceof InformationResource) {
-                InformationResource ir = (InformationResource) r;
+        SearchResult<PResource> result = doSearch("", null, null, null, SortOption.PROJECT);
+        List<PResource> results = result.getResults();
+        for (PResource r : results) {
+            if (r instanceof PInformationResource) {
+                PInformationResource ir = (PInformationResource) r;
                 logger.debug("{} {} {}", r.getId(), ir.getProjectTitle() + r.getName(), ir.getProjectId());
             } else {
                 logger.debug("{} {}", r.getId(), r.getName());
             }
         }
-        int i = results.indexOf(project);
-        assertEquals(i + 1, results.indexOf(a));
-        assertEquals(i + 2, results.indexOf(b));
-        assertEquals(i + 3, results.indexOf(c));
-        assertEquals(i + 4, results.indexOf(project2));
-        assertEquals(i + 5, results.indexOf(aa));
-        assertEquals(i + 6, results.indexOf(d));
-        assertEquals(i + 7, results.indexOf(e));
+        List<Long> ids = PersistableUtils.extractIds(results);
+        int i = ids.indexOf(project.getId());
+        assertEquals(i + 1, ids.indexOf(a.getId()));
+        assertEquals(i + 2, ids.indexOf(b.getId()));
+        assertEquals(i + 3, ids.indexOf(c.getId()));
+        assertEquals(i + 4, ids.indexOf(project2.getId()));
+        assertEquals(i + 5, ids.indexOf(aa.getId()));
+        assertEquals(i + 6, ids.indexOf(d.getId()));
+        assertEquals(i + 7, ids.indexOf(e.getId()));
     }
 
     @Test

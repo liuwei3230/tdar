@@ -18,6 +18,8 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ObjectType;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
@@ -36,15 +38,15 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         updateAndIndex(doc);
         SearchParameters sp = new SearchParameters();
         sp.setTitles(Arrays.asList("USAF"));
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
 
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
         doc.setTitle("USAF");
         updateAndIndex(doc);
         sp = new SearchParameters();
         sp.setTitles(Arrays.asList("usaf"));
         result = doSearch(null, null, sp, null);
-        assertTrue(result.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(result.getResults()).contains(doc.getId()));
     }
 
     @SuppressWarnings("deprecation")
@@ -80,15 +82,15 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         }
         genericService.synchronize();
         // searchIndexService.indexCollection(docs);
-        SearchResult<Resource> result = doSearch("AZ U:9:1(ASM)");
-        List<Resource> results = result.getResults();
-        for (Resource r : result.getResults()) {
+        SearchResult<PResource> result = doSearch("AZ U:9:1(ASM)");
+        List<PResource> results = result.getResults();
+        for (PResource r : result.getResults()) {
             logger.debug("results: {}", r);
         }
 
-        assertTrue("controller should not contain titles with MACROFLORAL", CollectionUtils.containsAny(results, badMatches));
+        assertTrue("controller should not contain titles with MACROFLORAL", CollectionUtils.containsAny(PersistableUtils.extractIds(results), PersistableUtils.extractIds(badMatches)));
         assertTrue("controller should not contain titles with MACROFLORAL",
-                CollectionUtils.containsAll(results.subList(results.size() - 3, results.size()), badMatches));
+                CollectionUtils.containsAll(PersistableUtils.extractIds(results.subList(results.size() - 3, results.size())), PersistableUtils.extractIds(badMatches)));
 
     }
 
@@ -103,11 +105,11 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getTitles().add(title);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
 
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
-        assertEquals(doc, result.getResults().iterator().next());
+        assertEquals(doc.getId(), result.getResults().iterator().next().getId());
     }
 
     @Test
@@ -121,10 +123,10 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(doc);
         SearchParameters sp = new SearchParameters();
         sp.getAllFields().add(title);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         logger.info("{}", result.getResults());
         assertEquals("only one result expected", 1L, result.getResults().size());
-        assertEquals(doc, result.getResults().iterator().next());
+        assertEquals(doc.getId(), result.getResults().iterator().next().getId());
     }
 
     @SuppressWarnings("deprecation")
@@ -270,7 +272,12 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         for (int i = 0; i < titles.length; i++) {
             String title = titles[i];
             Integer cat = cats[i];
-            CodingSheet cs = createAndSaveNewInformationResource(CodingSheet.class, getUser(), title);
+            CodingSheet cs = new CodingSheet();
+            cs.setStatus(Status.ACTIVE);
+            cs.markUpdated(getUser());
+            cs.setTitle(title);
+            cs.setDescription(title);
+            cs.setDate(2018);
             allSheets.add(cs);
             if (cat != null) {
                 cs.setCategoryVariable(genericService.find(CategoryVariable.class, (long) cat));
@@ -279,8 +286,6 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
                 logger.info("{} {}", cs, cs.getCategoryVariable().getId());
                 sheets.add(cs);
             }
-            cs = null;
-
         }
         genericService.saveOrUpdate(allSheets);
         genericService.synchronize();
@@ -290,7 +295,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         searchIndexService.indexAll(getAdminUser(), LookupSource.RESOURCE);
         ReservedSearchParameters params = new ReservedSearchParameters();
         params.setObjectTypes(Arrays.asList(ObjectType.CODING_SHEET));
-        SearchResult<Resource> result = performSearch("Taxonomic Level", null, null, null, null, null, params, 10);
+        SearchResult<PResource> result = performSearch("Taxonomic Level", null, null, null, null, null, params, 10);
         logger.info("{}", result.getResults());
         logger.info("{}", sheetIds);
         assertTrue(PersistableUtils.extractIds(result.getResults()).containsAll(sheetIds));
@@ -298,7 +303,7 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         result = performSearch("Taxonomic Level", null, null, null, 85l, getBasicUser(), params, 10);
         logger.info("{}", result.getResults());
         assertTrue(PersistableUtils.extractIds(result.getResults()).containsAll(sheetIds));
-        Resource col = ((Resource) result.getResults().get(0));
+        PResource col = ((PResource) result.getResults().get(0));
         assertEquals("Taxonomic Level 1", col.getName());
 
         result = performSearch(null, null, null, null, 85l, getBasicUser(), params, 1000);
@@ -317,8 +322,8 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         String projectTitle = project.getTitle();
         SearchParameters sp = new SearchParameters();
         sp.getTitles().add(projectTitle);
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
-        result.getResults().contains(project);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
+        PersistableUtils.extractIds(result.getResults()).contains(project.getId());
     }
 
     @SuppressWarnings("deprecation")
@@ -361,10 +366,10 @@ public class ResourceTitleSearchITCase extends AbstractResourceSearchITCase {
         }
         genericService.synchronize();
         searchIndexService.indexCollection(docs);
-        SearchResult<Resource> result = doSearch(exact);
+        SearchResult<PResource> result = doSearch(exact);
         @SuppressWarnings("unused")
-        List<Resource> results = result.getResults();
-        for (Resource r : result.getResults()) {
+        List<PResource> results = result.getResults();
+        for (PResource r : result.getResults()) {
             logger.debug("results: {}", r);
         }
         assertEquals(exact, result.getResults().get(0).getTitle());

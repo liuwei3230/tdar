@@ -8,10 +8,11 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.resource.Geospatial;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.serialize.resource.PGeospatial;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.struts.action.dataset.AbstractDatasetViewAction;
 
@@ -19,19 +20,19 @@ import org.tdar.struts.action.dataset.AbstractDatasetViewAction;
 @Scope("prototype")
 @ParentPackage("default")
 @Namespace("/geospatial")
-public class GeospatialViewAction extends AbstractDatasetViewAction<Geospatial> {
+public class GeospatialViewAction extends AbstractDatasetViewAction<PGeospatial> {
 
     private static final long serialVersionUID = 6518833514525728322L;
     private boolean showGeoJson = false;
 
     @Override
-    public Class<Geospatial> getPersistableClass() {
-        return Geospatial.class;
+    public Class<PGeospatial> getPersistableClass() {
+        return PGeospatial.class;
     }
 
-    protected InformationResourceFileVersion getLatestUploadedVersion() {
-        InformationResourceFileVersion version = null;
-        Collection<InformationResourceFileVersion> versions = getPersistable().getLatestVersions(VersionType.GEOJSON);
+    protected PInformationResourceFileVersion getLatestUploadedVersion() {
+        PInformationResourceFileVersion version = null;
+        Collection<PInformationResourceFileVersion> versions = getPersistable().getLatestVersions(VersionType.GEOJSON);
         if (!versions.isEmpty()) {
             version = getPersistable().getLatestVersions(VersionType.GEOJSON).iterator().next();
 
@@ -43,7 +44,7 @@ public class GeospatialViewAction extends AbstractDatasetViewAction<Geospatial> 
         // in order for this to work we need to be generating text versions
         // of these files for both text input and file uploads
         String versionText = "";
-        InformationResourceFileVersion version = getLatestUploadedVersion();
+        PInformationResourceFileVersion version = getLatestUploadedVersion();
         if (version != null && showGeoJson) {
             try {
                 versionText = FileUtils.readFileToString(TdarConfiguration.getInstance().getFilestore().retrieveFile(FilestoreObjectType.RESOURCE, version));

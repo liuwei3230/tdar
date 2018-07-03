@@ -6,6 +6,8 @@
  */
 package org.tdar.struts.action;
 
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.TestConstants;
@@ -35,6 +37,7 @@ public class ObfuscationITCase extends AbstractIntegrationControllerTestCase {
         rva.setId(Long.parseLong(TestConstants.TEST_DOCUMENT_ID));
         rva.prepare();
         rva.view();
-        ((Document) rva.getResource()).getProject();
+//        ((Document) rva.getResource()).getProject();
+        fail("");
     }
 }

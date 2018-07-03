@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.persistence.NoResultException;
 
+import org.geotools.geometry.iso.index.quadtree.Node;
 import org.hibernate.query.Query;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Dataset;
@@ -78,5 +79,9 @@ public class OntologyNodeDao extends HibernateBase<OntologyNode> {
             }
         }
         return null;
+    }
+
+    public OntologyNode getParentNode(Long id) {
+        return getParentNode(find(OntologyNode.class, id));
     }
 }

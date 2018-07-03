@@ -30,6 +30,7 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.ActivityManager;
 import org.tdar.core.service.GeoRssMode;
 import org.tdar.core.service.external.session.SessionData;
@@ -227,7 +228,7 @@ public class RSSSearchControllerITCase extends AbstractSearchControllerITCase {
 
     protected boolean resultsContainId(Long id, RSSSearchAction controller_) {
         boolean found = false;
-        for (Resource r : controller_.getResults()) {
+        for (PResource r : controller_.getResults()) {
             logger.trace(r.getId() + " " + r.getResourceType());
             if (id.equals(r.getId())) {
                 found = true;

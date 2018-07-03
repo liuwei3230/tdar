@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
@@ -11,14 +12,16 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceAnnotation;
 import org.tdar.core.bean.resource.ResourceAnnotationKey;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.query.SearchResult;
+import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.StringPair;
 
 public class ResourceAnnotationSearchITCase extends AbstractResourceSearchITCase {
@@ -36,10 +39,10 @@ public class ResourceAnnotationSearchITCase extends AbstractResourceSearchITCase
         sp.getAnnotations().add(new StringPair(MAC_LAB_LOT_NUMBER, _18ST659_143));
         ReservedSearchParameters rsp = new ReservedSearchParameters();
         rsp.getObjectTypes().clear(); // select all resource types
-        SearchResult<Resource> result = doSearch(null, null, sp, null);
+        SearchResult<PResource> result = doSearch(null, null, sp, null);
         int resourceCount = 0;
         for (Indexable resource : result.getResults()) {
-            if (resource instanceof InformationResource) {
+            if (resource instanceof PInformationResource) {
                 resourceCount++;
             }
         }
@@ -52,9 +55,10 @@ public class ResourceAnnotationSearchITCase extends AbstractResourceSearchITCase
     public void testResourceAnnotationKeywordSearch() throws SearchException, SearchIndexException, IOException, ParseException {
         String code = _18ST659_158;
         Document doc = createDocumentWithAnnotationKey(code);
-        SearchResult<Resource> result = doSearch(code, null, null, null);
-        assertFalse("we should get back at least one hit", result.getResults().isEmpty());
-        assertTrue(result.getResults().contains(doc));
+        SearchResult<PResource> result = doSearch(code, null, null, null);
+        List<PResource> results = result.getResults();
+        assertFalse("we should get back at least one hit", results.isEmpty());
+        assertTrue(PersistableUtils.extractIds(results).contains(doc.getId()));
     }
 
     private Document createDocumentWithAnnotationKey(String code) throws SearchIndexException, IOException {

@@ -15,6 +15,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.SearchParameters;
@@ -81,7 +82,7 @@ public class NestedObjectIdexingITCase extends AbstractWithIndexIntegrationTestC
         genericService.saveOrUpdate(image);
         genericService.synchronize();
         searchIndexService.index(collection, image);
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         AdvancedSearchQueryObject asqo = new AdvancedSearchQueryObject();
         SearchParameters params = new SearchParameters();
         // params.getCollections().add(collection);

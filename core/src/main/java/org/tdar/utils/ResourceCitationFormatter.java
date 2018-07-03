@@ -5,11 +5,11 @@ import java.io.Serializable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.entity.ResourceCreator;
+import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
-import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.configuration.TdarConfiguration;
 
 /**
@@ -22,11 +22,11 @@ import org.tdar.core.configuration.TdarConfiguration;
 public class ResourceCitationFormatter implements Serializable {
     private TdarConfiguration CONFIG = TdarConfiguration.getInstance();
     private static final long serialVersionUID = -4055674012404120541L;
-    private Resource resource;
+    private PResource resource;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ResourceCitationFormatter(Resource resource) {
-        this.resource = resource;
+    public ResourceCitationFormatter(PResource pResource) {
+        this.resource = pResource;
     }
 
     public String getFullCitation() {
@@ -52,20 +52,20 @@ public class ResourceCitationFormatter implements Serializable {
     public String getFormattedTitleInfo() {
         StringBuilder sb = new StringBuilder();
         appendIfNotBlank(sb, resource.getTitle(), "", "");
-        if (resource instanceof Document) {
-            appendIfNotBlank(sb, ((Document) resource).getEdition(), ",", "");
+        if (resource instanceof PDocument) {
+            appendIfNotBlank(sb, ((PDocument) resource).getEdition(), ",", "");
         }
         return sb.toString();
     }
 
     public String getFormattedAuthorList() {
         StringBuilder sb = new StringBuilder();
-        for (ResourceCreator creator : resource.getPrimaryCreators()) {
+        for (PResourceCreator creator : resource.getPrimaryCreators()) {
             if ((creator.getRole() == ResourceCreatorRole.AUTHOR) || (creator.getRole() == ResourceCreatorRole.CREATOR)) {
                 appendIfNotBlank(sb, creator.getCreator().getProperName(), ",", "");
             }
         }
-        for (ResourceCreator creator : resource.getEditors()) {
+        for (PResourceCreator creator : resource.getEditors()) {
             if (creator.getRole() == ResourceCreatorRole.EDITOR) {
                 appendIfNotBlank(sb, creator.getCreator().getProperName(), ",", "");
             }
@@ -76,8 +76,8 @@ public class ResourceCitationFormatter implements Serializable {
     public String getFormattedSourceInformation() {
         StringBuilder sb = new StringBuilder();
 
-        if (resource instanceof Document) {
-            Document doc = (Document) resource;
+        if (resource instanceof PDocument) {
+            PDocument doc = (PDocument) resource;
             switch (doc.getDocumentType()) {
                 case BOOK:
                     appendIfNotBlank(sb, doc.getSeriesName(), "", "");
@@ -123,8 +123,8 @@ public class ResourceCitationFormatter implements Serializable {
                     break;
             }
             sb = appendDate(sb, doc);
-        } else if (resource instanceof InformationResource) {
-            InformationResource ir = (InformationResource) resource;
+        } else if (resource instanceof PInformationResource) {
+            PInformationResource ir = (PInformationResource) resource;
             appendIfNotBlank(sb, ir.getPublisherLocation(), ".", "");
             appendIfNotBlank(sb, ir.getPublisherName(), ":", "");
             appendDate(sb, ir);
@@ -133,7 +133,7 @@ public class ResourceCitationFormatter implements Serializable {
         return sb.toString();
     }
 
-    private StringBuilder appendDate(StringBuilder sb_, InformationResource doc) {
+    private StringBuilder appendDate(StringBuilder sb_, PInformationResource doc) {
         StringBuilder sb = sb_;
         if ((doc.getDate() != null) && (doc.getDate() != -1)) {
             if (sb.length() > 0 && sb.substring(sb.length() - 1).equals(".")) {
@@ -144,7 +144,7 @@ public class ResourceCitationFormatter implements Serializable {
         return sb;
     }
 
-    public String getPageRange(Document doc) {
+    public String getPageRange(PDocument doc) {
         StringBuilder sb = new StringBuilder();
         appendIfNotBlank(sb, doc.getStartPage(), "", "");
         appendIfNotBlank(sb, doc.getEndPage(), "-", "");

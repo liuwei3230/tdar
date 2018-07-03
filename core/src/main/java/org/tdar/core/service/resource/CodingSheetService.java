@@ -9,6 +9,7 @@ import org.tdar.core.bean.resource.CodingSheet;
 import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.parser.CodingSheetParserException;
+import org.tdar.core.serialize.resource.PCodingSheet;
 import org.tdar.filestore.WorkflowContext;
 
 public interface CodingSheetService {
@@ -19,7 +20,7 @@ public interface CodingSheetService {
 
     void reconcileOntologyReferencesOnRulesAndDataTableColumns(CodingSheet codingSheet, Ontology ontology_);
 
-    List<CodingSheet> findAllUsingOntology(Ontology ontology);
+    List<PCodingSheet> findAllUsingOntology(Long id);
 
     List<String> updateCodingSheetMappings(CodingSheet codingSheet, TdarUser authenticatedUser, List<CodingRule> incomingRules);
 

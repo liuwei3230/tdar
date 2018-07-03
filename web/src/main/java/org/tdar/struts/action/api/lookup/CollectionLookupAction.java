@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.CollectionResourceSection;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.permissions.Permissions;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.search.bean.CollectionSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
@@ -31,7 +31,7 @@ import org.tdar.utils.json.JsonLookupFilter;
 @ParentPackage("default")
 @Component
 @Scope("prototype")
-public class CollectionLookupAction extends AbstractLookupController<ResourceCollection> {
+public class CollectionLookupAction extends AbstractLookupController<PResourceCollection> {
 
     private static final long serialVersionUID = -1785355137646480452L;
 

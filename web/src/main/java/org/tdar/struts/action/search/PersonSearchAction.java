@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.search.bean.PersonSearchOption;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
@@ -27,7 +28,7 @@ import org.tdar.struts_base.action.TdarActionException;
 @Scope("prototype")
 @ParentPackage("default")
 @HttpsOnly
-public class PersonSearchAction extends AbstractLookupController<Person> {
+public class PersonSearchAction extends AbstractLookupController<PPerson> {
 
     private static final long serialVersionUID = -4399875145290579664L;
 
@@ -40,7 +41,7 @@ public class PersonSearchAction extends AbstractLookupController<Person> {
     private PersonSearchOption personSearchOption;
 
     @Autowired
-    private CreatorSearchService<Person> creatorSearchService;
+    private CreatorSearchService<PPerson> creatorSearchService;
 
     @Action(value = "people", results = {
             @Result(name = SUCCESS, location = "people.ftl"),

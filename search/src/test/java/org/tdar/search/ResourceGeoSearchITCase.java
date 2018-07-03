@@ -17,6 +17,7 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
@@ -80,13 +81,13 @@ public class ResourceGeoSearchITCase extends AbstractResourceSearchITCase {
 
         AdvancedSearchQueryObject asqo2 = new AdvancedSearchQueryObject();
         asqo.setAllGeneralQueryFields(Arrays.asList("Virginia"));
-        LuceneSearchResultHandler<Resource> result = new SearchResult<>();
+        LuceneSearchResultHandler<PResource> result = new SearchResult<>();
         result.setRecordsPerPage(1000);
         resourceSearchService.buildAdvancedSearch(asqo2, getAdminUser(), result, MessageHelper.getInstance());
-        List<Resource> projects = result.getResults();
+        List<PResource> projects = result.getResults();
         logger.info("found: " + result.getTotalRecords());
         boolean found = false;
-        for (Resource p : projects) {
+        for (PResource p : projects) {
             logger.info("{}", p);
             if (p.getId().equals(project2.getId())) {
                 found = true;

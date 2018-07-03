@@ -14,9 +14,10 @@ import org.apache.struts2.convention.annotation.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.resource.Ontology;
 import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.resource.OntologyService;
 import org.tdar.core.service.resource.ontology.OntologyNodeWrapper;
@@ -111,7 +112,7 @@ public class OntologyViewController extends AbstractOntologyViewAction {
             // otherwise, try to see if the slug is an IRI
             String normalizeIri = OntologyNode.normalizeIri(getSlug());
             getLogger().trace("iri:{} --> {}", getIri(), normalizeIri);
-            OntologyNode node_ = getOntology().getNodeBySlug(getSlug());
+            POntologyNode node_ = getOntology().getNodeBySlug(getSlug());
             // handle struts differences /\\'\\,\\./ ...
             if (node_ == null) {
                 node_ = getOntology().getNodeByIri(normalizeIri);
@@ -134,16 +135,21 @@ public class OntologyViewController extends AbstractOntologyViewAction {
         super.handleSlug();
     }
 
-    @Override
-    public Class<Ontology> getPersistableClass() {
-        return Ontology.class;
-    }
-
     public String getJson() {
         return json;
     }
 
     public void setJson(String json) {
         this.json = json;
+    }
+
+    @Override
+    public Class<POntology> getPersistableClass() {
+        return POntology.class;
+    }
+
+    @Override
+    public POntology getPersistable() {
+        return (POntology) getResource();
     }
 }

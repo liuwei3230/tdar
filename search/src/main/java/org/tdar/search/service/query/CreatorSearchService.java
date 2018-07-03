@@ -4,13 +4,14 @@ import java.io.IOException;
 
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Person;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.search.bean.PersonSearchOption;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.query.LuceneSearchResultHandler;
 
 import com.opensymphony.xwork2.TextProvider;
 
-public interface CreatorSearchService<I extends Creator<?>> {
+public interface CreatorSearchService<I extends PCreator<?>> {
 
     LuceneSearchResultHandler<I> searchInstitution(String name, LuceneSearchResultHandler<I> result,
             TextProvider provider) throws SearchException, IOException;

@@ -10,6 +10,8 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 
 /*
  * This service attempts to centralize and support the creation of URL strings from within the java app. It's centralized here
@@ -96,6 +98,10 @@ public class UrlService {
         return downloadUrl(version.getInformationResourceFile().getInformationResource(), version);
     }
 
+    public static String downloadUrl(PInformationResource ir, PInformationResourceFileVersion version) {
+        return String.format("%s/filestore/get/%d/%d", StringUtils.stripEnd(getBaseUrl(), "/"), ir.getId(), version.getId());
+    }
+
     /**
      * Generate a download URL
      * 
@@ -112,6 +118,14 @@ public class UrlService {
      * @return
      */
     public static String thumbnailUrl(InformationResourceFileVersion version) {
+        return String.format("%s/files/img/sm/%d", StringUtils.stripEnd(getBaseUrl(), "/"), version.getId());
+    }
+    /**
+     * get the URL for a thumbnail image
+     * 
+     * @return
+     */
+    public static String thumbnailUrl(PInformationResourceFileVersion version) {
         return String.format("%s/files/img/sm/%d", StringUtils.stripEnd(getBaseUrl(), "/"), version.getId());
     }
 

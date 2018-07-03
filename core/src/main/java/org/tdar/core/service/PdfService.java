@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.tdar.core.bean.entity.Person;
+import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.exception.PdfCoverPageGenerationException;
@@ -28,7 +28,7 @@ public interface PdfService {
      * @throws IOException
      * @throws URISyntaxException
      */
-    InputStream mergeCoverPage(TextProvider provider, Person submitter, InformationResourceFileVersion version, Document document, File coverPage)
+    InputStream mergeCoverPage(TextProvider provider, TdarUser submitter, InformationResourceFileVersion version, Document document, File coverPage)
             throws PdfCoverPageGenerationException;
 
     /**

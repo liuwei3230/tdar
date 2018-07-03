@@ -80,35 +80,35 @@ public class ObfuscationResultListener implements PreResultListener {
                 continue;
             }
             boolean old = true;
-            // old way -- obfuscate everything
-            if (old) {
-                obfuscationService.obfuscateObject(obj, user);
-            } else {
-                // call the setter, if exists
-                Method setter = reflectionService.findMatchingSetter(method);
-                logger.trace("{} <==> {} {}", method, cls, setter);
-                if (setter != null) {
-                    // if the setter exists, generate proxy wrapper
-                    Class<?> actual = obj.getClass();
-                    try {
-                        // if the object is a collection, and the collection is empty, or the object is one of our static types, skip
-                        if (obj instanceof Collection && CollectionUtils.isEmpty((Collection<?>) obj) || obj == Project.NULL
-                                || obj == DataTableColumn.TDAR_ROW_ID) {
-                            logger.trace("SKIPPING: {} EMPTY COLLECTION | FINAL OBJECT", obj);
-                            continue;
-                        }
-                        // otherwise create a CGLIB proxy of the object
-                        Object result = enhance(obj, obfuscationService, user);
-                        // call the setter on the object
-                        setter.invoke(action, actual.cast(result));
-                    } catch (Exception e) {
-                        logger.error("exception in calling: {} {} {}", method, obj, actual, e);
-                    }
-                } else {
-                    // if there's no setter, obfuscate the object directly
-                    obfuscationService.obfuscateObject(obj, user);
-                }
-            }
+//            // old way -- obfuscate everything
+//            if (old) {
+//                obfuscationService.obfuscateObject(obj, user);
+//            } else {
+//                // call the setter, if exists
+//                Method setter = reflectionService.findMatchingSetter(method);
+//                logger.trace("{} <==> {} {}", method, cls, setter);
+//                if (setter != null) {
+//                    // if the setter exists, generate proxy wrapper
+//                    Class<?> actual = obj.getClass();
+//                    try {
+//                        // if the object is a collection, and the collection is empty, or the object is one of our static types, skip
+//                        if (obj instanceof Collection && CollectionUtils.isEmpty((Collection<?>) obj) || obj == Project.NULL
+//                                || obj == DataTableColumn.TDAR_ROW_ID) {
+//                            logger.trace("SKIPPING: {} EMPTY COLLECTION | FINAL OBJECT", obj);
+//                            continue;
+//                        }
+//                        // otherwise create a CGLIB proxy of the object
+//                        Object result = enhance(obj, obfuscationService, user);
+//                        // call the setter on the object
+//                        setter.invoke(action, actual.cast(result));
+//                    } catch (Exception e) {
+//                        logger.error("exception in calling: {} {} {}", method, obj, actual, e);
+//                    }
+//                } else {
+//                    // if there's no setter, obfuscate the object directly
+//                    obfuscationService.obfuscateObject(obj, user);
+//                }
+//            }
         }
         logger.trace("complete obfuscation");
     }

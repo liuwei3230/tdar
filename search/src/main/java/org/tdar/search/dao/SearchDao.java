@@ -34,6 +34,7 @@ import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.search.bean.SolrSearchObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.query.LuceneSearchResultHandler;
@@ -263,7 +264,7 @@ public class SearchDao<I extends Indexable> {
         }
         // iterate over all of the objects and create an objectMap if needed
         if (CollectionUtils.isNotEmpty(results.getIdList())) {
-            logger.trace("hydration via:{}", projectionModel);
+            logger.debug("hydration via:{}", projectionModel);
             switch (projectionModel) {
                 case LUCENE_ID_ONLY:
                     for (SolrDocument doc : results.getDocumentList()) {
@@ -300,12 +301,12 @@ public class SearchDao<I extends Indexable> {
                         toReturn = processSerialSearch(resultHandler, results);
                     }
                     break;
-                case RESOURCE_PROXY:
-                    for (I i : (List<I>) datasetDao.findSkeletonsForSearch(false, results.getIdList())) {
-                        obfuscateAndMarkViewable(resultHandler, i);
-                        toReturn.add((I) i);
-                    }
-                    break;
+//                case RESOURCE_PROXY:
+//                    for (I i : (List<I>) datasetDao.findSkeletonsForSearch(false, results.getIdList())) {
+//                        obfuscateAndMarkViewable(resultHandler, i);
+//                        toReturn.add((I) i);
+//                    }
+//                    break;
                 default:
                     break;
             }
@@ -328,12 +329,12 @@ public class SearchDao<I extends Indexable> {
                 if (r instanceof Resource) {
                     logger.trace("{}", doc);
                     r = projectionTransformer.transformResource(resultHandler, doc, r, obfuscationService);
-
+                    logger.debug("{}", r);
                 }
                 toReturn.add(r);
             } catch (ClassNotFoundException e) {
                 logger.error("error finding {}: {}", cls_, id, e);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Throwable e) {
                 logger.error("error finding {}: {}", cls_, id, e);
             }
         }
@@ -365,10 +366,14 @@ public class SearchDao<I extends Indexable> {
             } catch (ClassNotFoundException e) {
                 logger.error("error finding {}: {}", cls_, id, e);
             }
+            logger.debug("{}",obj);
             toReturn.add(obj);
         }
         return toReturn;
     }
+
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
 
     /**
      * For the results... group the results into a Map<Indexable class, List
@@ -380,16 +385,17 @@ public class SearchDao<I extends Indexable> {
      * sorting), and return that.
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private List<I> processGroupSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
+    private <J extends Persistable> List<I> processGroupSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
         Map<String, List<Long>> coalesce = results.getSearchByMap();
         List<Long> idList = results.getIdList();
         Object[] elements = new Object[idList.size()];
         for (String cls : coalesce.keySet()) {
             try {
-                Class<I> cls_ = (Class<I>) Class.forName(cls);
-                for (I i : datasetDao.findAll(cls_, coalesce.get(cls))) {
-                    Long id = i.getId();
-                    obfuscateAndMarkViewable(resultHandler, i);
+                Class<J> cls_ = (Class<J>) Class.forName(cls);
+                for (J j : datasetDao.findAll(cls_, coalesce.get(cls))) {
+                    I i = proxyConstructionService.construct(j, cls_, resultHandler.getAuthenticatedUser(), false);
+                    Long id = j.getId();
+//                    obfuscateAndMarkViewable(resultHandler, i);
                     elements[idList.indexOf(id)] = i;
                 }
             } catch (Exception e) {

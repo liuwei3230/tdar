@@ -8,9 +8,9 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 import org.springframework.test.annotation.Rollback;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.exception.SearchIndexException;
@@ -25,7 +25,7 @@ public class ProjectionITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testExpermientalProjectionModel() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Resource> result = new SearchResult<>(10000);
+        SearchResult<PResource> result = new SearchResult<>(10000);
         result.setProjectionModel(ProjectionModel.LUCENE);
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
@@ -35,10 +35,10 @@ public class ProjectionITCase extends AbstractResourceSearchITCase {
         result.setAuthenticatedUser(getAdminUser());
         resourceSearchService.buildAdvancedSearch(asqo, null, result, MessageHelper.getInstance());
         boolean seenCreator = false;
-        for (Resource r : result.getResults()) {
+        for (PResource r : result.getResults()) {
             logger.debug("{} {}", r, r.isViewable());
-            if (r instanceof InformationResource) {
-                InformationResource ir = (InformationResource) r;
+            if (r instanceof PInformationResource) {
+                PInformationResource ir = (PInformationResource) r;
                 logger.debug("\t{}", ir.getProject());
             }
             if (CollectionUtils.isNotEmpty(r.getPrimaryCreators())) {

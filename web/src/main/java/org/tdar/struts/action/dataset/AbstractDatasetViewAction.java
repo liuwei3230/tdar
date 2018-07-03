@@ -9,26 +9,30 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
+import org.tdar.core.serialize.resource.PDataset;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.datatable.PDataTable;
+import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.resource.DataTableService;
 import org.tdar.struts.action.resource.AbstractResourceViewAction;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.utils.PersistableUtils;
 
-public abstract class AbstractDatasetViewAction<D extends Dataset> extends AbstractResourceViewAction<D> {
+public abstract class AbstractDatasetViewAction<D extends PDataset> extends AbstractResourceViewAction<D> {
 
     private static final long serialVersionUID = -7657008098263870208L;
     private Long dataTableId;
     private InputStream xmlStream;
-    private DataTable dataTable;
+    private PDataTable dataTable;
     private String dataTableColumnJson;
 
     @Autowired
-    private transient DataTableService dataTableService;
+    private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private transient SerializationService serializationService;
@@ -45,7 +49,7 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
         super.loadCustomViewMetadata();
         List<Map<String, Object>> result = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(getDataTable())) {
-            for (DataTableColumn dtc : getDataTable().getSortedDataTableColumnsByImportOrder()) {
+            for (PDataTableColumn dtc : getDataTable().getSortedDataTableColumnsByImportOrder()) {
                 Map<String, Object> col = new HashMap<>();
                 col.put("simpleName", dtc.getJsSimpleName());
                 col.put("displayName", dtc.getDisplayName());
@@ -59,17 +63,17 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
         }
     }
 
-    public void setDataTable(DataTable dataTable) {
+    public void setDataTable(PDataTable dataTable) {
         this.dataTable = dataTable;
     }
 
-    public DataTable getDataTable() {
+    public PDataTable getDataTable() {
         getLogger().trace(dataTable + " dtID:" + dataTableId);
         if (dataTable == null) {
             if (dataTableId != null) {
-                this.dataTable = dataTableService.find(dataTableId);
+                this.dataTable = proxyConstructionService.loadDataTable(dataTableId);
             } else {
-                Set<DataTable> dataTables = ((Dataset) getResource()).getDataTables();
+                Set<PDataTable> dataTables = getPersistable().getDataTables();
                 if (!CollectionUtils.isEmpty(dataTables)) {
                     dataTable = dataTables.iterator().next();
                 }
@@ -107,12 +111,12 @@ public abstract class AbstractDatasetViewAction<D extends Dataset> extends Abstr
         if (PersistableUtils.isNullOrTransient(getPersistable())) {
             return false;
         }
-
-        if (getPersistable().getProject() == Project.NULL) {
+        PDataset dataset = getPersistable();
+        if (dataset.getProject() == PProject.NULL) {
             return false;
         }
 
-        for (DataTable dt : getPersistable().getDataTables()) {
+        for (PDataTable dt : dataset.getDataTables()) {
             if (!CollectionUtils.isEmpty(dt.getFilenameColumns())) {
                 return true;
             }

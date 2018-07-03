@@ -35,6 +35,8 @@ import org.tdar.core.dao.resource.OntologyDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarRuntimeException;
 import org.tdar.core.parser.OwlApiHierarchyParser;
+import org.tdar.core.serialize.resource.POntology;
+import org.tdar.core.serialize.resource.POntologyNode;
 import org.tdar.core.service.FreemarkerService;
 import org.tdar.core.service.ServiceInterface;
 import org.tdar.core.service.resource.ontology.OntologyNodeWrapper;
@@ -222,12 +224,12 @@ public class OntologyServiceImpl extends ServiceInterface.TypedDaoBase<Ontology,
      */
     @Override
     @Transactional(readOnly = true)
-    public List<OntologyNode> getChildren(List<OntologyNode> allNodes, OntologyNode parent) {
-        List<OntologyNode> toReturn = new ArrayList<>();
+    public List<POntologyNode> getChildren(List<POntologyNode> allNodes, POntologyNode parent) {
+        List<POntologyNode> toReturn = new ArrayList<>();
         if (parent == null) {
             throw new TdarRecoverableRuntimeException("ontologyService.parent_node_not_defined");
         }
-        for (OntologyNode currentNode : allNodes) {
+        for (POntologyNode currentNode : allNodes) {
             if (currentNode.getIndex().equals(parent.getIndex() + "." + currentNode.getIntervalStart())) {
                 toReturn.add(currentNode);
             }
@@ -306,13 +308,13 @@ public class OntologyServiceImpl extends ServiceInterface.TypedDaoBase<Ontology,
      */
     @Override
     @Transactional(readOnly = true)
-    public OntologyNodeWrapper prepareOntologyJson(Ontology ontology) {
-        List<OntologyNode> nodes = ontology.getSortedOntologyNodes();
+    public OntologyNodeWrapper prepareOntologyJson(POntology ontology) {
+        List<POntologyNode> nodes = ontology.getSortedOntologyNodes();
         Collections.reverse(nodes);
         Map<Long, OntologyNodeWrapper> tree = new HashMap<>();
         OntologyNodeWrapper root = null;
         Set<OntologyNodeWrapper> roots = new HashSet<>();
-        for (OntologyNode node : nodes) {
+        for (POntologyNode node : nodes) {
             OntologyNodeWrapper value = new OntologyNodeWrapper(node);
             if (!node.getIndex().contains(".")) {
                 root = value;
@@ -320,8 +322,8 @@ public class OntologyServiceImpl extends ServiceInterface.TypedDaoBase<Ontology,
             }
             tree.put(node.getId(), value);
         }
-        for (OntologyNode node : nodes) {
-            for (OntologyNode c : nodes) {
+        for (POntologyNode node : nodes) {
+            for (POntologyNode c : nodes) {
                 if (c == node) {
                     continue;
                 }

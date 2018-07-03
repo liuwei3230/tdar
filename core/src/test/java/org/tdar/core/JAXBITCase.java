@@ -62,9 +62,11 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.FileAction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.VersionType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.ImportService;
 import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.integration.dto.v1.IntegrationWorkflowData;
@@ -423,11 +425,20 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
         logger.debug("json:{}", json);
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+    
     @Test
     public void testUnicodeReplace() {
         List<Resource> findAll = genericService.findAll(Resource.class, Arrays.asList(371798L, 366254L));
         findAll.forEach(r -> {
-            ExtendedDcTransformer.transformAny(r);
+            try {
+                PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+                ExtendedDcTransformer.transformAny(rr);
+            } catch (InstantiationException | IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         });
         // ScrollableResults allScrollable = genericService.findAllScrollable(Resource.class, 100);
         // while (allScrollable.next()) {

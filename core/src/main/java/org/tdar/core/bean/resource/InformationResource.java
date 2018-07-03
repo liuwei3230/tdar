@@ -466,55 +466,55 @@ public abstract class InformationResource extends Resource {
         return getLatestVersions(VersionType.UPLOADED);
     }
 
-    @Transient
-    @JsonIgnore
-    @XmlTransient
-    public List<InformationResourceFileVersion> getContent() {
-        logger.trace("getContent");
-        List<InformationResourceFile> files = getPublicFiles();
-        if (CollectionUtils.isEmpty(files)) {
-            return null;
-        }
-        // List<InputStream> streams = new ArrayList<InputStream>();
-        List<InformationResourceFileVersion> fileURIs = new ArrayList<InformationResourceFileVersion>();
-        for (InformationResourceFile irFile : files) {
-            try {
-                if (irFile.getRestriction().isRestricted()) {
-                    continue;
-                }
-                InformationResourceFileVersion indexableVersion = irFile.getIndexableVersion();
-                fileURIs.add(indexableVersion);
-            } catch (Exception e) {
-                logger.trace("an exception occurred while reading file: {} ", e);
-            }
-        }
-        return fileURIs;
-    }
-
-    @Transient
-    public ResourceAccessType getResourceAccessType() {
-        if (transientAccessType != null) {
-            return transientAccessType;
-        }
-        int totalFiles = getNonDeletedFiles().size();
-        int publicFiles = getPublicFiles().size();
-        if (totalFiles > 0) {
-            if (publicFiles == 0) {
-                return ResourceAccessType.RESTRICTED;
-            }
-            if (publicFiles == totalFiles) {
-                return ResourceAccessType.PUBLICALLY_ACCESSIBLE;
-            }
-            return ResourceAccessType.PARTIALLY_RESTRICTED;
-        }
-        return ResourceAccessType.CITATION;
-    }
-
-    @Transient
-    @XmlTransient
-    public boolean isPublicallyAccessible() {
-        return getResourceAccessType() == ResourceAccessType.PUBLICALLY_ACCESSIBLE;
-    }
+//    @Transient
+//    @JsonIgnore
+//    @XmlTransient
+//    public List<InformationResourceFileVersion> getContent() {
+//        logger.trace("getContent");
+//        List<InformationResourceFile> files = getPublicFiles();
+//        if (CollectionUtils.isEmpty(files)) {
+//            return null;
+//        }
+//        // List<InputStream> streams = new ArrayList<InputStream>();
+//        List<InformationResourceFileVersion> fileURIs = new ArrayList<InformationResourceFileVersion>();
+//        for (InformationResourceFile irFile : files) {
+//            try {
+//                if (irFile.getRestriction().isRestricted()) {
+//                    continue;
+//                }
+//                InformationResourceFileVersion indexableVersion = irFile.getIndexableVersion();
+//                fileURIs.add(indexableVersion);
+//            } catch (Exception e) {
+//                logger.trace("an exception occurred while reading file: {} ", e);
+//            }
+//        }
+//        return fileURIs;
+//    }
+//
+//    @Transient
+//    public ResourceAccessType getResourceAccessType() {
+//        if (transientAccessType != null) {
+//            return transientAccessType;
+//        }
+//        int totalFiles = getNonDeletedFiles().size();
+//        int publicFiles = getPublicFiles().size();
+//        if (totalFiles > 0) {
+//            if (publicFiles == 0) {
+//                return ResourceAccessType.RESTRICTED;
+//            }
+//            if (publicFiles == totalFiles) {
+//                return ResourceAccessType.PUBLICALLY_ACCESSIBLE;
+//            }
+//            return ResourceAccessType.PARTIALLY_RESTRICTED;
+//        }
+//        return ResourceAccessType.CITATION;
+//    }
+//
+//    @Transient
+//    @XmlTransient
+//    public boolean isPublicallyAccessible() {
+//        return getResourceAccessType() == ResourceAccessType.PUBLICALLY_ACCESSIBLE;
+//    }
 
     @Transient
     public boolean getContainsFiles() {
@@ -703,51 +703,51 @@ public abstract class InformationResource extends Resource {
         return isProjectVisible() && isInheritingTemporalInformation() ? project.getCoverageDates() : getCoverageDates();
     }
 
-    @Transient
-    @Override
-    public boolean hasConfidentialFiles() {
-        return !getConfidentialFiles().isEmpty();
-    }
+//    @Transient
+//    @Override
+//    public boolean hasConfidentialFiles() {
+//        return !getConfidentialFiles().isEmpty();
+//    }
+//
+//    @Transient
+//    @Override
+//    public boolean hasEmbargoedFiles() {
+//        for (InformationResourceFile file : getConfidentialFiles()) {
+//            if (file.isEmbargoed()) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+//
+//    @Transient
+//    public List<InformationResourceFile> getFilesWithRestrictions(boolean confidential) {
+//        List<InformationResourceFile> confidentialFiles = new ArrayList<InformationResourceFile>();
+//        List<InformationResourceFile> publicFiles = new ArrayList<InformationResourceFile>();
+//        for (InformationResourceFile irFile : getNonDeletedFiles()) {
+//            if (irFile.isPublic()) {
+//                publicFiles.add(irFile);
+//            } else {
+//                confidentialFiles.add(irFile);
+//            }
+//        }
+//        if (confidential) {
+//            return confidentialFiles;
+//        } else {
+//            return publicFiles;
+//        }
+//    }
 
-    @Transient
-    @Override
-    public boolean hasEmbargoedFiles() {
-        for (InformationResourceFile file : getConfidentialFiles()) {
-            if (file.isEmbargoed()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Transient
-    public List<InformationResourceFile> getFilesWithRestrictions(boolean confidential) {
-        List<InformationResourceFile> confidentialFiles = new ArrayList<InformationResourceFile>();
-        List<InformationResourceFile> publicFiles = new ArrayList<InformationResourceFile>();
-        for (InformationResourceFile irFile : getNonDeletedFiles()) {
-            if (irFile.isPublic()) {
-                publicFiles.add(irFile);
-            } else {
-                confidentialFiles.add(irFile);
-            }
-        }
-        if (confidential) {
-            return confidentialFiles;
-        } else {
-            return publicFiles;
-        }
-    }
-
-    @Transient
-    public List<InformationResourceFile> getConfidentialFiles() {
-        return getFilesWithRestrictions(true);
-    }
-
-    @Transient
-    @XmlTransient
-    public List<InformationResourceFile> getPublicFiles() {
-        return getFilesWithRestrictions(false);
-    }
+//    @Transient
+//    public List<InformationResourceFile> getConfidentialFiles() {
+//        return getFilesWithRestrictions(true);
+//    }
+//
+//    @Transient
+//    @XmlTransient
+//    public List<InformationResourceFile> getPublicFiles() {
+//        return getFilesWithRestrictions(false);
+//    }
 
     @Override
     public boolean isValidForController() {
@@ -875,44 +875,44 @@ public abstract class InformationResource extends Resource {
 
     private transient InformationResourceFileVersion primaryThumbnail = null;
     private transient Boolean hasPrimaryThumbnail = null;
-
-    // get the latest version of the first non-deleted thumbnail (or null)
-    @Transient
-    @XmlTransient
-    public InformationResourceFileVersion getPrimaryThumbnail() {
-        if (hasPrimaryThumbnail != null) {
-            return primaryThumbnail;
-        }
-        hasPrimaryThumbnail = Boolean.FALSE;
-
-        List<InformationResourceFile> visibleFilesWithThumbnails = getVisibleFilesWithThumbnails();
-        if (CollectionUtils.isNotEmpty(visibleFilesWithThumbnails)) {
-            hasPrimaryThumbnail = Boolean.TRUE;
-            primaryThumbnail = visibleFilesWithThumbnails.get(0).getLatestThumbnail();
-            return primaryThumbnail;
-        } else {
-            return null;
-        }
-    }
-
-    @Transient
-    @XmlTransient
-    public List<InformationResourceFile> getNonDeletedFiles() {
-        List<InformationResourceFile> files = new ArrayList<InformationResourceFile>();
-        for (InformationResourceFile irf : getInformationResourceFiles()) {
-            if (!irf.isDeleted()) {
-                files.add(irf);
-            }
-        }
-        return files;
-    }
-
-    @Transient
-    @Override
-    // we consider a record to be citation record if it doesn't have any file attachments.
-    public boolean isCitationRecord() {
-        return getResourceAccessType() == ResourceAccessType.CITATION;
-    }
+//
+//    // get the latest version of the first non-deleted thumbnail (or null)
+//    @Transient
+//    @XmlTransient
+//    public InformationResourceFileVersion getPrimaryThumbnail() {
+//        if (hasPrimaryThumbnail != null) {
+//            return primaryThumbnail;
+//        }
+//        hasPrimaryThumbnail = Boolean.FALSE;
+//
+//        List<InformationResourceFile> visibleFilesWithThumbnails = getVisibleFilesWithThumbnails();
+//        if (CollectionUtils.isNotEmpty(visibleFilesWithThumbnails)) {
+//            hasPrimaryThumbnail = Boolean.TRUE;
+//            primaryThumbnail = visibleFilesWithThumbnails.get(0).getLatestThumbnail();
+//            return primaryThumbnail;
+//        } else {
+//            return null;
+//        }
+//    }
+//
+//    @Transient
+//    @XmlTransient
+//    public List<InformationResourceFile> getNonDeletedFiles() {
+//        List<InformationResourceFile> files = new ArrayList<InformationResourceFile>();
+//        for (InformationResourceFile irf : getInformationResourceFiles()) {
+//            if (!irf.isDeleted()) {
+//                files.add(irf);
+//            }
+//        }
+//        return files;
+//    }
+//
+//    @Transient
+//    @Override
+//    // we consider a record to be citation record if it doesn't have any file attachments.
+//    public boolean isCitationRecord() {
+//        return getResourceAccessType() == ResourceAccessType.CITATION;
+//    }
 
     public Institution getPublisher() {
         return publisher;
@@ -968,12 +968,12 @@ public abstract class InformationResource extends Resource {
         }
         return files;
     }
-
-    @Transient
-    @XmlTransient
-    public Set<ResourceCreator> getContacts() {
-        return getResourceCreators(ResourceCreatorRole.CONTACT);
-    }
+//
+//    @Transient
+//    @XmlTransient
+//    public Set<ResourceCreator> getContacts() {
+//        return getResourceCreators(ResourceCreatorRole.CONTACT);
+//    }
 
     /**
      * Override this if you need to pass resource specific information on to the work flow process.

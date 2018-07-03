@@ -10,42 +10,52 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Actions;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
 import org.apache.struts2.convention.annotation.Result;
 import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
-import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
+import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.entity.permissions.Permissions;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.ResourceAnnotation;
-import org.tdar.core.bean.resource.ResourceAnnotationKey;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.VersionType;
+import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.PResourceAnnotation;
+import org.tdar.core.serialize.resource.PResourceAnnotationKey;
+import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
-import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.filestore.FilestoreObjectType;
-import org.tdar.struts.action.AbstractPersistableViewableAction;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
+import org.tdar.struts.action.AbstractPersistableController.RequestType;
 import org.tdar.struts.action.SlugViewAction;
 import org.tdar.struts.data.AuthWrapper;
+import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.transform.OpenUrlFormatter;
 import org.tdar.utils.ResourceCitationFormatter;
 import org.tdar.web.service.ResourceViewControllerService;
+import org.tdar.web.service.WebLoadingService;
+
+import com.opensymphony.xwork2.Preparable;
 
 /**
  * $Id$
@@ -64,9 +74,14 @@ import org.tdar.web.service.ResourceViewControllerService;
 @ParentPackage("default")
 @Namespace("/resource")
 @Results(value = {
-        @Result(name = TdarActionSupport.SUCCESS, location = "../resource/view-template.ftl")
+        @Result(name = TdarActionSupport.SUCCESS, location = "../resource/view-template.ftl"),
+        @Result(name = TdarActionSupport.BAD_SLUG, type = TdarActionSupport.TDAR_REDIRECT,
+                location = "${id}/${persistable.slug}${slugSuffix}", params = { "ignoreParams", "id,keywordPath,slug", "statusCode", "301" }),
+        @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.HTTPHEADER, params = { "error", "404" }),
+        @Result(name = TdarActionSupport.DRAFT, location = "/WEB-INF/content/errors/resource-in-draft.ftl")
 })
-public abstract class AbstractResourceViewAction<R extends Resource> extends AbstractPersistableViewableAction<R> implements SlugViewAction {
+
+public abstract class AbstractResourceViewAction<R extends PResource> extends AbstractAuthenticatableAction implements  Preparable, SlugViewAction , Authorizable<Resource> {
 
     private static final long serialVersionUID = 896347341133309643L;
 
@@ -80,29 +95,22 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     public ResourceCollectionService resourceCollectionService;
 
     @Autowired
-    private BillingAccountService accountService;
-
-    @Autowired
     private ResourceService resourceService;
-
-    private List<ResourceCollection> effectiveShares = new ArrayList<>();
-    private List<ResourceCollection> effectiveResourceCollections = new ArrayList<>();
 
     private List<ResourceCreatorProxy> authorshipProxies = new ArrayList<>();
     private List<ResourceCreatorProxy> creditProxies = new ArrayList<>();
     private List<ResourceCreatorProxy> contactProxies = new ArrayList<>();
     private ResourceCitationFormatter resourceCitation;
-
+    private boolean redirectBadSlug;
+    private String slug;
+    private String slugSuffix;
     private String schemaOrgJsonLD;
-
     private Map<DataTableColumn, String> mappedData;
-
     private List<UserInvite> invites;
 
     @Autowired
     ResourceViewControllerService viewService;
 
-    private List<ResourceCollection> visibleUnmanagedCollections;
 
     public String getOpenUrl() {
         return OpenUrlFormatter.toOpenURL(getResource());
@@ -111,8 +119,24 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     public String getGoogleScholarTags() throws Exception {
         return resourceService.getGoogleScholarTags(getResource());
     }
+    
 
+    @Autowired
+    WebLoadingService webLoadingService;
+    
+    private R resource;
+    private Long id;
+    private boolean canViewConfidential;
+    private ResourceSpaceUsageStatistic totalResourceAccessStatistic;
+    private ResourceSpaceUsageStatistic uploadedResourceAccessStatistic;
+
+    
     @Override
+    public void prepare() throws TdarActionException {
+        handleSlug();
+        resource = (R) webLoadingService.load(Resource.class, getPersistableClass(), getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+    }
+
     public String loadViewMetadata() throws TdarActionException {
         if (getResource() == null) {
             return ERROR;
@@ -121,27 +145,46 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getResource()));
         loadBasicViewMetadata();
         loadCustomViewMetadata();
-        AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
-
-        viewService.updateResourceInfo(authWrapper, isBot());
         if (isEditor()) {
-            if (getPersistableClass().equals(Project.class)) {
+            if (getResource().getResourceType().isProject()) {
                 setUploadedResourceAccessStatistic(resourceService.getResourceSpaceUsageStatisticsForProject(getId(), null));
             } else {
                 setUploadedResourceAccessStatistic(resourceService.getResourceSpaceUsageStatistics(Arrays.asList(getId()), null));
             }
         }
 
-        setInvites(userRightsProxyService.findUserInvites(getPersistable()));
         return SUCCESS;
+    }
+
+    @HttpsOnly
+    @Actions(value = {
+            @Action(value = "{id}/{slug}"),
+            @Action(value = "{id}/"),
+            @Action(value = "{id}")
+    })
+    @SkipValidation
+    public String view() throws TdarActionException {
+        if (isRedirectBadSlug()) {
+            return BAD_SLUG;
+        }
+        String resultName = SUCCESS;
+
+        resultName = loadViewMetadata();
+        loadExtraViewMetadata();
+        return resultName;
+    }
+
+    protected void loadExtraViewMetadata() {
+        // TODO Auto-generated method stub
+        
     }
 
     protected void loadCustomViewMetadata() throws TdarActionException {
     }
 
     @Override
-    public boolean authorize() throws TdarActionException {
-        boolean result = authorizationService.isResourceViewable(getAuthenticatedUser(), getResource());
+    public boolean authorize(Resource resource, TdarUser user) throws TdarActionException {
+        boolean result = authorizationService.isResourceViewable(user, resource);
         if (result == false) {
             if (getResource() == null) {
                 abort(StatusCode.UNKNOWN_ERROR, getText("abstractPersistableController.not_found"));
@@ -156,46 +199,46 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
                 throw new TdarActionException(StatusCode.OK, DRAFT,
                         getText("abstractResourceController.this_record_is_in_draft_and_is_only_available_to_authorized_users"));
             }
-
         }
+        
+        canViewConfidential = authorizationService.canViewConfidentialInformation(user, resource);
+//        canEdit = authorizationService.canEdit(user,resource);
+        
+        AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(resource, isAuthenticated(), user, isEditor());
+        setInvites(userRightsProxyService.findUserInvites(resource));
+        
+        viewService.updateResourceInfo(authWrapper, isBot());
+        viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
+        
+        editable = authorizationService.canEditResource(user, resource, Permissions.MODIFY_METADATA);
+        whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(resource);
+
         return result;
     }
 
     public void loadBasicViewMetadata() {
-        AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(getPersistable(), isAuthenticated(), getAuthenticatedUser(), isEditor());
-        viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
-        viewService.loadSharesCollectionsAuthUsers(authWrapper, getEffectiveShares(), getEffectiveResourceCollections(), getAuthorizedUsers());
-        getLogger().trace("effective collections: {}", getEffectiveResourceCollections());
-        visibleCollections = viewService.getVisibleManagedCollections(authWrapper);
-        visibleUnmanagedCollections = viewService.getVisibleUnmanagedCollections(authWrapper);
-        if (getResource() instanceof InformationResource) {
-            InformationResource informationResource = (InformationResource) getResource();
-            setMappedData(resourceService.getMappedDataForInformationResource(informationResource, getTdarConfiguration().isProductionEnvironment()));
-        }
-
     }
 
-    public Resource getResource() {
-        return getPersistable();
+    public R getResource() {
+        return resource;
     }
 
     public void setResource(R resource) {
         getLogger().debug("setResource: {}", resource);
-        setPersistable(resource);
     }
 
     public boolean isAbleToViewConfidentialFiles() {
-        return authorizationService.canViewConfidentialInformation(getAuthenticatedUser(), getPersistable());
+        return canViewConfidential;
     }
 
     public List<ResourceCreatorRole> getAllResourceCreatorRoles() {
         return ResourceCreatorRole.getAll();
     }
 
-    public Set<ResourceAnnotationKey> getAllResourceAnnotationKeys() {
-        Set<ResourceAnnotationKey> keys = new HashSet<>();
-        if ((getPersistable() != null) && CollectionUtils.isNotEmpty(getPersistable().getActiveResourceAnnotations())) {
-            for (ResourceAnnotation ra : getPersistable().getActiveResourceAnnotations()) {
+    public Set<PResourceAnnotationKey> getAllResourceAnnotationKeys() {
+        Set<PResourceAnnotationKey> keys = new HashSet<>();
+        if ((getPersistable() != null) && CollectionUtils.isNotEmpty(getResource().getActiveResourceAnnotations())) {
+            for (PResourceAnnotation ra : getResource().getActiveResourceAnnotations()) {
                 keys.add(ra.getResourceAnnotationKey());
             }
         }
@@ -227,22 +270,9 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         return creditProxies;
     }
 
-    private List<ResourceCollection> visibleCollections = new ArrayList<>();
-
-    /**
-     * All shares and list collections
-     * 
-     * @return
-     */
-    public List<ResourceCollection> getViewableResourceCollections() {
-        return visibleCollections;
-    }
 
     public boolean isUserAbleToReTranslate() {
-        if (authorizationService.canEdit(getAuthenticatedUser(), getPersistable())) {
-            return true;
-        }
-        return false;
+        return editable;
     }
 
     public boolean isUserAbleToViewDeletedFiles() {
@@ -256,12 +286,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
     private Boolean editable = null;
 
     public boolean isEditable() {
-        if (isNullOrNew()) {
-            return false;
-        }
-        if (editable == null) {
-            editable = authorizationService.canEditResource(getAuthenticatedUser(), getPersistable(), Permissions.MODIFY_METADATA);
-        }
         return editable;
     }
 
@@ -282,9 +306,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
      * @return
      */
     public ResourceCollection getWhiteLabelCollection() {
-        if (whiteLabelCollection == null) {
-            whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(getResource());
-        }
         return whiteLabelCollection;
     }
 
@@ -318,26 +339,6 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         return true;
     }
 
-    public List<ResourceCollection> getEffectiveShares() {
-        return effectiveShares;
-    }
-
-    public void setEffectiveShares(List<ResourceCollection> effectiveShares) {
-        this.effectiveShares = effectiveShares;
-    }
-
-    public List<BillingAccount> getBillingAccounts() {
-        return accountService.listAvailableAccountsForUser(getAuthenticatedUser());
-    }
-
-    public List<ResourceCollection> getEffectiveResourceCollections() {
-        return effectiveResourceCollections;
-    }
-
-    public void setEffectiveResourceCollections(List<ResourceCollection> effectiveResourceCollections) {
-        this.effectiveResourceCollections = effectiveResourceCollections;
-    }
-
     public List<UserInvite> getInvites() {
         return invites;
     }
@@ -346,11 +347,68 @@ public abstract class AbstractResourceViewAction<R extends Resource> extends Abs
         this.invites = invites;
     }
 
-    public List<ResourceCollection> getVisibleUnmanagedCollections() {
-        return visibleUnmanagedCollections;
+    public Long getId() {
+        return id;
     }
 
-    public void setVisibleUnmanagedCollections(List<ResourceCollection> visibleUnmanagedCollections) {
-        this.visibleUnmanagedCollections = visibleUnmanagedCollections;
+    public void setId(Long id) {
+        this.id = id;
     }
+
+    public ResourceSpaceUsageStatistic getTotalResourceAccessStatistic() {
+        return totalResourceAccessStatistic;
+    }
+
+    public void setTotalResourceAccessStatistic(ResourceSpaceUsageStatistic totalResourceAccessStatistic) {
+        this.totalResourceAccessStatistic = totalResourceAccessStatistic;
+    }
+
+    public ResourceSpaceUsageStatistic getUploadedResourceAccessStatistic() {
+        return uploadedResourceAccessStatistic;
+    }
+
+    public void setUploadedResourceAccessStatistic(ResourceSpaceUsageStatistic uploadedResourceAccessStatistic) {
+        this.uploadedResourceAccessStatistic = uploadedResourceAccessStatistic;
+    }
+
+    public boolean isRedirectBadSlug() {
+        return redirectBadSlug;
+    }
+
+    public void setRedirectBadSlug(boolean redirectBadSlug) {
+        this.redirectBadSlug = redirectBadSlug;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public String getSlugSuffix() {
+        return slugSuffix;
+    }
+
+    public void setSlugSuffix(String slugSuffix) {
+        this.slugSuffix = slugSuffix;
+    }
+
+    protected void handleSlug() {
+        if (!handleSlugRedirect(resource, this)) {
+            setRedirectBadSlug(true);
+        }
+    }
+
+    public abstract Class<R> getPersistableClass();
+    
+    public R getPersistable() {
+        return resource;
+    }
+
+    public Status getStatus() {
+        return getPersistable().getStatus();
+    }
+
 }

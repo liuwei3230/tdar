@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.jena.enhanced.Personality;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.AbstractWithIndexIntegrationTestCase;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.entity.Institution;
+import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.core.service.EntityService;
 import org.tdar.search.QuietIndexReciever;
 import org.tdar.search.exception.SearchException;
@@ -26,6 +28,7 @@ import org.tdar.search.query.SearchResult;
 import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.search.service.query.CreatorSearchService;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCase {
 
@@ -36,7 +39,7 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     EntityService entityService;
 
     @Autowired
-    CreatorSearchService<Institution> creatorSearchService;
+    CreatorSearchService<PInstitution> creatorSearchService;
 
     private final int MIN = 2;
 
@@ -59,7 +62,7 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
 
     @Test
     public void testNamePhrase() throws ParseException, SearchException, SearchIndexException, IOException {
-        LuceneSearchResultHandler<Institution> result = new SearchResult<>();
+        LuceneSearchResultHandler<PInstitution> result = new SearchResult<>();
         creatorSearchService.searchInstitution("Arizona State Unive", result, MessageHelper.getInstance());
     }
 
@@ -77,18 +80,18 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
         searchInstitution(term);
     }
 
-    private SearchResult<Institution> searchInstitution(String term) throws ParseException, SearchException, SearchIndexException, IOException {
+    private SearchResult<PInstitution> searchInstitution(String term) throws ParseException, SearchException, SearchIndexException, IOException {
         return searchInstitution(term, MIN, true);
     }
 
-    private SearchResult<Institution> searchInstitution(String term, boolean testResults)
+    private SearchResult<PInstitution> searchInstitution(String term, boolean testResults)
             throws ParseException, SearchException, SearchIndexException, IOException {
         return searchInstitution(term, MIN, testResults);
     }
 
-    private SearchResult<Institution> searchInstitution(String term, int min, boolean testResults)
+    private SearchResult<PInstitution> searchInstitution(String term, int min, boolean testResults)
             throws ParseException, SearchException, SearchIndexException, IOException {
-        SearchResult<Institution> result = new SearchResult<>();
+        SearchResult<PInstitution> result = new SearchResult<>();
         creatorSearchService.findInstitution(term, result, MessageHelper.getInstance(), min);
         logger.debug("{}", result.getResults());
         if (testResults) {
@@ -101,11 +104,11 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     @Rollback
     public void testInstitutionSearchWordPlacement() throws SearchException, SearchIndexException, IOException, ParseException {
         List<Institution> insts = setupInstitutionSearch();
-        SearchResult<Institution> result = searchInstitution("Air Force");
-        assertTrue(CollectionUtils.containsAll(result.getResults(), insts));
+        SearchResult<PInstitution> result = searchInstitution("Air Force");
+        assertTrue(CollectionUtils.containsAll(PersistableUtils.extractIds(result.getResults()), PersistableUtils.extractIds(insts)));
 
         result = searchInstitution("Force");
-        assertTrue(CollectionUtils.containsAll(result.getResults(), insts));
+        assertTrue(CollectionUtils.containsAll(PersistableUtils.extractIds(result.getResults()), PersistableUtils.extractIds(insts)));
 
     }
 
@@ -113,11 +116,11 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     @Rollback
     public void testInstitutionSearchCaseInsensitive() throws SearchException, SearchIndexException, IOException, ParseException {
         List<Institution> insts = setupInstitutionSearch();
-        SearchResult<Institution> result = searchInstitution("air force");
-        assertTrue(CollectionUtils.containsAll(result.getResults(), insts));
+        SearchResult<PInstitution> result = searchInstitution("air force");
+        assertTrue(CollectionUtils.containsAll(PersistableUtils.extractIds(result.getResults()), PersistableUtils.extractIds(insts)));
 
         result = searchInstitution("force");
-        assertTrue(CollectionUtils.containsAll(result.getResults(), insts));
+        assertTrue(CollectionUtils.containsAll(PersistableUtils.extractIds(result.getResults()), PersistableUtils.extractIds(insts)));
     }
 
     private void updateAndIndex(Indexable doc) throws SearchException, SearchIndexException, IOException {
@@ -132,10 +135,10 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
         genericService.saveOrUpdate(inst);
         genericService.saveOrUpdate(inst);
         searchIndexService.indexAll(new QuietIndexReciever(), Arrays.asList(LookupSource.INSTITUTION), getAdminUser());
-        SearchResult<Institution> result = searchInstitution("ASU");
-        List<Institution> institutions = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution("ASU");
+        List<PInstitution> institutions = result.getResults();
         logger.debug("institutions: {} ", institutions);
-        assertTrue("inst list should contain acronym item", institutions.contains(inst));
+        assertTrue("inst list should contain acronym item", PersistableUtils.extractIds(institutions).contains(inst.getId()));
     }
 
     @Test
@@ -146,16 +149,16 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
 
     @Test
     public void testInstitutionLookupWithOneResult() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Institution> result = searchInstitution("tfqa");
-        List<Institution> institutions = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution("tfqa");
+        List<PInstitution> institutions = result.getResults();
         assertTrue("only one result expected", institutions.size() == 1);
     }
 
     // given test script, searching 'digital' should return multiple results that start with 'Digital Antiquity'
     @Test
     public void testInstitutionLookupWithMultiple() throws SearchException, SearchIndexException, IOException, ParseException {
-        SearchResult<Institution> result = searchInstitution("University");
-        List<Institution> institutions = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution("University");
+        List<PInstitution> institutions = result.getResults();
         assertTrue("more than one result expected", institutions.size() > 1);
     }
 
@@ -168,9 +171,9 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     }
 
     private void searchAssertEmpty(String blanks) throws ParseException, SearchException, SearchIndexException, IOException {
-        SearchResult<Institution> result = new SearchResult<>();
+        SearchResult<PInstitution> result = new SearchResult<>();
         creatorSearchService.findInstitution(blanks, result, MessageHelper.getInstance(), 1);
-        List<Institution> results = result.getResults();
+        List<PInstitution> results = result.getResults();
         Assert.assertEquals("expecting zero results", 0, results.size());
     }
 
@@ -182,11 +185,11 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
         String term = "U.S. Department of";
 
         List<Institution> insts = setupInstitutionsForLookup();
-        SearchResult<Institution> result = searchInstitution(term);
-        List<Institution> results = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution(term);
+        List<PInstitution> results = result.getResults();
         logger.debug("results:{}", results);
-        assertTrue(results.contains(insts.get(0)));
-        assertTrue(results.contains(insts.get(insts.size() - 1)));
+        assertTrue(PersistableUtils.extractIds(results).contains(insts.get(0).getId()));
+        assertTrue(PersistableUtils.extractIds(results).contains(insts.get(insts.size() - 1).getId()));
     }
 
     @SuppressWarnings("unused")
@@ -195,10 +198,10 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     public void testPrefixUppercase() throws SearchException, SearchIndexException, IOException, ParseException {
         List<Institution> insts = setupInstitutionsForLookup();
         String lookingFor = "U.S.";
-        SearchResult<Institution> result = searchInstitution(lookingFor);
-        List<Institution> results = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution(lookingFor);
+        List<PInstitution> results = result.getResults();
         logger.debug("results:{}", results);
-        for (Institution inst : results) {
+        for (PInstitution inst : results) {
             logger.info(inst.getName());
             assertTrue("expecting 'u.s.' contained in " + inst.getName(), inst.getName().toLowerCase().contains(lookingFor.toLowerCase()));
         }
@@ -209,10 +212,10 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
     @Rollback(true)
     public void testPrefixLowercase() throws SearchException, SearchIndexException, IOException, ParseException {
         List<Institution> insts = setupInstitutionsForLookup();
-        SearchResult<Institution> result = searchInstitution("u.s.");
-        List<Institution> results = result.getResults();
+        SearchResult<PInstitution> result = searchInstitution("u.s.");
+        List<PInstitution> results = result.getResults();
         logger.debug("results:{}", results);
-        for (Institution inst : results) {
+        for (PInstitution inst : results) {
             assertTrue(inst.getName().toLowerCase().contains("u.s."));
         }
     }
@@ -224,11 +227,11 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
         Institution in2 = new Institution("US Depoartment of Agriculture");
         genericService.save(in1);
         genericService.save(in2);
-        SearchResult<Institution> results = searchInstitution("US", false);
+        SearchResult<PInstitution> results = searchInstitution("US", false);
         logger.debug("results:{}", results);
         boolean seenPeriod = false;
         boolean seenWithoutPeriod = false;
-        for (Institution inst : results.getResults()) {
+        for (PInstitution inst : results.getResults()) {
             logger.debug("{}", inst.getName());
             if (inst.getName().toLowerCase().contains("u.s.")) {
                 seenPeriod = true;
@@ -253,9 +256,9 @@ public class InstitutionSearchITCase extends AbstractWithIndexIntegrationTestCas
         return insts;
     }
 
-    private void assertResultsOkay(String term, SearchResult<Institution> controller_) {
+    private void assertResultsOkay(String term, SearchResult<PInstitution> controller_) {
         assertNotEmpty("should have results", controller_.getResults());
-        for (Institution inst : controller_.getResults()) {
+        for (PInstitution inst : controller_.getResults()) {
             assertTrue(String.format("Creator: %s should match %s", inst, term), inst.getProperName().toLowerCase().contains(term.toLowerCase()));
         }
         logger.info("{}", controller_.getResults());

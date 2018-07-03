@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.SerializationService;
 
 /**
@@ -17,7 +17,7 @@ public class SchemaOrgResourceTransformer extends AbstractSchemaOrgMetadataTrans
 
     private static final long serialVersionUID = 3523678951801372308L;
 
-    public String convert(SerializationService ss, Resource r) throws IOException {
+    public String convert(SerializationService ss, PResource r) throws IOException {
         Map<String, Object> jsonLd = new HashMap<String, Object>();
         jsonLd.put(GRAPH, getGraph());
         addGraphSection(r);

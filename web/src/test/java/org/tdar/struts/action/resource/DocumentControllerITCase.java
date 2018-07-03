@@ -438,7 +438,7 @@ public class DocumentControllerITCase extends AbstractControllerITCase implement
         rva = deleteResource(newId, deletionReason);
 
         boolean seen = false;
-        for (ResourceNote note : rva.getResource().getResourceNotes()) {
+        for (org.tdar.core.serialize.resource.PResourceNote note : rva.getResource().getResourceNotes()) {
             if ((note.getType() == ResourceNoteType.ADMIN) && note.getNote().equals(deletionReason)) {
                 seen = true;
             }

@@ -32,9 +32,9 @@ import org.tdar.core.bean.resource.Dataset;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Image;
 import org.tdar.core.bean.resource.Project;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.search.bean.ObjectType;
 import org.tdar.search.bean.SearchParameters;
@@ -143,7 +143,7 @@ public abstract class AbstractSearchControllerITCase extends AbstractControllerI
 
     protected boolean resultsContainId(AbstractAdvancedSearchController controller_, Long id) {
         boolean found = false;
-        for (Resource r : controller_.getResults()) {
+        for (PResource r : controller_.getResults()) {
             logger.trace(r.getId() + " " + r.getResourceType());
             if (id.equals(r.getId())) {
                 found = true;

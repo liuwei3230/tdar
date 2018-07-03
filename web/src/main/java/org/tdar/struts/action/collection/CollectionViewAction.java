@@ -37,6 +37,8 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.statistics.ResourceCollectionViewStatistic;
 import org.tdar.core.cache.ThreadPermissionsCache;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.collection.ResourceCollectionService;
@@ -75,7 +77,7 @@ import org.tdar.web.service.HomepageService;
         @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.HTTPHEADER, params = { "error", "404" })
 })
 public class CollectionViewAction<C extends ResourceCollection> extends AbstractPersistableViewableAction<C>
-        implements FacetedResultHandler<Resource>, SlugViewAction,
+        implements FacetedResultHandler<PResource>, SlugViewAction,
         ResourceFacetedAction {
 
     private static final long serialVersionUID = 5126290300997389535L;
@@ -111,7 +113,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     private int startRecord = DEFAULT_START;
     private int recordsPerPage = getDefaultRecordsPerPage();
     private int totalRecords;
-    private List<Resource> results;
+    private List<PResource> results;
     private SortOption secondarySortField;
     private SortOption sortField;
     private String mode = "CollectionBrowse";
@@ -342,13 +344,13 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     }
 
     @Override
-    public void setResults(List<Resource> toReturn) {
+    public void setResults(List<PResource> toReturn) {
         getLogger().trace("setResults: {}", toReturn);
         this.results = toReturn;
     }
 
     @Override
-    public List<Resource> getResults() {
+    public List<PResource> getResults() {
         return results;
     }
 
@@ -504,17 +506,17 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
                 setKeywordSectionVisible(false);
             }
             
-            for (Resource r : getResults()) {
-                if (isManaged(r)) {
-                    getPermissionsCache().getManagedResources().add(r.getId());
-                }
-            }
+//            for (PResource r : getResults()) {
+//                if (isManaged(r)) {
+//                    getPermissionsCache().getManagedResources().add(r.getId());
+//                }
+//            }
         }
 
     }
 
-    public boolean isManaged(Resource r) {
-        for (ResourceCollection rc : r.getManagedResourceCollections()) {
+    public boolean isManaged(PResource r) {
+        for (PResourceCollection rc : r.getManagedResourceCollections()) {
             if (rc.equals(getResourceCollection())) {
                 return true;
             }

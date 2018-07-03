@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.SiteNameKeyword;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.query.LuceneSearchResultHandler;
 import org.tdar.search.query.QueryFieldNames;
@@ -28,7 +29,7 @@ import com.opensymphony.xwork2.TextProvider;
 
 @Service
 @Transactional
-public class KeywordSearchServiceImpl<I extends Keyword> extends AbstractSearchService implements KeywordSearchService<I> {
+public class KeywordSearchServiceImpl<I extends PKeyword> extends AbstractSearchService implements KeywordSearchService<I> {
 
     @SuppressWarnings("unused")
     private final transient Logger logger = LoggerFactory.getLogger(getClass());

@@ -183,7 +183,7 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
     @Transactional(readOnly = true)
     public List<ResourceCollection> getVisibleManagedCollections(AuthWrapper<Resource> auth) {
         List<ResourceCollection> visibleCollections = new ArrayList<>();
-        visibleCollections.addAll(getViewableSharedResourceCollections(auth));
+//        visibleCollections.addAll(getViewableSharedResourceCollections(auth));
         return visibleCollections;
     }
 
@@ -196,30 +196,10 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
     @Transactional(readOnly = true)
     public List<ResourceCollection> getVisibleUnmanagedCollections(AuthWrapper<Resource> auth) {
         List<ResourceCollection> visibleCollections = new ArrayList<>();
-        visibleCollections.addAll(getViewableListResourceCollections(auth));
+//        visibleCollections.addAll(getViewableListResourceCollections(auth));
         return visibleCollections;
     }
 
-    private Set<ResourceCollection> getViewableSharedResourceCollections(AuthWrapper<Resource> auth) {
-
-        // if nobody logged in, just get the shared+visible collections
-        Set<ResourceCollection> collections = new HashSet<>(auth.getItem().getVisibleSharedResourceCollections());
-        addViewableCollections(collections, auth.getItem().getManagedResourceCollections(), auth);
-        return collections;
-    }
-
-    // return all of the collections that the currently-logged-in user is allowed to view. We define viewable as either shared+visible, or
-    // shared+invisible+canEdit
-    private Set<ResourceCollection> getViewableListResourceCollections(AuthWrapper<Resource> auth) {
-
-        // if nobody logged in, just get the shared+visible collections
-        Set<ResourceCollection> collections = new HashSet<>();
-        collections.addAll(auth.getItem().getVisibleUnmanagedResourceCollections());
-        // if authenticated, also add the collections that the user can modify
-        addViewableCollections(collections, auth.getItem().getUnmanagedResourceCollections(), auth);
-
-        return collections;
-    }
 
     private <C extends ResourceCollection> void addViewableCollections(Set<C> list, Collection<C> incomming, AuthWrapper<Resource> auth) {
         if (auth.isAuthenticated()) {

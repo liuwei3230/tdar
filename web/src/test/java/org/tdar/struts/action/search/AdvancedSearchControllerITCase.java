@@ -34,6 +34,11 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.serialize.entity.PInstitution;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.ResourceCreatorProxy;
@@ -223,7 +228,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         } else if ((status == Status.DRAFT) && authenticationAndAuthorizationService.cannot(InternalTdarRights.SEARCH_FOR_DRAFT_RECORDS, user)) {
             // this was in the test, but with the new status search I think this is more accurate to be commented out as
             doSearch(null);
-            for (Resource res : controller.getResults()) {
+            for (PResource res : controller.getResults()) {
                 if (res.isDraft() && !res.getSubmitter().equals(user)) {
                     fail("we should only see our own drafts here");
                 }
@@ -391,11 +396,12 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         firstGroup().getResourceCreatorProxies().add(new ResourceCreatorProxy(new ResourceCreator(creator_, null)));
         doSearch();
         assertFalse("we should get back at least one hit", controller.getResults().isEmpty());
-        for (Resource resource : controller.getResults()) {
+        for (PResource resource : controller.getResults()) {
             logger.info("{}", resource);
-            boolean seen = checkResourceForValue(namePart, resource);
-            if (resource instanceof Project) {
-                for (Resource r : projectService.findAllResourcesInProject((Project) resource, Status.values())) {
+            boolean seen = checkResourceForValueP(namePart, resource);
+            if (resource instanceof PProject) {
+                Project p = genericService.find(Project.class, resource.getId());
+                for (Resource r : projectService.findAllResourcesInProject(p, Status.values())) {
                     if (seen) {
                         break;
                     }
@@ -405,6 +411,28 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
             }
             assertTrue("should have seen term somwehere", seen);
         }
+    }
+
+    private boolean checkResourceForValueP(String namePart, PResource resource) {
+        boolean seen = false;
+        if (resource.getSubmitter().getProperName().contains(namePart) || resource.getUpdatedBy().getProperName().contains(namePart)) {
+            logger.debug("seen submitter or updater");
+            seen = true;
+        }
+        if (resource instanceof PInformationResource) {
+            PInstitution institution = ((PInformationResource) resource).getResourceProviderInstitution();
+            if ((institution != null) && institution.getName().contains(namePart)) {
+                logger.debug("seen in institution");
+                seen = true;
+            }
+        }
+        for (PResourceCreator creator : resource.getActiveResourceCreators()) {
+            if (creator.getCreator().getProperName().contains(namePart)) {
+                logger.debug("seen in resource creator");
+                seen = true;
+            }
+        }
+        return seen;
     }
 
     private boolean checkResourceForValue(String namePart, Resource resource) {

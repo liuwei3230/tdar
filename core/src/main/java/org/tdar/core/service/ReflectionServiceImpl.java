@@ -164,7 +164,7 @@ public class ReflectionServiceImpl implements ReflectionService {
         persistableLookup = new HashMap<>();
         for (Class<? extends Persistable> cls : findCandidateComponents) {
             logger.trace("{} - {} ", cls.getSimpleName(), cls);
-            if (StringUtils.isBlank(cls.getSimpleName()) || StringUtils.equalsIgnoreCase("base", cls.getSimpleName())) {
+            if (StringUtils.isBlank(cls.getSimpleName()) || StringUtils.equalsIgnoreCase("base", cls.getSimpleName()) || cls.getCanonicalName().contains("serialize")) {
                 continue;
             }
             if (persistableLookup.containsKey(cls.getSimpleName())) {

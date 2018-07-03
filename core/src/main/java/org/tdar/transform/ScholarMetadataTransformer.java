@@ -6,37 +6,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.resource.Document;
-import org.tdar.core.bean.resource.InformationResource;
-import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.serialize.resource.PDocument;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFile;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.UrlService;
 
 public class ScholarMetadataTransformer implements Serializable {
 
     private static final long serialVersionUID = 6885895727458189965L;
 
-    public List<MetaTag> convertResourceToMetaTag(Resource resource) {
+    public List<MetaTag> convertResourceToMetaTag(PResource resource) {
         List<MetaTag> toReturn = new ArrayList<MetaTag>();
         addMetaTag(toReturn, "citation_title", resource.getTitle());
-        for (ResourceCreator creator : resource.getPrimaryCreators()) {
+        for (PResourceCreator creator : resource.getPrimaryCreators()) {
             addMetaTag(toReturn, "citation_author", creator.getCreator().getProperName());
         }
-        if (resource instanceof InformationResource) {
+        if (resource instanceof PInformationResource) {
             String publisherField = "DC.publisher";
-            InformationResource ir = (InformationResource) resource;
+            PInformationResource ir = (PInformationResource) resource;
             addMetaTag(toReturn, "citation_date", ir.getDate().toString());
 
-            for (InformationResourceFile file : ir.getInformationResourceFiles()) {
+            for (PInformationResourceFile file : ir.getInformationResourceFiles()) {
                 if (file.getLatestPDF() != null && file.isViewable()) {
-                    addMetaTag(toReturn, "citation_pdf_url", UrlService.downloadUrl(file.getLatestPDF()));
+                    addMetaTag(toReturn, "citation_pdf_url", UrlService.downloadUrl(ir, file.getLatestPDF()));
                 }
             }
             SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
             addMetaTag(toReturn, "citation_online_date", format.format(resource.getDateCreated()));
-            if (ir instanceof Document) {
-                Document doc = (Document) ir;
+            if (ir instanceof PDocument) {
+                PDocument doc = (PDocument) ir;
                 switch (doc.getDocumentType()) {
                     case CONFERENCE_PRESENTATION:
                         publisherField = "citation_conference_title";

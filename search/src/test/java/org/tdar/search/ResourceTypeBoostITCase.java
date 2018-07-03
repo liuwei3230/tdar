@@ -12,6 +12,7 @@ import org.springframework.test.annotation.Rollback;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchException;
@@ -26,7 +27,7 @@ public class ResourceTypeBoostITCase extends AbstractResourceSearchITCase {
     @Test
     @Rollback
     public void testFacetPivotStats() throws SolrServerException, IOException, ParseException, SearchException, SearchIndexException {
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         FacetWrapper facetWrapper = new FacetWrapper();
         facetWrapper.setMapFacet(true);
         facetWrapper.facetBy(QueryFieldNames.RESOURCE_TYPE, ResourceType.class);
@@ -39,7 +40,7 @@ public class ResourceTypeBoostITCase extends AbstractResourceSearchITCase {
         resourceSearchService.buildAdvancedSearch(asqo, null, result, MessageHelper.getInstance());
         logger.debug("{}", result.getFacetWrapper().getFacetResults());
         boolean seen = false;
-        for (Resource r : result.getResults()) {
+        for (PResource r : result.getResults()) {
             logger.debug("{}", r.getResourceType());
             if (r.getResourceType().isSupporting()) {
                 seen = true;

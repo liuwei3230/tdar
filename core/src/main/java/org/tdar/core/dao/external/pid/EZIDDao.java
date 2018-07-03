@@ -35,12 +35,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.configuration.ConfigurationAssistant;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.transform.DcTransformer;
 
 import edu.asu.lib.dc.DublinCoreDocument;
@@ -268,9 +272,19 @@ public class EZIDDao implements ExternalIDProvider {
         return processRequest(post);
     }
 
+    @Autowired
+    ProxyConstructionService proxyConstructionService;
+
     @SuppressWarnings("incomplete-switch")
-    protected String generateAnvlMetadata(Resource r, String url, boolean delete) {
+    protected String generateAnvlMetadata(Resource r_, String url, boolean delete) {
         StringBuilder responseBuilder = new StringBuilder();
+        PResource r = null;
+        try {
+            r = proxyConstructionService.constructResource(r_,r_.getResourceType().getProxyClass(), null, true);
+        } catch (Throwable t) {
+            logger.error("{}",t,t);
+        }
+ 
         DublinCoreDocument doc = DcTransformer.transformAny(r);
         String status = _STATUS_AVAILABLE;
 
@@ -295,9 +309,9 @@ public class EZIDDao implements ExternalIDProvider {
             }
 
             buildAnvlLine(responseBuilder, DATACITE_RESOURCE_TYPE, aNVLEscape(resourceType));
-            if (r instanceof InformationResource) {
-                buildAnvlLine(responseBuilder, DATACITE_PUBLISHER, aNVLEscape(((InformationResource) r).getPublisherName()), DATACITE_UNAV);
-                buildAnvlLine(responseBuilder, DATACITE_PUBLICATIONYEAR, (((InformationResource) r).getDate()).toString(), DATACITE_UNAV);
+            if (r instanceof PInformationResource) {
+                buildAnvlLine(responseBuilder, DATACITE_PUBLISHER, aNVLEscape(((PInformationResource) r).getPublisherName()), DATACITE_UNAV);
+                buildAnvlLine(responseBuilder, DATACITE_PUBLICATIONYEAR, (((PInformationResource) r).getDate()).toString(), DATACITE_UNAV);
             } else {
                 buildAnvlLine(responseBuilder, DATACITE_PUBLISHER, DATACITE_UNAV);
                 buildAnvlLine(responseBuilder, DATACITE_PUBLICATIONYEAR, DATACITE_UNAV);

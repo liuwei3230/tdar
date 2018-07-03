@@ -15,7 +15,7 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.KeywordType;
 import org.tdar.core.bean.resource.Dataset;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.AbstractResourceSearchITCase;
 import org.tdar.search.bean.ReservedSearchParameters;
 import org.tdar.search.exception.SearchException;
@@ -48,7 +48,7 @@ public class PartialIndexingITCase extends AbstractResourceSearchITCase {
         searchIndexService.index(rc);
         SolrDocument byId = template.getById(SearchUtils.createKey(ds));
         logger.debug("{}", byId);
-        SearchResult<Resource> result = new SearchResult<>();
+        SearchResult<PResource> result = new SearchResult<>();
         resourceSearchService.buildKeywordQuery(hittite, KeywordType.CULTURE_KEYWORD, new ReservedSearchParameters(), result, MessageHelper.getInstance(),
                 getAdminUser());
         logger.debug("{}", result.getResults());

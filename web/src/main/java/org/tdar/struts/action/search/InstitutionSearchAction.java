@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.search.exception.SearchException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.search.service.query.CreatorSearchService;
@@ -26,7 +27,7 @@ import org.tdar.struts_base.action.TdarActionException;
 @Scope("prototype")
 @ParentPackage("default")
 @HttpsOnly
-public class InstitutionSearchAction extends AbstractLookupController<Institution> {
+public class InstitutionSearchAction extends AbstractLookupController<PInstitution> {
 
     private static final long serialVersionUID = -2102002561399688184L;
 
@@ -35,7 +36,7 @@ public class InstitutionSearchAction extends AbstractLookupController<Institutio
     private String query;
 
     @Autowired
-    private CreatorSearchService<Institution> creatorSearchService;
+    private CreatorSearchService<PInstitution> creatorSearchService;
 
     @Action(value = "institutions", results = {
             @Result(name = SUCCESS, location = "institutions.ftl"),

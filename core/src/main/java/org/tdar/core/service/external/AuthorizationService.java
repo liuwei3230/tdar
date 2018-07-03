@@ -23,6 +23,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.RightsResolver;
 
 public interface AuthorizationService {
@@ -178,6 +179,8 @@ public interface AuthorizationService {
      * Checks whether a @link Person has rights to download a given @link InformationResourceFileVersion
      */
     boolean canDownload(TdarUser person, InformationResourceFileVersion irFileVersion);
+
+    boolean canDownload(TdarUser person, PInformationResourceFileVersion irFileVersion);
 
     /*
      * Checks whether a @link Person has rights to download a given @link InformationResourceFile
