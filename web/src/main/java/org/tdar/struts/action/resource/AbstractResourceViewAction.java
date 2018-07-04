@@ -215,6 +215,12 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
 
         return result;
     }
+    
+    public List<Permissions> getAvailablePermissions() {
+        List<Permissions> permissions = Permissions.getAvailablePermissionsFor(Resource.class);
+        return permissions;
+    }
+
 
     public void loadBasicViewMetadata() {
     }

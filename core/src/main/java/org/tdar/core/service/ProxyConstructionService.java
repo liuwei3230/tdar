@@ -517,6 +517,7 @@ public class ProxyConstructionService {
             PAuthorizedUser au = new PAuthorizedUser();
             au.setGeneralPermission(au_.getGeneralPermission());
             au.setUser(convertUser(au_.getUser(), ctx));
+            toReturn.add(au);
         });
         return toReturn;
     }
@@ -591,6 +592,7 @@ public class ProxyConstructionService {
             cd.setEndDate(cd_.getEndDate());
             cd.setStartDateApproximate(cd_.isStartDateApproximate());
             cd.setEndDateApproximate(cd_.isEndDateApproximate());
+            toReturn.add(cd);
         });
         return toReturn;
     }
