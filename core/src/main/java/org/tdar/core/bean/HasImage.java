@@ -2,7 +2,7 @@ package org.tdar.core.bean;
 
 import org.tdar.core.bean.resource.file.VersionType;
 
-public interface HasImage extends Persistable {
+public interface HasImage  {
 
     Integer getMaxWidth();
 

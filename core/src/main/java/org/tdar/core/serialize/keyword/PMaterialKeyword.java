@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @version $Rev$
  */
 @XmlRootElement
-public class PMaterialKeyword extends AbstractKeyword<PMaterialKeyword> implements ControlledKeyword, SuggestedKeyword {
+public class PMaterialKeyword extends PAbstractKeyword<PMaterialKeyword> implements ControlledKeyword, SuggestedKeyword {
 
     private boolean approved;
 

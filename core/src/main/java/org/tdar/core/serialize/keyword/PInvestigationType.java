@@ -11,7 +11,7 @@ import org.tdar.core.bean.keyword.KeywordType;
  * @version $Rev$
  */
 @XmlRootElement
-public class PInvestigationType extends AbstractKeyword<PInvestigationType> implements ControlledKeyword {
+public class PInvestigationType extends PAbstractKeyword<PInvestigationType> implements ControlledKeyword {
 
     public PInvestigationType() {
     }

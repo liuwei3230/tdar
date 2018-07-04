@@ -241,4 +241,5 @@ public class PersistableUtils {
     public static <T extends Persistable> int compareIds(T o1, T o2) {
         return ObjectUtils.compare(o1.getId(), o2.getId());
     }
+
 }

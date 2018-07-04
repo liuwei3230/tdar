@@ -431,6 +431,7 @@ public class ProxyConstructionService {
                 irf_.getInformationResourceFileVersions().forEach(irfv_ -> {
                     PInformationResourceFileVersion irfv = new PInformationResourceFileVersion();
                     irfv.setInformationResourceFile(irf);
+                    irfv.setId(irfv_.getId());
                     irfv.setFilename(irfv_.getFilename());
                     irfv.setVersion(irfv_.getVersion());
                     irfv.setMimeType(irfv_.getMimeType());

@@ -85,6 +85,9 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
     public List<PDataset> listDatasetsWithMappingsToNode(POntologyNode node_) {
         List<PDataset> toReturn = new ArrayList<>();
         OntologyNode node = getDao().find(OntologyNode.class, node_.getId());
+        if (node == null) {
+            return toReturn;
+        }
         for (Dataset dataset : getDao().findDatasetsUsingNode(node)) {
             toReturn.add((PDataset) proxyConstructionService.createShellResource(dataset, dataset.getResourceType().getProxyClass()));
         }

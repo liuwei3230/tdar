@@ -9,6 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.FileProxy;
 import org.tdar.core.bean.HasImage;
+import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
@@ -30,7 +31,7 @@ public class SimpleFileProcessingDao {
      * @param persistable
      * @param fileProxy
      */
-    public void processFileProxyForCreatorOrCollection(HasImage persistable, FileProxy fileProxy) {
+    public <T extends Persistable&HasImage> void processFileProxyForCreatorOrCollection(T persistable, FileProxy fileProxy) {
         if (fileProxy == null) {
             return;
         }

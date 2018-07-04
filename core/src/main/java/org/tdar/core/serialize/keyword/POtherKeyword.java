@@ -11,7 +11,7 @@ import org.tdar.core.bean.keyword.KeywordType;
  * @version $Rev$
  */
 @XmlRootElement
-public class POtherKeyword extends AbstractKeyword<POtherKeyword> {
+public class POtherKeyword extends PAbstractKeyword<POtherKeyword> {
 
 
     public POtherKeyword() {

@@ -5,6 +5,9 @@ import java.io.IOException;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFile;
+import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.JacksonUtils;
 import org.tdar.core.service.UrlService;
 
@@ -54,10 +57,10 @@ public class LatLongGeoJsonSerializer extends StdSerializer<LatitudeLongitudeBox
         jgen.writeStringField("resourceType", value.getResource().getResourceType().name());
         jgen.writeStringField("status", value.getResource().getStatus().name());
         jgen.writeStringField("detailUrl", UrlService.absoluteUrl(value.getResource()));
-        if (value.getResource() instanceof InformationResource && value.getResource().isHasBrowsableImages()) {
-            InformationResource ir = ((InformationResource) value.getResource());
-            for (InformationResourceFile irf : ir.getActiveInformationResourceFiles()) {
-                InformationResourceFileVersion t = irf.getLatestThumbnail();
+        if (value.getResource() instanceof PInformationResource && value.getResource().isHasBrowsableImages()) {
+            PInformationResource ir = ((PInformationResource) value.getResource());
+            for (PInformationResourceFile irf : ir.getInformationResourceFiles()) {
+                PInformationResourceFileVersion t = irf.getLatestThumbnail();
                 if (t != null) {
                     jgen.writeStringField("thumbnailUrl", UrlService.thumbnailUrl(t));
                     break;

@@ -148,8 +148,8 @@ public class OntologyViewController extends AbstractOntologyViewAction {
         return POntology.class;
     }
 
-    @Override
-    public POntology getPersistable() {
-        return (POntology) getResource();
-    }
+//    @Override
+//    public POntology getPersistable() {
+//        return (POntology) getResource();
+//    }
 }

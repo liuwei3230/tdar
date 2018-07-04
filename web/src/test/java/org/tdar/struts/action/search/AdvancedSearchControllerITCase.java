@@ -52,6 +52,7 @@ import org.tdar.search.query.ProjectionModel;
 import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.utils.PersistableUtils;
 
 @Transactional
 public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
@@ -199,13 +200,13 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         controller.setRecordsPerPage(50);
         controller.setMap(selectionRegion);
         doSearch();
-        assertTrue("expected to find document within selection region", controller.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(doc.getId()));
 
         // now do another search with bounding boxes outside of doc's region
         controller = generateNewInitializedController(AdvancedSearchController.class, getAdminUser());
         controller.setRecordsPerPage(50);
         controller.setMap(elsewhere);
-        assertFalse("document shouldn't not be found within provided bounding box.", controller.getResults().contains(doc));
+        assertFalse(PersistableUtils.extractIds(controller.getResults()).contains(doc.getId()));
         doSearch();
 
     }
@@ -266,7 +267,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         // search lowercase one word
         controller.setQuery("usaf");
         doSearch();
-        assertTrue(controller.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(doc.getId()));
         // assertTrue(controller.getCollectionResults().contains(usafLowerCase));
         // assertTrue(controller.getCollectionResults().contains(upperCase));
         doc.setTitle("usaf");
@@ -278,7 +279,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         doSearch();
         // assertTrue(controller.getCollectionResults().contains(usafLowerCase));
         // assertTrue(controller.getCollectionResults().contains(upperCase));
-        assertTrue(controller.getResults().contains(doc));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(doc.getId()));
 
         resetController();
         // search lowercase phrase
@@ -505,7 +506,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         controller.getGroups().add(sp);
         doSearch();
         logger.debug("resutls: {}", controller.getResults());
-        assertTrue(controller.getResults().contains(image));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(image.getId()));
 
         resetController();
         // test finding parent from dup
@@ -514,7 +515,7 @@ public class AdvancedSearchControllerITCase extends AbstractControllerITCase {
         controller.getGroups().add(sp);
         doSearch();
         logger.debug("resutls: {}", controller.getResults());
-        assertTrue(controller.getResults().contains(image));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(image.getId()));
 
     }
 

@@ -12,7 +12,7 @@ import org.tdar.core.bean.keyword.KeywordType;
  */
 
 @XmlRootElement
-public class PTemporalKeyword extends AbstractKeyword<PTemporalKeyword>  {
+public class PTemporalKeyword extends PAbstractKeyword<PTemporalKeyword>  {
 
     public PTemporalKeyword(String string) {
         this.setLabel(string);

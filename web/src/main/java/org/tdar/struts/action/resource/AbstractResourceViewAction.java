@@ -133,8 +133,8 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     
     @Override
     public void prepare() throws TdarActionException {
-        handleSlug();
         resource = (R) webLoadingService.load(Resource.class, getPersistableClass(), getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        handleSlug();
     }
 
     public String loadViewMetadata() throws TdarActionException {

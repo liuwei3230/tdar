@@ -54,6 +54,7 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.FilestoreLoggingException;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.event.EventBusResourceHolder;
 import org.tdar.core.service.event.EventBusUtils;
 import org.tdar.core.service.event.LoggingObjectContainer;
@@ -491,8 +492,8 @@ public class SerializationServiceImpl implements TxMessageBus<LoggingObjectConta
     public Map<String, Object> createGeoJsonFromResourceList(FeedSearchHelper helper) throws IOException {
         List<LatitudeLongitudeBoxWrapper> wrappers = new ArrayList<>();
         for (Object obj : helper.getResults()) {
-            if (obj instanceof Resource) {
-                wrappers.add(new LatitudeLongitudeBoxWrapper((Resource) obj, helper));
+            if (obj instanceof PResource) {
+                wrappers.add(new LatitudeLongitudeBoxWrapper((PResource) obj, helper));
             }
         }
         Map<String, Object> result = new HashMap<>();

@@ -1,5 +1,6 @@
 package org.tdar.core.serialize.keyword;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Transient;

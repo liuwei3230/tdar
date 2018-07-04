@@ -11,7 +11,7 @@ import org.tdar.core.bean.keyword.KeywordType;
  * @version $Rev$
  */
 @XmlRootElement
-public class PSiteNameKeyword extends AbstractKeyword<PSiteNameKeyword> {
+public class PSiteNameKeyword extends PAbstractKeyword<PSiteNameKeyword> {
 
     public PSiteNameKeyword() {
     }

@@ -2,8 +2,9 @@ package org.tdar.utils.json;
 
 import java.io.Serializable;
 
-import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.FeedSearchHelper;
 import org.tdar.core.service.GeoRssMode;
 
@@ -22,29 +23,28 @@ public class LatitudeLongitudeBoxWrapper implements Serializable {
     private double centerLatitude;
     private double centerLongitude;
     private GeoRssMode mode = GeoRssMode.ENVELOPE;
-    private Resource resource;
+    private PResource resource;
 
     private Class<?> jsonView = null;
     private boolean spatial;
 
-    @SuppressWarnings("deprecation")
-    public LatitudeLongitudeBoxWrapper(Resource resource, FeedSearchHelper helper) {
+    public LatitudeLongitudeBoxWrapper(PResource resource, FeedSearchHelper helper) {
         this.jsonView = helper.getJsonFilter();
         if (helper.getGeoMode() != null) {
             this.mode = helper.getGeoMode();
         }
         if (resource != null) {
             this.resource = resource;
-            LatitudeLongitudeBox llb = resource.getFirstActiveLatitudeLongitudeBox();
+            PLatitudeLongitudeBox llb = resource.getFirstActiveLatitudeLongitudeBox();
             if (llb != null) {
                 if (helper.isOverrideAndObfuscate() == true || resource.isLatLongVisible()) {
                     setSpatial(true);
-                    this.centerLatitude = llb.getObfuscatedCenterLatitude();
-                    this.centerLongitude = llb.getObfuscatedCenterLongitude();
-                    this.south = llb.getObfuscatedSouth();
-                    this.west = llb.getObfuscatedWest();
-                    this.north = llb.getObfuscatedNorth();
-                    this.east = llb.getObfuscatedEast();
+                    this.centerLatitude = llb.getCenterLatitude();
+                    this.centerLongitude = llb.getCenterLongitude();
+                    this.south = llb.getSouth();
+                    this.west = llb.getWest();
+                    this.north = llb.getNorth();
+                    this.east = llb.getEast();
                 }
 
                 if (helper.isOverrideAndObfuscate() == false && resource.isConfidentialViewable()) {
@@ -93,11 +93,11 @@ public class LatitudeLongitudeBoxWrapper implements Serializable {
         this.east = maxLongitude;
     }
 
-    public Resource getResource() {
+    public PResource getResource() {
         return resource;
     }
 
-    public void setResource(Resource resource) {
+    public void setResource(PResource resource) {
         this.resource = resource;
     }
 

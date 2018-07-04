@@ -176,6 +176,7 @@ public class RssServiceImpl implements Serializable, RssService {
         feed.setDescription(handler.getSearchDescription());
         List<SyndEntry> entries = new ArrayList<SyndEntry>();
         for (I resource_ : handler.getResults()) {
+            logger.debug("{} / {}", resource_.getClass(), resource_);
             createRssEntryForResource(handler, helper.getGeoMode(), helper.isEnclosureIncluded(), entries, resource_);
         }
         feed.setEntries(entries);
@@ -202,12 +203,6 @@ public class RssServiceImpl implements Serializable, RssService {
     private <I extends Indexable> SyndEntry createRssEntryForResource(SearchResultHandler<I> handler, GeoRssMode mode, boolean includeEnclosures,
             List<SyndEntry> entries,
             I resource_) {
-        if ((resource_ instanceof Viewable) && !((Viewable) resource_).isViewable()) {
-            return null;
-        }
-        if (resource_ instanceof Obfuscatable) {
-            obfuscationService.obfuscate((Obfuscatable) resource_, handler.getAuthenticatedUser());
-        }
         SyndEntry entry = new SyndEntryImpl();
         if (resource_ instanceof OaiDcProvider) {
             OaiDcProvider oaiResource = (OaiDcProvider) resource_;

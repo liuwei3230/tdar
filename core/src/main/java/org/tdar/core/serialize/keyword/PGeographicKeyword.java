@@ -19,7 +19,7 @@ import org.tdar.core.bean.keyword.KeywordType;
  * @version $Revision$
  */
 @XmlRootElement
-public class PGeographicKeyword extends AbstractKeyword<PGeographicKeyword> {
+public class PGeographicKeyword extends PAbstractKeyword<PGeographicKeyword> {
 
     public PGeographicKeyword(String string) {
         this.setLabel(string);

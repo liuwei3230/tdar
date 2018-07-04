@@ -1,8 +1,5 @@
 package org.tdar.core.serialize.resource;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
 import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.resource.ResourceRelationship.ResourceRelationshipType;
 

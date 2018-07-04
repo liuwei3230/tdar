@@ -379,8 +379,23 @@ public class ResourceServiceImpl implements ResourceService {
          * This is an issue as what'll end up happening otherwise is something like editing a Date results in no persisted change because the
          * "retainAll" below keeps the older version
          */
-
-        current.retainAll(incoming);
+        Iterator<H> iterator = current.iterator();
+        while (iterator.hasNext()) {
+            H next = iterator.next();
+            Long id = next.getId();
+            boolean seen = false;
+            for (H i : incoming) {
+                if (i != null && i.getId() == id) {
+                    seen  = true;
+                }
+            }
+            logger.debug("{} -- {}", seen, next);
+            if (seen == false) {
+                iterator.remove();
+            }
+        }
+//        current.retainAll(incoming);
+        logger.debug("current after retain: {} / {}", current, incoming);
         Map<Long, H> idMap = PersistableUtils.createIdMap(current);
         if (CollectionUtils.isNotEmpty(incoming)) {
             logger.debug("Incoming Collection of {}s ({})  : {} ", new Object[] { cls.getSimpleName(), incoming.size(), incoming });

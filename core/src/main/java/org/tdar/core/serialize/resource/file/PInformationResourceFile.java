@@ -440,7 +440,7 @@ public class PInformationResourceFile extends AbstractSequenced<PInformationReso
 
     public boolean isHasTranslatedVersion() {
         try {
-            if ((getLatestTranslatedVersion() != null) && getInformationResource().getResourceType().isDataTableSupported()) {
+            if ((getLatestTranslatedVersion() != null) && isColumnarDataFileType()) {
                 return true;
             }
         } catch (Exception e) {

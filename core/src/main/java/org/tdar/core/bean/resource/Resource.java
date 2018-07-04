@@ -304,14 +304,14 @@ public class Resource implements Persistable,
     @OrderBy("sequenceNumber ASC")
     @JoinColumn(nullable = false, updatable = false, name = "resource_id")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.resource.Resource.resourceCreators")
-    private Set<ResourceCreator> resourceCreators = new LinkedHashSet<ResourceCreator>();
+    private Set<ResourceCreator> resourceCreators = new LinkedHashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("sequenceNumber ASC")
     @JoinColumn(nullable = false, updatable = false, name = "resource_id")
     @OrderColumn(name = "id")
     @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
-    private Set<ResourceNote> resourceNotes = new LinkedHashSet<ResourceNote>();
+    private Set<ResourceNote> resourceNotes = new LinkedHashSet<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(nullable = false, updatable = false, name = "resource_id")

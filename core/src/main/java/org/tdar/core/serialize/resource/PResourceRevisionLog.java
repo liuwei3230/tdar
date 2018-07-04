@@ -2,24 +2,10 @@ package org.tdar.core.serialize.resource;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.AbstractPersistable;
-import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.utils.PersistableUtils;

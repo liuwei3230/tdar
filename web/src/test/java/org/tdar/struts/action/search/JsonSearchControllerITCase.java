@@ -67,7 +67,7 @@ public class JsonSearchControllerITCase extends AbstractSearchControllerITCase {
         // doSearch("");
         controller.viewJson();
         // the record we created should be the absolute first record
-        assertEquals(document, controller.getResults().get(0));
+        assertEquals(document.getId(), controller.getResults().get(0).getId());
     }
 
     @Test
@@ -107,7 +107,7 @@ public class JsonSearchControllerITCase extends AbstractSearchControllerITCase {
         controller.setGeoMode(mode);
         controller.viewJson();
         // the record we created should be the absolute first record
-        assertEquals(document, controller.getResults().get(0));
+        assertEquals(document.getId(), controller.getResults().get(0).getId());
         String xml = serializationService.convertFilteredJsonForStream(controller.getResultObject(), controller.getJsonView(), null);
         return xml;
     }

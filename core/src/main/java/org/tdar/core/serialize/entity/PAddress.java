@@ -1,14 +1,10 @@
 package org.tdar.core.serialize.entity;
 
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.Validatable;
 import org.tdar.core.bean.entity.AddressType;
-import org.tdar.core.exception.TdarValidationException;
+import org.tdar.core.serialize.PAbstractPersistable;
 
 /**
  * Represents a physical address for a person or institution.
@@ -16,7 +12,7 @@ import org.tdar.core.exception.TdarValidationException;
  * @author abrin
  * 
  */
-public class PAddress extends AbstractPersistable implements Persistable, Validatable {
+public class PAddress extends PAbstractPersistable implements Persistable {
 
     private String street1;
     private String street2;
@@ -98,36 +94,6 @@ public class PAddress extends AbstractPersistable implements Persistable, Valida
         this.city = city;
         this.postal = postal;
         this.country = country;
-    }
-
-    @Override
-    @XmlTransient
-    public boolean isValidForController() {
-        return isValid();
-    }
-
-    @Override
-    @XmlTransient
-    public boolean isValid() {
-        if (StringUtils.isBlank(street1)) {
-            throw new TdarValidationException("address.street_required");
-        }
-        if (StringUtils.isBlank(city)) {
-            throw new TdarValidationException("address.city_required");
-        }
-        if (StringUtils.isBlank(state)) {
-            throw new TdarValidationException("address.state_required");
-        }
-        if (StringUtils.isBlank(country)) {
-            throw new TdarValidationException("address.country_required");
-        }
-        if (StringUtils.isBlank(postal)) {
-            throw new TdarValidationException("address.postal_required");
-        }
-        if (type == null) {
-            throw new TdarValidationException("address.type_required");
-        }
-        return true;
     }
 
     public String getAddressSingleLine() {

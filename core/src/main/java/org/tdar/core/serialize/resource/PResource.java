@@ -928,7 +928,7 @@ public class PResource implements Persistable,
     @XmlTransient
     @JsonIgnore
     public Collection<PKeyword> getAllActiveKeywords() {
-        Collection<PKeyword> kwds = new HashSet<PKeyword>();
+        Collection<PKeyword> kwds = new HashSet<>();
         kwds.addAll(getActiveCultureKeywords());
         kwds.addAll(getIndexedGeographicKeywords());
         kwds.addAll(getActiveSiteNameKeywords());

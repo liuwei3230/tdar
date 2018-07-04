@@ -101,7 +101,7 @@ public class RSSSearchControllerITCase extends AbstractSearchControllerITCase {
         // doSearch("");
         controller.viewRss();
         // the record we created should be the absolute first record
-        assertEquals(document, controller.getResults().get(0));
+        assertEquals(document.getId(), controller.getResults().get(0).getId());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class RSSSearchControllerITCase extends AbstractSearchControllerITCase {
         controller.setGeoMode(mode);
         controller.viewRss();
         // the record we created should be the absolute first record
-        assertEquals(document, controller.getResults().get(0));
+        assertEquals(document.getId(), controller.getResults().get(0).getId());
         String xml = IOUtils.toString(controller.getInputStream());
         return xml;
     }

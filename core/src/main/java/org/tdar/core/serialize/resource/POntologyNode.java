@@ -7,30 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Index;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.Slugable;
-import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
 import org.tdar.core.bean.util.UrlUtils;
-import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
+import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
 import org.tdar.utils.json.JsonIdNameFilter;
 import org.tdar.utils.json.JsonIntegrationDetailsFilter;
 
@@ -40,8 +28,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class POntologyNode extends AbstractPersistable implements Comparable<POntologyNode>, Slugable {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
-
-    private POntology ontology;
 
     private Integer intervalStart;
     private Integer intervalEnd;
@@ -77,16 +63,6 @@ public class POntologyNode extends AbstractPersistable implements Comparable<POn
 
     public POntologyNode(Long id) {
         setId(id);
-    }
-
-    @XmlElement(name = "ontologyRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public POntology getOntology() {
-        return ontology;
-    }
-
-    public void setOntology(POntology ontology) {
-        this.ontology = ontology;
     }
 
     public Integer getIntervalStart() {

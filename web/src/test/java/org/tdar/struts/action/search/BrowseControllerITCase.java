@@ -20,6 +20,7 @@ import org.tdar.core.bean.resource.Document;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.struts.action.browse.BrowseCreatorController;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.utils.PersistableUtils;
 
 import com.opensymphony.xwork2.Action;
 
@@ -105,7 +106,7 @@ public class BrowseControllerITCase extends AbstractSearchControllerITCase {
         controller.prepare();
         controller.browseCreators();
         List<PResource> results = controller.getResults();
-        assertTrue(results.contains(doc));
+        assertTrue(PersistableUtils.extractIds(results).contains(doc.getId()));
     }
 
     @Test

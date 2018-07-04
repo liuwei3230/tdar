@@ -282,8 +282,7 @@ bookmark indicator, etc..
         </#if>
         <a class="resourceLink" href="<@s.url value="${result.detailUrl}"/>"><#rt>
             <#if result.title?has_content>
-            ${result.title!"No Title"} <#if result.status?has_content && (editor || result.viewable) && !result.active >
-                <small>[${result.status?upper_case}]</small></#if><#t>
+            ${result.title!"No Title"} <#if result.status?has_content && result.active ><small>[${result.status?upper_case}]</small></#if><#t>
             <#elseif result.properName?has_content>
             ${result.properName!"No Name"}<#t>
             <#else>

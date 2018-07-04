@@ -135,18 +135,19 @@ public class ResourceLookupAction extends AbstractLookupController<PResource> {
 
                 // Loop through the results, and add any them accordingly.
                 for (Indexable result_ : getResults()) {
-                    Resource resource = (Resource) result_;
-                    if (resource != null && resource.isViewable()) {
-                        if (resource.getManagedResourceCollections().contains(collection)) {
+                    PResource resource = (PResource) result_;
+                    resource.getManagedResourceCollections().forEach(rc -> {
+                        if (rc.getId() == collection.getId()) {
                             managedResourceIds.add(resource.getId());
                             resourceIds.add(resource.getId());
                         }
-
-                        if (resource.getUnmanagedResourceCollections().contains(collection)) {
+                    });
+                    resource.getUnmanagedResourceCollections().forEach(rc -> {
+                        if (rc.getId() == collection.getId()) {
                             unmanagedResourceIds.add(resource.getId());
                             resourceIds.add(resource.getId());
                         }
-                    }
+                    });
                 }
 
                 // This is what gets serialized as JSON.

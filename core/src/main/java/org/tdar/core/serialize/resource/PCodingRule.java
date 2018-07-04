@@ -4,25 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.AbstractPersistable;
-import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.resource.HasStatic;
 import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
-import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 
 /**
  * Represents an entry in a CodingSheet consisting of a String code (key),
@@ -40,7 +28,6 @@ public class PCodingRule extends AbstractPersistable implements Comparable<PCodi
     public boolean isStatic() {
         return false;
     }
-    private PCodingSheet codingSheet;
     private String code;
     private String term;
     private String description;
@@ -64,7 +51,6 @@ public class PCodingRule extends AbstractPersistable implements Comparable<PCodi
     }
 
     public PCodingRule(PCodingSheet codingSheet, String code, String term, String description, POntologyNode node) {
-        setCodingSheet(codingSheet);
         setCode(code);
         setTerm(term);
         setDescription(description);
@@ -119,16 +105,6 @@ public class PCodingRule extends AbstractPersistable implements Comparable<PCodi
 
     public void setDescription(String description) {
         this.description = StringUtils.trimToNull(description);
-    }
-
-    @XmlElement(name = "codingSheetRef")
-    @XmlJavaTypeAdapter(JaxbPersistableConverter.class)
-    public PCodingSheet getCodingSheet() {
-        return codingSheet;
-    }
-
-    public void setCodingSheet(PCodingSheet codingSheet) {
-        this.codingSheet = codingSheet;
     }
 
     @Override

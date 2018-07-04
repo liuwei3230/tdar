@@ -22,6 +22,7 @@ import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.index.LookupSource;
 import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.utils.MessageHelper;
+import org.tdar.utils.PersistableUtils;
 
 @Transactional
 public class CollectionSearchControllerITCase extends AbstractControllerITCase {
@@ -41,7 +42,7 @@ public class CollectionSearchControllerITCase extends AbstractControllerITCase {
     @Rollback
     public void testSearchForPublicReosurceCollection() throws InstantiationException, IllegalAccessException, SearchIndexException, IOException {
         ResourceCollection collection = setupCollection(false, null);
-        assertTrue(controller.getResults().contains(collection));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(collection.getId()));
     }
 
     @Test
@@ -64,7 +65,7 @@ public class CollectionSearchControllerITCase extends AbstractControllerITCase {
             throws InstantiationException, IllegalAccessException, SearchIndexException, SearchException, IOException {
         ResourceCollection collection = setupCollection(true, getBasicUser(), true, CollectionResourceSection.UNMANAGED);
         searchIndexService.index(collection);
-        assertTrue(controller.getResults().contains(collection));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(collection.getId()));
     }
 
     @Test
@@ -73,7 +74,7 @@ public class CollectionSearchControllerITCase extends AbstractControllerITCase {
             throws InstantiationException, IllegalAccessException, SearchIndexException, IOException {
         ResourceCollection collection = setupCollection(true, getBasicUser(), true, CollectionResourceSection.UNMANAGED);
         searchIndexService.index(collection);
-        assertTrue(controller.getResults().contains(collection));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(collection.getId()));
     }
 
     
@@ -115,7 +116,7 @@ public class CollectionSearchControllerITCase extends AbstractControllerITCase {
     public void testSearchForPrivateCollectionAsAdmin() throws InstantiationException, IllegalAccessException, SearchIndexException, IOException {
         // searchIndexService.purgeAll();
         ResourceCollection collection = setupCollection(true, getAdminUser());
-        assertTrue(controller.getResults().contains(collection));
+        assertTrue(PersistableUtils.extractIds(controller.getResults()).contains(collection.getId()));
     }
 
     private ResourceCollection setupCollection(boolean visible, TdarUser user) throws SearchIndexException, IOException {

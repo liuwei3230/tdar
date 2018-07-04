@@ -1,6 +1,5 @@
 package org.tdar.core.serialize.collection;
 
-import java.beans.Transient;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;

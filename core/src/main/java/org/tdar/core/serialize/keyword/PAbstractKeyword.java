@@ -10,18 +10,18 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.StringUtils;
-import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Slugable;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.util.UrlUtils;
+import org.tdar.core.serialize.PAbstractPersistable;
 import org.tdar.utils.json.JsonLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
 @XmlType(name = "Pkwdbase")
 @XmlTransient
-public abstract class AbstractKeyword<T extends PKeyword> extends AbstractPersistable implements PKeyword, HasStatus, Comparable<T>, Slugable {
+public abstract class PAbstractKeyword<T extends PKeyword> extends PAbstractPersistable implements PKeyword, HasStatus, Comparable<T>, Slugable {
 
     @JsonView(JsonLookupFilter.class)
     private String label;

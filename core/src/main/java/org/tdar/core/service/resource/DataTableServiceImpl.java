@@ -182,8 +182,7 @@ public class DataTableServiceImpl extends ServiceInterface.TypedDaoBase<DataTabl
     @Override
     @Transactional(readOnly = true)
     public List<DataTable> findDataTablesUsingResource(Resource resource) {
-        // TODO Auto-generated method stub
-        return null;
+        return getDao().findDataTablesUsingResource(resource);
     }
 
 
