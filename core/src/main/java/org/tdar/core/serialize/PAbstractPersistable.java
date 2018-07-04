@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlTransient
 public abstract class PAbstractPersistable implements Persistable {
 
-    private static final long serialVersionUID = -458438238558572364L;
 
     protected final static String[] DEFAULT_JSON_PROPERTIES = { "id" };
 
