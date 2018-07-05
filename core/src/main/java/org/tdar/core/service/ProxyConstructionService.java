@@ -25,6 +25,7 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
@@ -48,6 +49,7 @@ import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.dao.base.GenericDao;
+import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
@@ -124,8 +126,8 @@ public class ProxyConstructionService {
             TdarUser viewer,
             boolean forceObfuscate)
             throws InstantiationException, IllegalAccessException {
-
-        boolean viewConfidentialinfo = authorizationService.canViewConfidentialInformation(viewer, resource);
+        boolean viewConfidentialinfo = authorizationService.canDo(viewer, resource, InternalTdarRights.VIEW_AND_DOWNLOAD_CONFIDENTIAL_INFO, Permissions.VIEW_ALL);
+        logger.debug("user: {}/ viewconf:{}", viewer, viewConfidentialinfo);
         Context ctx = new Context(viewer);
         ctx.setAdmin(false);
         ctx.setAbleToSeeConfidentialFiles(viewConfidentialinfo);
@@ -691,6 +693,7 @@ public class ProxyConstructionService {
         if (CollectionUtils.isEmpty(latitudeLongitudeBoxes)) {
             return Collections.EMPTY_SET;
         }
+        logger.debug("obfuscate: {}", ctx.isViewUnobfuscatedLat());
         Set<PLatitudeLongitudeBox> toReturn = new HashSet<>();
         latitudeLongitudeBoxes.forEach(llb_ -> {
             PLatitudeLongitudeBox llb = new PLatitudeLongitudeBox();
