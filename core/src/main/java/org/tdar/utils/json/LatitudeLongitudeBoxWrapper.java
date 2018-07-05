@@ -37,26 +37,26 @@ public class LatitudeLongitudeBoxWrapper implements Serializable {
             this.resource = resource;
             PLatitudeLongitudeBox llb = resource.getFirstActiveLatitudeLongitudeBox();
             if (llb != null) {
-                if (helper.isOverrideAndObfuscate() == true || resource.isLatLongVisible()) {
+//                if (helper.isOverrideAndObfuscate() == true || resource.isLatLongVisible()) {
+//                    setSpatial(true);
+//                    this.centerLatitude = llb.getCenterLatitude();
+//                    this.centerLongitude = llb.getCenterLongitude();
+//                    this.south = llb.getSouth();
+//                    this.west = llb.getWest();
+//                    this.north = llb.getNorth();
+//                    this.east = llb.getEast();
+//                }
+//
+//                if (helper.isOverrideAndObfuscate() == false && resource.isConfidentialViewable()) {
                     setSpatial(true);
-                    this.centerLatitude = llb.getCenterLatitude();
-                    this.centerLongitude = llb.getCenterLongitude();
                     this.south = llb.getSouth();
                     this.west = llb.getWest();
                     this.north = llb.getNorth();
                     this.east = llb.getEast();
-                }
-
-                if (helper.isOverrideAndObfuscate() == false && resource.isConfidentialViewable()) {
-                    setSpatial(true);
-                    this.south = llb.getSouth();
-                    this.west = llb.getWest();
-                    this.north = llb.getNorth();
-                    this.east = llb.getEast();
                     this.centerLatitude = llb.getCenterLatitude();
                     this.centerLongitude = llb.getCenterLongitude();
-
-                }
+//
+//                }
             }
         }
     }

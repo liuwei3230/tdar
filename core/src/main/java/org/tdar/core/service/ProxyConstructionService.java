@@ -129,7 +129,7 @@ public class ProxyConstructionService {
         Context ctx = new Context(viewer);
         ctx.setAdmin(false);
         ctx.setAbleToSeeConfidentialFiles(viewConfidentialinfo);
-        ctx.setLatLongObfuscated(!viewConfidentialinfo);
+        ctx.setViewUnobfuscatedLat(viewConfidentialinfo);
         ctx.setPersonEmailObfuscated(true);
         ctx.setInstitutionEmailObfuscated(true);
         r.setCultureKeywords(convertKeywords(resource, resource.getActiveCultureKeywords(), PCultureKeyword.class, ctx));
@@ -696,7 +696,7 @@ public class ProxyConstructionService {
             PLatitudeLongitudeBox llb = new PLatitudeLongitudeBox();
             llb.setScale(llb_.getScale());
             llb.setObfuscatedObjectDifferent(llb_.isObfuscatedObjectDifferent());
-            if (ctx.isLatLongObfuscated() == false) {
+            if (ctx.isViewUnobfuscatedLat()) {
                 llb.setNorth(llb_.getNorth());
                 llb.setSouth(llb_.getSouth());
                 llb.setEast(llb_.getEast());

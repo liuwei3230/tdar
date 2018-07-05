@@ -492,8 +492,10 @@ public class SerializationServiceImpl implements TxMessageBus<LoggingObjectConta
     public Map<String, Object> createGeoJsonFromResourceList(FeedSearchHelper helper) throws IOException {
         List<LatitudeLongitudeBoxWrapper> wrappers = new ArrayList<>();
         for (Object obj : helper.getResults()) {
+            logger.debug("adding ?{} / {}", obj.getClass(), obj);
             if (obj instanceof PResource) {
                 wrappers.add(new LatitudeLongitudeBoxWrapper((PResource) obj, helper));
+            } else {
             }
         }
         Map<String, Object> result = new HashMap<>();

@@ -1,5 +1,7 @@
 package org.tdar.core.service;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +17,8 @@ public class Context {
     private boolean ableToSeeConfidentialFiles = false;
     private boolean institutionEmailObfuscated = false;
     private boolean personEmailObfuscated = false;
-    private boolean latLongObfuscated = false;
-    private boolean mappedMetadataIncluded;
+    private boolean mappedMetadataIncluded = false;
+    private boolean viewUnobfuscatedLat = false;
 
     public boolean isAdmin() {
         return admin;
@@ -32,10 +34,6 @@ public class Context {
 
     public void setPersonEmailObfuscated(boolean personEmailObfuscated) {
         this.personEmailObfuscated = personEmailObfuscated;
-    }
-
-    public void setLatLongObfuscated(boolean latLongObfuscated) {
-        this.latLongObfuscated = latLongObfuscated;
     }
 
     public Context(TdarUser user) {
@@ -66,10 +64,6 @@ public class Context {
         this.user = user;
     }
 
-    public boolean isLatLongObfuscated() {
-        return latLongObfuscated;
-    }
-
     public boolean isPersonEmailObfuscated() {
         return personEmailObfuscated;
     }
@@ -96,5 +90,13 @@ public class Context {
 
     public boolean isMappedMetadaataIncluded() {
         return mappedMetadataIncluded;
+    }
+
+    public void setViewUnobfuscatedLat(boolean viewU) {
+        viewUnobfuscatedLat = viewU;
+    }
+    
+    public boolean isViewUnobfuscatedLat() {
+        return viewUnobfuscatedLat;
     }
 }

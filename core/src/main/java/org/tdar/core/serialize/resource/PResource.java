@@ -77,8 +77,10 @@ import org.tdar.utils.json.JsonIntegrationSearchResultFilter;
 import org.tdar.utils.json.JsonLookupFilter;
 import org.tdar.utils.json.JsonProjectLookupFilter;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 /**
  * $Id$
@@ -96,6 +98,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(name = "Presource", propOrder = {})
 @XmlTransient
+@JsonAutoDetect(getterVisibility=Visibility.PUBLIC_ONLY)
 public class PResource implements Persistable,
         Comparable<PResource>, HasName, Indexable, 
         HasStatus, OaiDcProvider, ConfidentialViewable, Addressable,

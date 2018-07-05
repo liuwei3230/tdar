@@ -23,9 +23,11 @@ import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.FeedSearchHelper;
 import org.tdar.core.service.ImportService;
 import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -129,15 +131,18 @@ public class GeoJSONITCase extends AbstractIntegrationTestCase {
         return StringUtils.substringBetween(result, "coordinates", "}");
     }
 
+    @Autowired
+    ProxyConstructionService pcs;
+    
     @SuppressWarnings("unchecked")
     private FeedSearchHelper setupTest(TdarUser user, Resource... resources) throws InstantiationException, IllegalAccessException {
-        List<Resource> list = new ArrayList<>();
-        if (ArrayUtils.isNotEmpty(resources)) {
-            list.addAll(Arrays.asList(resources));
-        }
-        list.forEach(item -> authorizationService.applyTransientViewableFlag(item, user));
+        List<PResource> list = new ArrayList<>();
+        for (Resource r : resources) {
+            list.add(pcs.constructResource(r, r.getResourceType().getProxyClass(), user, false));
+        };
 
-        BaseSearchResult<Resource> handler = new BaseSearchResult<>();
+        BaseSearchResult<PResource> handler = new BaseSearchResult<>();
+        handler.setAuthenticatedUser(user);
         handler.setResults(list);
         FeedSearchHelper feedHelper = new FeedSearchHelper("http://www.test.com", handler, null, user);
         return feedHelper;
