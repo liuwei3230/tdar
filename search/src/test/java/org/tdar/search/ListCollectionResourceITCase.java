@@ -54,6 +54,7 @@ public class ListCollectionResourceITCase extends AbstractResourceSearchITCase {
         ResourceLookupObject resourceLookupObject = new ResourceLookupObject(term, projectId, includeParent, collectionId, shareId, categoryId, permission,
                 reservedSearchParameters);
         LuceneSearchResultHandler<PResource> result = new SearchResult<>();
+        ((SearchResult)result).setAuthenticatedUser(getAdminUser());
         resourceSearchService.lookupResource(getAdminUser(), resourceLookupObject, result, MessageHelper.getInstance());
 
         assertNotEmpty("There were results found", result.getResults());

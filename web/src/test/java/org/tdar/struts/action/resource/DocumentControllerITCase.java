@@ -8,6 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -55,6 +56,8 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PDocument;
 import org.tdar.core.service.PersonalFilestoreService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.junit.IgnoreActionErrors;
@@ -69,6 +72,7 @@ import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.Action;
+import com.sun.javadoc.Doc;
 
 public class DocumentControllerITCase extends AbstractControllerITCase implements TestFileUploadHelper, TestBillingAccountHelper {
 
@@ -535,7 +539,7 @@ public class DocumentControllerITCase extends AbstractControllerITCase implement
     }
 
     @Test
-    @Rollback()
+    @Rollback(value=false)
     public void testEditResourceCreators() throws Exception {
         DocumentController controller = initControllerFields();
 
@@ -550,55 +554,60 @@ public class DocumentControllerITCase extends AbstractControllerITCase implement
         d.markUpdated(getUser());
         controller.setServletRequest(getServletPostRequest());
         controller.save();
-        Long newId = controller.getResource().getId();
-
+        final Long newId = d.getId();
+        d = null;
         Assert.assertNotNull(entityService.findByEmail("new@email.com"));
         // now reload the document and see if the institution was saved.
         Assert.assertNotSame("resource id should be assigned after insert", originalId, newId);
-
-        ResourceDeleteAction deleteAction = generateNewInitializedController(ResourceDeleteAction.class);
-        deleteAction.setId(newId);
-        deleteAction.prepare();
-
-        Resource res = deleteAction.getPersistable();
-        Assert.assertEquals("expecting document IDs to match (save/reloaded)", newId, res.getId());
-        Set<ResourceCreator> resourceCreators = res.getResourceCreators();
-        Assert.assertTrue(resourceCreators.size() > 0);
-        ResourceCreator actualCreator = (ResourceCreator) d.getResourceCreators().toArray()[0];
-        Assert.assertNotNull(actualCreator);
-        Assert.assertEquals(CreatorType.PERSON, actualCreator.getCreator().getCreatorType());
-        Assert.assertTrue(actualCreator.getCreator().getName().contains("newLast"));
-        deleteAction.delete(controller.getDocument());
-
-        // FIXME: should add and replace items here to really test
-
-        // FIXME: issues with hydrating resources with Institutions
 
         DocumentViewAction rva = generateNewInitializedController(DocumentViewAction.class, getAdminUser());
         rva.setId(newId);
         rva.prepare();
         rva.view();
-        // assert my authorproxies have what i think they should have (rendering
-        // edit page)
-        controller = generateNewInitializedController(DocumentController.class, getAdminUser());
-        controller.setId(newId);
-        controller.prepare();
-        controller.edit();
-        controller.getPersistable().setStatus(Status.DRAFT);
-        controller.setAuthorshipProxies(new ArrayList<ResourceCreatorProxy>());
-        // deleting all authorship resource creators
-        controller.setServletRequest(getServletPostRequest());
-        controller.save();
+        PDocument res = rva.getPersistable();
+        Assert.assertEquals("expecting document IDs to match (save/reloaded)", newId, res.getId());
+        Set<PResourceCreator> resourceCreators = res.getResourceCreators();
+        Assert.assertTrue(resourceCreators.size() > 0);
+        PResourceCreator actualCreator = (PResourceCreator) res.getResourceCreators().toArray()[0];
+        Assert.assertNotNull(actualCreator);
+        Assert.assertEquals(CreatorType.PERSON, actualCreator.getCreator().getCreatorType());
+        Assert.assertTrue(actualCreator.getCreator().getName().contains("newLast"));
+        res = null;
+        logger.debug("newId:{}", newId);
+        genericService.synchronize();
+        setVerifyTransactionCallback(new TransactionCallback<Resource>() {
 
-        // loading the view page
-        rva = generateNewInitializedController(DocumentViewAction.class);
-        rva.setId(newId);
-        rva.prepare();
-        rva.view();
-        logger.info("{}", rva.getAuthorshipProxies());
-        Assert.assertEquals("expecting size zero", 0, rva.getAuthorshipProxies().size());
-        logger.debug("{}", rva.getAuthorshipProxies().size());
-        Assert.assertTrue("expecting invaled proxy", rva.getAuthorshipProxies().isEmpty());
+            @Override
+            public Resource doInTransaction(TransactionStatus status) {
+                try {
+                DocumentController dc = generateNewInitializedController(DocumentController.class, getAdminUser());
+                dc.setId(newId);
+                dc.prepare();
+                dc.edit();
+                dc.getPersistable().setStatus(Status.DRAFT);
+                dc.setAuthorshipProxies(new ArrayList<ResourceCreatorProxy>());
+                // deleting all authorship resource creators
+                dc.setServletRequest(getServletPostRequest());
+                dc.save();
+
+//                evictCache();
+                // loading the view page
+                DocumentViewAction rva2 = generateNewInitializedController(DocumentViewAction.class);
+                rva2.setId(newId);
+                rva2.prepare();
+                rva2.view();
+                logger.info("{}", rva2.getAuthorshipProxies());
+                Assert.assertEquals("expecting size zero", 0, rva2.getAuthorshipProxies().size());
+                logger.debug("{}", rva2.getAuthorshipProxies().size());
+                Assert.assertTrue("expecting invaled proxy", rva2.getAuthorshipProxies().isEmpty());
+                } catch (Throwable t) {
+                    logger.error("{}",t,t);
+                    fail(t.getMessage());
+                }
+                genericService.delete(genericService.find(Document.class, newId));
+                return null;
+            }
+        });
     }
 
     @Test

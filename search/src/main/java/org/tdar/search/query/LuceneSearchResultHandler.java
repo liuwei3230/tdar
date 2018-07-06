@@ -6,4 +6,5 @@ public interface LuceneSearchResultHandler<I extends Indexable> extends SearchRe
 
     ProjectionModel getProjectionModel();
 
+
 }
