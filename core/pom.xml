@@ -672,8 +672,7 @@
                             <value>${project.build.testOutputDirectory}</value>
                         </property>
                     </systemProperties>
-                    <argLine>${jvm.args}
-                        -DenableContextSwitchingConfig=true</argLine>
+                    <argLine>${jvm.args} ${test.args} </argLine>
                     <junitArtifactName>junit:junit-dep</junitArtifactName>
                 </configuration>
             </plugin>
@@ -710,8 +709,7 @@
                     <systemPropertyVariables>
                         <display.port>${display.port}</display.port>
                     </systemPropertyVariables>
-                    <argLine>${jvm.args}
-                        -DenableContextSwitchingConfig=true</argLine>
+                    <argLine>${jvm.args} ${test.args}</argLine>
                     <excludes>
                         <exclude>**/experimental/*.java</exclude>
                     </excludes>

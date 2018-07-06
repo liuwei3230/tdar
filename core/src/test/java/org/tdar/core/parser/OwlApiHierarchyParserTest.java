@@ -21,7 +21,6 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.TestConstants;
-import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.db.parser.OwlApiHierarchyParser;
 import org.tdar.db.parser.TOntologyNode;
 
@@ -55,6 +54,7 @@ public class OwlApiHierarchyParserTest {
 
     @Test
     public void testOwlHierarchyMap() {
+        try {
         OWLOntology owlOntology = getOwlOntology();
         OwlApiHierarchyParser parser = new OwlApiHierarchyParser(owlOntology);
         Map<OWLClass, Set<OWLClass>> owlHierarchyMap = parser.getOwlHierarchyMap();
@@ -67,6 +67,9 @@ public class OwlApiHierarchyParserTest {
                 assertNotNull(child);
                 assertTrue(owlHierarchyMap.containsKey(child));
             }
+        }
+        } catch (Throwable t) {
+            logger.error("{}",t,t);
         }
     }
 
