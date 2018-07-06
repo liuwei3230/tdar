@@ -56,12 +56,12 @@ public class OntologyNodeViewAction extends AbstractOntologyViewAction {
             results = {
                     @Result(name = SUCCESS, location = "../ontology/view-node.ftl")
             })
-    public String node() throws TdarActionException {
+    public String node() throws Exception {
         return SUCCESS;
     }
 
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
         super.prepare();
         setNode(getNodeBySlug());
         // getLogger().debug("{}", getNode());

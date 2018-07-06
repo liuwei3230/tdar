@@ -27,7 +27,7 @@ public class ObfuscationITCase extends AbstractIntegrationControllerTestCase {
     ObfuscationService obfuscationService;
 
     @Test
-    public void testAOPInterceptor() throws TdarActionException {
+    public void testAOPInterceptor() throws Exception {
         DocumentController controller = generateNewInitializedController(DocumentController.class, getAdminUser());
         controller.setId(Long.parseLong(TestConstants.TEST_DOCUMENT_ID));
         controller.prepare();

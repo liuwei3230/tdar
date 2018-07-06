@@ -10,6 +10,7 @@ import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.serialize.resource.PResource;
@@ -17,7 +18,6 @@ import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
-import org.tdar.struts.action.TdarBaseActionSupport;
 import org.tdar.struts_base.action.PersistableLoadingAction;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
@@ -30,24 +30,30 @@ public class WebLoadingService {
     @Autowired
     ProxyConstructionService proxyConstructionService;
     @Autowired
+    GenericDao genericDao;
+    
+    @Autowired
     AuthorizationService authorizationService;
 
     public PResource load(Class<? extends Resource> cls, Class<? extends PResource> cls1, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
-            Authorizable<Resource> support) throws TdarActionException {
+            Authorizable<Resource> support) throws Exception {
         if (PersistableUtils.isNullOrTransient(id)) {
             abort(StatusCode.BAD_REQUEST,
                     support.getText("abstractPersistableController.cannot_recognize_request", cls.getSimpleName()));
         }
-
+        PResource q = null;
         try {
-            PResource q = proxyConstructionService.load(cls, id, support, user);
-            return q;
+            q = proxyConstructionService.load(cls, id, support, user);
+        } catch (TdarActionException tae) {
+            throw tae;
         } catch (Throwable t) {
             logger.error("{}", t,t);
             abort(StatusCode.BAD_REQUEST,
                     support.getText("abstractPersistableController.cannot_recognize_request", cls.getSimpleName()));
         }
-        return null;
+        Resource r =genericDao.find(Resource.class, id);  
+        checkValidRequest(rights, user, support, r);
+        return q;
     }
 
     /**
@@ -58,7 +64,7 @@ public class WebLoadingService {
      * @throws Exception 
      */
     protected <P extends Persistable, Q> void checkValidRequest(InternalTdarRights adminRole, TdarUser user,
-        Authorizable<Q> support, Q q) throws Exception {
+        Authorizable<Resource> support, Resource q) throws Exception {
         if (q == null) {
             logger.debug("Dealing with transient persistable {}", q);
             // persistable is null, so the lookup failed (aka not found)
@@ -113,10 +119,12 @@ public class WebLoadingService {
      * @throws TdarActionException
      */
     protected void abort(StatusCode statusCode, String errorMessage) throws TdarActionException {
+        logger.debug("abort: {}", statusCode);
         throw new TdarActionException(statusCode, errorMessage);
     }
 
     protected void abort(StatusCode statusCode, String response, String errorMessage) throws TdarActionException {
+        logger.debug("abort: {}", statusCode);
         throw new TdarActionException(statusCode, response, errorMessage);
     }
 

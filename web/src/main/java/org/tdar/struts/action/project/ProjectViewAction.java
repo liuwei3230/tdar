@@ -55,7 +55,7 @@ public class ProjectViewAction extends AbstractResourceViewAction<PProject> impl
     private FacetWrapper facetWrapper = new FacetWrapper();
 
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
         super.prepare();
         try {
             handleSearch();

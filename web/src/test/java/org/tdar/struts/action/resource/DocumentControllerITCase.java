@@ -368,7 +368,7 @@ public class DocumentControllerITCase extends AbstractControllerITCase implement
     }
 
     @Test
-    public void testOpenURLGeneration() throws TdarActionException {
+    public void testOpenURLGeneration() throws Exception {
         DocumentViewAction controller = generateNewInitializedController(DocumentViewAction.class);
         controller.setId(4231L);
         controller.prepare();

@@ -394,6 +394,9 @@ public class ProxyConstructionService {
         pcv.setLabel(categoryVariable.getLabel());
         pcv.setName(categoryVariable.getName());
         pcv.setType(categoryVariable.getType());
+        if (categoryVariable.getParent() != null) {
+            pcv.setParent(convertCategoryVariable(categoryVariable.getParent()));
+        }
         return pcv;
     }
 
@@ -536,7 +539,7 @@ public class ProxyConstructionService {
         Set<PResourceCollection> toReturn = new HashSet<>();
         collections.forEach(rc_ -> {
             PResourceCollection rc = convertResourceCollection(rc_, depth, ctx);
-            if (rc_.isActive() || rc_.isDraft() && rc != null) {
+            if ((rc_.isActive() || rc_.isDraft()) && rc != null) {
                 toReturn.add(rc);
             }
         });
@@ -892,6 +895,7 @@ public class ProxyConstructionService {
             if (r == null) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
+            support.setStatus(r.getStatus());
 
             if (support != null && support.authorize(r, user) == false) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));

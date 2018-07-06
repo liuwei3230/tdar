@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Authorizable;
@@ -42,7 +43,16 @@ public class JAXBMetadataViewController extends AbstractAuthenticatableAction
     public static final String MODS = "mods/{id}";
     private ModsDocument modsDocument;
     private DublinCoreDocument dcDocument;
+    private Status status;
 
+    public Status getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     @Autowired
     WebLoadingService webLoadingService;
@@ -91,7 +101,7 @@ public class JAXBMetadataViewController extends AbstractAuthenticatableAction
     }
     
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
         resource = webLoadingService.load(Resource.class, PResource.class, id, getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
     }
 

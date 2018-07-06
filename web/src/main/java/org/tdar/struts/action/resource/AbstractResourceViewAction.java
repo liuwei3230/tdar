@@ -132,9 +132,14 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
 
     
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
+        try {
         resource = (R) webLoadingService.load(Resource.class, getPersistableClass(), getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
         handleSlug();
+        } catch (Throwable t) {
+            getLogger().error("{}",t,t);
+            throw t;
+        }
     }
 
     public String loadViewMetadata() throws TdarActionException {
@@ -186,18 +191,19 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     public boolean authorize(Resource resource, TdarUser user) throws TdarActionException {
         boolean result = authorizationService.isResourceViewable(user, resource);
         if (result == false) {
-            if (getResource() == null) {
-                abort(StatusCode.UNKNOWN_ERROR, getText("abstractPersistableController.not_found"));
-            }
-            if (getResource().isDeleted()) {
+            getLogger().debug("{}/{}", status, resource);
+            if (getStatus() == Status.DELETED) {
                 getLogger().debug("resource not viewable because it is deleted: {}", getResource());
                 throw new TdarActionException(StatusCode.GONE, getText("abstractResourceController.resource_deleted"));
             }
 
-            if (getResource().isDraft()) {
+            if (getStatus() == Status.DRAFT) {
                 getLogger().trace("resource not viewable because it is draft: {}", getResource());
                 throw new TdarActionException(StatusCode.OK, DRAFT,
                         getText("abstractResourceController.this_record_is_in_draft_and_is_only_available_to_authorized_users"));
+            }
+            if (getResource() == null) {
+                abort(StatusCode.UNKNOWN_ERROR, getText("abstractPersistableController.not_found"));
             }
         }
         
@@ -304,6 +310,8 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     }
 
     private transient ResourceCollection whiteLabelCollection;
+
+    private Status status;
 
     @XmlTransient
     /**
@@ -414,7 +422,11 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     }
 
     public Status getStatus() {
-        return getPersistable().getStatus();
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status  = status;
     }
 
 }

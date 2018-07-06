@@ -45,7 +45,7 @@ public class OntologyViewController extends AbstractOntologyViewAction {
     private OntologyService ontologyService;
 
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
         super.prepare();
         // prepare calls handleSlug
         // handle slug will check if there's an IRI that's in a slug (fallback from older behavior)
