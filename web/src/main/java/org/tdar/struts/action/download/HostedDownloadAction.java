@@ -94,7 +94,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
         }
 
         // Don't allow hosted download for files that belong to deleted resources
-        if (informationResourceFile.getInformationResource().isDeleted()) {
+        if (getInformationResource().isDeleted()) {
             getLogger().warn("attempt to download file associated with deleted resource: {}", informationResourceFile);
             addActionError("hostedDownloadController.invalid_request");
         }

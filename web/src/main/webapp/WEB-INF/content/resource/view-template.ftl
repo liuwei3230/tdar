@@ -143,8 +143,9 @@
     </#if>
 
     <#if resource.resourceType.dataTableSupported>
+
         <#if (resource.dataTables?has_content)>
-            <#if resource.viewable && authenticated && (resource.publicallyAccessible || ableToViewConfidentialFiles)>
+            <#if authenticated && (resource.publicallyAccessible || ableToViewConfidentialFiles)>
             <h3 id="browseTable" data-namespace="${namespace}">Browse ${resource.title}</h3>
 
                 <#if (resource.dataTables?size > 1)>

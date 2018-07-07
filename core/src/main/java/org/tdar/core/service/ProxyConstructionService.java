@@ -348,7 +348,8 @@ public class ProxyConstructionService {
         }
         Set<PDataTable> toReturn = new HashSet<>();
         dataTables.forEach(dt_ -> {
-            convertDataTable(dt_);
+            PDataTable table = convertDataTable(dt_);
+            toReturn.add(table);
         });
         return toReturn;
     }
@@ -893,7 +894,7 @@ public class ProxyConstructionService {
         if (Resource.class.isAssignableFrom(class1)) {
             Resource r = (Resource) genericDao.find(class1, id);
             if (r == null) {
-                throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
+                return null;
             }
             support.setStatus(r.getStatus());
 

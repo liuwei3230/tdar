@@ -774,7 +774,7 @@ View freemarker macros
     </#macro>
     <#function _staticGoogleMapUrl boundingBox apikey>
         <#local bb=boundingBox>
-        <#local bbvals="[[${bb.obfuscatedWest?c},${bb.obfuscatedSouth?c}],[${bb.obfuscatedWest?c},${bb.obfuscatedNorth?c}],[${bb.obfuscatedEast?c},${bb.obfuscatedNorth?c}],[${bb.obfuscatedEast?c},${bb.obfuscatedSouth?c}],[${bb.obfuscatedWest?c},${bb.obfuscatedSouth?c}]]">
+        <#local bbvals="[[${bb.west?c},${bb.south?c}],[${bb.west?c},${bb.north?c}],[${bb.east?c},${bb.north?c}],[${bb.east?c},${bb.south?c}],[${bb.west?c},${bb.south?c}]]">
         <#local mapId="abrin.n9j4f56m">
         <#local apikeyval="">
         <#local width=410>
