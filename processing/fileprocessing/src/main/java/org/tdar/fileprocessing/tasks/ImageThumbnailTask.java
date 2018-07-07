@@ -154,6 +154,16 @@ public class ImageThumbnailTask extends AbstractTask {
             }
         }
 
+
+        if (ijSource == null) {
+            getLogger().debug("Unable to load source image: {} ({}) ", sourceFile, msg);
+            if (msg != null && !msg.contains("Note: IJ cannot open CMYK JPEGs")) {
+                getWorkflowContext().setErrorFatal(true);
+                getLogger().error(msg);
+            }
+
+        }
+
         if (isJaiImageJenabled() && (ijSource == null)) {
             getLogger().debug("Unable to load source image with ImageJ: " + sourceFile);
             try {
@@ -167,14 +177,8 @@ public class ImageThumbnailTask extends AbstractTask {
                 }
             }
         }
-
+        
         if (ijSource == null) {
-            getLogger().debug("Unable to load source image: {} ({}) ", sourceFile, msg);
-            if (msg != null && !msg.contains("Note: IJ cannot open CMYK JPEGs")) {
-                getWorkflowContext().setErrorFatal(true);
-                getLogger().error(msg);
-            }
-
             throw new TdarRecoverableRuntimeException("imageThumbnailTask.fmt_error_processing_could_not_open", Arrays.asList(filename, msg));
         }
     }
