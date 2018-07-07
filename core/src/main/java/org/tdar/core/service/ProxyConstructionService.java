@@ -273,6 +273,7 @@ public class ProxyConstructionService {
     private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_) {
         PDataTableColumn c = new PDataTableColumn();
         c.setName(dtc_.getName());
+        c.setId(dtc_.getId());
         c.setColumnDataType(dtc_.getColumnDataType());
         c.setColumnEncodingType(dtc_.getColumnEncodingType());
         c.setMeasurementUnit(dtc_.getMeasurementUnit());
@@ -338,8 +339,7 @@ public class ProxyConstructionService {
     }
 
     private Set<PDataTableRelationship> convertRelationships(Set<org.tdar.core.bean.resource.datatable.DataTableRelationship> relationships) {
-        // TODO Auto-generated method stub
-        return null;
+        return new HashSet<>();
     }
 
     private Set<PDataTable> convertDataTables(Set<DataTable> dataTables) {
@@ -359,6 +359,7 @@ public class ProxyConstructionService {
         dt.setDescription(dt_.getDescription());
         dt.setDisplayName(dt_.getDisplayName());
         dt.setId(dt_.getId());
+        dt.setName(dt_.getName());
         dt.setImportOrder(dt_.getImportOrder());
         dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns())));
         return dt;

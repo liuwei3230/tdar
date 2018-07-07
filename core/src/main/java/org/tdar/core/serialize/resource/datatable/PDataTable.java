@@ -16,14 +16,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.bean.resource.datatable.DataTableColumnRelationshipType;
+import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 import org.tdar.utils.json.JsonIntegrationDetailsFilter;
 import org.tdar.utils.json.JsonIntegrationFilter;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.unmarshallers.StringUnmarshaller;
 import com.fasterxml.jackson.annotation.JsonView;
 
 /**
@@ -209,7 +212,13 @@ public class PDataTable extends AbstractPersistable {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(name).append(" - ").append(getId() == null ? -1 : getId());
+        StringBuilder builder = new StringBuilder();
+        if (StringUtils.isNotBlank(name)) {
+            builder.append(name);
+        } else {
+            builder.append("unnamed");
+        }
+        builder.append(" - ").append(getId());
         return builder.toString();
     }
 
