@@ -278,7 +278,6 @@ public abstract class AbstractInformationResourceController<R extends Informatio
         super.loadCustomMetadata();
         loadInformationResourceProperties();
         loadResourceProviderInformation();
-        resourceViewControllerService.setTransientViewableStatus(getResource(), getAuthenticatedUser());
     }
 
     @Override

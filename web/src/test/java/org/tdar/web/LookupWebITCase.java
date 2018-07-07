@@ -15,7 +15,7 @@ public class LookupWebITCase extends AbstractAdminAuthenticatedWebTestCase {
         int status = gotoPageWithoutErrorCheck(url);
         Assert.assertEquals("http result should be 200 OK", HttpServletResponse.SC_OK, status);
         String json = getPageCode();
-        logger.trace("json is:{}", json);
+        logger.debug("json is:{}", json);
         JSONObject jso = JSONObject.fromObject(json);
         Assert.assertNotNull("expecting parseable json", jso);
         JSONArray jarr = jso.getJSONArray(resultField);

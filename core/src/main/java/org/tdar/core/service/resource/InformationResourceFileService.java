@@ -50,7 +50,7 @@ public interface InformationResourceFileService {
     /*
      * Given a @link InformationResourceFile grab the download count from the database and set the transient value on the InformationResourceFile
      */
-    void updateTransientDownloadCount(InformationResourceFile irFile);
+    Long updateTransientDownloadCount(InformationResourceFile irFile);
 
     List<InformationResource> findInformationResourcesWithFileStatus(Person authenticatedUser, List<Status> resourceStatus, List<FileStatus> fileStatus);
 

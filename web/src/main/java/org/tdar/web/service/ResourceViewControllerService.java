@@ -7,22 +7,24 @@ import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.service.ResourceCreatorProxy;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.struts.data.AuthWrapper;
 
 public interface ResourceViewControllerService {
 
-    void initializeResourceCreatorProxyLists(AuthWrapper<Resource> auth, List<ResourceCreatorProxy> authorshipProxies,
-            List<ResourceCreatorProxy> creditProxies, List<ResourceCreatorProxy> contactProxies);
+    void initializeResourceCreatorProxyLists(AuthWrapper<PResource> auth, List<PResourceCreatorProxy> authorshipProxies,
+            List<PResourceCreatorProxy> creditProxies, List<PResourceCreatorProxy> contactProxies);
 
-    void updateResourceInfo(AuthWrapper<Resource> auth, boolean isBot);
+    void updateResourceInfo(AuthWrapper<PResource> auth, boolean isBot);
 
-    void updateInfoReadOnly(AuthWrapper<Resource> auth);
+    void updateInfoReadOnly(AuthWrapper<PResource> auth);
 
     /*
      * Creating a simple transient boolean to handle visibility here instead of freemarker
      */
-    boolean setTransientViewableStatus(InformationResource ir, TdarUser p);
+    void setTransientViewableStatus(PInformationResource ir);
 
     void loadSharesCollectionsAuthUsers(AuthWrapper<Resource> auth, List<ResourceCollection> effectiveShares,
             List<ResourceCollection> effectiveResourceCollections,

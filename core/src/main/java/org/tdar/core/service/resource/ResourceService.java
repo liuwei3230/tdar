@@ -110,7 +110,7 @@ public interface ResourceService {
      * 
      * @param resource
      */
-    void updateTransientAccessCount(Resource resource);
+    void updateTransientAccessCount(PResource resource);
 
     /**
      * Provides a count of the total number of active resources.

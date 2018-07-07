@@ -38,7 +38,7 @@ public class WebLoadingService {
     public PResource load(Class<? extends Resource> cls, Class<? extends PResource> cls1, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
             Authorizable<Resource> support) throws Exception {
         if (PersistableUtils.isNullOrTransient(id)) {
-            abort(StatusCode.BAD_REQUEST,
+            abort(StatusCode.UNKNOWN_ERROR,
                     support.getText("abstractPersistableController.cannot_recognize_request", cls.getSimpleName()));
         }
         PResource q = null;

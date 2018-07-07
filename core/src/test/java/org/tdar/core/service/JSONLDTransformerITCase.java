@@ -99,7 +99,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
         CultureKeyword random = genericService.find(CultureKeyword.class, 4L);
         ExternalKeywordMapping assertion = new ExternalKeywordMapping(HTTP_WWW_TEST_COM, RelationType.DCTERMS_IS_REPLACED_BY);
         random.getAssertions().add(assertion);
-        PKeyword rr = proxyConstructionService.consructKeyword(random);
+        PKeyword rr = proxyConstructionService.constructKeyword(random);
         String json = transformer.convert(serializationService, rr);
         logger.debug(json);
         assertTrue("json contains URL", json.contains(HTTP_WWW_TEST_COM));

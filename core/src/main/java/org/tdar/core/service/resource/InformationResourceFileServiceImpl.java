@@ -110,8 +110,8 @@ public class InformationResourceFileServiceImpl extends ServiceInterface.TypedDa
      */
     @Override
     @Transactional(readOnly = true)
-    public void updateTransientDownloadCount(InformationResourceFile irFile) {
-        irFile.setTransientDownloadCount(getDao().getDownloadCount(irFile).longValue());
+    public Long updateTransientDownloadCount(InformationResourceFile irFile) {
+        return getDao().getDownloadCount(irFile).longValue();
     }
 
     /*

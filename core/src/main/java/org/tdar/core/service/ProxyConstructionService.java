@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.Persistable;
+import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
 import org.tdar.core.bean.collection.ResourceCollection;
@@ -25,12 +26,12 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
-import org.tdar.core.bean.entity.permissions.Permissions;
-import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.permissions.Permissions;
+import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.resource.BookmarkedResource;
@@ -48,9 +49,11 @@ import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
+import org.tdar.core.dao.BillingAccountDao;
 import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.TdarAuthorizationException;
+import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
 import org.tdar.core.serialize.collection.PResourceCollection;
@@ -106,7 +109,9 @@ public class ProxyConstructionService {
 
     @Autowired
     private GenericDao genericDao;
-    
+
+    @Autowired
+    private BillingAccountDao billingAccountDao;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
@@ -166,7 +171,7 @@ public class ProxyConstructionService {
         r.setExternalId(resource.getExternalId());
         r.setTransientAccessCount(resource.getTransientAccessCount());
         r.setUploader(convertUser(resource.getUploader(), ctx));
-        r.setAccount(resource.getAccount());
+        r.setAccount(constructShallowAccount(resource.getAccount()));
         r.setPreviousStatus(resource.getPreviousStatus());
         r.setSpaceInBytesUsed(resource.getSpaceInBytesUsed());
         r.setFilesUsed(resource.getFilesUsed());
@@ -268,6 +273,17 @@ public class ProxyConstructionService {
         }
 
         return r;
+    }
+
+    private PBillingAccount constructShallowAccount(BillingAccount account) {
+        if (account == null) {
+            return null;
+        }
+        PBillingAccount act = new PBillingAccount();
+        act.setId(account.getId());
+        act.setName(account.getName());
+        act.setDescription(account.getDescription());
+        return act;
     }
 
     private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_) {
@@ -421,7 +437,6 @@ public class ProxyConstructionService {
                 irf.setLatestVersion(irf_.getLatestVersion());
                 // irf.setInformationResourceFileVersions(irf_.getInformationResourceFileVersions());
                 irf.setStatus(irf_.getStatus());
-                irf.setViewable(irf_.isViewable());
                 irf.setTransientDownloadCount(irf_.getTransientDownloadCount());
                 irf.setNumberOfParts(irf_.getNumberOfParts());
                 irf.setWorkflowContext(irf_.getWorkflowContext());
@@ -781,7 +796,7 @@ public class ProxyConstructionService {
         return k;
     }
 
-    public PKeyword consructKeyword(Keyword keyword) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public PKeyword constructKeyword(Keyword keyword) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (keyword == null) {
             return null;
         }
@@ -803,6 +818,9 @@ public class ProxyConstructionService {
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (I) createCreator((Creator<?>) j, ctx);
+        }
+        if (PKeyword.class.isAssignableFrom(cls)) {
+            return (I) constructKeyword((Keyword) j);
         }
         if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
             return (I) createIntegration((DataIntegrationWorkflow) j, ctx);
@@ -911,6 +929,41 @@ public class ProxyConstructionService {
     public PDataTable loadDataTable(Long dataTableId) {
         DataTable dataTable = genericDao.find(DataTable.class, dataTableId);
         return convertDataTable(dataTable);
+    }
+
+    public PBillingAccount updateAccount(PResource item) {
+        BillingAccount findAccountForResource = billingAccountDao.findAccountForResource(item.getId());
+        PBillingAccount act = constructShallowAccount(findAccountForResource);
+        return act;
+    }
+
+    private PBillingAccount createBillingAccount(BillingAccount act_) {
+        PBillingAccount act = constructShallowAccount(act_);
+        if (act == null) {
+            return null;
+        }
+        act.setName(act_.getName());
+        act.setDescription(act_.getDescription());
+        act.setDateCreated(act_.getDateCreated());
+        act.setLastModified(act_.getLastModified());
+        act.setStatus(act_.getStatus());
+        act.setFilesUsed(act_.getFilesUsed());
+        act.setSpaceUsedInBytes(act_.getSpaceUsedInBytes());
+        act.setResourcesUsed(act_.getResourcesUsed());
+        act.setExpires(act_.getExpires());
+//        act.setInvoices(act_.getInvoices());
+//        act.setResources(act_.getResources());
+//        act.setOwner(act_.getOwner());
+//        act.setModifiedBy(act_.getModifiedBy());
+//        act.setCoupons(act_.getCoupons());
+//        act.setUsageHistory(act_.getUsageHistory());
+//        act.setAuthorizedUsers(act_.getAuthorizedUsers());
+        act.setFullService(act_.getFullService());
+        act.setInitialReview(act_.getInitialReview());
+        act.setExternalReview(act_.getExternalReview());
+        act.setDaysFilesExpireAfter(act_.getDaysFilesExpireAfter());
+
+        return act;
     }
 
 }

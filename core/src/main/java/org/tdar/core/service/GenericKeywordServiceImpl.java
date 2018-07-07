@@ -369,7 +369,7 @@ public class GenericKeywordServiceImpl implements GenericKeywordService {
     @Transactional(readOnly = true)
     public String getSchemaOrgJsonLD(Keyword keyword) {
         try {
-            PKeyword pKeyword = proxyConstructionService.consructKeyword(keyword);
+            PKeyword pKeyword = proxyConstructionService.constructKeyword(keyword);
             SchemaOrgKeywordTransformer transformer = new SchemaOrgKeywordTransformer();
             return transformer.convert(serializationService, pKeyword);
         } catch (Exception e) {

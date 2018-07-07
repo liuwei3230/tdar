@@ -24,11 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.billing.BillingAccountGroup;
 import org.tdar.core.bean.billing.BillingActivityModel;
 import org.tdar.core.bean.billing.Coupon;
-import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.billing.TransactionStatus;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.TdarUser;
@@ -38,6 +36,8 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.base.HibernateBase;
 import org.tdar.core.exception.TdarQuotaException;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.billing.Invoice;
 import org.tdar.utils.AccountEvaluationHelper;
 import org.tdar.utils.MathUtils;
 import org.tdar.utils.PersistableUtils;
@@ -662,4 +662,23 @@ public class BillingAccountDao extends HibernateBase<BillingAccount> {
         account.getTotalNumberOfResources();
         return (resourceEvaluator.accountHasMinimumForNewResource(account, type));
     }
+
+    @Transactional(readOnly = true)
+    public BillingAccount findAccountForResource(Long id) {
+        String sql = String.format(TdarNamedQueries.QUERY_ACCOUNT_FOR_RESOURCE, id);
+
+        Query query = getCurrentSession().createNativeQuery(sql);
+        try {
+        Object[] uniqueResult = (Object[]) query.uniqueResult();
+        if (uniqueResult != null) {
+            logger.debug("{}", uniqueResult);
+            BillingAccount account = find(((BigInteger) uniqueResult[0]).longValue());
+            return account;
+        }
+        } catch (Throwable t) {
+            logger.error("{}",t,t);
+        }
+        return null;
+    }
+
 }

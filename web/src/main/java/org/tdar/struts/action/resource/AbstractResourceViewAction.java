@@ -37,6 +37,7 @@ import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
 import org.tdar.core.service.Authorizable;
+import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.collection.ResourceCollectionService;
@@ -97,9 +98,9 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     @Autowired
     private ResourceService resourceService;
 
-    private List<ResourceCreatorProxy> authorshipProxies = new ArrayList<>();
-    private List<ResourceCreatorProxy> creditProxies = new ArrayList<>();
-    private List<ResourceCreatorProxy> contactProxies = new ArrayList<>();
+    private List<PResourceCreatorProxy> authorshipProxies = new ArrayList<>();
+    private List<PResourceCreatorProxy> creditProxies = new ArrayList<>();
+    private List<PResourceCreatorProxy> contactProxies = new ArrayList<>();
     private ResourceCitationFormatter resourceCitation;
     private boolean redirectBadSlug;
     private String slug;
@@ -146,6 +147,12 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         if (getResource() == null) {
             return ERROR;
         }
+        AuthWrapper<PResource> authWrapper = new AuthWrapper<>(getResource(), isAuthenticated(), getAuthenticatedUser(), isEditor());
+        setInvites(userRightsProxyService.findUserInvites(resource));
+        
+        viewService.updateResourceInfo(authWrapper, isBot());
+        viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
+        
         setResourceCitation(new ResourceCitationFormatter(getResource()));
         setSchemaOrgJsonLD(resourceService.getSchemaOrgJsonLD(getResource()));
         loadBasicViewMetadata();
@@ -208,13 +215,9 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         }
         
         canViewConfidential = authorizationService.canViewConfidentialInformation(user, resource);
-//        canEdit = authorizationService.canEdit(user,resource);
         
-        AuthWrapper<Resource> authWrapper = new AuthWrapper<Resource>(resource, isAuthenticated(), user, isEditor());
         setInvites(userRightsProxyService.findUserInvites(resource));
         
-        viewService.updateResourceInfo(authWrapper, isBot());
-        viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
         
         editable = authorizationService.canEditResource(user, resource, Permissions.MODIFY_METADATA);
         whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(resource);
@@ -257,25 +260,25 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         return keys;
     }
 
-    public List<ResourceCreatorProxy> getAuthorshipProxies() {
+    public List<PResourceCreatorProxy> getAuthorshipProxies() {
         if (CollectionUtils.isEmpty(authorshipProxies)) {
             authorshipProxies = new ArrayList<>();
         }
         return authorshipProxies;
     }
 
-    public List<ResourceCreatorProxy> getContactProxies() {
+    public List<PResourceCreatorProxy> getContactProxies() {
         if (CollectionUtils.isEmpty(contactProxies)) {
             contactProxies = new ArrayList<>();
         }
         return contactProxies;
     }
 
-    public void setAuthorshipProxies(List<ResourceCreatorProxy> authorshipProxies) {
+    public void setAuthorshipProxies(List<PResourceCreatorProxy> authorshipProxies) {
         this.authorshipProxies = authorshipProxies;
     }
 
-    public List<ResourceCreatorProxy> getCreditProxies() {
+    public List<PResourceCreatorProxy> getCreditProxies() {
         if (CollectionUtils.isEmpty(creditProxies)) {
             creditProxies = new ArrayList<>();
         }

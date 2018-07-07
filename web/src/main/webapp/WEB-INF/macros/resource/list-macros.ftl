@@ -55,7 +55,7 @@
                 <#assign key = "" />
                 <#assign defaultKeyLabel="Individual Resources"/>
             <#-- if we're viewable -->
-                <#if (true) >
+                <#if (resource?has_content) >
                     <#local rowCount= rowCount+1 />
 
                 <#-- list headers are displayed when sorting by specific fields ResourceType and Project -->

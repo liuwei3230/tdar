@@ -255,8 +255,9 @@ public class ResourceServiceImpl implements ResourceService {
      */
     @Override
     @Transactional(readOnly = true)
-    public void updateTransientAccessCount(Resource resource) {
-        resource.setTransientAccessCount(datasetDao.getAccessCount(resource).longValue());
+    public void updateTransientAccessCount(PResource resource) {
+        Resource r = find(resource.getId());
+        resource.setTransientAccessCount(datasetDao.getAccessCount(r).longValue());
     }
 
     /*

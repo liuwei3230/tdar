@@ -114,7 +114,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase implement
         setupFakeRecord(fake);
         String docXml = serializationService.convertToXML(fake);
         logger.info(docXml);
-        resourceService.updateTransientAccessCount(fake);
+//        resourceService.updateTransientAccessCount(fake);
         final Long viewCount = fake.getTransientAccessCount();
         final Date creationDate = fake.getDateCreated();
 
@@ -159,7 +159,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase implement
         assertEquals(oldId, importedRecord.getId());
 
         assertEquals(2, importedRecord.getAuthorizedUsers().size());
-        resourceService.updateTransientAccessCount(importedRecord);
+//        resourceService.updateTransientAccessCount(importedRecord);
         assertEquals(viewCount, importedRecord.getTransientAccessCount());
         assertEquals(creationDate, importedRecord.getDateCreated());
         assertEquals(oldSubmitter, importedRecord.getSubmitter());

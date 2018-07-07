@@ -344,7 +344,6 @@ public abstract class AbstractLookupController<I extends Indexable> extends Abst
             if (obj == null) {
                 continue;
             }
-            obfuscationService.obfuscateObject(obj, getAuthenticatedUser());
             actual.add(obj);
         }
         Map<String, Object> status = new HashMap<>();

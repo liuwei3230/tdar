@@ -39,13 +39,13 @@ import org.tdar.core.bean.OaiDcProvider;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Slugable;
 import org.tdar.core.bean.XmlLoggable;
-import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.ResourceCreatorRoleType;
 import org.tdar.core.bean.resource.Addressable;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.util.UrlUtils;
+import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
 import org.tdar.core.serialize.collection.PResourceCollection;
@@ -78,9 +78,9 @@ import org.tdar.utils.json.JsonLookupFilter;
 import org.tdar.utils.json.JsonProjectLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 /**
  * $Id$
@@ -213,7 +213,7 @@ public class PResource implements Persistable,
     private Set<PBookmarkedResource> bookmarkedResources = new LinkedHashSet<>();
     private Set<PAuthorizedUser> authorizedUsers = new LinkedHashSet<PAuthorizedUser>();
 
-    private transient BillingAccount account;
+    private transient PBillingAccount account;
 
     private transient boolean created = false;
     private transient boolean updated = false;
@@ -1193,11 +1193,11 @@ public class PResource implements Persistable,
 
     @JsonIgnore
     @XmlTransient
-    public BillingAccount getAccount() {
+    public PBillingAccount getAccount() {
         return account;
     }
 
-    public void setAccount(BillingAccount account) {
+    public void setAccount(PBillingAccount account) {
         this.account = account;
     }
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,8 +20,14 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PInformationResource;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.service.PResourceCreatorProxy;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.collection.ResourceCollectionService;
@@ -37,8 +42,6 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
 
     @Autowired
     private ObfuscationService obfuscationService;
-    @Autowired
-    private BillingAccountService accountService;
 
     @Autowired
     private BookmarkedResourceService bookmarkedResourceService;
@@ -51,6 +54,8 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
 
     @Autowired
     private transient AuthorizationService authorizationService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private transient InformationResourceFileService informationResourceFileService;
@@ -63,24 +68,24 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
      */
     @Override
     @Transactional(readOnly = true)
-    public void initializeResourceCreatorProxyLists(AuthWrapper<Resource> auth, List<ResourceCreatorProxy> authorshipProxies,
-            List<ResourceCreatorProxy> creditProxies, List<ResourceCreatorProxy> contactProxies) {
+    public void initializeResourceCreatorProxyLists(AuthWrapper<PResource> auth, List<PResourceCreatorProxy> authorshipProxies,
+            List<PResourceCreatorProxy> creditProxies, List<PResourceCreatorProxy> contactProxies) {
 
-        Set<ResourceCreator> resourceCreators = auth.getItem().getResourceCreators();
+        Set<PResourceCreator> resourceCreators = auth.getItem().getResourceCreators();
         resourceCreators = auth.getItem().getActiveResourceCreators();
         if (resourceCreators == null) {
             return;
         }
 
         // this may be duplicative... check
-        for (ResourceCreator rc : resourceCreators) {
+        for (PResourceCreator rc : resourceCreators) {
             if (TdarConfiguration.getInstance().obfuscationInterceptorDisabled()) {
                 if ((rc.getCreatorType() == CreatorType.PERSON) && !auth.isAuthenticated()) {
                     obfuscationService.obfuscate(rc.getCreator(), auth.getAuthenticatedUser());
                 }
             }
 
-            ResourceCreatorProxy proxy = new ResourceCreatorProxy(rc);
+            PResourceCreatorProxy proxy = new PResourceCreatorProxy(rc);
             if (ResourceCreatorRole.getAuthorshipRoles().contains(rc.getRole())) {
                 authorshipProxies.add(proxy);
             } else {
@@ -102,12 +107,17 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
      */
     @Override
     @Transactional(readOnly = false)
-    public void updateResourceInfo(AuthWrapper<Resource> auth, boolean isBot) {
+    public void updateResourceInfo(AuthWrapper<PResource> auth, boolean isBot) {
         // don't count if we're an admin
-        if (!PersistableUtils.isEqual(auth.getItem().getSubmitter(), auth.getAuthenticatedUser()) && !auth.isEditor()) {
-            resourceService.incrementAccessCounter(auth.getItem(), isBot);
+        PResource item = auth.getItem();
+        if ((item.getSubmitter().getId() != auth.getAuthenticatedUser().getId()) && !auth.isEditor()) {
+            Resource r = resourceService.find(item.getId());
+            resourceService.incrementAccessCounter(r, isBot);
         }
         updateInfoReadOnly(auth);
+        if (item instanceof PInformationResource && auth.getAuthenticatedUser() != null) {
+            setTransientViewableStatus((PInformationResource)item);
+        }
 
     }
 
@@ -118,18 +128,13 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
      */
     @Override
     @Transactional(readOnly = true)
-    public void updateInfoReadOnly(AuthWrapper<Resource> auth) {
+    public void updateInfoReadOnly(AuthWrapper<PResource> auth) {
         // only showing access count when logged in (speeds up page loads)
         if (auth.isAuthenticated()) {
             resourceService.updateTransientAccessCount(auth.getItem());
+            proxyConstructionService.updateAccount(auth.getItem());
         }
-        accountService.updateTransientAccountInfo((List<Resource>) Arrays.asList(auth.getItem()));
         bookmarkedResourceService.applyTransientBookmarked(Arrays.asList(auth.getItem()), auth.getAuthenticatedUser());
-
-        if (auth.getItem() instanceof InformationResource) {
-            InformationResource informationResource = (InformationResource) auth.getItem();
-            setTransientViewableStatus(informationResource, auth.getAuthenticatedUser());
-        }
     }
 
     /*
@@ -143,18 +148,11 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
      */
     @Override
     @Transactional(readOnly = true)
-    public boolean setTransientViewableStatus(InformationResource ir, TdarUser p) {
-        boolean hasDeleted = false;
-        authorizationService.applyTransientViewableFlag(ir, p);
-        if (PersistableUtils.isNotNullOrTransient(p)) {
-            for (InformationResourceFile irf : ir.getInformationResourceFiles()) {
-                informationResourceFileService.updateTransientDownloadCount(irf);
-                if (irf.isDeleted()) {
-                    hasDeleted = true;
-                }
+    public void setTransientViewableStatus(PInformationResource ir) {
+            for (PInformationResourceFile irf : ir.getInformationResourceFiles()) {
+                InformationResourceFile irf_ = informationResourceFileService.find(irf.getId());
+                irf.setTransientDownloadCount(informationResourceFileService.updateTransientDownloadCount(irf_));
             }
-        }
-        return hasDeleted;
     }
 
     /*
