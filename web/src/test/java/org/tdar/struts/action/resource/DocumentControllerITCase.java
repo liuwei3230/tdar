@@ -72,7 +72,6 @@ import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.MessageHelper;
 
 import com.opensymphony.xwork2.Action;
-import com.sun.javadoc.Doc;
 
 public class DocumentControllerITCase extends AbstractControllerITCase implements TestFileUploadHelper, TestBillingAccountHelper {
 

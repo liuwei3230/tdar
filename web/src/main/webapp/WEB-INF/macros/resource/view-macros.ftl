@@ -100,7 +100,7 @@ View freemarker macros
 
         <#local path>/filestore/download/${irid?c}/${version.id?c}</#local>
         <a href="<@s.url value='${path}'/>"
-            data-file-id="${version.informationResourceFile.id?c}"
+            data-file-id="${irfile.id?c}"
             class="download-link download-file"
            onClick="TDAR.common.registerDownload('${path?js_string}', '${id?c}')"
            title="click to download: ${version.filename}">

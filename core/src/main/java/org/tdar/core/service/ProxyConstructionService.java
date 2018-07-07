@@ -433,6 +433,7 @@ public class ProxyConstructionService {
                 irf.setFileCreatedDate(irf_.getFileCreatedDate());
                 irf.setFilename(irf_.getFilename());
                 irf.setDeleted(irf_.isDeleted());
+                irf.setId(irf_.getId());
                 irf.setPreservationNote(irf_.getPreservationNote());
                 // irf.setPreservationStatus(irf_.getPreservationStatus());
                 irf_.getInformationResourceFileVersions().forEach(irfv_ -> {

@@ -80,7 +80,7 @@ public class HostedDownloadAction extends AbstractDownloadController implements 
 
         if (PersistableUtils.isNotNullOrTransient(informationResourceFile)) {
             fileVersion = informationResourceFile.getLatestUploadedVersion();
-
+            setInformationResource(informationResourceFile.getInformationResource());
             List<String> errors = authorzationService.checkValidUnauthenticatedDownload(fileVersion, getApiKey(), referrer);
             addActionErrors(errors);
         }
