@@ -202,7 +202,6 @@ public class ProjectServiceImpl extends ServiceInterface.TypedDaoBase<Project, P
 
         try {
             if (PersistableUtils.isNotNullOrTransient(project)) {
-                getDao().markReadOnly(project);
                 List<PResourceCreator> rc = new ArrayList<>(project.getResourceCreators());
                 project.getResourceCreators().clear();
                 Collections.sort(rc);
