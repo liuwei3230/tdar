@@ -20,29 +20,24 @@ public class OccurranceStatisticsUpdateProcess extends AbstractScheduledProcess 
 
     private boolean run = false;
 
-    @Override
     public void execute() {
         run = true;
         genericKeywordService.updateOccurranceValues();
         entityService.updatePersonOcurrances();
     }
 
-    @Override
     public boolean isEnabled() {
         return true;
     }
 
-    @Override
     public String getDisplayName() {
         return "Weekly Ocurrence Count Info";
     }
 
-    @Override
     public boolean isCompleted() {
         return run;
     }
 
-    @Override
     public boolean isSingleRunProcess() {
         return false;
     }
