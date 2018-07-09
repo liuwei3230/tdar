@@ -3,7 +3,6 @@ package org.tdar.core.service;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.resource.Document;
 import org.tdar.core.dao.base.GenericDao;
@@ -290,70 +288,6 @@ public class ReflectionServiceImpl implements ReflectionService {
         }
     }
 
-    /**
-     * Find all getters of beans that support the @link Obfuscatable interface and any child beans throughout the graph
-     * 
-     * @param cls
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public List<Pair<Method, Class<? extends Obfuscatable>>> findAllObfuscatableGetters(Class<?> cls_) {
-        List<Method> declaredFields = new ArrayList<>();
-        List<Pair<Method, Class<? extends Obfuscatable>>> result = new ArrayList<>();
-        // iterate up the package hierarchy
-        Class<?> actualClass = null;
-        Class<?> cls = cls_;
-        while (cls.getPackage().getName().startsWith(ORG_TDAR)) {
-            // find first implemented tDAR class (actual class);
-            if (actualClass == null) {
-                actualClass = cls;
-            }
-            for (Method method : cls.getDeclaredMethods()) {
-
-                if (Modifier.isPublic(method.getModifiers()) && method.getName().startsWith(GET)) {
-                    declaredFields.add(method);
-                }
-            }
-            cls = cls.getSuperclass();
-        }
-
-        for (Method method : declaredFields) {
-            Class<? extends Obfuscatable> type = null;
-            // generic collections
-            if (java.lang.reflect.Modifier.isStatic(method.getModifiers()) || java.lang.reflect.Modifier.isTransient(method.getModifiers())
-                    || java.lang.reflect.Modifier.isFinal(method.getModifiers())) {
-                continue;
-            }
-
-            // logger.info("TYPE: {} {} ", method.getGenericReturnType(), method.getName());
-            // logger.info("{} ==> {}", actualClass, method.getDeclaringClass());
-            // logger.info(" {} {} {} ", dcl.getTypeParameters(), dcl.getGenericInterfaces(), dcl.getGenericSuperclass());
-            boolean force = false;
-            if (Collection.class.isAssignableFrom(method.getReturnType())) {
-                Class<?> type2 = ReflectionHelper.getType(method.getGenericReturnType());
-                if (type2 == null) {
-                    force = true;
-                } else if (Obfuscatable.class.isAssignableFrom(type2)) {
-                    type = (Class<? extends Obfuscatable>) type2;
-                    logger.trace("\t -> {}", type); // class java.lang.String.
-                }
-            }
-            // singletons
-            if (Obfuscatable.class.isAssignableFrom(method.getReturnType())) {
-                type = (Class<? extends Obfuscatable>) method.getReturnType();
-                logger.trace("\t -> {}", type); // class java.lang.String.
-            }
-
-            // things to add
-            if ((type != null) || force) {
-                if (force) {
-                    logger.trace("forcing method to be obfuscated because cannot figure out gneric type {} (good luck)", method);
-                }
-                result.add(new Pair<Method, Class<? extends Obfuscatable>>(method, type));
-            }
-        }
-        return result;
-    }
 
     public static List<Field> findAnnotatedFieldsOfClass(Class<?> cls_, Class<? extends Annotation> annotationClass) {
         List<Field> result = new ArrayList<>();

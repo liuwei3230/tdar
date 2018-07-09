@@ -22,7 +22,6 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.IntegratableOptions;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.search.bean.ReservedSearchParameters;
@@ -68,8 +67,6 @@ public abstract class AbstractLookupController<I extends Indexable> extends Abst
     @Autowired
     private transient ResourceService resourceService;
 
-    @Autowired
-    ObfuscationService obfuscationService;
 
     @Autowired
     SerializationService serializationService;

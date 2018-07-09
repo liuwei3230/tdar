@@ -15,13 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.RequestCollection;
-import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.notification.EmailType;
 import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.external.auth.AntiSpamHelper;
 import org.tdar.core.service.resource.ResourceService;
@@ -55,8 +53,6 @@ public class ResourceRequestAccessAction extends AbstractAuthenticatableAction
     private Set<EmailType> emailTypes = new HashSet<>(EmailType.valuesWithoutConfidentialFiles());
     private List<ResourceCreatorProxy> proxies = new ArrayList<>();
     private String messageBody;
-    @Autowired
-    private transient ObfuscationService obfuscationService;
     private static final String SUCCESS_UNAUTH = "success-unauth";
     private static final long serialVersionUID = -6110216327414755768L;
     private Long id;
@@ -75,12 +71,6 @@ public class ResourceRequestAccessAction extends AbstractAuthenticatableAction
         // this may be duplicative... check
         if (CollectionUtils.isNotEmpty(resource.getActiveResourceCreators())) {
             for (ResourceCreator rc : resource.getActiveResourceCreators()) {
-                if (getTdarConfiguration().obfuscationInterceptorDisabled()) {
-                    if ((rc.getCreatorType() == CreatorType.PERSON) && !isAuthenticated()) {
-                        obfuscationService.obfuscate(rc.getCreator(), getAuthenticatedUser());
-                    }
-                }
-
                 ResourceCreatorProxy proxy = new ResourceCreatorProxy(rc);
                 if (proxy.isValidEmailContact()) {
                     proxies.add(proxy);

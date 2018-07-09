@@ -72,7 +72,6 @@ import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.HasSubmitter;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.OaiDcProvider;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Slugable;
 import org.tdar.core.bean.Updatable;
@@ -87,7 +86,6 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.ResourceCreatorRoleType;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.keyword.CultureKeyword;
@@ -153,7 +151,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlTransient
 public class Resource implements Persistable,
         Comparable<Resource>, HasName, Updatable, Indexable, Validatable,
-        HasStatus, HasSubmitter, OaiDcProvider, Obfuscatable, ConfidentialViewable, Addressable,
+        HasStatus, HasSubmitter, OaiDcProvider, ConfidentialViewable, Addressable,
         DeHydratable, XmlLoggable, Slugable, Editable, HasAuthorizedUsers {
 
     public static final String RESOURCE_COLLECTIONS = "resourceCollections";
@@ -1332,31 +1330,6 @@ public class Resource implements Persistable,
         this.externalId = externalId;
     }
 
-    @Override
-    @XmlTransient
-    public boolean isObfuscated() {
-        return obfuscated;
-    }
-
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        setObfuscatedObjectDifferent(false);
-        setObfuscated(true);
-        Set<Obfuscatable> toObfuscate = new HashSet<>();
-        toObfuscate.addAll(getLatitudeLongitudeBoxes());
-        toObfuscate.add(getSubmitter());
-        toObfuscate.add(getUpdatedBy());
-        for (ResourceCreator creator : getResourceCreators()) {
-            toObfuscate.add(creator.getCreator());
-        }
-        return toObfuscate;
-    }
-
-    @Override
-    public void setObfuscated(boolean obfuscated) {
-        this.obfuscated = obfuscated;
-
-    }
 
     @Override
     @Transient
@@ -1602,16 +1575,6 @@ public class Resource implements Persistable,
         return false;
     }
 
-    @Override
-    @XmlTransient
-    public Boolean getObfuscatedObjectDifferent() {
-        return obfuscatedObjectDifferent;
-    }
-
-    @Override
-    public void setObfuscatedObjectDifferent(Boolean value) {
-        this.obfuscatedObjectDifferent = value;
-    }
 
     public Set<ResourceCreator> getIndividualAndInstitutionalCredit() {
         Set<ResourceCreator> creators = new HashSet<>();

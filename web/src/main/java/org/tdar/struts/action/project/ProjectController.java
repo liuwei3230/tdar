@@ -16,6 +16,8 @@ import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ProjectService;
 import org.tdar.search.exception.SearchIndexException;
 import org.tdar.search.service.index.SearchIndexService;
@@ -41,6 +43,8 @@ public class ProjectController extends AbstractResourceController<Project> {
 
     @Autowired
     private transient ProjectService projectService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private transient SearchIndexService searchIndexService;
@@ -74,7 +78,12 @@ public class ProjectController extends AbstractResourceController<Project> {
     @SkipValidation
     @HttpForbiddenErrorResponseOnly
     public String json() {
-        result = projectService.getProjectAsJson(getProject(), getAuthenticatedUser(), getCallback());
+        try {
+            PProject obsProj = proxyConstructionService.constructResource(getGenericService().find(Project.class, getId()), PProject.class, getAuthenticatedUser(), false);
+            result = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
+        } catch (InstantiationException | IllegalAccessException e) {
+            getLogger().error("{}",e,e);
+        }
         return SUCCESS;
     }
 

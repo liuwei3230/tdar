@@ -25,8 +25,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.OaiDcProvider;
-import org.tdar.core.bean.Obfuscatable;
-import org.tdar.core.bean.Viewable;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.cache.Caches;
 import org.tdar.core.configuration.TdarConfiguration;
@@ -90,8 +88,6 @@ public class RssServiceImpl implements Serializable, RssService {
 
     // \uDC00-\uDBFF -\uD7FF\uE000-\uFFFD
 
-    @Autowired
-    private transient ObfuscationService obfuscationService;
 
     @Autowired
     private transient AuthorizationService authenticationAndAuthorizationService;

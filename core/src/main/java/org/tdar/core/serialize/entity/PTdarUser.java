@@ -1,15 +1,10 @@
 package org.tdar.core.serialize.entity;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
-import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.commons.lang3.StringUtils;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.entity.UserAffiliation;
 import org.tdar.utils.json.JsonAdminLookupFilter;
 
@@ -109,19 +104,6 @@ public class PTdarUser extends PPerson {
         this.penultimateLogin = penultimateLogin;
     }
 
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        Set<Obfuscatable> results = new HashSet<>();
-        setObfuscated(true);
-        results.addAll(super.obfuscate());
-        setObfuscatedObjectDifferent(true);
-        setContributor(false);
-        setObfuscated(true);
-        setLastLogin(null);
-        setPenultimateLogin(null);
-        setTotalLogins(null);
-        return results;
-    }
 
     public String getUsername() {
         return username;

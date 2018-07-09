@@ -1,8 +1,6 @@
 package org.tdar.core.bean.entity;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -23,7 +21,6 @@ import org.hibernate.annotations.Check;
 import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.utils.json.JsonAdminLookupFilter;
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -170,19 +167,6 @@ public class TdarUser extends Person {
         this.penultimateLogin = penultimateLogin;
     }
 
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        Set<Obfuscatable> results = new HashSet<>();
-        setObfuscated(true);
-        results.addAll(super.obfuscate());
-        setObfuscatedObjectDifferent(true);
-        setContributor(false);
-        setObfuscated(true);
-        setLastLogin(null);
-        setPenultimateLogin(null);
-        setTotalLogins(null);
-        return results;
-    }
 
     public String getUsername() {
         return username;

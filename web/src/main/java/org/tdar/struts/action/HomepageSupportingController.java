@@ -14,10 +14,11 @@ import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.VersionType;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.filestore.FilestoreObjectType;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -49,10 +50,10 @@ import com.rometools.rome.feed.synd.SyndEntry;
 public class HomepageSupportingController extends AbstractAuthenticatableAction {
     private static final long serialVersionUID = -9216882130992021384L;
 
-    private Project featuredProject;
+    private PProject featuredProject;
 
-    private List<Resource> featuredResources = new ArrayList<Resource>();
-    private ResourceCollection featuredCollection;
+    private List<PResource> featuredResources = new ArrayList<>();
+    private PResourceCollection featuredCollection;
 
     private String sitemapFile = "sitemap_index.xml";
     @Autowired
@@ -133,12 +134,6 @@ public class HomepageSupportingController extends AbstractAuthenticatableAction 
     @SkipValidation
     public String featuredItems() {
         featuredResources = new ArrayList<>(homepageService.featuredItems(getAuthenticatedUser()));
-        featuredResources.forEach(r -> {
-            if (r.getFirstLatitudeLongitudeBox() != null) {
-                r.getFirstLatitudeLongitudeBox().obfuscateAll();
-            }
-        });
-
         return SUCCESS;
     }
 
@@ -161,19 +156,19 @@ public class HomepageSupportingController extends AbstractAuthenticatableAction 
         setHomepageGraphs(homepageService.getHomepageGraphs(getAuthenticatedUser(), null, isBot(), this));
     }
 
-    public Project getFeaturedProject() {
+    public PProject getFeaturedProject() {
         return featuredProject;
     }
 
-    public void setFeaturedProject(Project featuredProject) {
+    public void setFeaturedProject(PProject featuredProject) {
         this.featuredProject = featuredProject;
     }
 
-    public List<Resource> getFeaturedResources() {
+    public List<PResource> getFeaturedResources() {
         return featuredResources;
     }
 
-    public void setFeaturedResources(List<Resource> featuredResources) {
+    public void setFeaturedResources(List<PResource> featuredResources) {
         this.featuredResources = featuredResources;
     }
 
@@ -193,11 +188,11 @@ public class HomepageSupportingController extends AbstractAuthenticatableAction 
         this.sitemapFile = sitemapFile;
     }
 
-    public ResourceCollection getFeaturedCollection() {
+    public PResourceCollection getFeaturedCollection() {
         return featuredCollection;
     }
 
-    public void setFeaturedCollection(ResourceCollection featuredCollection) {
+    public void setFeaturedCollection(PResourceCollection featuredCollection) {
         this.featuredCollection = featuredCollection;
     }
 

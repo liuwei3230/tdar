@@ -1,8 +1,5 @@
 package org.tdar.core.bean.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,7 +14,6 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -26,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractSequenced;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.HasResource;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
@@ -54,7 +49,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @SuppressWarnings("rawtypes")
 // fixing generics issue -- suppression causes issues with AuthorityManagementService
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.entity.ResourceCreator")
-public class ResourceCreator extends AbstractSequenced<ResourceCreator> implements HasResource<Resource>, Obfuscatable {
+public class ResourceCreator extends AbstractSequenced<ResourceCreator> implements HasResource<Resource> {
 
     private static final long serialVersionUID = 7641781600023145104L;
 
@@ -177,33 +172,4 @@ public class ResourceCreator extends AbstractSequenced<ResourceCreator> implemen
         return toReturn;
     }
 
-    @Override
-    @XmlTransient
-    public boolean isObfuscated() {
-        return obfuscated;
-    }
-
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        Set<Obfuscatable> toObfuscate = new HashSet<>();
-        toObfuscate.add(getCreator());
-        setObfuscated(true);
-        return toObfuscate;
-    }
-
-    @Override
-    public void setObfuscated(boolean obfuscated) {
-        this.obfuscated = obfuscated;
-    }
-
-    @Override
-    @XmlTransient
-    public Boolean getObfuscatedObjectDifferent() {
-        return obfuscatedObjectDifferent;
-    }
-
-    @Override
-    public void setObfuscatedObjectDifferent(Boolean value) {
-        this.obfuscatedObjectDifferent = value;
-    }
 }

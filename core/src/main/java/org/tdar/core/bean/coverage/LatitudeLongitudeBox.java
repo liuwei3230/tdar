@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.HasResource;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
@@ -52,7 +51,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @XmlRootElement
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.coverage.LatitudeLongitudeBox")
-public class LatitudeLongitudeBox extends AbstractPersistable implements HasResource<Resource>, Obfuscatable {
+public class LatitudeLongitudeBox extends AbstractPersistable implements HasResource<Resource> {
 
     private static final long serialVersionUID = 2605563277326422859L;
 
@@ -601,16 +600,6 @@ public class LatitudeLongitudeBox extends AbstractPersistable implements HasReso
         return true;
     }
 
-    @Override
-    @XmlTransient
-    public boolean isObfuscated() {
-        return obfuscated;
-    }
-
-    @Override
-    public void setObfuscated(boolean obfuscated) {
-        this.obfuscated = obfuscated;
-    }
 
     private transient Boolean obfuscatedObjectDifferent;
 
@@ -623,9 +612,8 @@ public class LatitudeLongitudeBox extends AbstractPersistable implements HasReso
         this.obfuscatedObjectDifferent = obfuscatedObjectDifferent;
     }
 
-    @Override
     // @XmlTransient
-    public Set<Obfuscatable> obfuscate() {
+    public void obfuscate() {
         // set directly, as we don't want to reset the obfuscated values
         obfuscatedObjectDifferent = false;
         logger.trace("obfuscating latLong");
@@ -654,8 +642,6 @@ public class LatitudeLongitudeBox extends AbstractPersistable implements HasReso
             setWest(val);
             obfuscatedObjectDifferent = true;
         }
-        setObfuscated(true);
-        return null;
     }
 
     public void addGeographicKeywords(Set<GeographicKeyword> allGeographicInfo) {

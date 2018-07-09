@@ -9,6 +9,7 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PProject;
 
 public interface ProjectService {
 
@@ -86,7 +87,7 @@ public interface ProjectService {
      */
     Boolean containsIntegratableDatasets(List<Long> projectIds);
 
-    Object getProjectAsJson(Project project, TdarUser user, String callback);
+    Object getProjectAsJson(PProject project, TdarUser user, String callback);
 
     Project find(long l);
 

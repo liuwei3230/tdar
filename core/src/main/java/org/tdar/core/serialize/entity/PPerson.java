@@ -1,15 +1,12 @@
 package org.tdar.core.serialize.entity;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.lang3.StringUtils;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.json.JsonAdminLookupFilter;
@@ -245,24 +242,6 @@ public class PPerson extends PCreator<PPerson> implements Comparable<PPerson> {
         return true;
     }
 
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        setObfuscated(true);
-        setObfuscatedObjectDifferent(false);
-        // check if email and phone are actually confidential
-        Set<Obfuscatable> set = new HashSet<>();
-        if (!getEmailPublic()) {
-            setEmail(null);
-            setObfuscatedObjectDifferent(true);
-        }
-        if (!getPhonePublic()) {
-            setObfuscatedObjectDifferent(true);
-            setPhone(null);
-        }
-        setRpaNumber(null);
-        set.add(getInstitution());
-        return set;
-    }
 
     @Override
     public boolean isValidForController() {

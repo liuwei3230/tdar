@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.resource.Resource;
-import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -28,9 +29,9 @@ import org.tdar.utils.PersistableUtils;
 public class APIViewAction extends AbstractApiController {
 
     private static final long serialVersionUID = 539604938603061219L;
-
     @Autowired
-    private transient ObfuscationService obfuscationService;
+    private transient ProxyConstructionService proxyConstructionService;
+    
     @Autowired
     private transient ResourceService resourceService;
     @Autowired
@@ -45,11 +46,9 @@ public class APIViewAction extends AbstractApiController {
                 getLogger().debug("could not find resource: {}", getId());
                 return INPUT;
             }
-            if (!isAdministrator() && !authorizationService.canEdit(getAuthenticatedUser(), resource)) {
-                obfuscationService.obfuscate(resource, getAuthenticatedUser());
-            }
+            PResource pResource = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), getAuthenticatedUser(), false);
             logMessage("API VIEWING", resource.getClass(), resource.getId(), resource.getTitle());
-            getResultObject().setResult(resource);
+            getResultObject().setResult(pResource);
             return SUCCESS;
         }
         return INPUT;

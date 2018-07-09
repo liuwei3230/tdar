@@ -7,10 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
-import org.tdar.core.bean.HasResource;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.keyword.GeographicKeyword;
-import org.tdar.core.bean.resource.Resource;
 
 /**
  * $Id$

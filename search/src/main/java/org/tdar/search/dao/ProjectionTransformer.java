@@ -1,7 +1,6 @@
 package org.tdar.search.dao;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.DisplayOrientation;
 import org.tdar.core.bean.Indexable;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.ResourceCreator;
@@ -25,17 +23,14 @@ import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
-import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PProject;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Context;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.search.bean.SolrSearchObject;
 import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.SearchResultHandler;
-import org.tdar.utils.PersistableUtils;
 
 @Component
 public class ProjectionTransformer<I extends Indexable> {
@@ -64,7 +59,7 @@ public class ProjectionTransformer<I extends Indexable> {
     ProxyConstructionService proxyConstructionService;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public I transformResource(SearchResultHandler<I> resultHandler, SolrDocument doc, I r, ObfuscationService obfuscationService) throws InstantiationException, IllegalAccessException {
+    public I transformResource(SearchResultHandler<I> resultHandler, SolrDocument doc, I r) throws InstantiationException, IllegalAccessException {
         PResource r_ = ((Resource)r).getResourceType().getProxyClass().newInstance();
         // set basic fields
         Object value = doc.getFieldValue(QueryFieldNames.ID);

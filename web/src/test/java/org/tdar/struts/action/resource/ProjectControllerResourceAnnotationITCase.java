@@ -86,7 +86,7 @@ public class ProjectControllerResourceAnnotationITCase extends AbstractControlle
         // simulate the save action - wiping out all of the
         controller = generateNewInitializedController(ProjectController.class, getBasicUser());
         flush();
-        logger.debug("{}", genericService.find(Project.class, id).isObfuscated());
+//        logger.debug("{}", genericService.find(Project.class, id).isObfuscated());
         controller.setId(id);
         controller.prepare();
         controller.setResourceAnnotations(Collections.<ResourceAnnotation> emptyList());

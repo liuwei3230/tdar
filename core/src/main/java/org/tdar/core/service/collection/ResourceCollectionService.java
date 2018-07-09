@@ -17,6 +17,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.CollectionSaveObject;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.resource.ErrorHandling;
@@ -264,7 +265,7 @@ public interface ResourceCollectionService {
 
     void makeResourcesInCollectionActive(ResourceCollection col, TdarUser person);
 
-    ResourceCollection getRandomFeaturedCollection();
+    PResourceCollection getRandomFeaturedCollection();
 
     ResourceCollection getWhiteLabelCollectionForResource(Resource resource);
 

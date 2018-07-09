@@ -50,7 +50,6 @@ import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.OaiDcProvider;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.Slugable;
 import org.tdar.core.bean.Updatable;
@@ -83,7 +82,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL, region = "org.tdar.core.bean.entity.Creator")
 public abstract class Creator<T extends Creator<?>> implements Persistable, HasName, HasStatus, Indexable, Updatable, OaiDcProvider,
-        Obfuscatable, Validatable, Addressable, XmlLoggable, HasImage, Slugable, HasEmail, HasLabel {
+         Validatable, Addressable, XmlLoggable, HasImage, Slugable, HasEmail, HasLabel {
 
     protected final static transient Logger logger = LoggerFactory.getLogger(Creator.class);
     private transient boolean obfuscated;
@@ -91,15 +90,6 @@ public abstract class Creator<T extends Creator<?>> implements Persistable, HasN
     public static final String OCCURRENCE = "occurrence";
     public static final String BROWSE_OCCURRENCE = "browse_occurrence";
 
-    @Override
-    public Boolean getObfuscatedObjectDifferent() {
-        return obfuscatedObjectDifferent;
-    }
-
-    @Override
-    public void setObfuscatedObjectDifferent(Boolean obfuscatedObjectDifferent) {
-        this.obfuscatedObjectDifferent = obfuscatedObjectDifferent;
-    }
 
     private static final long serialVersionUID = 2296217124845743224L;
 
@@ -377,16 +367,6 @@ public abstract class Creator<T extends Creator<?>> implements Persistable, HasN
         return dateCreated;
     }
 
-    @Override
-    @XmlTransient
-    public boolean isObfuscated() {
-        return obfuscated;
-    }
-
-    @Override
-    public void setObfuscated(boolean obfuscated) {
-        this.obfuscated = obfuscated;
-    }
 
     @Override
     @JsonView(JsonLookupFilter.class)

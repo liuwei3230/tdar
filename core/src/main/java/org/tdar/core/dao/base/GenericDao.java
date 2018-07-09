@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.HasStatus;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Institution;
@@ -430,34 +429,23 @@ public class GenericDao {
     }
 
     public <T> void persist(T entity) {
-        if (entity instanceof Obfuscatable && ((Obfuscatable) entity).isObfuscated()) {
             getCurrentSession().persist(entity);
-        }
     }
 
     public <T> void save(T entity) {
         Session session = getCurrentSession();
-        if (entity instanceof Obfuscatable && ((Obfuscatable) entity).isObfuscated()) {
-            throw new TdarRecoverableRuntimeException(String.format("trying to save an obfuscated object %s ", entity));
-        }
         session.save(entity);
         publisher.publishEvent(new TdarEvent(entity, EventType.CREATE_OR_UPDATE));
     }
 
     public <T> void saveOrUpdate(T entity) {
         Session session = getCurrentSession();
-        if (entity instanceof Obfuscatable && ((Obfuscatable) entity).isObfuscated()) {
-            throw new TdarRecoverableRuntimeException(String.format("trying to save an obfuscated object %s ", entity));
-        }
         session.saveOrUpdate(entity);
         fireEvent(entity);
     }
 
     public <T> void update(T entity) {
         Session session = getCurrentSession();
-        if (entity instanceof Obfuscatable && ((Obfuscatable) entity).isObfuscated()) {
-            throw new TdarRecoverableRuntimeException(String.format("trying to update an obfuscated object %s ", entity));
-        }
         session.update(entity);
         fireEvent(entity);
     }

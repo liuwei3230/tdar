@@ -407,9 +407,6 @@ public class ImportServiceImpl implements ImportService {
         }
 
         if (!canEditResource) {
-            for (LatitudeLongitudeBox latLong : rec.getLatitudeLongitudeBoxes()) {
-                latLong.obfuscate();
-            }
             rec.getManagedResourceCollections().clear();
             rec.getAuthorizedUsers().clear();
             if (informationResource != null) {
@@ -441,6 +438,12 @@ public class ImportServiceImpl implements ImportService {
             }
             genericService.saveOrUpdate(dataset.getDataTables());
         }
+        rec.getLatitudeLongitudeBoxes().forEach(llb ->{
+            llb.setEast(llb.getObfuscatedEast());
+            llb.setWest(llb.getObfuscatedWest());
+            llb.setNorth(llb.getObfuscatedNorth());
+            llb.setSouth(llb.getObfuscatedSouth());
+        });
         rec.getResourceRevisionLog().add(rrl);
         rec.setStatus(Status.DRAFT);
         rec.markUpdated(user);

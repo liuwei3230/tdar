@@ -21,10 +21,9 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.cache.HomepageGeographicCache;
 import org.tdar.core.cache.HomepageResourceCountCache;
-import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericService;
-import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.InformationResourceService;
@@ -56,11 +55,11 @@ public class HomepageServiceImpl implements HomepageService {
     @Autowired
     private transient InformationResourceService informationResourceService;
     @Autowired
-    private transient ObfuscationService obfuscationService;
-    @Autowired
     private transient SerializationService serializationService;
     @Autowired
     private transient AuthorizationService authorizationService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private GenericService genericService;
@@ -174,21 +173,13 @@ public class HomepageServiceImpl implements HomepageService {
      */
     @Override
     @Transactional(readOnly = true)
-    public synchronized Set<Resource> featuredItems(TdarUser authenticatedUser) {
-        Set<Resource> featuredResources = new HashSet<>();
+    public synchronized Set<PResource> featuredItems(TdarUser authenticatedUser) {
+        Set<PResource> featuredResources = new HashSet<>();
         try {
             for (Resource key : informationResourceService.getFeaturedItems()) {
-                // perhaps overkill
-                genericService.markReadOnly(key);
-                if (key instanceof InformationResource) {
-                    authorizationService.applyTransientViewableFlag(key, null);
-                }
-                if (TdarConfiguration.getInstance().obfuscationInterceptorDisabled()) {
-                    obfuscationService.obfuscate(key, authenticatedUser);
-                }
-                featuredResources.add(key);
+                featuredResources.add(proxyConstructionService.constructResource(key, key.getResourceType().getProxyClass(), authenticatedUser, false));
             }
-        } catch (IndexOutOfBoundsException ioe) {
+        } catch (IndexOutOfBoundsException | InstantiationException | IllegalAccessException ioe) {
             logger.debug("no featured resources found");
         }
         return featuredResources;

@@ -7,11 +7,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.FeedSearchHelper;
 import org.tdar.core.service.ImportService;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.SerializationService;
@@ -49,8 +46,6 @@ public class GeoJSONITCase extends AbstractIntegrationTestCase {
     @Autowired
     ImportService importService;
 
-    @Autowired
-    ObfuscationService obfuscationService;
 
     @Test
     @Rollback

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.cache.HomepageResourceCountCache;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.search.bean.AdvancedSearchQueryObject;
@@ -23,7 +22,7 @@ public interface HomepageService {
 
     HomepageDetails getHomepageGraphs(TdarUser authenticatedUser, Long collectionId, boolean isBot, TextProvider provider);
 
-    Set<Resource> featuredItems(TdarUser authenticatedUser);
+    Set<PResource> featuredItems(TdarUser authenticatedUser);
 
     List<HomepageResourceCountCache> resourceStats();
 

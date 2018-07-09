@@ -1,7 +1,6 @@
 package org.tdar.core.serialize.entity;
 
 import java.util.Date;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,7 +9,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.entity.Creator.CreatorType;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 
@@ -98,10 +96,6 @@ public class PInstitution extends PCreator<PInstitution> implements Comparable<P
         return IGNORE_PROPERTIES_FOR_UNIQUENESS;
     }
 
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        return null;
-    }
 
     @Override
     public boolean isValidForController() {

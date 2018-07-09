@@ -47,8 +47,11 @@ import org.tdar.core.event.EventType;
 import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.CollectionSaveObject;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.DeleteIssue;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.RightsResolver;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.ServiceInterface;
@@ -82,6 +85,8 @@ public class ResourceCollectionServiceImpl extends ServiceInterface.TypedDaoBase
     private SerializationService serializationService;
     @Autowired
     private UserRightsProxyService userRightsProxyService;
+    @Autowired
+    private ProxyConstructionService proxyConstructionService;
 
     /*
      * (non-Javadoc)
@@ -980,8 +985,9 @@ public class ResourceCollectionServiceImpl extends ServiceInterface.TypedDaoBase
      */
     @Override
     @Transactional(readOnly = true)
-    public ResourceCollection getRandomFeaturedCollection() {
-        return getDao().findRandomFeaturedCollection();
+    public PResourceCollection getRandomFeaturedCollection() {
+        ResourceCollection rc = getDao().findRandomFeaturedCollection();
+        return proxyConstructionService.createShellCollection(rc, new Context(null));
     }
 
     /*

@@ -17,6 +17,8 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.VersionType;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.RssService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.filestore.FilestoreObjectType;
@@ -52,9 +54,9 @@ public class IndexAction extends AbstractAuthenticatableAction {
 
     private Project featuredProject;
 
-    private List<Resource> featuredResources = new ArrayList<>();
+    private List<PResource> featuredResources = new ArrayList<>();
 
-    private ResourceCollection featuredCollection;
+    private PResourceCollection featuredCollection;
 
     private String sitemapFile = "sitemap_index.xml";
 
@@ -82,11 +84,6 @@ public class IndexAction extends AbstractAuthenticatableAction {
     public String about() {
         setHomepageGraphs(homepageService.getHomepageGraphs(getAuthenticatedUser(), null, isBot(), this));
         featuredResources = new ArrayList<>(homepageService.featuredItems(getAuthenticatedUser()));
-        featuredResources.forEach(r -> {
-            if (r.getFirstLatitudeLongitudeBox() != null) {
-                r.getFirstLatitudeLongitudeBox().obfuscateAll();
-            }
-        });
         try {
             setFeaturedCollection(resourceCollectionService.getRandomFeaturedCollection());
         } catch (Exception e) {
@@ -115,11 +112,11 @@ public class IndexAction extends AbstractAuthenticatableAction {
         this.featuredProject = featuredProject;
     }
 
-    public List<Resource> getFeaturedResources() {
+    public List<PResource> getFeaturedResources() {
         return featuredResources;
     }
 
-    public void setFeaturedResources(List<Resource> featuredResources) {
+    public void setFeaturedResources(List<PResource> featuredResources) {
         this.featuredResources = featuredResources;
     }
 
@@ -139,11 +136,11 @@ public class IndexAction extends AbstractAuthenticatableAction {
         this.sitemapFile = sitemapFile;
     }
 
-    public ResourceCollection getFeaturedCollection() {
+    public PResourceCollection getFeaturedCollection() {
         return featuredCollection;
     }
 
-    public void setFeaturedCollection(ResourceCollection featuredCollection) {
+    public void setFeaturedCollection(PResourceCollection featuredCollection) {
         this.featuredCollection = featuredCollection;
     }
 

@@ -65,7 +65,6 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.ImportService;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.SerializationService;
@@ -89,8 +88,6 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
     @Autowired
     ImportService importService;
 
-    @Autowired
-    ObfuscationService obfuscationService;
 
     @Autowired
     GenericKeywordService genericKeywordService;

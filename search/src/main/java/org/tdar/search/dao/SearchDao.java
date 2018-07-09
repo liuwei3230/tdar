@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.HasLabel;
 import org.tdar.core.bean.Indexable;
 import org.tdar.core.bean.Localizable;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.PluralLocalizable;
 import org.tdar.core.bean.collection.CollectionResourceSection;
@@ -33,7 +32,6 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.search.bean.SolrSearchObject;
 import org.tdar.search.exception.SearchException;
@@ -62,8 +60,6 @@ public class SearchDao<I extends Indexable> {
     @Autowired
     private DatasetDao datasetDao;
 
-    @Autowired
-    private ObfuscationService obfuscationService;
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -328,7 +324,7 @@ public class SearchDao<I extends Indexable> {
                 r.setId(id);
                 if (r instanceof Resource) {
                     logger.trace("{}", doc);
-                    r = projectionTransformer.transformResource(resultHandler, doc, r, obfuscationService);
+                    r = projectionTransformer.transformResource(resultHandler, doc, r);
                     logger.debug("{}", r);
                 }
                 toReturn.add(r);
@@ -340,17 +336,17 @@ public class SearchDao<I extends Indexable> {
         }
     }
 
-    private void obfuscateAndMarkViewable(SearchResultHandler<I> resultHandler, I p) {
-        if (PersistableUtils.isNullOrTransient(p)) {
-            return;
-        }
-        if (CONFIG.obfuscationInterceptorDisabled()
-                && PersistableUtils.isNullOrTransient(resultHandler.getAuthenticatedUser())) {
-            obfuscationService.obfuscate((Obfuscatable) p, resultHandler.getAuthenticatedUser());
-        }
-        obfuscationService.getAuthenticationAndAuthorizationService().applyTransientViewableFlag(p,
-                resultHandler.getAuthenticatedUser());
-    }
+//    private void obfuscateAndMarkViewable(SearchResultHandler<I> resultHandler, I p) {
+//        if (PersistableUtils.isNullOrTransient(p)) {
+//            return;
+//        }
+//        if (CONFIG.obfuscationInterceptorDisabled()
+//                && PersistableUtils.isNullOrTransient(resultHandler.getAuthenticatedUser())) {
+//            obfuscationService.obfuscate((Obfuscatable) p, resultHandler.getAuthenticatedUser());
+//        }
+//        obfuscationService.getAuthenticationAndAuthorizationService().applyTransientViewableFlag(p,
+//                resultHandler.getAuthenticatedUser());
+//    }
 
     @SuppressWarnings("unchecked")
     private List<I> processSerialSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
@@ -362,7 +358,7 @@ public class SearchDao<I extends Indexable> {
             try {
                 Class<I> cls = (Class<I>) Class.forName(cls_);
                 obj = datasetDao.find(cls, id);
-                obfuscateAndMarkViewable(resultHandler, obj);
+//                obfuscateAndMarkViewable(resultHandler, obj);
             } catch (ClassNotFoundException e) {
                 logger.error("error finding {}: {}", cls_, id, e);
             }

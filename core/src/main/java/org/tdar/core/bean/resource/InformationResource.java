@@ -39,7 +39,6 @@ import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.FileProxy;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
@@ -47,7 +46,6 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.ResourceCreator;
-import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
@@ -781,31 +779,6 @@ public abstract class InformationResource extends Resource {
                 || inheritingNoteInformation || inheritingIndividualAndInstitutionalCredit);
     }
 
-    @Transient
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        // don't claim to inherit data from Projects which are inactive
-        Set<Obfuscatable> toObfuscate = super.obfuscate();
-        if (!isProjectVisible()) {
-            setProject(Project.NULL);
-            // setting the project to null should be enough...
-            setInheritingCulturalInformation(false);
-            setInheritingIndividualAndInstitutionalCredit(false);
-            setInheritingInvestigationInformation(false);
-            setInheritingMaterialInformation(false);
-            setInheritingOtherInformation(false);
-            setInheritingSiteInformation(false);
-            setInheritingSpatialInformation(false);
-            setInheritingTemporalInformation(false);
-            setInheritingIdentifierInformation(false);
-            setInheritingNoteInformation(false);
-        } else {
-            toObfuscate.add(getProject());
-        }
-        toObfuscate.add(resourceProviderInstitution);
-        toObfuscate.add(publisher);
-        return toObfuscate;
-    }
 
     @Override
     @XmlTransient

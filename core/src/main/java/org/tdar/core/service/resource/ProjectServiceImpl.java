@@ -27,6 +27,8 @@ import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.dao.resource.ProjectDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PProject;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.ServiceInterface;
 import org.tdar.utils.ImmutableScrollableCollection;
@@ -50,8 +52,6 @@ public class ProjectServiceImpl extends ServiceInterface.TypedDaoBase<Project, P
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
 
-    @Autowired
-    private SerializationService serializationService;
 
     /*
      * (non-Javadoc)
@@ -196,14 +196,14 @@ public class ProjectServiceImpl extends ServiceInterface.TypedDaoBase<Project, P
      */
     @Override
     @Transactional(readOnly = true)
-    public Object getProjectAsJson(Project project, TdarUser user, String callback) {
+    public Object getProjectAsJson(PProject project, TdarUser user, String callback) {
         getLogger().trace("getprojectasjson called");
         Object result = new HashMap<String, Object>();
 
         try {
             if (PersistableUtils.isNotNullOrTransient(project)) {
                 getDao().markReadOnly(project);
-                List<ResourceCreator> rc = new ArrayList<>(project.getResourceCreators());
+                List<PResourceCreator> rc = new ArrayList<>(project.getResourceCreators());
                 project.getResourceCreators().clear();
                 Collections.sort(rc);
                 project.getResourceCreators().addAll(rc);

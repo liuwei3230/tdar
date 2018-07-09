@@ -7,17 +7,14 @@ import org.apache.struts2.ServletActionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.service.GenericService;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.ReflectionHelper;
 import org.tdar.core.service.ReflectionService;
 import org.tdar.core.service.external.session.SessionData;
 import org.tdar.core.service.external.session.SessionDataAware;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
-import org.tdar.struts_base.interceptor.annotation.DoNotObfuscate;
 import org.tdar.struts_base.interceptor.annotation.WriteableSession;
 
 import com.opensymphony.xwork2.ActionInvocation;
@@ -49,8 +46,6 @@ public class SessionSecurityInterceptor implements SessionDataAware, Interceptor
     @Autowired
     private transient GenericService genericService;
     @Autowired
-    private transient ObfuscationService obfuscationService;
-    @Autowired
     private transient ReflectionService reflectionService;
     private SessionData sessionData;
     private boolean sessionClosed = false;
@@ -76,7 +71,6 @@ public class SessionSecurityInterceptor implements SessionDataAware, Interceptor
         }
         try {
             logger.trace(String.format("marking %s/%s session %s", action.getClass().getSimpleName(), methodName, mark));
-            registerObfuscationListener(invocation, mark);
             String invoke = invocation.invoke();
             return invoke;
         } catch (TdarActionException exception) {
@@ -100,14 +94,6 @@ public class SessionSecurityInterceptor implements SessionDataAware, Interceptor
         }
     }
 
-    private void registerObfuscationListener(ActionInvocation invocation, SessionType mark) throws NoSuchMethodException {
-        if (obfuscationService.obfuscationInterceptorEnabled()) {
-            if (SessionType.READ_ONLY.equals(mark) || !ReflectionHelper.methodOrActionContainsAnnotation(invocation, DoNotObfuscate.class)) {
-                TdarUser user = genericService.find(TdarUser.class, sessionData.getTdarUserId());
-                invocation.addPreResultListener(new ObfuscationResultListener(obfuscationService, reflectionService, this, user));
-            }
-        }
-    }
 
     private String getResultNameFor(TdarActionException exception) {
         logger.debug(" {} {} {}", exception, exception.getResponse(), exception.getStatusCode());

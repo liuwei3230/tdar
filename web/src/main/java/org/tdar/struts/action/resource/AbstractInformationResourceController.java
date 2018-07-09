@@ -25,7 +25,8 @@ import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
-import org.tdar.core.service.ObfuscationService;
+import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -76,8 +77,7 @@ public abstract class AbstractInformationResourceController<R extends Informatio
     private transient CategoryVariableService categoryVariableService;
 
     @Autowired
-    private transient ObfuscationService obfuscationService;
-
+    private transient ProxyConstructionService proxyConstructionService;
     @Autowired
     private transient ResourceViewControllerService resourceViewControllerService;
     @Autowired
@@ -284,10 +284,14 @@ public abstract class AbstractInformationResourceController<R extends Informatio
     public String loadAddMetadata() {
         String retval = super.loadAddMetadata();
         resolveProject();
-        Project obsProj = getGenericService().find(Project.class, getProjectId());
-        obfuscationService.obfuscate(obsProj, getAuthenticatedUser());
-        Object proj = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
-        json = serializationService.convertFilteredJsonForStream(proj, JsonProjectLookupFilter.class, null);
+        try {
+            PProject obsProj = proxyConstructionService.constructResource(getGenericService().find(Project.class, getProjectId()), PProject.class, getAuthenticatedUser(), false);
+            Object proj = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
+            json = serializationService.convertFilteredJsonForStream(proj, JsonProjectLookupFilter.class, null);
+        } catch (InstantiationException | IllegalAccessException e) {
+            getLogger().error("{}",e,e);
+        }
+        
         return retval;
     }
 
@@ -339,8 +343,6 @@ public abstract class AbstractInformationResourceController<R extends Informatio
         if (PersistableUtils.isNotNullOrTransient(projectId)) {
             project = getGenericService().find(Project.class, projectId);
         }
-        Object proj = projectService.getProjectAsJson(getProject(), getAuthenticatedUser(), null);
-        json = serializationService.convertFilteredJsonForStream(proj, JsonProjectLookupFilter.class, null);
     }
 
     public void setProject(Project project) {

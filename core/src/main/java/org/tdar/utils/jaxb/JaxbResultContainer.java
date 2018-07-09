@@ -15,8 +15,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.resource.PResource;
 
 import com.opensymphony.xwork2.ActionInvocation;
 
@@ -33,7 +33,7 @@ public class JaxbResultContainer implements Serializable, APIParameters {
     private String sessionKeyName;
     @XmlAttribute
     private String apiToken;
-    private Resource result;
+    private PResource result;
     private ResourceCollection collectionResult;
     private List<String> stackTraces;
     private String message;
@@ -116,11 +116,11 @@ public class JaxbResultContainer implements Serializable, APIParameters {
         this.apiToken = token;
     }
 
-    public Resource getResult() {
+    public PResource getResult() {
         return result;
     }
 
-    public void setResult(Resource result) {
+    public void setResult(PResource result) {
         this.result = result;
     }
 

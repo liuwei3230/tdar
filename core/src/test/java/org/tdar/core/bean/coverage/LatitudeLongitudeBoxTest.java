@@ -286,10 +286,8 @@ public class LatitudeLongitudeBoxTest {
         Double minObfuscatedLatitude = llb.getObfuscatedSouth();
         Double maxObfuscatedLongitude = llb.getObfuscatedEast();
         Double minObfuscatedLongitude = llb.getObfuscatedWest();
-        assertFalse(llb.isObfuscated());
         llb.obfuscate();
         assertTrue(llb.isObfuscatedObjectDifferent());
-        assertTrue(llb.isObfuscated());
         assertTrue(maxObfuscatedLatitude.equals(llb.getNorth()));
         assertTrue(minObfuscatedLatitude.equals(llb.getSouth()));
         assertTrue(maxObfuscatedLongitude.equals(llb.getEast()));

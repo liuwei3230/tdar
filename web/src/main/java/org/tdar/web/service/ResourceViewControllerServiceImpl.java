@@ -12,36 +12,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
-import org.tdar.core.bean.entity.Creator.CreatorType;
-import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
-import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
-import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.service.BookmarkedResourceService;
-import org.tdar.core.service.ObfuscationService;
 import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.ProxyConstructionService;
-import org.tdar.core.service.ResourceCreatorProxy;
-import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.InformationResourceFileService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.struts.data.AuthWrapper;
-import org.tdar.utils.PersistableUtils;
 
 @Service
 public class ResourceViewControllerServiceImpl implements ResourceViewControllerService {
 
-    @Autowired
-    private ObfuscationService obfuscationService;
 
     @Autowired
     private BookmarkedResourceService bookmarkedResourceService;
@@ -79,12 +68,6 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
 
         // this may be duplicative... check
         for (PResourceCreator rc : resourceCreators) {
-            if (TdarConfiguration.getInstance().obfuscationInterceptorDisabled()) {
-                if ((rc.getCreatorType() == CreatorType.PERSON) && !auth.isAuthenticated()) {
-                    obfuscationService.obfuscate(rc.getCreator(), auth.getAuthenticatedUser());
-                }
-            }
-
             PResourceCreatorProxy proxy = new PResourceCreatorProxy(rc);
             if (ResourceCreatorRole.getAuthorshipRoles().contains(rc.getRole())) {
                 authorshipProxies.add(proxy);

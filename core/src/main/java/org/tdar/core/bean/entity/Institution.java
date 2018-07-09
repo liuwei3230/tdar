@@ -1,7 +1,6 @@
 package org.tdar.core.bean.entity;
 
 import java.util.Date;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +23,6 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Check;
 import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.FieldLength;
-import org.tdar.core.bean.Obfuscatable;
 import org.tdar.core.bean.Validatable;
 import org.tdar.utils.jaxb.converters.JaxbPersistableConverter;
 
@@ -128,11 +126,6 @@ public class Institution extends Creator<Institution> implements Comparable<Inst
 
     public static String[] getIgnorePropertiesForUniqueness() {
         return IGNORE_PROPERTIES_FOR_UNIQUENESS;
-    }
-
-    @Override
-    public Set<Obfuscatable> obfuscate() {
-        return null;
     }
 
     @Override
