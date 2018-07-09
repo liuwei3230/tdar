@@ -32,7 +32,6 @@ import ij.ImagePlus;
 import ij.io.Opener;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import net.sf.ij.jaiio.JAIReader;
 
 /**
  * @author Adam Brin
@@ -164,19 +163,19 @@ public class ImageThumbnailTask extends AbstractTask {
 
         }
 
-        if (isJaiImageJenabled() && (ijSource == null)) {
-            getLogger().debug("Unable to load source image with ImageJ: " + sourceFile);
-            try {
-                // http://sourceforge.net/projects/ij-plugins/files/ij-imageio/v.1.2.4/
-                ImagePlus[] read = JAIReader.read(sourceFile);
-                ijSource = read[0];
-            } catch (Exception e) {
-                getLogger().error("could not open image with ImageJ-ImageIO" + sourceFile, e);
-                if (msg == null) {
-                    msg = e.getMessage();
-                }
-            }
-        }
+//        if (isJaiImageJenabled() && (ijSource == null)) {
+//            getLogger().debug("Unable to load source image with ImageJ: " + sourceFile);
+//            try {
+//                // http://sourceforge.net/projects/ij-plugins/files/ij-imageio/v.1.2.4/
+//                ImagePlus[] read = JAIReader.read(sourceFile);
+//                ijSource = read[0];
+//            } catch (Exception e) {
+//                getLogger().error("could not open image with ImageJ-ImageIO" + sourceFile, e);
+//                if (msg == null) {
+//                    msg = e.getMessage();
+//                }
+//            }
+//        }
         
         if (ijSource == null) {
             throw new TdarRecoverableRuntimeException("imageThumbnailTask.fmt_error_processing_could_not_open", Arrays.asList(filename, msg));

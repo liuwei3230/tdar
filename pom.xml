@@ -348,6 +348,12 @@
                 <!-- LICENSE: APACHE 2.0 -->
             </dependency>
             <dependency>
+                <groupId>orgjavax.activation</groupId>
+                <artifactId>activation</artifactId>
+                <version>1.1.1</version>
+                <!-- LICENSE: APACHE 2.0 -->
+            </dependency>
+            <dependency>
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${commons-lang.version}</version>
@@ -654,17 +660,17 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.2.11</version>
+            <version>2.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>2.2.11</version>
+            <version>2.3.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
+            <version>2.3.0.1</version>
         </dependency>
         <dependency>
             <groupId>javax.activation</groupId>
