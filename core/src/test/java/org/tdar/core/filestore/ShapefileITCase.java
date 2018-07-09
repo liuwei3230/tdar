@@ -28,6 +28,7 @@ import org.tdar.utils.FileStoreFileUtils;
  * @author Adam Brin
  * 
  */
+@Ignore
 public class ShapefileITCase extends AbstractIntegrationTestCase {
 
     @SuppressWarnings("unused")

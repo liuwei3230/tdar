@@ -235,6 +235,10 @@
             <!-- LICENSE: APACHE 2.0 -->
             <exclusions>
                 <exclusion>
+                    <artifactId>jaxb-api</artifactId>
+                    <groupId>javax.xml.bind</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>httpclient</artifactId>
                     <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>

@@ -75,7 +75,11 @@ public abstract class AbstractAppConfiguration implements Serializable {
         System.setProperty("org.jboss.logging.provider", "slf4j");
         System.setProperty("pdfbox.fontcache", System.getProperty("java.io.tmpdir") + File.separatorChar);
         System.setProperty("java.awt.headless", "true");
-        ImageIO.scanForPlugins();
+        try {
+            ImageIO.scanForPlugins();
+        } catch (NumberFormatException nfe) {
+            // ignore
+        }
     }
 
     @Autowired

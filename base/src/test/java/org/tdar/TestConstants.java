@@ -100,6 +100,10 @@ public interface TestConstants {
         if (test.exists()) {
             return test;
         }
+        test = new File("../../test-resources/src/main/resources/" + testPath.replace("target/test-resources/", ""), filename);
+        if (test.exists()) {
+            return test;
+        }
         throw new FileNotFoundException("could not find " + testPath + "/" + filename);
     }
 
@@ -109,6 +113,10 @@ public interface TestConstants {
             return test;
         }
         test = new File("../test-resources/src/main/resources/", filename.replace("target/test-resources/", ""));
+        if (test.exists()) {
+            return test;
+        }
+        test = new File("../../test-resources/src/main/resources/", filename.replace("target/test-resources/", ""));
         if (test.exists()) {
             return test;
         }

@@ -601,6 +601,10 @@
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-core</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                </exclusion>
             </exclusions>
             <!-- LICENSE: APACHE 2.0 -->
         </dependency>
@@ -672,8 +676,7 @@
                             <value>${project.build.testOutputDirectory}</value>
                         </property>
                     </systemProperties>
-                    <argLine>${jvm.args}
-                        -DenableContextSwitchingConfig=true</argLine>
+                    <argLine>${jvm.args} ${test.args} </argLine>
                     <junitArtifactName>junit:junit-dep</junitArtifactName>
                 </configuration>
             </plugin>
@@ -710,8 +713,7 @@
                     <systemPropertyVariables>
                         <display.port>${display.port}</display.port>
                     </systemPropertyVariables>
-                    <argLine>${jvm.args}
-                        -DenableContextSwitchingConfig=true</argLine>
+                    <argLine>${jvm.args} ${test.args}</argLine>
                     <excludes>
                         <exclude>**/experimental/*.java</exclude>
                     </excludes>

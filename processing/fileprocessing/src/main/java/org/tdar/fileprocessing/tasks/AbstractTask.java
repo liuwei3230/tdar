@@ -51,10 +51,11 @@ public abstract class AbstractTask implements Task {
             VersionType type) {
         WorkflowContext ctx = getWorkflowContext();
         FileStoreFile version = new FileStoreFile(FilestoreObjectType.RESOURCE, type, f.getName(), originalVersion.getVersion(),
-                ctx.getInformationResourceId(), originalVersion.getInformationResourceFileId(), null);
+                originalVersion.getPersistableId(), originalVersion.getInformationResourceFileId(), null);
 
         if (ctx.isOkToStoreInFilestore()) {
             try {
+                logger.debug("{}  --> {} / {} / {} ", version, version.getPersistableId(), version.getInformationResourceFileId(), version.getId());
                 ctx.getFilestore().store(FilestoreObjectType.RESOURCE, f, version);
             } catch (IOException e) {
                 getLogger().warn("cannot store version", e);
