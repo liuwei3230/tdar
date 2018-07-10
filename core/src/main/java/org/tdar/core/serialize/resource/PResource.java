@@ -498,7 +498,7 @@ public class PResource implements Persistable,
             logger.trace("latLong for {} is confidential or null", getId());
             return Boolean.FALSE;
         }
-        return Boolean.FALSE;
+        return Boolean.TRUE;
     }
 
     public PLatitudeLongitudeBox getFirstLatitudeLongitudeBox() {

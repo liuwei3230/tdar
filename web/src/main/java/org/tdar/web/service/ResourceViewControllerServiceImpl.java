@@ -93,6 +93,9 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
     public void updateResourceInfo(AuthWrapper<PResource> auth, boolean isBot) {
         // don't count if we're an admin
         PResource item = auth.getItem();
+        if (item == null || auth.getAuthenticatedUser() == null) {
+            return;
+        }
         if ((item.getSubmitter().getId() != auth.getAuthenticatedUser().getId()) && !auth.isEditor()) {
             Resource r = resourceService.find(item.getId());
             resourceService.incrementAccessCounter(r, isBot);

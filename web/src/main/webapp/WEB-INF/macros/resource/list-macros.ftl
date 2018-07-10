@@ -63,14 +63,13 @@
                 <#-- printing item tag start / -->
                     <${itemTag_} class="listItem ${itemClass!''}"
                     <#if orientation == 'MAP' && resource.firstActiveLatitudeLongitudeBox?has_content>
-                    
                         <#local box = resource.firstActiveLatitudeLongitudeBox />
                         data-scale="${box.scale?c}"
                         <#if resource.latLongVisible >
-                            data-lat="${box.obfuscatedCenterLatitude?c}"
-                            data-long="${box.obfuscatedCenterLongitude?c}"
-                            data-lat-length="${box.obfuscatedAbsoluteLatLength?c}"
-                            data-long-length="${box.obfuscatedAbsoluteLongLength?c}"
+                            data-lat="${box.centerLatitude?c}"
+                            data-long="${box.centerLongitude?c}"
+                            data-lat-length="${box.absoluteLatLength?c}"
+                            data-long-length="${box.absoluteLongLength?c}"
                         </#if>
                         <#-- disabled for Obsidian 
                         <#if editor || resource.confidentialViewable  >

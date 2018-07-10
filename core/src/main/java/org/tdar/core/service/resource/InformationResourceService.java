@@ -11,6 +11,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.cache.BrowseDecadeCountCache;
 import org.tdar.core.cache.BrowseYearCountCache;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.filestore.FileAnalyzer;
 
@@ -59,7 +60,7 @@ public interface InformationResourceService {
      *            how many to return
      * @return
      */
-    <E extends Resource> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults);
+    <E extends PResource> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults);
 
     /**
      * Find a random set of resources, but limit them to be part of a project for the homepage
@@ -69,7 +70,7 @@ public interface InformationResourceService {
      * @param maxResults
      * @return
      */
-    <E extends Resource> List<E> findRandomFeaturedResourceInProject(boolean restrictToFiles, Project project, int maxResults);
+    <E extends PResource> List<E> findRandomFeaturedResourceInProject(boolean restrictToFiles, Project project, int maxResults);
 
     /**
      * Find a random set of resources, but limit them to be part of a collection for the homepage
@@ -79,7 +80,7 @@ public interface InformationResourceService {
      * @param maxResults
      * @return
      */
-    <E extends Resource> List<E> findRandomFeaturedResourceInCollection(boolean restrictToFiles, Long collectionId, int maxResults);
+    <E extends PResource> List<E> findRandomFeaturedResourceInCollection(boolean restrictToFiles, Long collectionId, int maxResults);
 
     /**
      * Generate the BrowseByYearCountCache for a set of @link Status (s).
@@ -89,7 +90,7 @@ public interface InformationResourceService {
      */
     List<BrowseYearCountCache> findResourceCountsByYear();
 
-    List<Resource> getFeaturedItems();
+    List<PResource> getFeaturedItems();
 
     InformationResource findByDoi(String doi);
 

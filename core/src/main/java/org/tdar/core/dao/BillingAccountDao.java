@@ -669,10 +669,10 @@ public class BillingAccountDao extends HibernateBase<BillingAccount> {
 
         Query query = getCurrentSession().createNativeQuery(sql);
         try {
-        Object[] uniqueResult = (Object[]) query.uniqueResult();
+        BigInteger uniqueResult = (BigInteger) query.uniqueResult();
         if (uniqueResult != null) {
             logger.debug("{}", uniqueResult);
-            BillingAccount account = find(((BigInteger) uniqueResult[0]).longValue());
+            BillingAccount account = find(uniqueResult.longValue());
             return account;
         }
         } catch (Throwable t) {

@@ -89,23 +89,23 @@ View freemarker macros
             <#assign version=version.latestUploadedVersion />
         </#if>
         <#if (version.viewable)>
-        <#-- refactor ? -->
-        <#local irid = (irfile.informationResource.id)!-1 />
-        <#if !irid?has_content || irid == -1 >
-            <#local irid = id />
-        </#if>
-        <#if !irid?has_content>
-            <#local irid = -1 />
-        </#if>
-
-        <#local path>/filestore/download/${irid?c}/${version.id?c}</#local>
-        <a href="<@s.url value='${path}'/>"
-            data-file-id="${irfile.id?c}"
-            class="download-link download-file"
-           onClick="TDAR.common.registerDownload('${path?js_string}', '${id?c}')"
-           title="click to download: ${version.filename}">
-            <@common.truncate version.filename 65 />
-        </a><#if newline><br/></#if>
+	        <#-- refactor ? -->
+	        <#local irid = (irfile.informationResource.id)!-1 />
+	        <#if !irid?has_content || irid == -1 >
+	            <#local irid = id />
+	        </#if>
+	        <#if !irid?has_content>
+	            <#local irid = -1 />
+	        </#if>
+	
+	        <#local path>/filestore/download/${irid?c}/${version.id?c}</#local>
+	        <a href="<@s.url value='${path}'/>"
+	            data-file-id="${irfile.id?c}"
+	            class="download-link download-file"
+	           onClick="TDAR.common.registerDownload('${path?js_string}', '${id?c}')"
+	           title="click to download: ${version.filename}">
+	            <@common.truncate version.filename 65 />
+	        </a><#if newline><br/></#if>
         <#else>
             <@common.truncate version.filename 65 />
         </#if>

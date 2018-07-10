@@ -33,12 +33,12 @@ import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.PResourceCreatorProxy;
-import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -130,12 +130,19 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     private boolean canViewConfidential;
     private ResourceSpaceUsageStatistic totalResourceAccessStatistic;
     private ResourceSpaceUsageStatistic uploadedResourceAccessStatistic;
-
+    private Set<PResourceCollection> effectiveShares = new HashSet<>(); 
     
     @Override
     public void prepare() throws Exception {
         try {
         resource = (R) webLoadingService.load(Resource.class, getPersistableClass(), getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        for (PResourceCollection rc : resource.getManagedResourceCollections()) {
+            PResourceCollection r = rc;
+            while (r != null) {
+                getEffectiveShares().add(r);
+                r = r.getParent();
+            }
+        }
         handleSlug();
         } catch (Throwable t) {
             getLogger().error("{}",t,t);
@@ -148,7 +155,6 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
             return ERROR;
         }
         AuthWrapper<PResource> authWrapper = new AuthWrapper<>(getResource(), isAuthenticated(), getAuthenticatedUser(), isEditor());
-        setInvites(userRightsProxyService.findUserInvites(resource));
         
         viewService.updateResourceInfo(authWrapper, isBot());
         viewService.initializeResourceCreatorProxyLists(authWrapper, authorshipProxies, creditProxies, contactProxies);
@@ -215,7 +221,6 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         }
         
         canViewConfidential = authorizationService.canViewConfidentialInformation(user, resource);
-        
         setInvites(userRightsProxyService.findUserInvites(resource));
         
         
@@ -430,6 +435,14 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
 
     public void setStatus(Status status) {
         this.status  = status;
+    }
+
+    public Set<PResourceCollection> getEffectiveShares() {
+        return effectiveShares;
+    }
+
+    public void setEffectiveShares(Set<PResourceCollection> effectiveShares) {
+        this.effectiveShares = effectiveShares;
     }
 
 }

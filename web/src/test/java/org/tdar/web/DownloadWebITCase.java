@@ -25,6 +25,7 @@ public class DownloadWebITCase extends AbstractAdminAuthenticatedWebTestCase {
     public void testDownloadLoginFailed() {
         gotoPage(url);
         DomNodeList<DomNode> all = htmlPage.getDocumentElement().querySelectorAll(".download-file");
+        logger.debug(getPageCode());
         clickLinkWithText(all.get(0).getTextContent().trim());
 
         setInput("downloadUserLogin.loginUsername", getAdminUsername());

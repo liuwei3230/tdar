@@ -79,7 +79,7 @@ public class ProjectController extends AbstractResourceController<Project> {
     @HttpForbiddenErrorResponseOnly
     public String json() {
         try {
-            PProject obsProj = proxyConstructionService.constructResource(getGenericService().find(Project.class, getId()), PProject.class, getAuthenticatedUser(), false);
+            PProject obsProj = proxyConstructionService.constructResource(getProject(), PProject.class, getAuthenticatedUser(), false);
             result = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
         } catch (InstantiationException | IllegalAccessException e) {
             getLogger().error("{}",e,e);

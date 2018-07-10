@@ -473,7 +473,7 @@ public class ProxyConstructionService {
                     irfv.setPath(irfv_.getPath());
                     irfv.setInformationResourceFileId(irfv_.getInformationResourceFileId());
                     irfv.setInformationResourceId(irfv_.getInformationResourceId());
-                    irfv.setViewable(irfv_.isViewable());
+                    irfv.setViewable(irf.isViewable());
                     irfv.setTotalTime(irfv_.getTotalTime());
                     irfv.setUncompressedSizeOnDisk(irfv_.getUncompressedSizeOnDisk());
                     irfv.setPrimaryFile(irfv_.isPrimaryFile());
@@ -538,6 +538,7 @@ public class ProxyConstructionService {
         Set<PAuthorizedUser> toReturn = new HashSet<>();
         authorizedUsers.forEach(au_ -> {
             PAuthorizedUser au = new PAuthorizedUser();
+            au.setId(au_.getId());
             au.setGeneralPermission(au_.getGeneralPermission());
             au.setUser(convertUser(au_.getUser(), ctx));
             toReturn.add(au);
@@ -577,7 +578,7 @@ public class ProxyConstructionService {
         }
         PResourceCollection rc = new PResourceCollection();
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), depth, ctx));
-        rc.setParent(convertResourceCollection(rc_.getParent(), depth, ctx));
+        rc.setParent(convertResourceCollection(rc_.getParent(), 9, ctx));
         rc.setHidden(rc_.isHidden());
         rc.setId(rc_.getId());
         rc.setName(rc_.getName());
@@ -635,6 +636,7 @@ public class ProxyConstructionService {
             rak.setKey(ra_.getResourceAnnotationKey().getKey());
             ra.setResourceAnnotationKey(rak);
             ra.setValue(ra_.getValue());
+            toReturn.add(ra);
         });
         return toReturn;
     }
@@ -937,7 +939,7 @@ public class ProxyConstructionService {
         return act;
     }
 
-    private PBillingAccount createBillingAccount(BillingAccount act_) {
+    private PBillingAccount createBillingAccount(BillingAccount act_, Context ctx) {
         PBillingAccount act = constructShallowAccount(act_);
         if (act == null) {
             return null;
@@ -953,11 +955,11 @@ public class ProxyConstructionService {
         act.setExpires(act_.getExpires());
 //        act.setInvoices(act_.getInvoices());
 //        act.setResources(act_.getResources());
-//        act.setOwner(act_.getOwner());
-//        act.setModifiedBy(act_.getModifiedBy());
+        act.setOwner(convertUser(act_.getOwner(), ctx));
+        act.setModifiedBy(convertUser(act_.getModifiedBy(), ctx));
 //        act.setCoupons(act_.getCoupons());
 //        act.setUsageHistory(act_.getUsageHistory());
-//        act.setAuthorizedUsers(act_.getAuthorizedUsers());
+        act.setAuthorizedUsers(convertAuthorizedUsers(act_.getAuthorizedUsers(), ctx));
         act.setFullService(act_.getFullService());
         act.setInitialReview(act_.getInitialReview());
         act.setExternalReview(act_.getExternalReview());

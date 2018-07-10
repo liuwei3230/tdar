@@ -57,8 +57,6 @@ public class HomepageServiceImpl implements HomepageService {
     @Autowired
     private transient SerializationService serializationService;
     @Autowired
-    private transient AuthorizationService authorizationService;
-    @Autowired
     private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
@@ -174,15 +172,7 @@ public class HomepageServiceImpl implements HomepageService {
     @Override
     @Transactional(readOnly = true)
     public synchronized Set<PResource> featuredItems(TdarUser authenticatedUser) {
-        Set<PResource> featuredResources = new HashSet<>();
-        try {
-            for (Resource key : informationResourceService.getFeaturedItems()) {
-                featuredResources.add(proxyConstructionService.constructResource(key, key.getResourceType().getProxyClass(), authenticatedUser, false));
-            }
-        } catch (IndexOutOfBoundsException | InstantiationException | IllegalAccessException ioe) {
-            logger.debug("no featured resources found");
-        }
-        return featuredResources;
+        return new HashSet<>(informationResourceService.getFeaturedItems());
     }
 
     /*

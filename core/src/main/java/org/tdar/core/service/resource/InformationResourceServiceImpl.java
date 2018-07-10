@@ -28,8 +28,10 @@ import org.tdar.core.dao.resource.DatasetDao;
 import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.InformationResourceFileDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.core.service.PersonalFilestoreService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ServiceInterface;
 import org.tdar.core.service.workflow.WorkflowResult;
 import org.tdar.filestore.FileAnalyzer;
@@ -64,7 +66,8 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
 
     @Autowired
     private PersonalFilestoreService personalFilestoreService;
-
+    @Autowired
+    private ProxyConstructionService proxyConstructionService;
     private FileAnalyzer analyzer;
 
     /*
@@ -200,8 +203,8 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
      * @see org.tdar.core.service.resource.InformationResourceService#findRandomFeaturedResource(boolean, int)
      */
     @Override
-    public <E extends Resource> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults) {
-        return getDao().findRandomFeaturedResource(restrictToFiles, maxResults);
+    public <E extends PResource> List<E> findRandomFeaturedResource(boolean restrictToFiles, int maxResults) {
+        return convertToPResource(getDao().findRandomFeaturedResource(restrictToFiles, maxResults));
     }
 
     /*
@@ -210,8 +213,8 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
      * @see org.tdar.core.service.resource.InformationResourceService#findRandomFeaturedResourceInProject(boolean, org.tdar.core.bean.resource.Project, int)
      */
     @Override
-    public <E extends Resource> List<E> findRandomFeaturedResourceInProject(boolean restrictToFiles, Project project, int maxResults) {
-        return getDao().findRandomFeaturedResourceInProject(restrictToFiles, project, maxResults);
+    public <E extends PResource> List<E> findRandomFeaturedResourceInProject(boolean restrictToFiles, Project project, int maxResults) {
+        return convertToPResource(getDao().findRandomFeaturedResourceInProject(restrictToFiles, project, maxResults));
     }
 
     /*
@@ -220,13 +223,27 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
      * @see org.tdar.core.service.resource.InformationResourceService#findRandomFeaturedResourceInCollection(boolean, java.lang.Long, int)
      */
     @Override
-    public <E extends Resource> List<E> findRandomFeaturedResourceInCollection(boolean restrictToFiles, Long collectionId, int maxResults) {
+    public <E extends PResource> List<E> findRandomFeaturedResourceInCollection(boolean restrictToFiles, Long collectionId, int maxResults) {
         List<ResourceCollection> collections = null;
+        List<Resource> find = new ArrayList<>();
         if (PersistableUtils.isNotNullOrTransient(collectionId)) {
             collections.addAll(resourceCollectionDao.findCollectionsOfParent(collectionId, false));
-            return getDao().findRandomFeaturedResourceInCollection(restrictToFiles, collections, maxResults);
+            return convertToPResource(getDao().findRandomFeaturedResourceInCollection(restrictToFiles, collections, maxResults));
+        } else {
+            return findRandomFeaturedResource(restrictToFiles, maxResults);
         }
-        return findRandomFeaturedResource(restrictToFiles, maxResults);
+    }
+
+    private <E extends PResource> List<E> convertToPResource(List<Resource> find) {
+        List<E> toReturn = new ArrayList<>();
+        for (Resource f : find) {
+            try {
+                toReturn.add((E) proxyConstructionService.constructResource(f, f.getResourceType().getProxyClass(), null, false));
+            } catch (InstantiationException | IllegalAccessException e) {
+                logger.error("{}",e,e);
+            }
+        }
+        return toReturn;
     }
 
     /*
@@ -249,7 +266,7 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
     @Override
     @Cacheable(value = Caches.HOMEPAGE_FEATURED_ITEM_CACHE)
     @Transactional(readOnly = true)
-    public List<Resource> getFeaturedItems() {
+    public List<PResource> getFeaturedItems() {
         Long featuredCollectionId = TdarConfiguration.getInstance().getFeaturedCollectionId();
         return findRandomFeaturedResourceInCollection(true, featuredCollectionId, 5);
     }

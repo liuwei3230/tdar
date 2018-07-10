@@ -123,7 +123,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     private boolean showNavSearchBox = true;
     private FacetWrapper facetWrapper = new FacetWrapper();
 
-    private ProjectionModel projectionModel = ProjectionModel.LUCENE;
+    private ProjectionModel projectionModel = ProjectionModel.HIBERNATE_DEFAULT;
 
     private boolean keywordSectionVisible = true;
 

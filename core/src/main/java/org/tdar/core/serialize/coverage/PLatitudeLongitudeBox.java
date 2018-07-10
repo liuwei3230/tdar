@@ -172,6 +172,19 @@ public class PLatitudeLongitudeBox extends AbstractPersistable {
     public Double getCenterLatitude() {
         return getCenterLat(getNorth(), getSouth());
     }
+    
+    public double getArea() {
+        return getAbsoluteLatLength() * getAbsoluteLongLength();
+    }
+
+    public double getAbsoluteLatLength() {
+        return Math.abs(getNorth() - getSouth());
+    }
+
+    public double getAbsoluteLongLength() {
+        return Math.abs(getEast() - getWest());
+    }
+
 
     
 }
