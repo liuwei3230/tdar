@@ -2,10 +2,15 @@ package org.tdar.core.bean.resource;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.core.serialize.entity.PPerson;
@@ -85,10 +90,16 @@ public class DocumentCitationFormatTestCase {
 
     public static ResourceCitationFormatter setupDocumentWithAllFields(PDocument document, DocumentType type) {
         ResourceCitationFormatter formatter = new ResourceCitationFormatter(document);
-        document.getResourceCreators().add(new PResourceCreator(new PPerson("First", "Last", "first@last"), ResourceCreatorRole.AUTHOR));
-        document.getResourceCreators().add(new PResourceCreator(new PInstitution("institution auth"), ResourceCreatorRole.AUTHOR));
-        document.getResourceCreators().add(new PResourceCreator(new PPerson("First2", "Last2", "first2@last"), ResourceCreatorRole.EDITOR));
-        document.getResourceCreators().add(new PResourceCreator(new PInstitution("Collaborating institution"), ResourceCreatorRole.COLLABORATOR));
+        Set<PResourceCreator> creators = new LinkedHashSet<>();
+        creators.add(new PResourceCreator(new PPerson("First", "Last", "first@last"), ResourceCreatorRole.AUTHOR));
+        creators.add(new PResourceCreator(new PInstitution("institution auth"), ResourceCreatorRole.AUTHOR));
+        creators.add(new PResourceCreator(new PPerson("First2", "Last2", "first2@last"), ResourceCreatorRole.EDITOR));
+        creators.add(new PResourceCreator(new PInstitution("Collaborating institution"), ResourceCreatorRole.COLLABORATOR));
+        if (CollectionUtils.isNotEmpty(document.getResourceCreators())) {
+            document.getResourceCreators().addAll(creators);
+        } else {
+            document.setResourceCreators(creators);
+        }
         document.setDocumentType(type);
         document.setDate(1234);
         if ((document.getId() == null) || (document.getId() == -1)) {

@@ -1,6 +1,7 @@
 package org.tdar.core.service.resource;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ import org.tdar.core.dao.integration.IntegrationDataTableSearchResult;
 import org.tdar.core.dao.integration.search.DatasetSearchFilter;
 import org.tdar.core.dao.resource.DataTableColumnDao;
 import org.tdar.core.dao.resource.DataTableDao;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.datatable.PDataTable;
 import org.tdar.core.service.ServiceInterface;
 import org.tdar.db.model.abstracts.TargetDatabase;
 import org.tdar.utils.PersistableUtils;
@@ -140,6 +143,14 @@ public class DataTableServiceImpl extends ServiceInterface.TypedDaoBase<DataTabl
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> getMissingCodingKeys(PCodingSheet sheet, final List<PDataTable> tables_) {
+        CodingSheet cs = getDao().find(CodingSheet.class, sheet.getId());
+        List<DataTable> tables = new ArrayList<>();
+        List<Long> extractIds = PersistableUtils.extractIds(tables_);
+        return getMissingCodingKeys(cs, tables);
+    }
     /*
      * (non-Javadoc)
      * 

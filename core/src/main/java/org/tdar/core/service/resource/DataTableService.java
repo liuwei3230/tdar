@@ -12,6 +12,8 @@ import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.dao.integration.IntegrationDataTableSearchResult;
 import org.tdar.core.dao.integration.search.DatasetSearchFilter;
+import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.serialize.resource.datatable.PDataTable;
 
 public interface DataTableService {
 
@@ -51,11 +53,13 @@ public interface DataTableService {
      * finds all of the datatables that are mapped to a coding sheet, and gets the unique column entries on each. For those, remove the duplicates and
      * remove the overlap, return anything missing
      * 
-     * @param sheet
+     * @param pCodingSheet
      * @param tables
      * @return
      */
-    Set<String> getMissingCodingKeys(CodingSheet sheet, List<DataTable> tables_);
+    Set<String> getMissingCodingKeys(PCodingSheet pCodingSheet, List<PDataTable> list);
+    
+    Set<String> getMissingCodingKeys(CodingSheet pCodingSheet, List<DataTable> list);
 
     DataTable find(Long dataTableId);
 

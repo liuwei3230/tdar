@@ -21,22 +21,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.Status;
-import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.entity.PUserInvite;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
+import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
@@ -106,8 +105,8 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     private String slug;
     private String slugSuffix;
     private String schemaOrgJsonLD;
-    private Map<DataTableColumn, String> mappedData;
-    private List<UserInvite> invites;
+    private Map<PDataTableColumn, String> mappedData;
+    private List<PUserInvite> invites;
 
     @Autowired
     ResourceViewControllerService viewService;
@@ -170,6 +169,8 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
                 setUploadedResourceAccessStatistic(resourceService.getResourceSpaceUsageStatistics(Arrays.asList(getId()), null));
             }
         }
+        whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(getId());
+        setInvites(userRightsProxyService.findUserInvitesForResource(getId(), getAuthenticatedUser()));
 
         return SUCCESS;
     }
@@ -221,12 +222,7 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         }
         
         canViewConfidential = authorizationService.canViewConfidentialInformation(user, resource);
-        setInvites(userRightsProxyService.findUserInvites(resource));
-        
-        
         editable = authorizationService.canEditResource(user, resource, Permissions.MODIFY_METADATA);
-        whiteLabelCollection = resourceCollectionService.getWhiteLabelCollectionForResource(resource);
-
         return result;
     }
     
@@ -317,7 +313,7 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         this.schemaOrgJsonLD = schemaOrgJsonLD;
     }
 
-    private transient ResourceCollection whiteLabelCollection;
+    private PResourceCollection whiteLabelCollection;
 
     private Status status;
 
@@ -327,12 +323,12 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
      *
      * @return
      */
-    public ResourceCollection getWhiteLabelCollection() {
+    public PResourceCollection getWhiteLabelCollection() {
         return whiteLabelCollection;
     }
 
     public boolean isWhiteLabelLogoAvailable() {
-        ResourceCollection wlc = getWhiteLabelCollection();
+        PResourceCollection wlc = getWhiteLabelCollection();
         return wlc != null && checkLogoAvailable(FilestoreObjectType.COLLECTION, wlc.getId(), VersionType.WEB_LARGE);
     }
 
@@ -348,11 +344,11 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         this.resourceCitation = resourceCitation;
     }
 
-    public Map<DataTableColumn, String> getMappedData() {
+    public Map<PDataTableColumn, String> getMappedData() {
         return mappedData;
     }
 
-    public void setMappedData(Map<DataTableColumn, String> mappedData) {
+    public void setMappedData(Map<PDataTableColumn, String> mappedData) {
         this.mappedData = mappedData;
     }
 
@@ -361,11 +357,11 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
         return true;
     }
 
-    public List<UserInvite> getInvites() {
+    public List<PUserInvite> getInvites() {
         return invites;
     }
 
-    public void setInvites(List<UserInvite> invites) {
+    public void setInvites(List<PUserInvite> invites) {
         this.invites = invites;
     }
 

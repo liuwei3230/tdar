@@ -14,16 +14,22 @@ import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.ResourceCreatorRole;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.serialize.entity.PResourceCreator;
+import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.datatable.PDataTable;
 import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.service.BookmarkedResourceService;
+import org.tdar.core.service.GenericService;
 import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthorizationService;
+import org.tdar.core.service.resource.DataTableService;
+import org.tdar.core.service.resource.DatasetService;
 import org.tdar.core.service.resource.InformationResourceFileService;
 import org.tdar.core.service.resource.ResourceService;
 import org.tdar.struts.data.AuthWrapper;
@@ -37,6 +43,10 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
 
     @Autowired
     private ResourceService resourceService;
+    @Autowired
+    private GenericService genericService;
+    @Autowired
+    private DatasetService datasetService;
 
     @Autowired
     private ResourceCollectionService resourceCollectionService;
@@ -193,6 +203,33 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
                 }
             }
         }
+    }
+    
+    @Autowired
+    private transient DataTableService dataTableService;
+
+
+    @Override
+    public List<PDataTable> findDataTablesUsingResource(Long id) {
+//        DataTable dt = genericService.find(DataTable.class, id);
+        List<PDataTable> toReturn = new ArrayList<>();
+        for (DataTable dataTable : dataTableService.findDataTablesUsingResource(id)) {
+            toReturn.add(proxyConstructionService.convertDataTable(dataTable));
+        }
+        return toReturn;
+    }
+
+    @Override
+    public List<PResource> loadRelatedResourcesForTable(List<PDataTable> tablesUsingResource) {
+        List<PResource> relatedResources = new ArrayList<>();
+        for (PDataTable table : tablesUsingResource) {
+            DataTable dt = genericService.find(DataTable.class, table.getId());
+            if (!dt.getDataset().isDeleted()) {
+            relatedResources.add(proxyConstructionService.createShellResource(dt.getDataset(), PDataset.class));
+            }
+        }
+        return relatedResources;
+
     }
 
 }

@@ -12,8 +12,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -44,6 +46,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceNote;
 import org.tdar.core.bean.resource.ResourceNoteType;
 import org.tdar.core.bean.resource.SensoryData;
+import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.sensory.SensoryDataImage;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
@@ -272,8 +275,7 @@ public class APIControllerITCase extends AbstractAdminControllerITCase implement
         assertEquals(Action.SUCCESS, uploadStatus);
         assertEquals(StatusCode.CREATED, controller.getStatus());
         Image img = genericService.find(Image.class, controller.getId());
-        fail();
-//        assertFalse(img.getFilesWithRestrictions(true).isEmpty());
+        assertFalse(getFilesWithRestrictions(img, true).isEmpty());
         account = genericService.find(BillingAccount.class, actId);
         logger.debug("files: {}", account.getFilesUsed());
         logger.debug("mb: {}", account.getSpaceUsedInMb());
@@ -281,6 +283,27 @@ public class APIControllerITCase extends AbstractAdminControllerITCase implement
             assertNotEquals(totalNumberOfFiles, account.getFilesUsed());
             assertNotEquals(totalSpaceInMb, account.getSpaceUsedInMb());
         }
+    }
+
+    private List<InformationResourceFile> getFilesWithRestrictions(Image img, boolean confidential) {
+      List<InformationResourceFile> confidentialFiles = new ArrayList<InformationResourceFile>();
+      List<InformationResourceFile> publicFiles = new ArrayList<InformationResourceFile>();
+      for (InformationResourceFile irFile : img.getInformationResourceFiles()) {
+          if (irFile == null || irFile.isDeleted() ) {
+              continue;
+          }
+          
+          if (irFile.isPublic()) {
+              publicFiles.add(irFile);
+          } else {
+              confidentialFiles.add(irFile);
+          }
+      }
+      if (confidential) {
+          return confidentialFiles;
+      } else {
+          return publicFiles;
+      }
     }
 
     @Test

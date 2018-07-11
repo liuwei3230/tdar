@@ -24,6 +24,7 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.search.bean.SearchParameters;
 import org.tdar.search.exception.SearchIndexException;
@@ -32,6 +33,9 @@ import org.tdar.search.service.index.SearchIndexService;
 import org.tdar.struts.action.AbstractControllerITCase;
 import org.tdar.struts.action.search.AdvancedSearchController;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.utils.PersistableUtils;
+
+import com.amazonaws.services.s3.transfer.PersistableUpload;
 
 public class SearchRelevancyITCase extends AbstractControllerITCase {
 
@@ -119,14 +123,14 @@ public class SearchRelevancyITCase extends AbstractControllerITCase {
         controller.search();
 
         // we should get back **something**
-        Assert.assertTrue("search results should not be empty", controller.getResults().size() > 0);
-        logger.debug("result count for " + SEMI_UNIQUE_NAME + ":" + controller.getResults().size());
-        fail();
-//        logger.debug("pdf indexablecontent:" + resourceWithAttachmentMatch.getContent());
+        List<Long> results = PersistableUtils.extractIds(controller.getResults());
+        Assert.assertTrue("search results should not be empty", results.size() > 0);
+        logger.debug("result count for " + SEMI_UNIQUE_NAME + ":" + results.size());
+//        logger.debug("pdf indexablecontent:" + getContent(resourceWithAttachmentMatch));
 
-        int indexOfTitleMatch = controller.getResults().indexOf(resourceWithTitleMatch);
-        int indexOfKeywordMatch = controller.getResults().indexOf(resourceWithKeywordMatch);
-        int indexOfAttachmentMatch = controller.getResults().indexOf(resourceWithAttachmentMatch);
+        int indexOfTitleMatch = results.indexOf(resourceWithTitleMatch.getId());
+        int indexOfKeywordMatch = results.indexOf(resourceWithKeywordMatch.getId());
+        int indexOfAttachmentMatch = results.indexOf(resourceWithAttachmentMatch.getId());
 
         // make sure we got back at least the resources we just added.
         Assert.assertTrue("expecting test resource in results", indexOfTitleMatch > -1);
@@ -175,9 +179,10 @@ public class SearchRelevancyITCase extends AbstractControllerITCase {
         controller.getResourceTypes().addAll((Arrays.asList(ResourceType.DOCUMENT, ResourceType.PROJECT)));
         controller.search();
 
-        logger.debug("{}", controller.getResults());
-        assertTrue(controller.getResults().contains(p));
-        assertTrue(controller.getResults().contains(document));
+        List<Long> results = PersistableUtils.extractIds(controller.getResults());
+        logger.debug("{}", results);
+        assertTrue(results.contains(p.getId()));
+        assertTrue(results.contains(document.getId()));
     }
 
 }

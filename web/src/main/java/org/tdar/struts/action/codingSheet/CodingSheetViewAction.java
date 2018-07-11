@@ -38,9 +38,8 @@ public class CodingSheetViewAction extends AbstractSupportingResourceViewAction<
     protected void loadCustomViewMetadata() throws TdarActionException {
         // TODO Auto-generated method stub
         super.loadCustomViewMetadata();
-        CodingSheet sheet = getGenericService().find(CodingSheet.class, getId());
-        setMissingCodingKeys(dataTableService.getMissingCodingKeys(sheet, getTablesUsingResource()));
-        okToMap = codingSheetService.isOkToMapOntology(sheet);
+        setMissingCodingKeys(dataTableService.getMissingCodingKeys(getResource(), getTablesUsingResource()));
+        okToMap = codingSheetService.isOkToMapOntology(getResource());
     }
 
     public boolean isOkToMapOntology() {

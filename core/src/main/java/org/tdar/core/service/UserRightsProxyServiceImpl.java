@@ -25,6 +25,7 @@ import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.exception.TdarValidationException;
+import org.tdar.core.serialize.entity.PUserInvite;
 import org.tdar.core.service.external.EmailService;
 import org.tdar.utils.PersistableUtils;
 
@@ -36,6 +37,9 @@ public class UserRightsProxyServiceImpl implements UserRightsProxyService {
 
     @Autowired
     private EntityService entityService;
+
+    @Autowired
+    private ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private ResourceCollectionDao resourceCollectionDao;
@@ -63,7 +67,14 @@ public class UserRightsProxyServiceImpl implements UserRightsProxyService {
             return resourceCollectionDao.findUserInvites((TdarUser) resource);
         }
         return null;
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PUserInvite> findUserInvitesForResource(Long id, TdarUser user) {
+        Resource resource = genericDao.find(Resource.class, id);
+        List<UserInvite> findUserInvites = resourceCollectionDao.findUserInvites((Resource) resource);
+        return proxyConstructionService.constructInvites(findUserInvites, user);
     }
 
     /*

@@ -24,7 +24,7 @@ public interface CodingSheetService {
 
     List<String> updateCodingSheetMappings(CodingSheet codingSheet, TdarUser authenticatedUser, List<CodingRule> incomingRules);
 
-    boolean isOkToMapOntology(CodingSheet persistable);
+    boolean isOkToMapOntology(PCodingSheet pCodingSheet);
 
     void parseUpload(CodingSheet sheet, InformationResourceFileVersion version) throws IOException, CodingSheetParserException;
 

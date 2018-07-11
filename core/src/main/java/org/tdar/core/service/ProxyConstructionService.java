@@ -20,6 +20,7 @@ import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
+import org.tdar.core.bean.collection.CollectionDisplayProperties;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
@@ -30,6 +31,7 @@ import org.tdar.core.bean.entity.Institution;
 import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
+import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
@@ -56,6 +58,7 @@ import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
+import org.tdar.core.serialize.collection.PCollectionDisplayProperties;
 import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.coverage.PCoverageDate;
 import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
@@ -65,6 +68,7 @@ import org.tdar.core.serialize.entity.PInstitution;
 import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.core.serialize.entity.PResourceCreator;
 import org.tdar.core.serialize.entity.PTdarUser;
+import org.tdar.core.serialize.entity.PUserInvite;
 import org.tdar.core.serialize.integration.PDataIntegrationWorkflow;
 import org.tdar.core.serialize.keyword.PCultureKeyword;
 import org.tdar.core.serialize.keyword.PExternalKeywordMapping;
@@ -114,7 +118,6 @@ public class ProxyConstructionService {
     private BillingAccountDao billingAccountDao;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-
     @Transactional(readOnly = true)
     public <R extends PResource, T extends Resource> R constructResource(T resource, Class<R> cls,
             TdarUser viewer,
@@ -131,7 +134,8 @@ public class ProxyConstructionService {
             TdarUser viewer,
             boolean forceObfuscate)
             throws InstantiationException, IllegalAccessException {
-        boolean viewConfidentialinfo = authorizationService.canDo(viewer, resource, InternalTdarRights.VIEW_AND_DOWNLOAD_CONFIDENTIAL_INFO, Permissions.VIEW_ALL);
+        boolean viewConfidentialinfo = authorizationService.canDo(viewer, resource, InternalTdarRights.VIEW_AND_DOWNLOAD_CONFIDENTIAL_INFO,
+                Permissions.VIEW_ALL);
         logger.debug("user: {}/ viewconf:{}", viewer, viewConfidentialinfo);
         Context ctx = new Context(viewer);
         ctx.setAdmin(false);
@@ -204,7 +208,7 @@ public class ProxyConstructionService {
             ir.setInheritingSpatialInformation(iresource.isInheritingSpatialInformation());
             ir.setInheritingTemporalInformation(iresource.isInheritingTemporalInformation());
             ir.setCopyLocation(iresource.getCopyLocation());
-            // ir.setMappedDataKeyColumn(iresource.getMappedDataKeyColumn());
+             ir.setMappedDataKeyColumn(convertDataTableColumn(iresource.getMappedDataKeyColumn()));
             ir.setMappedDataKeyValue(iresource.getMappedDataKeyValue());
             ir.setInheritingNoteInformation(iresource.isInheritingNoteInformation());
             ir.setInheritingIdentifierInformation(iresource.isInheritingIdentifierInformation());
@@ -213,7 +217,7 @@ public class ProxyConstructionService {
             ir.setPublisherLocation(iresource.getPublisherLocation());
             ir.setInheritingIndividualAndInstitutionalCredit(iresource.isInheritingIndividualAndInstitutionalCredit());
             ir.setDoi(iresource.getDoi());
-            // ir.setFileProxies(iresource.getFileProxies());
+//             ir.setFileProxies(iresource.getFileProxies());
             ir.setTransientAccessType(iresource.getTransientAccessType());
 
             if (ctx.isMappedMetadaataIncluded()) {
@@ -287,6 +291,9 @@ public class ProxyConstructionService {
     }
 
     private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_) {
+        if (dtc_ == null) {
+            return null;
+        }
         PDataTableColumn c = new PDataTableColumn();
         c.setName(dtc_.getName());
         c.setId(dtc_.getId());
@@ -370,7 +377,7 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private PDataTable convertDataTable(DataTable dt_) {
+    public PDataTable convertDataTable(DataTable dt_) {
         PDataTable dt = new PDataTable();
         dt.setDescription(dt_.getDescription());
         dt.setDisplayName(dt_.getDisplayName());
@@ -597,10 +604,50 @@ public class ProxyConstructionService {
         rc.setStatus(rc_.getStatus());
         rc.setParentIds(rc_.getParentIds());
         rc.setAlternateParentIds(rc_.getAlternateParentIds());
+        rc.setProperties(convertCollectionProperties(rc_.getProperties(), ctx));
         // rc.setTransientChildren(rc_.getTransientChildren());
         rc.setUnmanagedResourceIds(rc_.getUnmanagedResourceIds());
         rc.setVerified(rc_.getVerified());
         return rc;
+    }
+
+    private PCollectionDisplayProperties convertCollectionProperties(CollectionDisplayProperties properties, Context ctx) {
+        if (properties == null) {
+            return null;
+        }
+        PCollectionDisplayProperties props = new PCollectionDisplayProperties();
+        props.setCss(properties.getCss());
+        props.setInstitution(createInstitution(properties.getInstitution(), ctx));
+        props.setFeaturedResources(convertResources(properties.getFeaturedResources(), ctx));
+        props.setSubtitle(properties.getSubtitle());
+        props.setMaxHeight(properties.getMaxHeight());
+        props.setMaxWidth(properties.getMaxWidth());
+        props.setMaxSize(properties.getMaxSize());
+        props.setId(properties.getId());
+        props.setCustomHeaderEnabled(properties.getCustomHeaderEnabled());
+        props.setCustomDocumentLogoEnabled(properties.getCustomDocumentLogoEnabled());
+        props.setFeaturedResourcesEnabled(properties.getFeaturedResourcesEnabled());
+        props.setSearchEnabled(properties.getSearchEnabled());
+        props.setSubCollectionsEnabled(properties.getSubCollectionsEnabled());
+        props.setWhitelabel(properties.getWhitelabel());
+        props.setHideCollectionSidebar(properties.getHideCollectionSidebar());
+
+        return null;
+    }
+
+    private List<PResource> convertResources(List<Resource> featuredResources, Context ctx) {
+        if (CollectionUtils.isEmpty(featuredResources)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<PResource> toReturn = new ArrayList<>();
+        for (Resource r : featuredResources) {
+            try {
+                constructResource(r, r.getResourceType().getProxyClass(), ctx.getUser(), false);
+            } catch (InstantiationException | IllegalAccessException e) {
+                logger.error("{}", e, e);
+            }
+        }
+        return toReturn;
     }
 
     private Set<PCoverageDate> convertCoverageDates(Set<CoverageDate> coverageDates) {
@@ -953,12 +1000,12 @@ public class ProxyConstructionService {
         act.setSpaceUsedInBytes(act_.getSpaceUsedInBytes());
         act.setResourcesUsed(act_.getResourcesUsed());
         act.setExpires(act_.getExpires());
-//        act.setInvoices(act_.getInvoices());
-//        act.setResources(act_.getResources());
+        // act.setInvoices(act_.getInvoices());
+        // act.setResources(act_.getResources());
         act.setOwner(convertUser(act_.getOwner(), ctx));
         act.setModifiedBy(convertUser(act_.getModifiedBy(), ctx));
-//        act.setCoupons(act_.getCoupons());
-//        act.setUsageHistory(act_.getUsageHistory());
+        // act.setCoupons(act_.getCoupons());
+        // act.setUsageHistory(act_.getUsageHistory());
         act.setAuthorizedUsers(convertAuthorizedUsers(act_.getAuthorizedUsers(), ctx));
         act.setFullService(act_.getFullService());
         act.setInitialReview(act_.getInitialReview());
@@ -966,6 +1013,30 @@ public class ProxyConstructionService {
         act.setDaysFilesExpireAfter(act_.getDaysFilesExpireAfter());
 
         return act;
+    }
+
+    public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, TdarUser user) {
+        if (CollectionUtils.isEmpty(findUserInvites)) {
+            return Collections.EMPTY_LIST;
+        }
+        Context ctx = new Context(user);
+        List<PUserInvite> toReturn = new ArrayList<>();
+        for (UserInvite invite : findUserInvites) {
+            PUserInvite inv = new PUserInvite();
+            inv.setAuthorizer(convertUser(invite.getAuthorizer(), ctx));
+            inv.setDateCreated(invite.getDateCreated());
+            inv.setDateExpires(invite.getDateExpires());
+            inv.setDateRedeemed(invite.getDateRedeemed());
+            inv.setId(invite.getId());
+            inv.setNote(invite.getNote());
+            inv.setPermissions(invite.getPermissions());
+            if (invite.getResource() != null) {
+                inv.setResource(createShellResource(invite.getResource(), invite.getResource().getResourceType().getProxyClass()));
+            }
+            inv.setResourceCollection(createShellCollection(invite.getResourceCollection(), ctx));
+            toReturn.add(inv);
+        }
+        return toReturn;
     }
 
 }

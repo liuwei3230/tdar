@@ -359,4 +359,11 @@ public class CodingSheetServiceImpl extends ServiceInterface.TypedDaoBase<Coding
         return special;
     }
 
+    @Override
+    @Transactional(readOnly=true)
+    public boolean isOkToMapOntology(PCodingSheet pCodingSheet) {
+        CodingSheet cs = getDao().find(pCodingSheet.getId());
+        return isOkToMapOntology(cs);
+    }
+
 }

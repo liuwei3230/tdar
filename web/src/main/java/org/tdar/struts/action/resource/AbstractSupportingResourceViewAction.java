@@ -8,38 +8,35 @@ import org.tdar.core.bean.resource.datatable.DataTable;
 import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.resource.datatable.PDataTable;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.DataTableService;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.web.service.ResourceViewControllerService;
 
 public abstract class AbstractSupportingResourceViewAction<R extends PInformationResource> extends AbstractResourceViewAction<R> {
 
     private static final long serialVersionUID = -1581233578894577541L;
-    private ArrayList<PResource> relatedResources;
+    private List<PResource> relatedResources;
 
-    @Autowired
-    private transient DataTableService dataTableService;
-    private List<DataTable> tablesUsingResource;
+    private List<PDataTable> tablesUsingResource;
     @Autowired
     ProxyConstructionService proxyConstructionService;
+    @Autowired
+    private ResourceViewControllerService rvcs;
 
     
     @Override
     protected void loadCustomViewMetadata() throws TdarActionException {
         super.loadCustomViewMetadata();
         if (relatedResources == null) {
-            relatedResources = new ArrayList<>();
-            for (DataTable table : getTablesUsingResource()) {
-                if (!table.getDataset().isDeleted()) {
-                relatedResources.add(proxyConstructionService.createShellResource(table.getDataset(), PDataset.class));
-                }
-            }
+            relatedResources = rvcs.loadRelatedResourcesForTable(getTablesUsingResource());
         }
     }
 
-    public List<DataTable> getTablesUsingResource() {
+    public List<PDataTable> getTablesUsingResource() {
         if (tablesUsingResource == null) {
-            tablesUsingResource = dataTableService.findDataTablesUsingResource(getId());
+            tablesUsingResource = rvcs.findDataTablesUsingResource(getId());
         }
         return tablesUsingResource;
     }

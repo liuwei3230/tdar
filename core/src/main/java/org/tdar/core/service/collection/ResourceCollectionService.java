@@ -18,6 +18,7 @@ import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.CollectionSaveObject;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.resource.ErrorHandling;
@@ -267,7 +268,7 @@ public interface ResourceCollectionService {
 
     PResourceCollection getRandomFeaturedCollection();
 
-    ResourceCollection getWhiteLabelCollectionForResource(Resource resource);
+    PResourceCollection getWhiteLabelCollectionForResource(Long id);
 
     /**
      * Return list of shared resources that match a specified name and are editable for a specified user. This

@@ -3,9 +3,9 @@ package org.tdar.core.serialize.entity;
 import java.util.Date;
 
 import org.tdar.core.bean.AbstractPersistable;
-import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.permissions.Permissions;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PResource;
 
 /**
  * Bean for inviting a person to tDAR -- grants them implicit access to the collection(s)
@@ -18,8 +18,8 @@ public class PUserInvite extends AbstractPersistable {
     private Date dateCreated = new Date();
     private Date dateExpires;
     private Date dateRedeemed;
-    private ResourceCollection resourceCollection;
-    private Resource resource;
+    private PResourceCollection resourceCollection;
+    private PResource resource;
     private PTdarUser authorizer;
 
     private transient String note;
@@ -36,11 +36,11 @@ public class PUserInvite extends AbstractPersistable {
         this.permissions = permissions;
     }
 
-    public ResourceCollection getResourceCollection() {
+    public PResourceCollection getResourceCollection() {
         return resourceCollection;
     }
 
-    public void setResourceCollection(ResourceCollection resourceCollection) {
+    public void setResourceCollection(PResourceCollection resourceCollection) {
         this.resourceCollection = resourceCollection;
     }
 
@@ -84,11 +84,11 @@ public class PUserInvite extends AbstractPersistable {
         this.dateExpires = dateExpires;
     }
 
-    public Resource getResource() {
+    public PResource getResource() {
         return resource;
     }
 
-    public void setResource(Resource resource) {
+    public void setResource(PResource resource) {
         this.resource = resource;
     }
 

@@ -3,14 +3,12 @@ package org.tdar.core.serialize.collection;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Transient;
-
 import org.opengis.annotation.XmlElement;
 import org.tdar.core.bean.HasImage;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.entity.Institution;
-import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.VersionType;
+import org.tdar.core.serialize.entity.PInstitution;
+import org.tdar.core.serialize.resource.PResource;
 
 @XmlElement("collectionDisplayProperties")
 public class PCollectionDisplayProperties implements HasImage, Persistable {
@@ -27,6 +25,10 @@ public class PCollectionDisplayProperties implements HasImage, Persistable {
     private Boolean searchEnabled = false;
     private Boolean subCollectionsEnabled = false;
     private Boolean hideCollectionSidebar = false;
+    private String css;
+    private String subtitle;
+    private List<PResource> featuredResources = new ArrayList<>();
+    private PInstitution institution;
 
     public PCollectionDisplayProperties() {
         this(false, false, false, false, false, false, false);
@@ -43,14 +45,6 @@ public class PCollectionDisplayProperties implements HasImage, Persistable {
         this.hideCollectionSidebar = hideCollectionSidebar;
     }
 
-    private String css;
-
-    private String subtitle;
-
-    private List<Resource> featuredResources = new ArrayList<>();
-
-    @Transient
-    private Institution institution;
 
     public String getCss() {
         return css;
@@ -60,19 +54,19 @@ public class PCollectionDisplayProperties implements HasImage, Persistable {
         this.css = css;
     }
 
-    public Institution getInstitution() {
+    public PInstitution getInstitution() {
         return institution;
     }
 
-    public void setInstitution(Institution institution) {
+    public void setInstitution(PInstitution institution) {
         this.institution = institution;
     }
 
-    public List<Resource> getFeaturedResources() {
+    public List<PResource> getFeaturedResources() {
         return featuredResources;
     }
 
-    public void setFeaturedResources(List<Resource> featuredResources) {
+    public void setFeaturedResources(List<PResource> featuredResources) {
         this.featuredResources = featuredResources;
     }
 

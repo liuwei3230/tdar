@@ -48,6 +48,7 @@ import org.tdar.core.event.TdarEvent;
 import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.CollectionSaveObject;
 import org.tdar.core.service.Context;
 import org.tdar.core.service.DeleteIssue;
@@ -997,8 +998,11 @@ public class ResourceCollectionServiceImpl extends ServiceInterface.TypedDaoBase
      */
     @Override
     @Transactional(readOnly = true)
-    public ResourceCollection getWhiteLabelCollectionForResource(Resource resource) {
-        return getDao().getWhiteLabelCollectionForResource(resource);
+    public PResourceCollection getWhiteLabelCollectionForResource(Long id) {
+        Resource resource = getDao().find(Resource.class, id);
+        ResourceCollection rc =  getDao().getWhiteLabelCollectionForResource(resource);
+        return proxyConstructionService.createShellCollection(rc, new Context(null));
+
     }
 
     /*

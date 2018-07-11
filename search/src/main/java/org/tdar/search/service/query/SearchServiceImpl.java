@@ -37,6 +37,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.external.AuthenticationService;
@@ -318,8 +319,12 @@ public class SearchServiceImpl<I extends Indexable> extends AbstractSearchServic
         logger.trace(q.generateQueryString());
         LuceneSearchResultHandler<I> handler = new SearchResult<>(maxToResolve);
         searchDao.search(new SolrSearchObject<I>(q, handler), handler, MessageHelper.getInstance());
-        List<Creator> list = (List<Creator>) handler.getResults();
-        proxy.setResolved(list);
+        List<PCreator> list_ = (List<PCreator>) handler.getResults();
+        List<Creator> creators = new ArrayList<>();
+        for (PCreator pc : list_) {
+            creators.add(genericService.find(Creator.class, pc.getId()));
+        }
+        proxy.setResolved(creators);
     }
 
     /*

@@ -390,7 +390,10 @@ public class DocumentControllerITCase extends AbstractControllerITCase implement
         String scholar = controller.getGoogleScholarTags();
         logger.debug(scholar);
         assertEquals(
-                "<meta name=\"citation_title\" content=\"2008 New Philadelphia Archaeology Report, Chapter 3, Block 3, Lot 4\"/>\n<meta name=\"citation_date\" content=\"2008\"/>\n<meta name=\"citation_online_date\" content=\"2010/08/14\"/>\n",
+                "<meta name=\"citation_title\" content=\"2008 New Philadelphia Archaeology Report, Chapter 3, Block 3, Lot 4\"/>\n" + 
+                "<meta name=\"citation_date\" content=\"2008\"/>\n" + 
+                "<meta name=\"citation_pdf_url\" content=\"https://localhost:8143/filestore/get/4231/614\"/>\n" + 
+                "<meta name=\"citation_online_date\" content=\"2010/08/14\"/>\n",
                 scholar);
 
     }

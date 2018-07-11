@@ -10,6 +10,7 @@ import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.resource.HasAuthorizedUsers;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.UserRightsProxy;
+import org.tdar.core.serialize.entity.PUserInvite;
 
 public interface UserRightsProxyService {
 
@@ -28,5 +29,7 @@ public interface UserRightsProxyService {
     UserInvite toInvite(UserRightsProxy proxy, TdarUser user);
 
     AuthorizedUser toAuthorizedUser(UserRightsProxy proxy);
+
+    List<PUserInvite> findUserInvitesForResource(Long id, TdarUser user);
 
 }
