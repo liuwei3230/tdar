@@ -15,8 +15,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.HasDateCreated;
+import org.tdar.core.bean.HasDateUpdated;
 import org.tdar.core.bean.Persistable;
-import org.tdar.core.bean.Updatable;
 import org.tdar.core.exception.TdarRuntimeException;
 
 public class PersistableUtils {
@@ -211,7 +212,7 @@ public class PersistableUtils {
      * 
      * @param resourcesToEvaluate
      */
-    public static <T extends Updatable> void sortByUpdatedDate(List<T> resourcesToEvaluate) {
+    public static <T extends HasDateUpdated> void sortByUpdatedDate(List<T> resourcesToEvaluate) {
         Collections.sort(resourcesToEvaluate, new Comparator<T>() {
 
             @Override
@@ -227,7 +228,7 @@ public class PersistableUtils {
      * 
      * @param resourcesToEvaluate
      */
-    public static <T extends Updatable> void sortByCreatedDate(List<T> resourcesToEvaluate) {
+    public static <T extends HasDateCreated> void sortByCreatedDate(List<T> resourcesToEvaluate) {
         Collections.sort(resourcesToEvaluate, new Comparator<T>() {
 
             @Override

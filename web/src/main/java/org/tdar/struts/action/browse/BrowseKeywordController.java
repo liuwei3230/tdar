@@ -21,10 +21,13 @@ import org.tdar.core.bean.resource.Addressable;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.search.exception.SearchPaginationException;
 import org.tdar.search.geosearch.GeoSearchService;
 import org.tdar.search.query.ProjectionModel;
@@ -36,6 +39,7 @@ import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.PersistableUtils;
+import org.tdar.web.service.WebLoadingService;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -67,10 +71,14 @@ public class BrowseKeywordController extends AbstractLookupController<PResource>
     private transient GenericService genericService;
     @Autowired
     private transient GeoSearchService geoSearchService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
+    @Autowired
+    private transient WebLoadingService webLoadingService;
 
     private Long id;
     private KeywordType keywordType;
-    private Keyword keyword;
+    private PKeyword keyword;
     private DisplayOrientation orientation = DisplayOrientation.LIST_FULL;
     private String slug = "";
     private String slugSuffix = "";
@@ -81,11 +89,11 @@ public class BrowseKeywordController extends AbstractLookupController<PResource>
 
     private String geoJson;
 
-    public Keyword getKeyword() {
+    public PKeyword getKeyword() {
         return keyword;
     }
 
-    public void setKeyword(Keyword keyword) {
+    public void setKeyword(PKeyword keyword) {
         this.keyword = keyword;
     }
 
@@ -122,9 +130,9 @@ public class BrowseKeywordController extends AbstractLookupController<PResource>
             return;
         }
         getLogger().trace("kwd:{} ({})", getKeywordType().getKeywordClass(), getId());
-        setKeyword(genericService.find(getKeywordType().getKeywordClass(), getId()));
-        if (keyword instanceof GeographicKeyword) {
-            GeographicKeyword kwd = (GeographicKeyword) keyword;
+        setKeyword(proxyConstructionService.find(getKeywordType().getKeywordClass(), getId()));
+        if (keyword instanceof PGeographicKeyword) {
+            PGeographicKeyword kwd = (PGeographicKeyword) keyword;
             if (kwd.getLevel() != null) {
                 try {
                     setGeoJson(geoSearchService.toGeoJson(kwd));
@@ -135,7 +143,10 @@ public class BrowseKeywordController extends AbstractLookupController<PResource>
             }
         }
         if (PersistableUtils.isNotNullOrTransient(keyword) && getKeyword().isDuplicate()) {
-            keyword = genericKeywordService.findAuthority(keyword);
+            Keyword find = genericService.find(getKeywordType().getKeywordClass(), getId());
+            find = genericKeywordService.findAuthority(find);
+            setKeyword(proxyConstructionService.find(getKeywordType().getKeywordClass(), find.getId()));
+
             setRedirectBadSlug(true);
         }
         if (PersistableUtils.isNullOrTransient(keyword) || getKeyword().getStatus() != Status.ACTIVE && !isEditor()) {
@@ -183,7 +194,7 @@ public class BrowseKeywordController extends AbstractLookupController<PResource>
         }
         try {
             setSortField(SortOption.TITLE);
-            resourceSearchService.buildKeywordQuery(keyword, keywordType, getReservedSearchParameters(), this, this, getAuthenticatedUser());
+            resourceSearchService.buildKeywordQuery(genericService.find(keywordType.getKeywordClass(), id), keywordType, getReservedSearchParameters(), this, this, getAuthenticatedUser());
             bookmarkedResourceService.applyTransientBookmarked(getResults(), getAuthenticatedUser());
         } catch (SearchPaginationException spe) {
             abort(StatusCode.NOT_FOUND, StatusCode.NOT_FOUND.getErrorMessage());

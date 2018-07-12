@@ -22,13 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Adam Brin
  * 
  */
-public interface Updatable {
+public interface Updatable extends HasDateUpdated, HasDateCreated {
 
     void markUpdated(TdarUser p);
-
-    Date getDateUpdated();
-
-    Date getDateCreated();
 
     @XmlTransient
     @Transient

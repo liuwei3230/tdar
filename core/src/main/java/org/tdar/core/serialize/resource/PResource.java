@@ -32,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.DeHydratable;
 import org.tdar.core.bean.Editable;
+import org.tdar.core.bean.HasDateCreated;
+import org.tdar.core.bean.HasDateUpdated;
 import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Indexable;
@@ -102,7 +104,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 public class PResource implements Persistable,
         Comparable<PResource>, HasName, Indexable, 
         HasStatus, OaiDcProvider, ConfidentialViewable, Addressable,
-        DeHydratable, XmlLoggable, Slugable, Editable {
+        DeHydratable, XmlLoggable, Slugable, Editable, HasDateUpdated, HasDateCreated {
 
     public static final String RESOURCE_COLLECTIONS = "resourceCollections";
     public static final String MANAGED_RESOURCE_COLLECTIONS = "managedResourceCollections";

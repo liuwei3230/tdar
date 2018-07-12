@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
@@ -102,6 +103,8 @@ import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
+
+import com.amazonaws.services.gamelift.model.AcceptanceType;
 
 @Service
 public class ProxyConstructionService {
@@ -279,13 +282,14 @@ public class ProxyConstructionService {
         return r;
     }
 
-    private PBillingAccount constructShallowAccount(BillingAccount account) {
+    public PBillingAccount constructShallowAccount(BillingAccount account) {
         if (account == null) {
             return null;
         }
         PBillingAccount act = new PBillingAccount();
         act.setId(account.getId());
         act.setName(account.getName());
+        act.setStatus(account.getStatus());
         act.setDescription(account.getDescription());
         return act;
     }
@@ -707,7 +711,7 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private PCreator<?> createCreator(Creator<?> creator, Context ctx) {
+    public PCreator<?> createCreator(Creator<?> creator, Context ctx) {
         if (creator == null) {
             return null;
         }
@@ -955,24 +959,26 @@ public class ProxyConstructionService {
      * @return
      * @throws Exception
      */
-    public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<Resource> support, TdarUser user)
+    public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, TdarUser user)
             throws Exception {
         if (id == null) {
             throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
         }
+        P r =  genericDao.find(class1, id);
         if (Resource.class.isAssignableFrom(class1)) {
-            Resource r = (Resource) genericDao.find(class1, id);
             if (r == null) {
                 return null;
             }
-            support.setStatus(r.getStatus());
-
-            if (support != null && support.authorize(r, user) == false) {
+            
+            if (r instanceof HasStatus) {
+            support.setStatus(((HasStatus) r).getStatus());
+            }
+            
+            if (support != null && support.authorize((P)r, user) == false) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
-            return (Q) constructResource(r, r.getResourceType().getProxyClass(), user, false);
         }
-        return null;
+        return (Q)construct(r,  class1, user, false);
     }
 
     public PDataTable loadDataTable(Long dataTableId) {
@@ -1038,5 +1044,15 @@ public class ProxyConstructionService {
         }
         return toReturn;
     }
+
+    public  <K,R extends Persistable> K find(Class<R> cls, Long id)  {
+        try {
+        return load(cls, id, null, null);
+        } catch (Exception e) {
+            logger.error("{}",e,e);
+            return null;
+        }
+    }
+
 
 }

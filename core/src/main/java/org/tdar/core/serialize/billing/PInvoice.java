@@ -10,6 +10,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
+import org.tdar.core.bean.HasDateCreated;
+import org.tdar.core.bean.HasDateUpdated;
 import org.tdar.core.bean.Updatable;
 import org.tdar.core.bean.billing.TransactionStatus;
 import org.tdar.core.dao.external.payment.PaymentMethod;
@@ -29,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @author TDAR
  * @version $Rev$
  */
-public class PInvoice extends AbstractPersistable  {
+public class PInvoice extends AbstractPersistable implements HasDateUpdated, HasDateCreated {
 
     private final transient Logger logger = LoggerFactory.getLogger(getClass());
 

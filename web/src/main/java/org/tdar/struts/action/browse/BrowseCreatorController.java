@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.SortOption;
-import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Institution;
@@ -45,15 +44,22 @@ import org.tdar.core.bean.resource.Addressable;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.statistics.CreatorViewStatistic;
+import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.resource.stats.ResourceSpaceUsageStatistic;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PInstitution;
+import org.tdar.core.serialize.entity.PPerson;
+import org.tdar.core.serialize.entity.PTdarUser;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.BookmarkedResourceService;
 import org.tdar.core.service.EntityService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.UrlService;
-import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.external.AuthenticationService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -67,11 +73,13 @@ import org.tdar.search.query.QueryFieldNames;
 import org.tdar.search.query.facet.Facet;
 import org.tdar.search.service.query.ResourceSearchService;
 import org.tdar.struts.action.AbstractLookupController;
+import org.tdar.struts.action.AbstractPersistableController.RequestType;
 import org.tdar.struts.action.SlugViewAction;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.PersistableUtils;
+import org.tdar.web.service.WebLoadingService;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -94,24 +102,19 @@ import com.opensymphony.xwork2.Preparable;
         @Result(name = TdarActionSupport.BAD_SLUG, type = TdarActionSupport.TDAR_REDIRECT,
                 location = "${creator.id}/${creator.slug}${slugSuffix}", params = { "ignoreParams", "id,slug" })
 })
-public class BrowseCreatorController extends AbstractLookupController<PResource> implements Preparable, SlugViewAction {
+public class BrowseCreatorController extends AbstractLookupController<PResource> implements Preparable, SlugViewAction, Authorizable<Creator> {
 
     /**
      * 
      */
     private static final long serialVersionUID = 7004124945674660779L;
-    // public static final String FOAF_XML = ".foaf.xml";
-    // public static final String SLASH = "/";
-    // public static final String XML = ".xml";
-    // public static final String CREATORS = "creators";
-    // public static final String EXPLORE = "explore";
     private String logoUrl;
-    private Creator creator;
+    private PCreator creator;
     private Long viewCount = 0L;
     private List<String> groups = new ArrayList<String>();
 
     private String creatorXml;
-    private List<BillingAccount> accounts = new ArrayList<BillingAccount>();
+    private List<PBillingAccount> accounts = new ArrayList<>();
     Map<String, SearchFieldType> searchFieldLookup = new HashMap<>();
     private ResourceSpaceUsageStatistic uploadedResourceAccessStatistic;
 
@@ -123,7 +126,9 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     private List<ResourceCollection> collections;
 
     @Autowired
-    private transient BillingAccountService accountService;
+    private transient WebLoadingService webLoadingService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
 
     @Autowired
     private transient AuthorizationService authorizationService;
@@ -150,37 +155,22 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     private transient ResourceService resourceService;
     private String schemaOrgJsonLD;
     private Set<ResourceCollection> ownerCollections = new HashSet<>();
+    private boolean editable;
 
-    public Creator getAuthorityForDup() {
+    public PCreator getAuthorityForDup() {
         return entityService.findAuthorityFromDuplicate(creator);
     }
 
     public boolean isEditable() {
-        if (isEditorOrSelf()) {
-            return true;
-        }
-        if (creator.getCreatorType().isInstitution()) {
-            return authorizationService.canEdit(getAuthenticatedUser(), (Institution) creator);
-        }
-        return false;
+        return editable;
     }
 
     @Override
     public void prepare() throws Exception {
         getLogger().trace("begin prepare");
-        if (PersistableUtils.isNotNullOrTransient(getId())) {
-            creator = getGenericService().find(Creator.class, getId());
-        } else {
-            addActionError(getText("browseCreatorController.creator_does_not_exist"));
-        }
-        if (PersistableUtils.isNullOrTransient(creator)) {
-            getLogger().debug("not found -- {}", creator);
-            throw new TdarActionException(StatusCode.NOT_FOUND, "Creator page does not exist");
-        }
+        creator = webLoadingService.load(Creator.class, PCreator.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW,
+                this);
 
-        if (PersistableUtils.isTransient(getAuthenticatedUser()) && !creator.isBrowsePageVisible() && !Objects.equals(getAuthenticatedUser(), creator)) {
-            throw new TdarActionException(StatusCode.UNAUTHORIZED, "Creator page does not exist");
-        }
         if (!handleSlugRedirect(creator, this)) {
             setRedirectBadSlug(true);
         } else {
@@ -198,9 +188,11 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
             setLogoUrl(UrlService.creatorLogoUrl(creator));
         }
 
-        if (creator instanceof Institution) {
+        if (creator instanceof PInstitution) {
             getLogger().trace("find institutions");
-            people.addAll(entityService.findPersonsByInstitution((Institution) creator));
+            for (Person p : entityService.findPersonsByInstitution((Institution) creator_)) {
+            people.add(proxyConstructionService.find(Person.class, p.getId()));
+            }
         }
         getLogger().trace("done prepare");
     }
@@ -224,15 +216,8 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
 
         if (isEditor()) {
             getLogger().trace("editor setup");
-            if ((creator instanceof TdarUser) && StringUtils.isNotBlank(((TdarUser) creator).getUsername())) {
-                TdarUser person = (TdarUser) creator;
-                try {
-                    getGroups().addAll(authenticationService.getGroupMembership(person));
-                } catch (Throwable e) {
-                    getLogger().error("problem communicating with crowd getting user info for {} {}", creator, e);
-                }
-                getAccounts().addAll(
-                        accountService.listAvailableAccountsForUser(person, Status.ACTIVE, Status.FLAGGED_ACCOUNT_BALANCE));
+            if ((creator instanceof PTdarUser) && StringUtils.isNotBlank(((PTdarUser) creator).getUsername())) {
+                setAccounts(webLoadingService.listAvailableAccountsForUser(getAuthenticatedUser()));
             }
             try {
                 getLogger().trace("uploaded stats");
@@ -243,19 +228,13 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
             // setViewCount(entityService.getCreatorViewCount(creator));
         }
 
-        if (!isEditor() && !PersistableUtils.isEqual(creator, getAuthenticatedUser())) {
-            getLogger().trace("log view stat");
-            CreatorViewStatistic cvs = new CreatorViewStatistic(new Date(), creator, isBot());
-            getGenericService().saveOrUpdate(cvs);
-        }
 
         // reset fields which can be broken by the searching hydration obfuscating things
-        getLogger().trace("find creator");
-        creator = getGenericService().find(Creator.class, getId());
         return SUCCESS;
     }
 
-    private List<Person> people = new ArrayList<Person>();
+    private List<PPerson> people = new ArrayList<>();
+    private Creator creator_;
 
     @SuppressWarnings("unchecked")
     private void prepareLuceneQuery() throws TdarActionException {
@@ -288,7 +267,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
                 }
                 // 10 per facet group should be plenty
                 getFacetWrapper().setMaxFacetLimit(10);
-                resourceSearchService.generateQueryForRelatedResources(creator, getAuthenticatedUser(), this, this);
+                resourceSearchService.generateQueryForRelatedResources(creator_, getAuthenticatedUser(), this, this);
                 List<Long> ignoreIds = new ArrayList<>();
                 ignoreIds.add(creator.getId());
                 ignoreIds.addAll(PersistableUtils.extractIds(creator.getSynonyms()));
@@ -335,16 +314,12 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
         }
     }
 
-    public Creator getCreator() {
+    public PCreator getCreator() {
         return creator;
     }
 
-    public void setCreator(Creator creator) {
+    public void setCreator(PCreator creator) {
         this.creator = creator;
-    }
-
-    public Addressable getPersistable() {
-        return creator;
     }
 
     public List<String> getGroups() {
@@ -363,11 +338,11 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
         this.creatorXml = creatorXml;
     }
 
-    public List<BillingAccount> getAccounts() {
+    public List<PBillingAccount> getAccounts() {
         return accounts;
     }
 
-    public void setAccounts(List<BillingAccount> accounts) {
+    public void setAccounts(List<PBillingAccount> accounts) {
         this.accounts = accounts;
     }
 
@@ -506,12 +481,55 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
         this.keywordFacetMap = keywordFacetMap;
     }
 
-    public List<Person> getPeople() {
+    public List<PPerson> getPeople() {
         return people;
     }
 
-    public void setPeople(List<Person> peopleList) {
+    public void setPeople(List<PPerson> peopleList) {
         people = peopleList;
+    }
+
+    @Override
+    public boolean authorize(Creator t, TdarUser user) throws Exception {
+        creator_  = t;
+        if (PersistableUtils.isTransient(getAuthenticatedUser()) && !creator.isBrowsePageVisible() && !Objects.equals(user, t)) {
+            throw new TdarActionException(StatusCode.UNAUTHORIZED, "Creator page does not exist");
+        }
+
+        if (isEditorOrSelf()) {
+            return true;
+        }
+        if (creator.getCreatorType().isInstitution()) {
+            return authorizationService.canEdit(getAuthenticatedUser(), t);
+        }
+        
+        if (!isEditor() && !PersistableUtils.isEqual(creator, getAuthenticatedUser())) {
+            TdarUser person = (TdarUser) t;
+            try {
+                getGroups().addAll(authenticationService.getGroupMembership(person));
+            } catch (Throwable e) {
+                getLogger().error("problem communicating with crowd getting user info for {} {}", creator, e);
+            }
+
+            getLogger().trace("log view stat");
+            CreatorViewStatistic cvs = new CreatorViewStatistic(new Date(), t, isBot());
+            getGenericService().markWritable(cvs);
+            getGenericService().saveOrUpdate(cvs);
+        }
+
+        return false;
+
+    }
+
+    @Override
+    public void setStatus(Status status) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public Addressable getPersistable() {
+        return creator;
     }
 
 }

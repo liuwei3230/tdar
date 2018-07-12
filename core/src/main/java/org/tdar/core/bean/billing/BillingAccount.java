@@ -37,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.AbstractPersistable;
 import org.tdar.core.bean.FieldLength;
+import org.tdar.core.bean.HasDateCreated;
+import org.tdar.core.bean.HasDateUpdated;
 import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Updatable;

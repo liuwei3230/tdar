@@ -36,6 +36,8 @@ import org.tdar.core.dao.ResourceEvaluator;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.dao.external.payment.PaymentMethod;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
+import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.serialize.billing.PInvoice;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.RightsResolver;
 import org.tdar.core.service.ServiceInterface;
@@ -564,6 +566,21 @@ public class BillingAccountServiceImpl extends ServiceInterface.TypedDaoBase<Bil
 
         while (iter.hasNext()) {
             Invoice inv = iter.next();
+            if (inv.isModifiable()) {
+                iter.remove();
+            }
+        }
+        return invoices;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PInvoice> getInvoicesForAccount(PBillingAccount account) {
+        List<PInvoice> invoices = new ArrayList<>(account.getInvoices());
+        Iterator<PInvoice> iter = invoices.iterator();
+        
+        while (iter.hasNext()) {
+            PInvoice inv = iter.next();
             if (inv.isModifiable()) {
                 iter.remove();
             }

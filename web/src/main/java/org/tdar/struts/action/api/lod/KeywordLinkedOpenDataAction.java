@@ -12,8 +12,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.keyword.KeywordType;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.GenericService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.struts.action.api.AbstractJsonApiAction;
 import org.tdar.struts_base.interceptor.annotation.HttpForbiddenErrorResponseOnly;
 
@@ -30,7 +32,7 @@ public class KeywordLinkedOpenDataAction extends AbstractJsonApiAction implement
     private Long id;
     private KeywordType type;
     @Autowired
-    private GenericService genericService;
+    private ProxyConstructionService proxyConstructionService;
     @Autowired
     private GenericKeywordService keywordService;
     private Map<String, String> error = new HashMap<>();
@@ -43,7 +45,7 @@ public class KeywordLinkedOpenDataAction extends AbstractJsonApiAction implement
             setJsonObject(error);
             return;
         }
-        Keyword resource = genericService.find(type.getKeywordClass(), id);
+        PKeyword resource = proxyConstructionService.find(type.getKeywordClass(), id);
         if (resource == null) {
             addActionError("error.object_does_not_exist");
             setJsonObject(error);

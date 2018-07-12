@@ -8,11 +8,12 @@ import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.tdar.core.bean.RelationType;
-import org.tdar.core.bean.entity.Address;
 import org.tdar.core.bean.entity.AddressType;
 import org.tdar.core.bean.entity.Creator;
-import org.tdar.core.bean.entity.Institution;
-import org.tdar.core.bean.entity.Person;
+import org.tdar.core.serialize.entity.PAddress;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PInstitution;
+import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.UrlService;
 
@@ -27,7 +28,7 @@ public class SchemaOrgCreatorTransformer extends AbstractSchemaOrgMetadataTransf
     private static final long serialVersionUID = -6030535358753854271L;
 
     @SuppressWarnings({ "unchecked" })
-    public String convert(SerializationService ss, Creator<?> creator, String imageUrl) throws IOException {
+    public String convert(SerializationService ss, PCreator<?> creator, String imageUrl) throws IOException {
         Map<String, Object> jsonLd = new HashMap<String, Object>();
         if (creator == null) {
             return ss.convertToJson(jsonLd);
@@ -41,8 +42,8 @@ public class SchemaOrgCreatorTransformer extends AbstractSchemaOrgMetadataTransf
         add(jsonLd, NAME, creator.getProperName());
         add(jsonLd, SCHEMA_DESCRIPTION, creator.getDescription());
         add(jsonLd, "schema:image", imageUrl);
-        if (creator instanceof Person) {
-            Person person = (Person) creator;
+        if (creator instanceof PPerson) {
+            PPerson person = (PPerson) creator;
             jsonLd.put(TYPE, "Person");
             if (person.getEmailPublic()) {
                 add(jsonLd, "schema:email", person.getEmail());
@@ -56,8 +57,8 @@ public class SchemaOrgCreatorTransformer extends AbstractSchemaOrgMetadataTransf
             add(jsonLd, "schema:logo", imageUrl);
         }
 
-        if (CollectionUtils.isNotEmpty(creator.getAddresses()) && (creator instanceof Institution || ((Person) creator).getPhonePublic())) {
-            for (Address address : creator.getAddresses()) {
+        if (CollectionUtils.isNotEmpty(creator.getAddresses()) && (creator instanceof PInstitution || ((PPerson) creator).getPhonePublic())) {
+            for (PAddress address : creator.getAddresses()) {
                 if (address.getType() == AddressType.MAILING) {
                     Map<String, Object> addLd = new HashMap<String, Object>();
                     add(addLd, TYPE, "PostalAddress");

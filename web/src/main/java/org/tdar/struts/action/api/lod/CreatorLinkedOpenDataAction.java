@@ -11,8 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.entity.Creator;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.service.EntityService;
-import org.tdar.core.service.GenericService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.struts.action.api.AbstractJsonApiAction;
 import org.tdar.struts_base.interceptor.annotation.HttpForbiddenErrorResponseOnly;
 
@@ -28,7 +29,7 @@ public class CreatorLinkedOpenDataAction extends AbstractJsonApiAction implement
     private static final long serialVersionUID = 7428998317675870472L;
     private Long id;
     @Autowired
-    private GenericService genericService;
+    private ProxyConstructionService proxyConstructionService;
     @Autowired
     private EntityService entityService;
     private Map<String, String> error = new HashMap<>();
@@ -36,7 +37,7 @@ public class CreatorLinkedOpenDataAction extends AbstractJsonApiAction implement
     @Override
     public void prepare() throws Exception {
         error.put("status", getText("error.object_does_not_exist"));
-        Creator resource = genericService.find(Creator.class, id);
+        PCreator resource = proxyConstructionService.find(Creator.class, id);
         if (resource == null) {
             addActionError("error.object_does_not_exist");
             setJsonObject(error);

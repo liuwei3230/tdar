@@ -10,6 +10,7 @@ import org.tdar.core.bean.resource.InformationResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.InformationResourceFileVersion;
 import org.tdar.core.configuration.TdarConfiguration;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 
@@ -200,8 +201,12 @@ public class UrlService {
         return String.format("/unapi/%s/%s", type, r.getId());
     }
 
+
     public static String creatorLogoUrl(Creator<?> creator) {
         return String.format("%s/files/creator/sm/%s/logo", StringUtils.stripEnd(getBaseUrl(), "/"), creator.getId());
     }
 
+    public static String creatorLogoUrl(PCreator<?> creator) {
+        return String.format("%s/files/creator/sm/%s/logo", StringUtils.stripEnd(getBaseUrl(), "/"), creator.getId());
+    }
 }

@@ -17,6 +17,8 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.AccountAdditionStatus;
 import org.tdar.core.dao.ResourceEvaluator;
+import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.serialize.billing.PInvoice;
 import org.tdar.core.service.DeleteIssue;
 
 import com.opensymphony.xwork2.TextProvider;
@@ -191,6 +193,8 @@ public interface BillingAccountService {
     Collection<? extends BillingAccount> findAll();
 
     List<Invoice> getInvoicesForAccount(BillingAccount account);
+    
+    List<PInvoice> getInvoicesForAccount(PBillingAccount account);
 
     void saveForController(BillingAccount account, String name, String description, Invoice invoice, Long invoiceId, TdarUser owner, TdarUser authenticatedUser,
             List<UserRightsProxy> proxies);

@@ -20,6 +20,7 @@ import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.resource.BookmarkedResource;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceRevisionLog;
+import org.tdar.core.serialize.entity.PCreator;
 
 import com.opensymphony.xwork2.TextProvider;
 
@@ -191,6 +192,7 @@ public interface EntityService {
      * @return
      */
     Creator<?> findAuthorityFromDuplicate(Creator<?> dup);
+    PCreator<?> findAuthorityFromDuplicate(PCreator<?> dup);
 
     /**
      * Find all Ids of (actual) contributors within the system based on "submitter" id
@@ -231,7 +233,7 @@ public interface EntityService {
 
     Map<UserAffiliation, Long> getAffiliationCounts(boolean b);
 
-    String getSchemaOrgJson(Creator<?> creator, String logoUrl) throws IOException;
+    String getSchemaOrgJson(PCreator<?> creator, String logoUrl) throws IOException;
 
     void saveAddress(Address address2, Creator<?> creator);
 

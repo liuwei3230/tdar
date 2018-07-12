@@ -31,6 +31,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.base.GenericDao.FindOptions;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
 import org.tdar.utils.PersistableUtils;
 
 /**
@@ -172,7 +173,7 @@ public class GeoSearchService {
     }
 
     @Transactional(readOnly = true)
-    public String toGeoJson(GeographicKeyword kwd) {
+    public String toGeoJson(PGeographicKeyword kwd) {
         if (StringUtils.isBlank(kwd.getCode())) {
             return null;
         }

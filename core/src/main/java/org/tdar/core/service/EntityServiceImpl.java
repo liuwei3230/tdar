@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hslf.record.PPDrawing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ import org.tdar.core.dao.entity.PersonDao;
 import org.tdar.core.dao.resource.BookmarkedResourceDao;
 import org.tdar.core.event.EventType;
 import org.tdar.core.event.TdarEvent;
+import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PPerson;
 import org.tdar.transform.jsonld.SchemaOrgCreatorTransformer;
 import org.tdar.utils.PersistableUtils;
 
@@ -62,6 +65,8 @@ public class EntityServiceImpl extends ServiceInterface.TypedDaoBase<Person, Per
     private transient SerializationService serializationService;
     @Autowired
     private transient SimpleFileProcessingDao simpleFileProcessingDao;
+    @Autowired
+    private ProxyConstructionService proxyConstructionService;
     @Autowired
     private ApplicationEventPublisher publisher;
 
@@ -650,7 +655,7 @@ public class EntityServiceImpl extends ServiceInterface.TypedDaoBase<Person, Per
      */
     @Override
     @Transactional(readOnly = true)
-    public String getSchemaOrgJson(Creator<?> creator, String logoUrl) throws IOException {
+    public String getSchemaOrgJson(PCreator<?> creator, String logoUrl) throws IOException {
         SchemaOrgCreatorTransformer transformer = new SchemaOrgCreatorTransformer();
         return transformer.convert(serializationService, creator, logoUrl);
     }
@@ -709,6 +714,17 @@ public class EntityServiceImpl extends ServiceInterface.TypedDaoBase<Person, Per
             return found;
         }
         return null;
+    }
+
+    @Override
+    public PCreator<?> findAuthorityFromDuplicate(PCreator<?> dup) {
+        if (dup instanceof PPerson) {
+            Creator<?> creator = findAuthorityFromDuplicate(getDao().find(Person.class, dup.getId()));
+            return proxyConstructionService.createCreator(creator, new Context(null));
+        } else {
+            Creator<?> creator = findAuthorityFromDuplicate(getDao().find(Institution.class, dup.getId()));
+            return proxyConstructionService.createCreator(creator, new Context(null));
+        }
     }
 
 }

@@ -32,6 +32,7 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.GeographicKeyword.Level;
 import org.tdar.core.exception.TdarRuntimeException;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
 import org.tdar.utils.MessageHelper;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -289,7 +290,7 @@ public class GeoSearchDao {
         }
     }
 
-    public String toGeoJson(GeographicKeyword kwd) {
+    public String toGeoJson(PGeographicKeyword kwd) {
         String sql = null;
         try {
             SpatialTables table = getTableFromLevel(kwd.getLevel());

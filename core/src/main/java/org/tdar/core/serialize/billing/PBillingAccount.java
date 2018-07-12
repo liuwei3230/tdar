@@ -17,6 +17,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tdar.core.bean.HasDateCreated;
+import org.tdar.core.bean.HasDateUpdated;
 import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Updatable;
@@ -44,7 +46,7 @@ import com.fasterxml.jackson.annotation.JsonView;
  * @author TDAR
  * @version $Rev$
  */
-public class PBillingAccount extends PAbstractPersistable implements HasStatus, Addressable, HasName, Validatable {
+public class PBillingAccount extends PAbstractPersistable implements HasStatus, Addressable, HasName, Validatable, HasDateUpdated, HasDateCreated {
 
     @Transient
     private final transient Logger logger = LoggerFactory.getLogger(getClass());

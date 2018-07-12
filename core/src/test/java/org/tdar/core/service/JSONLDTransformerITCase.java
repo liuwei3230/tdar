@@ -18,6 +18,7 @@ import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.ExternalKeywordMapping;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.transform.jsonld.SchemaOrgCreatorTransformer;
@@ -75,12 +76,13 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
 
     @Test
     @Rollback
-    public void testCreators() throws IOException, ClassNotFoundException {
+    public void testCreators() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         SchemaOrgCreatorTransformer transformer = new SchemaOrgCreatorTransformer();
 
         for (Creator<?> r : genericService.findAll(Creator.class)) {
             logger.debug("//  {} - {}", r.getId(), r.getCreatorType());
-            String json = transformer.convert(serializationService, r, null);
+            PCreator construct = proxyConstructionService.construct(r, Creator.class, null, false);
+            String json = transformer.convert(serializationService, construct, null);
             logger.debug(json);
             if (r.getCreatorType() == CreatorType.PERSON) {
                 assertTrue("contains type", StringUtils.containsIgnoreCase(json, r.getCreatorType().name()));

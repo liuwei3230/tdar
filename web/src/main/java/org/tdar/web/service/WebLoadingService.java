@@ -1,5 +1,8 @@
 package org.tdar.web.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,14 +11,18 @@ import org.springframework.stereotype.Service;
 import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Persistable;
+import org.tdar.core.bean.billing.BillingAccount;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.resource.Resource;
+import org.tdar.core.bean.keyword.Keyword;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
-import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.ProxyConstructionService;
+import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
 import org.tdar.struts_base.action.PersistableLoadingAction;
@@ -31,28 +38,31 @@ public class WebLoadingService {
     ProxyConstructionService proxyConstructionService;
     @Autowired
     GenericDao genericDao;
+
+    @Autowired
+    BillingAccountService billingAccountService;
     
     @Autowired
     AuthorizationService authorizationService;
-
-    public PResource load(Class<? extends Resource> cls, Class<? extends PResource> cls1, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
-            Authorizable<Resource> support) throws Exception {
+    
+    public <T extends Persistable,R> R load(Class<T> hcls, Class<R> vcls, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
+            Authorizable<T> support) throws Exception {
         if (PersistableUtils.isNullOrTransient(id)) {
             abort(StatusCode.UNKNOWN_ERROR,
-                    support.getText("abstractPersistableController.cannot_recognize_request", cls.getSimpleName()));
+                    support.getText("abstractPersistableController.cannot_recognize_request", hcls.getSimpleName()));
         }
-        PResource q = null;
+        R q = null;
         try {
-            q = proxyConstructionService.load(cls, id, support, user);
+            q = proxyConstructionService.load(hcls, id, support, user);
         } catch (TdarActionException tae) {
             throw tae;
         } catch (Throwable t) {
             logger.error("{}", t,t);
             abort(StatusCode.BAD_REQUEST,
-                    support.getText("abstractPersistableController.cannot_recognize_request", cls.getSimpleName()));
+                    support.getText("abstractPersistableController.cannot_recognize_request", hcls.getSimpleName()));
         }
-        Resource r =genericDao.find(Resource.class, id);  
-        checkValidRequest(rights, user, support, r);
+        T r = genericDao.find(hcls, id);  
+        checkValidRequest(rights, user, support, (T)r);
         return q;
     }
 
@@ -63,10 +73,10 @@ public class WebLoadingService {
      * @param pc
      * @throws Exception 
      */
-    protected <P extends Persistable, Q> void checkValidRequest(InternalTdarRights adminRole, TdarUser user,
-        Authorizable<Resource> support, Resource q) throws Exception {
-        if (q == null) {
-            logger.debug("Dealing with transient persistable {}", q);
+    protected <P extends Persistable> void checkValidRequest(InternalTdarRights adminRole, TdarUser user,
+        Authorizable<P> support, P r) throws Exception {
+        if (r == null) {
+            logger.debug("Dealing with transient persistable {}", r);
             // persistable is null, so the lookup failed (aka not found)
             abort(StatusCode.NOT_FOUND, support.getText("abstractPersistableController.not_found"));
         }
@@ -77,7 +87,7 @@ public class WebLoadingService {
         }
 
         // call the locally defined "authorize" method for more specific checks
-        if (support.authorize(q, user)) {
+        if (support.authorize(r, user)) {
             return;
         }
 
@@ -127,5 +137,15 @@ public class WebLoadingService {
         logger.debug("abort: {}", statusCode);
         throw new TdarActionException(statusCode, response, errorMessage);
     }
+
+    public List<PBillingAccount> listAvailableAccountsForUser(TdarUser authenticatedUser, Status ...statuses) {
+        List<BillingAccount> acts = billingAccountService.listAvailableAccountsForUser(authenticatedUser, statuses);
+        List<PBillingAccount> toReturn = new ArrayList<>();
+        for (BillingAccount act : acts) {
+            toReturn.add(proxyConstructionService.constructShallowAccount(act));
+        }
+        return toReturn;
+    }
+
 
 }
