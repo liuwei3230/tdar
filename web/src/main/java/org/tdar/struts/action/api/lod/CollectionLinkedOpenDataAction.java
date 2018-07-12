@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.ResourceCollection;
-import org.tdar.core.service.GenericService;
+import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.struts.action.api.AbstractJsonApiAction;
 import org.tdar.struts_base.interceptor.annotation.HttpForbiddenErrorResponseOnly;
@@ -28,7 +29,7 @@ public class CollectionLinkedOpenDataAction extends AbstractJsonApiAction implem
     private static final long serialVersionUID = 9142456920026569857L;
     private Long id;
     @Autowired
-    private GenericService genericService;
+    private ProxyConstructionService proxyConstructionService;
     @Autowired
     private ResourceCollectionService collectionService;
     private Map<String, String> error = new HashMap<>();
@@ -36,7 +37,7 @@ public class CollectionLinkedOpenDataAction extends AbstractJsonApiAction implem
     @Override
     public void prepare() throws Exception {
         error.put("status", getText("error.object_does_not_exist"));
-        ResourceCollection resource = genericService.find(ResourceCollection.class, id);
+        PResourceCollection resource = proxyConstructionService.find(ResourceCollection.class, id);
         if (resource == null) {
             addActionError("error.object_does_not_exist");
             setJsonObject(error);

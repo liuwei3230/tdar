@@ -45,6 +45,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.dao.entity.AuthorizedUserDao;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.serialize.entity.PAuthorizedUser;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.collection.CollectionRightsComparator;
@@ -436,13 +437,13 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.prepare();
         vc.view();
 
-        ResourceCollection rc2 = vc.getResourceCollection();
+        PResourceCollection rc2 = vc.getResourceCollection();
         assertEquals(rc.getName(), rc2.getName());
         assertEquals("3 redundant authusers should have been normalized", 3, rc2.getAuthorizedUsers().size());
 
         // if this list is truly normalized, each queue should be length 1
         HashMap<Long, Permissions> map = new HashMap<>();
-        for (AuthorizedUser authuser : rc2.getAuthorizedUsers()) {
+        for (PAuthorizedUser authuser : rc2.getAuthorizedUsers()) {
             map.put(authuser.getUser().getId(), authuser.getGeneralPermission());
         }
         assertEquals("user 1 should have best permission", Permissions.MODIFY_METADATA, map.get(user1Modifier.getUser().getId()));
@@ -1010,7 +1011,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(slug);
         vc.prepare();
         vc.view();
-        logger.info("{}", ((ResourceCollection) vc.getResourceCollection()).getManagedResources().iterator().next().getStatus());
+        logger.info("{}", ((PResourceCollection) vc.getResourceCollection()).getManagedResources().iterator().next().getStatus());
         assertTrue("collection should show the newly undeleted project", CollectionUtils.isNotEmpty(vc.getResults()));
 
         // we should also see the newly-undeleted resource on the edit page

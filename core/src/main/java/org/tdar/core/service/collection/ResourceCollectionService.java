@@ -18,7 +18,6 @@ import org.tdar.core.bean.resource.RevisionLogType;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.serialize.collection.PResourceCollection;
-import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.CollectionSaveObject;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.resource.ErrorHandling;
@@ -303,7 +302,7 @@ public interface ResourceCollectionService {
 
     void moveResource(Resource resource, ResourceCollection fromCollection, ResourceCollection toCollection, TdarUser tdarUser);
 
-    String getSchemaOrgJsonLD(ResourceCollection resource) throws IOException;
+    String getSchemaOrgJsonLD(PResourceCollection resource) throws IOException;
 
     void saveCollectionForRightsController(ResourceCollection c, TdarUser authenticatedUser,
             List<UserRightsProxy> proxies, Long startTime);

@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.DisplayOrientation;
+import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.Sortable;
 import org.tdar.core.bean.collection.CollectionDisplayProperties;
 import org.tdar.core.bean.collection.ResourceCollection;
+import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.GeographicKeyword;
@@ -33,13 +35,18 @@ import org.tdar.core.bean.keyword.SiteTypeKeyword;
 import org.tdar.core.bean.keyword.TemporalKeyword;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.statistics.ResourceCollectionViewStatistic;
 import org.tdar.core.cache.ThreadPermissionsCache;
 import org.tdar.core.exception.StatusCode;
+import org.tdar.core.serialize.collection.PCollectionDisplayProperties;
 import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.BookmarkedResourceService;
+import org.tdar.core.service.FileSystemResourceService;
+import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.collection.ResourceCollectionService;
 import org.tdar.core.service.collection.WhiteLabelFiles;
@@ -53,6 +60,7 @@ import org.tdar.search.query.facet.Facet;
 import org.tdar.search.query.facet.FacetWrapper;
 import org.tdar.search.query.facet.FacetedResultHandler;
 import org.tdar.search.service.query.ResourceSearchService;
+import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.AbstractPersistableViewableAction;
 import org.tdar.struts.action.ResourceFacetedAction;
 import org.tdar.struts.action.SlugViewAction;
@@ -64,6 +72,9 @@ import org.tdar.utils.PersistableUtils;
 import org.tdar.utils.TitleSortComparator;
 import org.tdar.web.service.HomepageDetails;
 import org.tdar.web.service.HomepageService;
+import org.tdar.web.service.WebLoadingService;
+
+import com.opensymphony.xwork2.Preparable;
 
 @Component
 @Scope("prototype")
@@ -76,8 +87,7 @@ import org.tdar.web.service.HomepageService;
                 location = "${id}/${persistable.slug}${slugSuffix}", params = { "ignoreParams", "id,slug" }), // removed ,keywordPath
         @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.HTTPHEADER, params = { "error", "404" })
 })
-public class CollectionViewAction<C extends ResourceCollection> extends AbstractPersistableViewableAction<C>
-        implements FacetedResultHandler<PResource>, SlugViewAction,
+public class CollectionViewAction<C extends ResourceCollection> extends AbstractAuthenticatableAction implements  Preparable, SlugViewAction , Authorizable<ResourceCollection> , FacetedResultHandler<PResource>,
         ResourceFacetedAction {
 
     private static final long serialVersionUID = 5126290300997389535L;
@@ -105,10 +115,16 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     @Autowired
     private transient BookmarkedResourceService bookmarkedResourceService;
     @Autowired
+    private transient FileSystemResourceService fileSystemResourceService;
+    @Autowired
     private transient UserRightsProxyService userRightsProxyService;
-
+    @Autowired
+    private transient WebLoadingService webLoadingService;
+    @Autowired
+    private transient ProxyConstructionService proxyConstructionService;
     private Long parentId;
-    private List<ResourceCollection> collections = new LinkedList<>();
+    private Long id;
+    private List<PResourceCollection> collections = new LinkedList<>();
     private Long viewCount = 0L;
     private int startRecord = DEFAULT_START;
     private int recordsPerPage = getDefaultRecordsPerPage();
@@ -133,83 +149,77 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     private String schemaOrgJsonLD;
 
+    private List<PResourceCollection> parentCollections;
+
+    private PResourceCollection collection;
+
+    private Status status;
+
+    private boolean visible;
+
+    private boolean editable;
+
+    private String slugSuffix;
+
+    private boolean redirectBadSlug;
+
+    private List<UserInvite> parents;
+
+    private String slug;
+
     /**
      * Returns a list of all resource collections that can act as candidate parents for the current resource collection.
      * 
      * @return
      */
-    public List<ResourceCollection> getCandidateParentResourceCollections() {
-        return resourceCollectionService.findPotentialParentCollections(getAuthenticatedUser(), getPersistable());
+    public List<PResourceCollection> getCandidateParentResourceCollections() {
+        return parentCollections;
     }
 
-    @Override
-    public boolean authorize() throws TdarActionException {
-        if (getResourceCollection() == null) {
-            throw new TdarActionException(StatusCode.NOT_FOUND, "not found");
-        }
-        return authorizationService.canViewCollection(getAuthenticatedUser(), getResourceCollection());
-    }
 
     public boolean isVisible() {
-        try {
-            if (!getResourceCollection().isHidden() || authorize()) {
-                return true;
-            }
-        } catch (TdarActionException e) {
-            getLogger().debug("error:", e);
-        }
-        return false;
+        return visible;
     }
 
-    public ResourceCollection getResourceCollection() {
-        return getPersistable();
+    public PResourceCollection getResourceCollection() {
+        return collection;
     }
 
-    public void setResourceCollection(ResourceCollection rc) {
-        setPersistable((C) rc);
+    public void setResourceCollection(PResourceCollection rc) {
+        this.collection = rc;
     }
 
-    @Override
-    public Class<C> getPersistableClass() {
-        return (Class<C>) (Class) ResourceCollection.class;
-    }
 
     public List<SortOption> getSortOptions() {
         return SortOption.getOptionsForResourceCollectionPage();
     }
 
-    @Override
-    public String loadViewMetadata() {
+    public void loadExtraViewMetadata() {
+        if (PersistableUtils.isNullOrTransient(getPersistable())) {
+            return;
+        }
+        ResourceCollection rc = getGenericService().find(ResourceCollection.class, id);
+        parents.addAll(webLoadingService.proxy(resourceCollectionService.findPotentialParentCollections(getAuthenticatedUser(), rc), getAuthenticatedUser()));
         setParentId(getPersistable().getParentId());
         if (!isEditor()) {
-            ResourceCollectionViewStatistic rcvs = new ResourceCollectionViewStatistic(new Date(), getPersistable(), isBot());
+            ResourceCollectionViewStatistic rcvs = new ResourceCollectionViewStatistic(new Date(), rc, isBot());
             getGenericService().saveOrUpdate(rcvs);
         } else {
             // setViewCount(resourceCollectionService.getCollectionViewCount(getPersistable()));
         }
 
         reSortFacets(this, (Sortable) getPersistable());
-        return SUCCESS;
-    }
-
-    @Override
-    public void loadExtraViewMetadata() {
-        if (PersistableUtils.isNullOrTransient(getPersistable())) {
-            return;
-        }
         getLogger().trace("child collections: begin");
-        TreeSet<ResourceCollection> findAllChildCollections = new TreeSet<>(new TitleSortComparator());
+        TreeSet<PResourceCollection> findAllChildCollections = new TreeSet<>(new TitleSortComparator());
 
         if (isAuthenticated()) {
-            resourceCollectionService.buildCollectionTreeForController(getPersistable(), getAuthenticatedUser());
+            resourceCollectionService.buildCollectionTreeForController(rc, getAuthenticatedUser());
             findAllChildCollections.addAll(getPersistable().getTransientChildren());
         } else {
-            for (ResourceCollection c : resourceCollectionService.findDirectChildCollections(getId(), false)) {
-                findAllChildCollections.add((ResourceCollection) c);
-            }
+            findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findDirectChildCollections(getId(), false), getAuthenticatedUser()));
         }
-        findAllChildCollections.addAll(resourceCollectionService.findAlternateChildren(Arrays.asList(getId()), getAuthenticatedUser()));
-        setCollections(new ArrayList<ResourceCollection>(findAllChildCollections));
+        findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findAlternateChildren(Arrays.asList(getId()), getAuthenticatedUser()), getAuthenticatedUser()));
+        setCollections(new ArrayList<PResourceCollection>(findAllChildCollections));
         getLogger().trace("child collections: sort");
         // Collections.sort(collections);
         getLogger().trace("child collections: end");
@@ -229,22 +239,21 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
             @Action(value = "{id}")
     })
     public String view() throws TdarActionException {
-        String result = super.view();
-        if (SUCCESS.equals(result) && isWhiteLabelCollection()) {
+        if (isWhiteLabelCollection()) {
             if (isSearchHeaderEnabled()) {
                 showNavSearchBox = false;
             }
-            result = CollectionViewAction.SUCCESS_WHITELABEL;
+            return  CollectionViewAction.SUCCESS_WHITELABEL;
         }
 
         // if (SUCCESS.equals(result) && getPersistable().getType() == CollectionType.SHARED) {
         // result = SUCCESS_SHARE;
         // }
-        return result;
+        return SUCCESS;
     }
 
     public boolean isWhiteLabelCollection() {
-        ResourceCollection lc = getPersistable();
+        PResourceCollection lc = collection;
         if (lc.getProperties() != null && lc.getProperties().getWhitelabel()) {
             return true;
         }
@@ -272,7 +281,9 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
         homepageService.setupResultForMapSearch(this);
         try {
-            resourceSearchService.buildResourceContainedInSearch(getResourceCollection(), null, getAuthenticatedUser(), this, this);
+            ResourceCollection rc = getGenericService().find(ResourceCollection.class, id);
+
+            resourceSearchService.buildResourceContainedInSearch(rc, null, getAuthenticatedUser(), this, this);
             homepageGraphs = homepageService.generateDetails(this);
             bookmarkedResourceService.applyTransientBookmarked(getResults(), getAuthenticatedUser());
         } catch (SearchPaginationException spe) {
@@ -322,14 +333,14 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         this.recordsPerPage = recordsPerPage;
     }
 
-    public void setCollections(List<ResourceCollection> findAllChildCollections) {
+    public void setCollections(List<PResourceCollection> findAllChildCollections) {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace("child collections: {}", findAllChildCollections);
         }
         this.collections = findAllChildCollections;
     }
 
-    public List<ResourceCollection> getCollections() {
+    public List<PResourceCollection> getCollections() {
         return this.collections;
     }
 
@@ -444,7 +455,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
      * @return
      */
     public boolean isBigCollection() {
-        return (((ResourceCollection) getPersistable()).getManagedResources().size() + getAuthorizedUsers().size()) > BIG_COLLECTION_CHILDREN_COUNT;
+        return (((PResourceCollection) getPersistable()).getManagedResources().size() ) > BIG_COLLECTION_CHILDREN_COUNT;
     }
 
     public Long getViewCount() {
@@ -464,15 +475,11 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     }
 
     public boolean isEditable() {
-        if (getPersistable().isSystemManaged() && !isEditor()) {
-            return false;
-        }
-        return authorizationService.canEditCollection(getAuthenticatedUser(), getPersistable());
+        return editable;
     }
 
     @Override
     public void prepare() throws TdarActionException {
-        super.prepare();
         setPermissionsCache(new ThreadPermissionsCache(isEditor()));
         if (!isRedirectBadSlug() && PersistableUtils.isNotTransient(getPersistable())) {
 
@@ -540,6 +547,11 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         // for now, we just look in hosted + collection ID
         return checkHostedFileAvailable(WhiteLabelFiles.SEARCH_HEADER_FILENAME, getId());
     }
+    
+    protected boolean checkHostedFileAvailable(String filename, Long id) {
+        return fileSystemResourceService.checkHostedFileAvailable(filename, FilestoreObjectType.COLLECTION, id);
+    }
+
 
     /**
      * Indicate to view layer that we should display a search header.
@@ -547,7 +559,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
      * @return
      */
     public boolean isSearchHeaderEnabled() {
-        CollectionDisplayProperties properties = getResourceCollection().getProperties();
+        PCollectionDisplayProperties properties = getResourceCollection().getProperties();
         if (properties != null && properties.getSearchEnabled()) {
             return true;
         }
@@ -645,6 +657,72 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     public void setPermissionsCache(ThreadPermissionsCache permissionsCache) {
         this.permissionsCache = permissionsCache;
+    }
+
+    @Override
+    public PResourceCollection getPersistable() {
+        return collection;
+    }
+
+    @Override
+    public boolean authorize(ResourceCollection t, TdarUser user) throws Exception {
+        if (getPersistable().isSystemManaged() && !isEditor()) {
+            return false;
+        }
+        if (getResourceCollection() == null) {
+            throw new TdarActionException(StatusCode.NOT_FOUND, "not found");
+        }
+        visible = authorizationService.canViewCollection(user,t);
+
+        if (!getResourceCollection().isHidden() &&  visible) {
+            visible = true;
+        }
+
+        editable = authorizationService.canEditCollection(user, t);
+        return visible;
+    }
+
+    @Override
+    public void setStatus(Status status) {
+        this.status = status;
+        
+    }
+
+    @Override
+    public void setSlugSuffix(String slugSuffix) {
+        this.slugSuffix = slugSuffix;
+        
+    }
+
+    @Override
+    public String getSlugSuffix() {
+        return slugSuffix;
+    }
+
+    @Override
+    public String getSlug() {
+        return slug;
+    }
+    
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    @Override
+    public boolean isRedirectBadSlug() {
+        return redirectBadSlug;
+    }
+    
+    public void setRedirectBadSlug(boolean slug) {
+        this.redirectBadSlug = slug;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
 }

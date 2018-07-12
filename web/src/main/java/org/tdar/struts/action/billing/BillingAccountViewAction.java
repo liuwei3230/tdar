@@ -83,7 +83,7 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
             addActionError(getText("error.object_does_not_exist"));
             return;
         }
-        account = webLoadingService.load(BillingAccount.class, PBillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this);
+        account = webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this);
         setAccounts(webLoadingService.listAvailableAccountsForUser(getAuthenticatedUser()));
         // setAccountGroup(accountService.getAccountGroup(getAccount()));
         getAccount().getAuthorizedUsers().forEach(au -> {

@@ -858,11 +858,35 @@ public class ProxyConstructionService {
         return createKeyword(serializedClass, keyword, 1, ctx);
     }
 
+    public <Q, P extends Persistable> Q proxy(P p, TdarUser user) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Class<?> cls = getSerializedClass(p.getClass());
+        if (PResource.class.isAssignableFrom(cls)) {
+            cls = ((Resource)p).getResourceType().getProxyClass();
+            return (Q) constructResource((Resource) p, (PResource) cls.newInstance(), user, false);
+        }
+        Context ctx = new Context(user);
+        if (PResourceCollection.class.isAssignableFrom(cls)) {
+            return (Q) convertResourceCollection((ResourceCollection) p, 1, ctx);
+        }
+        if (PCreator.class.isAssignableFrom(cls)) {
+            return (Q) createCreator((Creator<?>) p, ctx);
+        }
+        if (PKeyword.class.isAssignableFrom(cls)) {
+            return (Q) constructKeyword((Keyword) p);
+        }
+        if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
+            return (Q) createIntegration((DataIntegrationWorkflow) p, ctx);
+        }
+        return null;
+    }
+
+
     public <I, J extends Persistable> I construct(J j, Class<J> class1, TdarUser authenticatedUser, boolean b)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // HACK
         Class<?> cls = getSerializedClass(class1);
         if (PResource.class.isAssignableFrom(cls)) {
+            cls = ((Resource)j).getResourceType().getProxyClass();
             return (I) constructResource((Resource) j, (PResource) cls.newInstance(), authenticatedUser, false);
         }
         Context ctx = new Context(authenticatedUser);
@@ -965,19 +989,19 @@ public class ProxyConstructionService {
             throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
         }
         P r =  genericDao.find(class1, id);
-        if (Resource.class.isAssignableFrom(class1)) {
+//        if (Resource.class.isAssignableFrom(class1)) {
             if (r == null) {
                 return null;
             }
             
             if (r instanceof HasStatus) {
-            support.setStatus(((HasStatus) r).getStatus());
+                support.setStatus(((HasStatus) r).getStatus());
             }
             
             if (support != null && support.authorize((P)r, user) == false) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
-        }
+//        }
         return (Q)construct(r,  class1, user, false);
     }
 

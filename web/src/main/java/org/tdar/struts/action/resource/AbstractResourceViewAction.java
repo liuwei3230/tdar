@@ -134,7 +134,7 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     @Override
     public void prepare() throws Exception {
         try {
-        resource = (R) webLoadingService.load(Resource.class, getPersistableClass(), getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        resource = (R) webLoadingService.load(Resource.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
         for (PResourceCollection rc : resource.getManagedResourceCollections()) {
             PResourceCollection r = rc;
             while (r != null) {

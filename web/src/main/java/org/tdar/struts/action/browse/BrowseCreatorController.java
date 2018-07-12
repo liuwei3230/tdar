@@ -168,7 +168,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     @Override
     public void prepare() throws Exception {
         getLogger().trace("begin prepare");
-        creator = webLoadingService.load(Creator.class, PCreator.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW,
+        creator = webLoadingService.load(Creator.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW,
                 this);
 
         if (!handleSlugRedirect(creator, this)) {

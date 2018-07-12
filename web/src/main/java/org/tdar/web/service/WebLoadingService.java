@@ -1,6 +1,7 @@
 package org.tdar.web.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,14 +13,13 @@ import org.tdar.core.bean.HasName;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.entity.TdarUser;
-import org.tdar.core.bean.keyword.Keyword;
 import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.serialize.billing.PBillingAccount;
-import org.tdar.core.serialize.keyword.PKeyword;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.billing.BillingAccountService;
@@ -45,7 +45,7 @@ public class WebLoadingService {
     @Autowired
     AuthorizationService authorizationService;
     
-    public <T extends Persistable,R> R load(Class<T> hcls, Class<R> vcls, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
+    public <T extends Persistable,R> R load(Class<T> hcls, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
             Authorizable<T> support) throws Exception {
         if (PersistableUtils.isNullOrTransient(id)) {
             abort(StatusCode.UNKNOWN_ERROR,
@@ -145,6 +145,31 @@ public class WebLoadingService {
             toReturn.add(proxyConstructionService.constructShallowAccount(act));
         }
         return toReturn;
+    }
+
+    public <C extends Persistable,D> D find(Class<C> class1, Long id) {
+        return proxyConstructionService.find(class1, id);
+    }
+
+    public <P extends Persistable,Q> List<Q> proxy(Collection<P> findAll, TdarUser user) {
+        ArrayList<Q> toReturn = new ArrayList<>();
+        for (P p : findAll) {
+            try {
+                toReturn.add(proxyConstructionService.proxy(p, user));
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                logger.error("{}",e,e);
+            }
+        }
+        return toReturn;
+    }
+
+    public <P extends Persistable,Q> Q  proxy(P  p, TdarUser user) {
+            try {
+                return proxyConstructionService.proxy(p, user);
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                logger.error("{}",e,e);
+            }
+        return null;
     }
 
 

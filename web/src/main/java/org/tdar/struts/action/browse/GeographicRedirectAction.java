@@ -11,9 +11,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.resource.ResourceType;
+import org.tdar.core.serialize.keyword.PGeographicKeyword;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.struts.action.TdarBaseActionSupport;
 import org.tdar.struts_base.action.TdarActionSupport;
+import org.tdar.web.service.WebLoadingService;
 
 import com.opensymphony.xwork2.Preparable;
 
@@ -33,14 +35,17 @@ public class GeographicRedirectAction extends TdarBaseActionSupport implements P
     private static final long serialVersionUID = 5689969933025476573L;
     @Autowired
     private transient GenericKeywordService genericKeywordService;
+    @Autowired
+    private transient WebLoadingService webLoadingService;
     private String code;
-    private GeographicKeyword keyword;
+    private PGeographicKeyword keyword;
     private ResourceType resourceTypes;
 
     @Override
     public void prepare() throws Exception {
         if (StringUtils.isNotBlank(getCode())) {
-            setKeyword(genericKeywordService.findGeographicKeywordByCode(getCode()));
+            Long id = genericKeywordService.findGeographicKeywordByCode(getCode()).getId();
+            setKeyword(webLoadingService.find(GeographicKeyword.class, id));
         }
     }
 
@@ -65,11 +70,11 @@ public class GeographicRedirectAction extends TdarBaseActionSupport implements P
         this.code = code;
     }
 
-    public GeographicKeyword getKeyword() {
+    public PGeographicKeyword getKeyword() {
         return keyword;
     }
 
-    public void setKeyword(GeographicKeyword keyword) {
+    public void setKeyword(PGeographicKeyword keyword) {
         this.keyword = keyword;
     }
 

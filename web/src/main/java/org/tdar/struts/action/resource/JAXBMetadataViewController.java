@@ -102,7 +102,7 @@ public class JAXBMetadataViewController extends AbstractAuthenticatableAction
     
     @Override
     public void prepare() throws Exception {
-        resource = webLoadingService.load(Resource.class, PResource.class, id, getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        resource = webLoadingService.load(Resource.class, id, getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
     }
 
     public PResource getResource() {
