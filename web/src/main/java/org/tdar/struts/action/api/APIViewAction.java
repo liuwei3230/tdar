@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
@@ -46,7 +47,7 @@ public class APIViewAction extends AbstractApiController {
                 getLogger().debug("could not find resource: {}", getId());
                 return INPUT;
             }
-            PResource pResource = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+            PResource pResource = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), new Context(getAuthenticatedUser()));
             logMessage("API VIEWING", resource.getClass(), resource.getId(), resource.getTitle());
             getResultObject().setResult(pResource);
             return SUCCESS;

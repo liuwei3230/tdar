@@ -42,7 +42,7 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         d.getSiteTypeKeywords().add(new SiteTypeKeyword("SiteType"));
         d.getResourceCreators().add(new ResourceCreator(getBasicUser(), ResourceCreatorRole.AUTHOR));
         d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.CONTRIBUTOR));
-        PDocument dd = proxyConstructionService.constructResource(d, PDocument.class, getBasicUser(), true);
+        PDocument dd = proxyConstructionService.constructResource(d, PDocument.class, new Context(getBasicUser()));
         QualifiedDublinCoreDocument transformAny = ExtendedDcTransformer.transformAny(dd);
         StringWriter writer = new StringWriter();
         JaxbDocumentWriter.write(transformAny, writer, true);
@@ -70,7 +70,7 @@ public class ResourceTransformerITCase extends AbstractIntegrationTestCase {
         d.getResourceCreators().add(new ResourceCreator(getBasicUser(), ResourceCreatorRole.AUTHOR));
         d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.CONTRIBUTOR));
         // d.getResourceCreators().add(new ResourceCreator(getAdminUser(), ResourceCreatorRole.EDITOR));
-        PDocument pd = pcs.constructResource(d, PDocument.class, null, false);
+        PDocument pd = pcs.constructResource(d, PDocument.class, new Context(null));
         ModsDocument transformAny = ModsTransformer.transformAny(pd);
         StringWriter writer = new StringWriter();
         JaxbDocumentWriter.write(transformAny, writer, true);

@@ -17,6 +17,7 @@ import org.tdar.core.bean.SortOption;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ProjectService;
 import org.tdar.search.exception.SearchIndexException;
@@ -79,7 +80,7 @@ public class ProjectController extends AbstractResourceController<Project> {
     @HttpForbiddenErrorResponseOnly
     public String json() {
         try {
-            PProject obsProj = proxyConstructionService.constructResource(getProject(), PProject.class, getAuthenticatedUser(), false);
+            PProject obsProj = proxyConstructionService.constructResource(getProject(), PProject.class, new Context(getAuthenticatedUser()));
             result = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
         } catch (InstantiationException | IllegalAccessException e) {
             getLogger().error("{}",e,e);

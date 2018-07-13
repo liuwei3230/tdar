@@ -48,7 +48,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
                 continue;
             }
             logger.debug("//  {} - {}", r.getId(), r.getResourceType());
-            PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+            PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), new Context(null));
             logger.debug(transformer.convert(serializationService, rr));
         }
     }
@@ -68,7 +68,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
         genericService.saveOrUpdate(map);
         genericService.saveOrUpdate(gk);
         genericService.saveOrUpdate(r);
-        PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+        PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), new Context(null));
         String json = transformer.convert(serializationService, rr);
         logger.debug(json);
         assertTrue(json.contains("petra"));
@@ -81,7 +81,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
 
         for (Creator<?> r : genericService.findAll(Creator.class)) {
             logger.debug("//  {} - {}", r.getId(), r.getCreatorType());
-            PCreator construct = proxyConstructionService.construct(r, Creator.class, null, false);
+            PCreator construct = proxyConstructionService.construct(r, Creator.class, new Context(null));
             String json = transformer.convert(serializationService, construct, null);
             logger.debug(json);
             if (r.getCreatorType() == CreatorType.PERSON) {

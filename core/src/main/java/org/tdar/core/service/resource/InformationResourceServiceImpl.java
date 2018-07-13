@@ -29,6 +29,7 @@ import org.tdar.core.dao.resource.InformationResourceDao;
 import org.tdar.core.dao.resource.InformationResourceFileDao;
 import org.tdar.core.dao.resource.ResourceCollectionDao;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ErrorTransferObject;
 import org.tdar.core.service.PersonalFilestoreService;
 import org.tdar.core.service.ProxyConstructionService;
@@ -238,7 +239,7 @@ public class InformationResourceServiceImpl extends ServiceInterface.TypedDaoBas
         List<E> toReturn = new ArrayList<>();
         for (Resource f : find) {
             try {
-                toReturn.add((E) proxyConstructionService.constructResource(f, f.getResourceType().getProxyClass(), null, false));
+                toReturn.add((E) proxyConstructionService.constructResource(f, f.getResourceType().getProxyClass(), new Context(null)));
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("{}",e,e);
             }

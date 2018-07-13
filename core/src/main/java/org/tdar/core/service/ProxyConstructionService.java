@@ -128,24 +128,26 @@ public class ProxyConstructionService {
 
     @Transactional(readOnly = true)
     public <R extends PResource, T extends Resource> R constructResource(T resource, Class<R> cls,
-            TdarUser viewer,
-            boolean forceObfuscate)
+            Context ctx)
             throws InstantiationException, IllegalAccessException {
         if (resource == null) {
             return null;
         }
-        return constructResource(resource, cls.newInstance(), viewer, forceObfuscate);
+        PResource cache = ctx.getFromResourceCache(resource.getId());
+        if (cache != null) {
+            return (R) cache;
+        } else {
+            return constructResource(resource, cls.newInstance(), ctx);
+        }
     }
 
     @Transactional(readOnly = true)
     public <R extends PResource, T extends Resource> R constructResource(T resource, R r,
-            TdarUser viewer,
-            boolean forceObfuscate)
+            Context ctx)
             throws InstantiationException, IllegalAccessException {
-        boolean viewConfidentialinfo = authorizationService.canDo(viewer, resource, InternalTdarRights.VIEW_AND_DOWNLOAD_CONFIDENTIAL_INFO,
-                Permissions.VIEW_ALL);
-        logger.debug("user: {}/ viewconf:{}", viewer, viewConfidentialinfo);
-        Context ctx = new Context(viewer);
+        boolean viewConfidentialinfo = ctx.canView(authorizationService, resource);
+        logger.debug("user: {}/ viewconf:{}", ctx.getUser(), viewConfidentialinfo);
+        ctx.addToResourceCache(r);
         ctx.setAdmin(false);
         ctx.setAbleToSeeConfidentialFiles(viewConfidentialinfo);
         ctx.setViewUnobfuscatedLat(viewConfidentialinfo);
@@ -204,7 +206,7 @@ public class ProxyConstructionService {
             ir.setDate(iresource.getDate());
             ir.setDateNormalized(iresource.getDateNormalized());
             ir.setResourceProviderInstitution(createInstitution(iresource.getResourceProviderInstitution(), ctx));
-            ir.setProject(constructResource(iresource.getProject(), PProject.class, ctx.getUser(), false));
+            ir.setProject(constructResource(iresource.getProject(), PProject.class, ctx));
             ir.setExternalReference(iresource.isExternalReference());
             ir.setLastUploaded(iresource.getLastUploaded());
             ir.setInformationResourceFiles(convertInformationResourceFiles(iresource.getInformationResourceFiles(), ctx));
@@ -410,6 +412,7 @@ public class ProxyConstructionService {
             p.setTitle(r.getTitle());
             p.setDateCreated(r.getDateCreated());
             p.setDescription(r.getDescription());
+            p.setResourceType(r.getResourceType());
             p.setUrl(r.getUrl());
             return p;
         } catch (InstantiationException | IllegalAccessException e) {
@@ -587,12 +590,19 @@ public class ProxyConstructionService {
             return null;
         }
 
-        boolean viewable = authorizationService.canView(ctx.getUser(), rc_);
+        PResourceCollection cache = ctx.getFromCollectionCache(rc_.getId());
+        if (cache != null) {
+            return cache;
+        }
+
+        boolean viewable = ctx.canView(authorizationService, rc_);
         logger.debug("viewable: {} / {} / {}", viewable, ctx.getUser(), rc_);
         if (!viewable) {
             return null;
         }
+
         PResourceCollection rc = new PResourceCollection();
+        ctx.addToCollectionCache(rc);
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), depth, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), 9, ctx));
         rc.setHidden(rc_.isHidden());
@@ -614,7 +624,12 @@ public class ProxyConstructionService {
         rc.setParentIds(rc_.getParentIds());
         rc.setAlternateParentIds(rc_.getAlternateParentIds());
         rc.setProperties(convertCollectionProperties(rc_.getProperties(), ctx));
-        // rc.setTransientChildren(rc_.getTransientChildren());
+        for (Resource r : rc_.getManagedResources())  {
+            rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass()));
+        }
+        for (Resource r : rc_.getUnmanagedResources())  {
+            rc.getUnmanagedResources().add(createShellResource(r, r.getResourceType().getProxyClass()));
+        }
         rc.setUnmanagedResourceIds(rc_.getUnmanagedResourceIds());
         rc.setVerified(rc_.getVerified());
         return rc;
@@ -651,7 +666,7 @@ public class ProxyConstructionService {
         List<PResource> toReturn = new ArrayList<>();
         for (Resource r : featuredResources) {
             try {
-                constructResource(r, r.getResourceType().getProxyClass(), ctx.getUser(), false);
+                constructResource(r, r.getResourceType().getProxyClass(), ctx);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("{}", e, e);
             }
@@ -731,7 +746,13 @@ public class ProxyConstructionService {
         if (!creator.isActive() && !creator.isDuplicate() || creator == null) {
             return null;
         }
+        PPerson cache = (PPerson)ctx.getFromCreatorCache(creator.getId());
+        if (cache != null) {
+            return cache;
+        }
+
         PPerson person = new PPerson();
+        ctx.addToCreatorCache(person);
         updateperson(creator, person, ctx);
         return person;
     }
@@ -750,7 +771,13 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
+        PInstitution cache = (PInstitution)ctx.getFromCreatorCache(creator.getId());
+        if (cache != null) {
+            return cache;
+        }
+        
         PInstitution institution = new PInstitution();
+        ctx.addToCreatorCache(institution);
         updateCreator(institution, creator);
         institution.setName(creator.getName());
         if (ctx.isInstitutionEmailObfuscated() == true) {
@@ -798,7 +825,12 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
+        PTdarUser cache = (PTdarUser)ctx.getFromCreatorCache(creator.getId());
+        if (cache != null) {
+            return cache;
+        }
         PTdarUser user = new PTdarUser();
+        ctx.addToCreatorCache(user);
         updateperson(creator, user, ctx);
         user.setUsername(creator.getUsername());
         return user;
@@ -865,11 +897,17 @@ public class ProxyConstructionService {
 
     public <Q, P extends Persistable> Q proxy(P p, TdarUser user) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> cls = getSerializedClass(p.getClass());
+        
+        Context ctx = new Context(user);
         if (PResource.class.isAssignableFrom(cls)) {
             cls = ((Resource)p).getResourceType().getProxyClass();
-            return (Q) constructResource((Resource) p, (PResource) cls.newInstance(), user, false);
+            PResource cache = ctx.getFromResourceCache(p.getId());
+            if (cache != null) {
+                return (Q) cache;
+            } else {
+                return (Q) constructResource((Resource)p, (PResource) cls.newInstance(), ctx);
+            }
         }
-        Context ctx = new Context(user);
         if (PResourceCollection.class.isAssignableFrom(cls)) {
             return (Q) convertResourceCollection((ResourceCollection) p, 1, ctx);
         }
@@ -882,19 +920,26 @@ public class ProxyConstructionService {
         if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
             return (Q) createIntegration((DataIntegrationWorkflow) p, ctx);
         }
+        logger.error("returning NULL for: {}", p);
         return null;
     }
 
 
-    public <I, J extends Persistable> I construct(J j, Class<J> class1, TdarUser authenticatedUser, boolean b)
+    public <I, J extends Persistable> I construct(J j, Class<J> class1, Context ctx)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // HACK
         Class<?> cls = getSerializedClass(class1);
         if (PResource.class.isAssignableFrom(cls)) {
             cls = ((Resource)j).getResourceType().getProxyClass();
-            return (I) constructResource((Resource) j, (PResource) cls.newInstance(), authenticatedUser, false);
+            
+            PResource cache = ctx.getFromResourceCache(j.getId());
+            if (cache != null) {
+                return (I) cache;
+            } else {
+                return (I) constructResource((Resource) j, (PResource) cls.newInstance(), ctx);
+            }
+            
         }
-        Context ctx = new Context(authenticatedUser);
         if (PResourceCollection.class.isAssignableFrom(cls)) {
             return (I) convertResourceCollection((ResourceCollection) j, 1, ctx);
         }
@@ -946,8 +991,32 @@ public class ProxyConstructionService {
         return convertResourrceCreator(findAll, ctx);
     }
 
-    public PResourceCollection createShellCollection(ResourceCollection rc, Context ctx) {
-        return convertResourceCollection(rc, 1, ctx);
+    public PResourceCollection createShellCollection(ResourceCollection rc_, Context ctx) {
+        if (rc_ == null) {
+            return null;
+        }
+        PResourceCollection rc = new PResourceCollection();
+        rc.setHidden(rc_.isHidden());
+        rc.setId(rc_.getId());
+        rc.setName(rc_.getName());
+        rc.setDescription(rc_.getDescription());
+        rc.setFormattedDescription(rc_.getFormattedDescription());
+        rc.setSortBy(rc_.getSortBy());
+        rc.setOrientation(rc_.getOrientation());
+        rc.setSecondarySortBy(rc_.getSecondarySortBy());
+        rc.setOwner(convertUser(rc_.getOwner(), ctx));
+        rc.setDateCreated(rc_.getDateCreated());
+        rc.setDateUpdated(rc_.getDateUpdated());
+        rc.setUpdater(convertUser(rc_.getUpdater(), ctx));
+        rc.setResourceIds(rc_.getResourceIds());
+        rc.setSystemManaged(rc_.isSystemManaged());
+        rc.setStatus(rc_.getStatus());
+        rc.setParentIds(rc_.getParentIds());
+        rc.setAlternateParentIds(rc_.getAlternateParentIds());
+        rc.setProperties(convertCollectionProperties(rc_.getProperties(), ctx));
+        rc.setUnmanagedResourceIds(rc_.getUnmanagedResourceIds());
+        rc.setVerified(rc_.getVerified());
+        return rc;
     }
 
     public PTdarUser createShellTdarUser(TdarUser find, Context ctx) {
@@ -993,6 +1062,7 @@ public class ProxyConstructionService {
      */
     public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, TdarUser user)
             throws Exception {
+        Context ctx = new Context(user);
         if (id == null) {
             throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
         }
@@ -1010,7 +1080,7 @@ public class ProxyConstructionService {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
 //        }
-        return (Q)construct(r,  class1, user, false);
+        return (Q)construct(r,  class1, ctx);
     }
 
     public PDataTable loadDataTable(Long dataTableId) {
@@ -1025,6 +1095,11 @@ public class ProxyConstructionService {
     }
 
     private PBillingAccount createBillingAccount(BillingAccount act_, Context ctx) {
+        PBillingAccount cache = ctx.getFromAccountCache(act_.getId());
+        if (cache != null) {
+            return cache;
+        }
+
         PBillingAccount act = constructShallowAccount(act_, ctx);
         if (act == null) {
             return null;

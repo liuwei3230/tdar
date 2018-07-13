@@ -1045,12 +1045,12 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         // shareController.setAsync(false);
         String result = shareController.save();
         // searchIndexService.index(proxy);
-
+        logger.debug("rc hidden: {}/{}", rc.isHidden(), rc.getStatus());
         Assert.assertEquals(Action.SUCCESS, result);
         Long rcid = rc.getId();
         String slug = rc.getSlug();
         // confirm resource is viewable by author of collection
-        CollectionViewAction vc = generateNewInitializedController(CollectionViewAction.class);
+        CollectionViewAction vc = generateNewInitializedController(CollectionViewAction.class, getUser());
         vc.setId(rcid);
         vc.setSlug(slug);
         vc.prepare();

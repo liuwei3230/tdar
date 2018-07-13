@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.download.DownloadResult;
 import org.tdar.core.service.download.DownloadService;
@@ -55,7 +56,7 @@ public class DownloadController extends AbstractDownloadController implements Pr
         }
         setInformationResource(getDownloadTransferObject().getInformationResource());
         try {
-            PResource resource = proxyConstructionService.constructResource(getInformationResource(), getInformationResource().getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+            PResource resource = proxyConstructionService.constructResource(getInformationResource(), getInformationResource().getResourceType().getProxyClass(), new Context(getAuthenticatedUser()));;
             setResourceCitation(new ResourceCitationFormatter(resource));
         } catch (Exception e) {
             throw new TdarRecoverableRuntimeException(e);

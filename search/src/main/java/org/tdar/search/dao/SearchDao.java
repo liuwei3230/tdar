@@ -32,6 +32,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.ResourceType;
 import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.dao.resource.DatasetDao;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.search.bean.SolrSearchObject;
 import org.tdar.search.exception.SearchException;
@@ -389,7 +390,7 @@ public class SearchDao<I extends Indexable> {
             try {
                 Class<J> cls_ = (Class<J>) Class.forName(cls);
                 for (J j : datasetDao.findAll(cls_, coalesce.get(cls))) {
-                    I i = proxyConstructionService.construct(j, cls_, resultHandler.getAuthenticatedUser(), false);
+                    I i = proxyConstructionService.construct(j, cls_, new Context( resultHandler.getAuthenticatedUser()));
                     Long id = j.getId();
 //                    obfuscateAndMarkViewable(resultHandler, i);
                     elements[idList.indexOf(id)] = i;

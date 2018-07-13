@@ -221,7 +221,7 @@ public class PdfServiceImpl implements PdfService {
         cursorPositionFromBottom = writeOnPage(content, document.getTitle(), PdfFontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN,
                 cursorPositionFromBottom);
         cursorPositionFromBottom = writeOnPage(content, "", PdfFontHelper.HELVETICA_SIXTEEN_POINT, true, LEFT_MARGIN, cursorPositionFromBottom);
-        ResourceCitationFormatter formatter = new ResourceCitationFormatter(proxyConstructionService.constructResource(document, PDocument.class, submitter, false));
+        ResourceCitationFormatter formatter = new ResourceCitationFormatter(proxyConstructionService.constructResource(document, PDocument.class, new Context(submitter)));
         cursorPositionFromBottom = writeLabelPairOnPage(content, MessageHelper.getMessage("pdfService.authors"), formatter.getFormattedAuthorList(),
                 PdfFontHelper.HELVETICA_TWELVE_POINT,
                 LEFT_MARGIN,

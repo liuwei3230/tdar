@@ -63,6 +63,7 @@ import org.tdar.core.bean.resource.file.FileAction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.GenericKeywordService;
 import org.tdar.core.service.ImportService;
 import org.tdar.core.service.ProxyConstructionService;
@@ -430,7 +431,7 @@ public class JAXBITCase extends AbstractIntegrationTestCase {
         List<Resource> findAll = genericService.findAll(Resource.class, Arrays.asList(371798L, 366254L));
         findAll.forEach(r -> {
             try {
-                PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), null, true);
+                PResource rr = proxyConstructionService.constructResource(r, r.getResourceType().getProxyClass(), new Context(null));
                 ExtendedDcTransformer.transformAny(rr);
             } catch (InstantiationException | IllegalAccessException e) {
                 // TODO Auto-generated catch block

@@ -241,6 +241,9 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
             @Action(value = "{id}")
     })
     public String view() throws TdarActionException {
+        if (collection== null) {
+            return INPUT;
+        }
         if (isWhiteLabelCollection()) {
             if (isSearchHeaderEnabled()) {
                 showNavSearchBox = false;
@@ -255,8 +258,10 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     }
 
     public boolean isWhiteLabelCollection() {
-        PResourceCollection lc = collection;
-        if (lc.getProperties() != null && lc.getProperties().getWhitelabel()) {
+        if (collection == null) {
+            return false;
+        }
+        if (collection.getProperties() != null && collection.getProperties().getWhitelabel()) {
             return true;
         }
         return false;
@@ -483,6 +488,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     @Override
     public void prepare() throws Exception {
         collection = webLoadingService.load(ResourceCollection.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        getLogger().debug("{}", collection);
         setPermissionsCache(new ThreadPermissionsCache(isEditor()));
         if (!isRedirectBadSlug() && PersistableUtils.isNotTransient(getPersistable())) {
 

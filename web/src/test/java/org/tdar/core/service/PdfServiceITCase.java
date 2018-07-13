@@ -84,7 +84,7 @@ public class PdfServiceITCase extends AbstractIntegrationWebTestCase {
         InformationResourceFileVersion originalVersion = document.getLatestUploadedVersion();
         // setup document
         
-        PDocument d = proxyConstructionService.constructResource(document, PDocument.class, null, false);
+        PDocument d = proxyConstructionService.constructResource(document, PDocument.class, new Context(null));
         DocumentCitationFormatTestCase.setupDocumentWithAllFields(d, DocumentType.BOOK);
         for (ResourceCreator c : document.getResourceCreators()) {
             genericService.saveOrUpdate(c.getCreator());

@@ -26,6 +26,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.bean.resource.file.FileAccessRestriction;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.serialize.resource.PProject;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ResourceCreatorProxy;
 import org.tdar.core.service.SerializationService;
@@ -285,7 +286,7 @@ public abstract class AbstractInformationResourceController<R extends Informatio
         String retval = super.loadAddMetadata();
         resolveProject();
         try {
-            PProject obsProj = proxyConstructionService.constructResource(getGenericService().find(Project.class, getProjectId()), PProject.class, getAuthenticatedUser(), false);
+            PProject obsProj = proxyConstructionService.constructResource(getGenericService().find(Project.class, getProjectId()), PProject.class, new Context(getAuthenticatedUser()));
             Object proj = projectService.getProjectAsJson(obsProj, getAuthenticatedUser(), null);
             json = serializationService.convertFilteredJsonForStream(proj, JsonProjectLookupFilter.class, null);
         } catch (InstantiationException | IllegalAccessException e) {

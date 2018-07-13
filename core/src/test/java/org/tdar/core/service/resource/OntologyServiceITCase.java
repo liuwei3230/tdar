@@ -31,6 +31,7 @@ import org.tdar.core.dao.resource.OntologyNodeDao;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.serialize.resource.POntology;
 import org.tdar.core.serialize.resource.POntologyNode;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ontology.OntologyNodeWrapper;
 import org.tdar.utils.PersistableUtils;
@@ -93,7 +94,7 @@ public class OntologyServiceITCase extends AbstractIntegrationTestCase {
         Ontology ont = createOntology();
         File file = createOwlFile(ont, "not_flat.txt");
         ont = addFileToResource(ont, file);
-        POntology pOntology = pcs.constructResource(ont, POntology.class, null, false);
+        POntology pOntology = pcs.constructResource(ont, POntology.class, new Context(null));
         OntologyNodeWrapper wrapper = ontologyService.prepareOntologyJson(pOntology);
         logger.debug(wrapper.getDisplayName());
         assertEquals("Paint", wrapper.getDisplayName());

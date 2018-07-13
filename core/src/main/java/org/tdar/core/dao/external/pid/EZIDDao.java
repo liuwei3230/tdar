@@ -44,6 +44,7 @@ import org.tdar.core.configuration.TdarConfiguration;
 import org.tdar.core.exception.TdarRecoverableRuntimeException;
 import org.tdar.core.serialize.resource.PInformationResource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.transform.DcTransformer;
 
@@ -280,7 +281,7 @@ public class EZIDDao implements ExternalIDProvider {
         StringBuilder responseBuilder = new StringBuilder();
         PResource r = null;
         try {
-            r = proxyConstructionService.constructResource(r_,r_.getResourceType().getProxyClass(), null, true);
+            r = proxyConstructionService.constructResource(r_,r_.getResourceType().getProxyClass(), new Context(null));
         } catch (Throwable t) {
             logger.error("{}",t,t);
         }

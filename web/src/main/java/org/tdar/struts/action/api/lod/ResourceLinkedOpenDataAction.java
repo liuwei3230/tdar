@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.resource.ResourceService;
@@ -48,7 +49,7 @@ public class ResourceLinkedOpenDataAction extends AbstractJsonApiAction implemen
             return;
         }
         
-        PResource r = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), getAuthenticatedUser(), false);
+        PResource r = proxyConstructionService.constructResource(resource, resource.getResourceType().getProxyClass(), new Context(getAuthenticatedUser()));
         String message = resourceService.getSchemaOrgJsonLD(r);
         setJsonInputStream(new ByteArrayInputStream(message.getBytes()));
     }

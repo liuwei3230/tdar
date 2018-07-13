@@ -22,6 +22,7 @@ import org.tdar.core.bean.resource.Document;
 import org.tdar.core.bean.resource.Project;
 import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.resource.PResource;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.FeedSearchHelper;
 import org.tdar.core.service.ImportService;
 import org.tdar.core.service.ProxyConstructionService;
@@ -133,7 +134,7 @@ public class GeoJSONITCase extends AbstractIntegrationTestCase {
     private FeedSearchHelper setupTest(TdarUser user, Resource... resources) throws InstantiationException, IllegalAccessException {
         List<PResource> list = new ArrayList<>();
         for (Resource r : resources) {
-            list.add(pcs.constructResource(r, r.getResourceType().getProxyClass(), user, false));
+            list.add(pcs.constructResource(r, r.getResourceType().getProxyClass(), new Context(user)));
         };
 
         BaseSearchResult<PResource> handler = new BaseSearchResult<>();
