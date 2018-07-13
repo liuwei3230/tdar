@@ -39,6 +39,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.file.VersionType;
 import org.tdar.core.bean.statistics.ResourceCollectionViewStatistic;
 import org.tdar.core.cache.ThreadPermissionsCache;
+import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.serialize.collection.PCollectionDisplayProperties;
 import org.tdar.core.serialize.collection.PResourceCollection;
@@ -64,6 +65,7 @@ import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.AbstractPersistableViewableAction;
 import org.tdar.struts.action.ResourceFacetedAction;
 import org.tdar.struts.action.SlugViewAction;
+import org.tdar.struts.action.AbstractPersistableController.RequestType;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
 import org.tdar.struts_base.action.TdarActionSupport;
@@ -163,7 +165,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     private boolean redirectBadSlug;
 
-    private List<UserInvite> parents;
+    private List<PResourceCollection> parents = new ArrayList<>();
 
     private String slug;
 
@@ -479,7 +481,8 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     }
 
     @Override
-    public void prepare() throws TdarActionException {
+    public void prepare() throws Exception {
+        collection = webLoadingService.load(ResourceCollection.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
         setPermissionsCache(new ThreadPermissionsCache(isEditor()));
         if (!isRedirectBadSlug() && PersistableUtils.isNotTransient(getPersistable())) {
 
@@ -512,12 +515,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
             if (getTotalRecords() < 1) {
                 setKeywordSectionVisible(false);
             }
-            
-//            for (PResource r : getResults()) {
-//                if (isManaged(r)) {
-//                    getPermissionsCache().getManagedResources().add(r.getId());
-//                }
-//            }
+         loadExtraViewMetadata();   
         }
 
     }
@@ -666,19 +664,21 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     @Override
     public boolean authorize(ResourceCollection t, TdarUser user) throws Exception {
-        if (getPersistable().isSystemManaged() && !isEditor()) {
-            return false;
-        }
-        if (getResourceCollection() == null) {
+        if (t == null) {
             throw new TdarActionException(StatusCode.NOT_FOUND, "not found");
         }
+
         visible = authorizationService.canViewCollection(user,t);
 
-        if (!getResourceCollection().isHidden() &&  visible) {
+        if (!t.isHidden() &&  visible) {
             visible = true;
         }
 
-        editable = authorizationService.canEditCollection(user, t);
+        if (t.isSystemManaged() && !isEditor()) {
+            editable = false;
+        } else if (authorizationService.canEditCollection(user, t)) {    
+            editable = true;
+        }
         return visible;
     }
 

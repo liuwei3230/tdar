@@ -21,6 +21,7 @@ import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.StatusCode;
 import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.service.Authorizable;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.external.AuthorizationService;
@@ -142,7 +143,7 @@ public class WebLoadingService {
         List<BillingAccount> acts = billingAccountService.listAvailableAccountsForUser(authenticatedUser, statuses);
         List<PBillingAccount> toReturn = new ArrayList<>();
         for (BillingAccount act : acts) {
-            toReturn.add(proxyConstructionService.constructShallowAccount(act));
+            toReturn.add(proxyConstructionService.constructShallowAccount(act, new Context(authenticatedUser)));
         }
         return toReturn;
     }

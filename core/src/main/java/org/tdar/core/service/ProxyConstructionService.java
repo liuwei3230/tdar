@@ -19,6 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.tdar.core.bean.HasStatus;
 import org.tdar.core.bean.Persistable;
 import org.tdar.core.bean.billing.BillingAccount;
+import org.tdar.core.bean.billing.BillingItem;
+import org.tdar.core.bean.billing.Coupon;
+import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.bean.citation.RelatedComparativeCollection;
 import org.tdar.core.bean.citation.SourceCollection;
 import org.tdar.core.bean.collection.CollectionDisplayProperties;
@@ -57,6 +60,10 @@ import org.tdar.core.dao.base.GenericDao;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.serialize.billing.PBillingActivity;
+import org.tdar.core.serialize.billing.PBillingItem;
+import org.tdar.core.serialize.billing.PCoupon;
+import org.tdar.core.serialize.billing.PInvoice;
 import org.tdar.core.serialize.citation.PRelatedComparativeCollection;
 import org.tdar.core.serialize.citation.PSourceCollection;
 import org.tdar.core.serialize.collection.PCollectionDisplayProperties;
@@ -103,8 +110,6 @@ import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.serialize.resource.file.PInformationResourceFileVersion;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.core.service.resource.ResourceService;
-
-import com.amazonaws.services.gamelift.model.AcceptanceType;
 
 @Service
 public class ProxyConstructionService {
@@ -178,7 +183,7 @@ public class ProxyConstructionService {
         r.setExternalId(resource.getExternalId());
         r.setTransientAccessCount(resource.getTransientAccessCount());
         r.setUploader(convertUser(resource.getUploader(), ctx));
-        r.setAccount(constructShallowAccount(resource.getAccount()));
+        r.setAccount(constructShallowAccount(resource.getAccount(), ctx));
         r.setPreviousStatus(resource.getPreviousStatus());
         r.setSpaceInBytesUsed(resource.getSpaceInBytesUsed());
         r.setFilesUsed(resource.getFilesUsed());
@@ -282,7 +287,7 @@ public class ProxyConstructionService {
         return r;
     }
 
-    public PBillingAccount constructShallowAccount(BillingAccount account) {
+    public PBillingAccount constructShallowAccount(BillingAccount account, Context ctx) {
         if (account == null) {
             return null;
         }
@@ -899,6 +904,9 @@ public class ProxyConstructionService {
         if (PKeyword.class.isAssignableFrom(cls)) {
             return (I) constructKeyword((Keyword) j);
         }
+        if (PBillingAccount.class.isAssignableFrom(cls)) {
+            return (I) createBillingAccount((BillingAccount)j,ctx);
+        }
         if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
             return (I) createIntegration((DataIntegrationWorkflow) j, ctx);
         }
@@ -1010,14 +1018,14 @@ public class ProxyConstructionService {
         return convertDataTable(dataTable);
     }
 
-    public PBillingAccount updateAccount(PResource item) {
+    public PBillingAccount updateAccount(PResource item,Context ctx) {
         BillingAccount findAccountForResource = billingAccountDao.findAccountForResource(item.getId());
-        PBillingAccount act = constructShallowAccount(findAccountForResource);
+        PBillingAccount act = constructShallowAccount(findAccountForResource, ctx);
         return act;
     }
 
     private PBillingAccount createBillingAccount(BillingAccount act_, Context ctx) {
-        PBillingAccount act = constructShallowAccount(act_);
+        PBillingAccount act = constructShallowAccount(act_, ctx);
         if (act == null) {
             return null;
         }
@@ -1030,11 +1038,11 @@ public class ProxyConstructionService {
         act.setSpaceUsedInBytes(act_.getSpaceUsedInBytes());
         act.setResourcesUsed(act_.getResourcesUsed());
         act.setExpires(act_.getExpires());
-        // act.setInvoices(act_.getInvoices());
-        // act.setResources(act_.getResources());
+         act.setInvoices(constructInvoices(act_.getInvoices(),ctx));
+         act.setResources(createShellResources(act_.getResources()));
         act.setOwner(convertUser(act_.getOwner(), ctx));
         act.setModifiedBy(convertUser(act_.getModifiedBy(), ctx));
-        // act.setCoupons(act_.getCoupons());
+         act.setCoupons(createCoupons(act_.getCoupons(), ctx));
         // act.setUsageHistory(act_.getUsageHistory());
         act.setAuthorizedUsers(convertAuthorizedUsers(act_.getAuthorizedUsers(), ctx));
         act.setFullService(act_.getFullService());
@@ -1045,6 +1053,99 @@ public class ProxyConstructionService {
         return act;
     }
 
+    private Set<PCoupon> createCoupons(Set<Coupon> coupons, Context ctx) {
+        if (CollectionUtils.isEmpty(coupons)) {
+            return Collections.EMPTY_SET;
+        }
+        Set<PCoupon> toReturn = new HashSet<>();
+        for (Coupon coupon : coupons) {
+            PCoupon c = convertCoupon(coupon, ctx);
+            toReturn.add(c);
+
+        }
+        return toReturn;
+    }
+
+    private PCoupon convertCoupon(Coupon coupon, Context ctx) {
+        PCoupon c = new PCoupon();
+        c.setNumberOfMb(coupon.getNumberOfMb());
+        c.setNumberOfFiles(coupon.getNumberOfFiles());
+        c.setCode(coupon.getCode());
+        c.setDateCreated(coupon.getDateCreated());
+        c.setDateExpires(coupon.getDateExpires());
+        c.setUser(createShellTdarUser(coupon.getUser(), ctx));
+        c.setDateRedeemed(coupon.getDateRedeemed());
+        c.setResourceIds(coupon.getResourceIds());
+        c.setId(coupon.getId());
+        return c;
+    }
+
+    private Set<PResource> createShellResources(Set<Resource> resources) {
+        if (CollectionUtils.isEmpty(resources)) {
+            return Collections.EMPTY_SET;
+        }
+        Set<PResource> toReturn = new HashSet<>();
+        for (Resource r : resources) {
+            toReturn.add(createShellResource(r, r.getResourceType().getProxyClass()));
+        }
+        return toReturn;
+    }
+
+    private Set<PInvoice> constructInvoices(Set<Invoice> invoices, Context ctx) {
+        if (CollectionUtils.isEmpty(invoices)) {
+            return Collections.EMPTY_SET;
+        }
+        Set<PInvoice> toReturn = new HashSet<>();
+        for (Invoice r : invoices) {
+            PInvoice i = new PInvoice();
+            i.setDateCreated(r.getDateCreated());
+            i.setTransactionId(r.getTransactionId());
+//            i.setAddress(convAdd);
+            i.setOwner(convertUser(r.getOwner(), ctx));
+            for (BillingItem it : r.getItems()) {
+                PBillingItem item_ = new PBillingItem();
+                item_.setQuantity(it.getQuantity());
+                item_.setId(it.getId());
+                PBillingActivity a = new PBillingActivity();
+                a.setId(it.getActivity().getId());
+                a.setNumberOfHours(it.getActivity().getNumberOfHours());
+                a.setNumberOfMb(it.getActivity().getNumberOfMb());
+                a.setNumberOfResources(it.getActivity().getNumberOfResources());
+                a.setNumberOfFiles(it.getActivity().getNumberOfFiles());
+                a.setName(it.getActivity().getName());
+                a.setPrice(it.getActivity().getPrice());
+                a.setCurrency(it.getActivity().getCurrency());
+                a.setActive(it.getActivity().getActive());
+                a.setGroup(it.getActivity().getGroup());
+                a.setDisplayNumberOfFiles(it.getActivity().getDisplayNumberOfFiles());
+                a.setDisplayNumberOfResources(it.getActivity().getDisplayNumberOfResources());
+                a.setDisplayNumberOfMb(it.getActivity().getDisplayNumberOfMb());
+                a.setMinAllowedNumberOfFiles(it.getActivity().getMinAllowedNumberOfFiles());
+//                a.setModel(it.getActivity().getModel());
+                a.setActivityType(it.getActivity().getActivityType());
+                a.setOrder(it.getActivity().getOrder());
+
+            }
+            i.setId(r.getId());
+            i.setPaymentMethod(r.getPaymentMethod());
+            i.setBillingPhone(r.getBillingPhone());
+            i.setInvoiceNumber(r.getInvoiceNumber());
+            i.setOtherReason(r.getOtherReason());
+            i.setTransactionStatus(r.getTransactionStatus());
+            i.setTransactedBy(convertUser(r.getTransactedBy(), ctx));
+            i.setCalculatedCost(r.getCalculatedCost());
+            i.setAccountType(r.getAccountType());
+            i.setTransactionDate(r.getTransactionDate());
+            i.setNumberOfFiles(r.getNumberOfFiles());
+            i.setNumberOfMb(r.getNumberOfMb());
+//            i.setResponse(r.getResponse());
+            i.setCoupon(convertCoupon(r.getCoupon(),ctx));
+            i.setCouponValue(r.getCouponValue());
+
+        }
+        return toReturn;
+    }
+    
     public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, TdarUser user) {
         if (CollectionUtils.isEmpty(findUserInvites)) {
             return Collections.EMPTY_LIST;

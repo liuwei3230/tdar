@@ -2,20 +2,10 @@ package org.tdar.core.serialize.billing;
 
 import java.util.Objects;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang3.ObjectUtils;
-import org.hibernate.validator.constraints.Length;
 import org.tdar.core.bean.AbstractPersistable;
-import org.tdar.core.bean.FieldLength;
 import org.tdar.core.bean.TdarGroup;
+import org.tdar.core.bean.billing.BillingActivity.BillingActivityType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -27,11 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class PBillingActivity extends AbstractPersistable implements Comparable<PBillingActivity> {
 
     private static final long BYTES_IN_MB = 1_048_576L;
-
-    public enum BillingActivityType {
-        PRODUCTION,
-        TEST;
-    }
 
     private String name;
     private Integer numberOfHours = 0;

@@ -153,7 +153,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         logger.info("results: {} ", results);
         assertTrue(results.contains(normal.getId()));
         assertTrue(results.contains(draft.getId()));
-        genericService.delete(vc.getResourceCollection().getAuthorizedUsers());
+//        genericService.delete(vc.getResourceCollection().getAuthorizedUsers());
     }
 
     @SuppressWarnings("unused")

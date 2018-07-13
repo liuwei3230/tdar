@@ -23,6 +23,7 @@ import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.serialize.resource.datatable.PDataTable;
 import org.tdar.core.serialize.resource.file.PInformationResourceFile;
 import org.tdar.core.service.BookmarkedResourceService;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.GenericService;
 import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.ProxyConstructionService;
@@ -128,7 +129,7 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
         // only showing access count when logged in (speeds up page loads)
         if (auth.isAuthenticated()) {
             resourceService.updateTransientAccessCount(auth.getItem());
-            proxyConstructionService.updateAccount(auth.getItem());
+            proxyConstructionService.updateAccount(auth.getItem(), new Context(auth.getAuthenticatedUser()));
         }
         bookmarkedResourceService.applyTransientBookmarked(Arrays.asList(auth.getItem()), auth.getAuthenticatedUser());
     }

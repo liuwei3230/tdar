@@ -79,11 +79,11 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     @Override
     public void prepare() throws Exception {
+        account = webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this);
         if (PersistableUtils.isNullOrTransient(getAccount())) {
             addActionError(getText("error.object_does_not_exist"));
             return;
         }
-        account = webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this);
         setAccounts(webLoadingService.listAvailableAccountsForUser(getAuthenticatedUser()));
         // setAccountGroup(accountService.getAccountGroup(getAccount()));
         getAccount().getAuthorizedUsers().forEach(au -> {
