@@ -143,7 +143,7 @@ public class BrowseControllerITCase extends AbstractSearchControllerITCase {
         controller.setSlug(creator.getSlug());
         controller.prepare();
         assertEquals(Action.SUCCESS, controller.browseCreators());
-        assertEquals(creator, controller.getCreator());
+        assertEquals(creator.getId(), controller.getCreator().getId());
         log.info("{}", controller.getResults());
         assertTrue(controller.getResults().size() > 0);
     }

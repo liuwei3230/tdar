@@ -350,7 +350,6 @@ public class PDataTableColumn extends AbstractSequenced<PDataTableColumn> {
 
     @Deprecated
     public void setMappedOntology(POntology ont) {
-        logger.warn("setting mappedOntology does nothing...");
     }
 
     @JsonView(JsonIntegrationDetailsFilter.class)

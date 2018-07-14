@@ -14,6 +14,7 @@ import org.tdar.core.bean.resource.OntologyNode;
 import org.tdar.core.dao.resource.OntologyNodeDao;
 import org.tdar.core.serialize.resource.PDataset;
 import org.tdar.core.serialize.resource.POntologyNode;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.ServiceInterface;
 import org.tdar.utils.PersistableUtils;
@@ -89,7 +90,7 @@ public class OntologyNodeServiceImpl extends ServiceInterface.TypedDaoBase<Ontol
             return toReturn;
         }
         for (Dataset dataset : getDao().findDatasetsUsingNode(node)) {
-            toReturn.add((PDataset) proxyConstructionService.createShellResource(dataset, dataset.getResourceType().getProxyClass()));
+            toReturn.add((PDataset) proxyConstructionService.createShellResource(dataset, dataset.getResourceType().getProxyClass(),new Context(null)));
         }
         return toReturn;
     }

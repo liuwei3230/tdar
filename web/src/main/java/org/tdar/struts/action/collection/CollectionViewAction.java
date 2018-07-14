@@ -25,6 +25,7 @@ import org.tdar.core.bean.collection.CollectionDisplayProperties;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
+import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.keyword.CultureKeyword;
 import org.tdar.core.bean.keyword.GeographicKeyword;
 import org.tdar.core.bean.keyword.InvestigationType;
@@ -187,9 +188,9 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         return collection;
     }
 
-    public void setResourceCollection(PResourceCollection rc) {
-        this.collection = rc;
-    }
+//    public void setResourceCollection(PResourceCollection rc) {
+//        this.collection = rc;
+//    }
 
 
     public List<SortOption> getSortOptions() {
@@ -546,6 +547,13 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
     public boolean isLogoAvailable() {
         return checkLogoAvailable(FilestoreObjectType.COLLECTION, getId(), VersionType.WEB_LARGE);
     }
+
+    
+    public List<Permissions> getAvailablePermissions() {
+        List<Permissions> permissions = Permissions.getAvailablePermissionsFor(ResourceCollection.class);
+        return permissions;
+    }
+
 
     public boolean isSearchHeaderLogoAvailable() {
         // for now, we just look in hosted + collection ID

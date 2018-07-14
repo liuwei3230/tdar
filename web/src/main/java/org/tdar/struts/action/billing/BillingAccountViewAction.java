@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Actions;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.apache.struts2.interceptor.validation.SkipValidation;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -30,6 +35,7 @@ import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.action.TdarActionException;
+import org.tdar.struts_base.action.TdarActionSupport;
 import org.tdar.utils.PersistableUtils;
 import org.tdar.web.service.WebLoadingService;
 
@@ -39,6 +45,14 @@ import com.opensymphony.xwork2.Preparable;
 @Scope("prototype")
 @ParentPackage("secured")
 @Namespace("/billing")
+
+@Results(value = {
+        @Result(name = TdarActionSupport.SUCCESS, location = "view.ftl"),
+        @Result(name = TdarActionSupport.BAD_SLUG, type = TdarActionSupport.TDAR_REDIRECT,
+                location = "${id}/${persistable.slug}${slugSuffix}", params = { "ignoreParams", "id,keywordPath,slug", "statusCode", "301" }),
+        @Result(name = TdarActionSupport.INPUT, type = TdarActionSupport.HTTPHEADER, params = { "error", "404" }),
+        @Result(name = TdarActionSupport.DRAFT, location = "/WEB-INF/content/errors/resource-in-draft.ftl")
+})
 @HttpsOnly
 public class BillingAccountViewAction<R extends PBillingAccount> extends AbstractAuthenticatableAction implements Preparable, Authorizable<BillingAccount> {
 
@@ -69,6 +83,15 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     private PBillingAccount account;
 
+    @HttpsOnly
+    @Actions(value = {
+            @Action(value = "{id}")
+    })
+    @SkipValidation
+    public String view() throws TdarActionException {
+        return SUCCESS;
+    }
+
     public Invoice getInvoice() {
         return getGenericService().find(Invoice.class, invoiceId);
     }
@@ -79,7 +102,8 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     @Override
     public void prepare() throws Exception {
-        account = webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this);
+        setAccount(webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this));
+        getLogger().debug("{}", account);
         if (PersistableUtils.isNullOrTransient(getAccount())) {
             addActionError(getText("error.object_does_not_exist"));
             return;
@@ -202,7 +226,7 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     @Override
     public boolean authorize(BillingAccount t, TdarUser user) throws Exception {
-        getLogger().info("isViewable {} {}", getAuthenticatedUser(), getAccount().getId());
+        getLogger().info("isViewable {} {}", getAuthenticatedUser(), t);
         boolean canView = authorizationService.canViewBillingAccount(user, t);
         if (canView == true) {
             editable = authorizationService.canEditAccount(user , t);
@@ -222,6 +246,10 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setAccount(PBillingAccount account) {
+        this.account = account;
     }
 
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.calcite.runtime.Resources.Inst;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -190,7 +191,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
 
         if (creator instanceof PInstitution) {
             getLogger().trace("find institutions");
-            for (Person p : entityService.findPersonsByInstitution((Institution) creator_)) {
+            for (Person p : entityService.findPersonsByInstitution(getGenericService().find(Institution.class, creator.getId()))) {
             people.add(proxyConstructionService.find(Person.class, p.getId()));
             }
         }
@@ -234,7 +235,8 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     }
 
     private List<PPerson> people = new ArrayList<>();
-    private Creator creator_;
+    private boolean viewable;
+    private boolean editorOrSelf;
 
     @SuppressWarnings("unchecked")
     private void prepareLuceneQuery() throws TdarActionException {
@@ -267,7 +269,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
                 }
                 // 10 per facet group should be plenty
                 getFacetWrapper().setMaxFacetLimit(10);
-                resourceSearchService.generateQueryForRelatedResources(creator_, getAuthenticatedUser(), this, this);
+                resourceSearchService.generateQueryForRelatedResources(getGenericService().find(Creator.class, getId()), getAuthenticatedUser(), this, this);
                 List<Long> ignoreIds = new ArrayList<>();
                 ignoreIds.add(creator.getId());
                 ignoreIds.addAll(PersistableUtils.extractIds(creator.getSynonyms()));
@@ -390,10 +392,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     }
 
     public boolean isEditorOrSelf() {
-        if (isEditor() || getCreator().equals(getAuthenticatedUser())) {
-            return true;
-        }
-        return false;
+        return editorOrSelf;
     }
 
     @Override
@@ -491,33 +490,40 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
 
     @Override
     public boolean authorize(Creator t, TdarUser user) throws Exception {
-        creator_  = t;
-        if (PersistableUtils.isTransient(getAuthenticatedUser()) && !creator.isBrowsePageVisible() && !Objects.equals(user, t)) {
+        getLogger().error("{} / {}", t, user);
+        editable = false;
+        if (PersistableUtils.isTransient(getAuthenticatedUser()) && !t.isBrowsePageVisible() && !Objects.equals(user, t)) {
             throw new TdarActionException(StatusCode.UNAUTHORIZED, "Creator page does not exist");
         }
+        viewable = true;
 
-        if (isEditorOrSelf()) {
-            return true;
-        }
-        if (creator.getCreatorType().isInstitution()) {
-            return authorizationService.canEdit(getAuthenticatedUser(), t);
+        if (isEditor() || t.equals(getAuthenticatedUser())) {
+            editorOrSelf =true;
+            editable = true;
         }
         
-        if (!isEditor() && !PersistableUtils.isEqual(creator, getAuthenticatedUser())) {
-            TdarUser person = (TdarUser) t;
-            try {
-                getGroups().addAll(authenticationService.getGroupMembership(person));
-            } catch (Throwable e) {
-                getLogger().error("problem communicating with crowd getting user info for {} {}", creator, e);
-            }
+        if (t.getCreatorType().isInstitution()) {
+            editable = authorizationService.canEdit(getAuthenticatedUser(), t);
+        }
 
+        if (!isEditor() && !PersistableUtils.isEqual(t, getAuthenticatedUser())) {
             getLogger().trace("log view stat");
             CreatorViewStatistic cvs = new CreatorViewStatistic(new Date(), t, isBot());
             getGenericService().markWritable(cvs);
             getGenericService().saveOrUpdate(cvs);
         }
 
-        return false;
+        if (t instanceof TdarUser) {
+            TdarUser person = (TdarUser) t;
+            try {
+                getGroups().addAll(authenticationService.getGroupMembership(person));
+            } catch (Throwable e) {
+                getLogger().error("problem communicating with crowd getting user info for {} {}", creator, e);
+            }
+        }
+        
+
+        return viewable;
 
     }
 

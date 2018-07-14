@@ -80,8 +80,7 @@ public class LODActionITCase extends AbstractControllerITCase {
     @Test
     public void testLodCollectionAPI() throws Exception {
         CollectionLinkedOpenDataAction controller = generateNewInitializedController(CollectionLinkedOpenDataAction.class);
-        ResourceCollection gk = genericService.findRandom(ResourceCollection.class, 1).get(0);
-        controller.setId(gk.getId());
+        controller.setId(1575l);
         prepareAndValid(controller, "/collection/");
 
     }

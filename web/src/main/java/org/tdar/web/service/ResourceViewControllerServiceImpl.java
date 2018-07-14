@@ -215,7 +215,7 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
 //        DataTable dt = genericService.find(DataTable.class, id);
         List<PDataTable> toReturn = new ArrayList<>();
         for (DataTable dataTable : dataTableService.findDataTablesUsingResource(id)) {
-            toReturn.add(proxyConstructionService.convertDataTable(dataTable));
+            toReturn.add(proxyConstructionService.convertDataTable(dataTable,new Context(null)));
         }
         return toReturn;
     }
@@ -226,7 +226,7 @@ public class ResourceViewControllerServiceImpl implements ResourceViewController
         for (PDataTable table : tablesUsingResource) {
             DataTable dt = genericService.find(DataTable.class, table.getId());
             if (!dt.getDataset().isDeleted()) {
-            relatedResources.add(proxyConstructionService.createShellResource(dt.getDataset(), PDataset.class));
+            relatedResources.add(proxyConstructionService.createShellResource(dt.getDataset(), PDataset.class, new Context(null)));
             }
         }
         return relatedResources;

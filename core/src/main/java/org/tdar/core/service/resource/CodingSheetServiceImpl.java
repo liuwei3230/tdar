@@ -36,6 +36,7 @@ import org.tdar.core.dao.resource.CodingSheetDao;
 import org.tdar.core.parser.CodingSheetParser;
 import org.tdar.core.parser.CodingSheetParserException;
 import org.tdar.core.serialize.resource.PCodingSheet;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.SerializationService;
 import org.tdar.core.service.ServiceInterface;
@@ -253,7 +254,7 @@ public class CodingSheetServiceImpl extends ServiceInterface.TypedDaoBase<Coding
         List<CodingSheet> findAllUsingOntology = getDao().findAllUsingOntology(ontology, Arrays.asList(Status.ACTIVE));
         List<PCodingSheet> toReturn = new ArrayList<>();
         for (CodingSheet pcs: findAllUsingOntology) {
-            toReturn.add(proxyConstructionService.createShellResource(pcs, PCodingSheet.class));
+            toReturn.add(proxyConstructionService.createShellResource(pcs, PCodingSheet.class, new Context(null)));
         }
         return toReturn;
     }

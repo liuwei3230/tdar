@@ -36,7 +36,6 @@ import org.tdar.core.bean.entity.Person;
 import org.tdar.core.bean.entity.ResourceCreator;
 import org.tdar.core.bean.entity.TdarUser;
 import org.tdar.core.bean.entity.UserInvite;
-import org.tdar.core.bean.entity.permissions.Permissions;
 import org.tdar.core.bean.integration.DataIntegrationWorkflow;
 import org.tdar.core.bean.keyword.HierarchicalKeyword;
 import org.tdar.core.bean.keyword.Keyword;
@@ -57,7 +56,6 @@ import org.tdar.core.bean.resource.datatable.DataTableColumn;
 import org.tdar.core.bean.resource.file.InformationResourceFile;
 import org.tdar.core.dao.BillingAccountDao;
 import org.tdar.core.dao.base.GenericDao;
-import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.exception.TdarAuthorizationException;
 import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.serialize.billing.PBillingActivity;
@@ -218,7 +216,7 @@ public class ProxyConstructionService {
             ir.setInheritingSpatialInformation(iresource.isInheritingSpatialInformation());
             ir.setInheritingTemporalInformation(iresource.isInheritingTemporalInformation());
             ir.setCopyLocation(iresource.getCopyLocation());
-             ir.setMappedDataKeyColumn(convertDataTableColumn(iresource.getMappedDataKeyColumn()));
+            ir.setMappedDataKeyColumn(convertDataTableColumn(iresource.getMappedDataKeyColumn(), ctx));
             ir.setMappedDataKeyValue(iresource.getMappedDataKeyValue());
             ir.setInheritingNoteInformation(iresource.isInheritingNoteInformation());
             ir.setInheritingIdentifierInformation(iresource.isInheritingIdentifierInformation());
@@ -227,13 +225,13 @@ public class ProxyConstructionService {
             ir.setPublisherLocation(iresource.getPublisherLocation());
             ir.setInheritingIndividualAndInstitutionalCredit(iresource.isInheritingIndividualAndInstitutionalCredit());
             ir.setDoi(iresource.getDoi());
-//             ir.setFileProxies(iresource.getFileProxies());
+            // ir.setFileProxies(iresource.getFileProxies());
             ir.setTransientAccessType(iresource.getTransientAccessType());
 
             if (ctx.isMappedMetadaataIncluded()) {
                 Map<DataTableColumn, String> map = resourceService.getMappedDataForInformationResource((InformationResource) resource, true);
                 map.entrySet().forEach(e -> {
-                    ir.getMappedData().put(convertDataTableColumn(e.getKey()), e.getValue());
+                    ir.getMappedData().put(convertDataTableColumn(e.getKey(), ctx), e.getValue());
 
                 });
             }
@@ -241,7 +239,7 @@ public class ProxyConstructionService {
             if (ir instanceof PDataset) {
                 PDataset doc = (PDataset) ir;
                 Dataset doc_ = (Dataset) iresource;
-                doc.setDataTables(convertDataTables(doc_.getDataTables()));
+                doc.setDataTables(convertDataTables(doc_.getDataTables(),ctx));
                 doc.setRelationships(convertRelationships(doc_.getRelationships()));
             }
             if (ir instanceof PCodingSheet) {
@@ -249,8 +247,8 @@ public class ProxyConstructionService {
                 CodingSheet doc_ = (CodingSheet) iresource;
                 doc.setCodingRules(convertCodingRules(doc_.getCodingRules()));
                 doc.setCategoryVariable(convertCategoryVariable(doc_.getCategoryVariable()));
-                doc.setAssociatedDataTableColumns(convertDataTableColumns(doc_.getAssociatedDataTableColumns()));
-                doc.setDefaultOntology(createShellResource(doc_.getDefaultOntology(), POntology.class));
+                doc.setAssociatedDataTableColumns(convertDataTableColumns(doc_.getAssociatedDataTableColumns(), ctx));
+                doc.setDefaultOntology(createShellResource(doc_.getDefaultOntology(), POntology.class, ctx));
                 doc.setGenerated(doc_.isGenerated());
             }
             if (ir instanceof POntology) {
@@ -301,7 +299,7 @@ public class ProxyConstructionService {
         return act;
     }
 
-    private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_) {
+    private PDataTableColumn convertDataTableColumn(DataTableColumn dtc_, Context ctx) {
         if (dtc_ == null) {
             return null;
         }
@@ -320,17 +318,17 @@ public class ProxyConstructionService {
         c.setMappingColumn(dtc_.isMappingColumn());
         c.setCategoryVariable(convertCategoryVariable(dtc_.getCategoryVariable()));
         c.setTempSubCategoryVariable(convertCategoryVariable(dtc_.getTempSubCategoryVariable()));
-        c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class));
-        c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class));
-        c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class));
+        c.setDefaultCodingSheet(createShellResource(dtc_.getDefaultCodingSheet(), PCodingSheet.class, ctx));
+        c.setMappedOntology(createShellResource(dtc_.getMappedOntology(), POntology.class, ctx));
+        c.setTransientOntology(createShellResource(dtc_.getTransientOntology(), POntology.class, ctx));
         c.setImportOrder(dtc_.getImportOrder());
         return c;
     }
 
-    private Set<PDataTableColumn> convertDataTableColumns(Collection<DataTableColumn> list) {
+    private Set<PDataTableColumn> convertDataTableColumns(Collection<DataTableColumn> list, Context ctx) {
         HashSet<PDataTableColumn> toReturn = new HashSet<>();
         list.forEach(dtc_ -> {
-            toReturn.add(convertDataTableColumn(dtc_));
+            toReturn.add(convertDataTableColumn(dtc_, ctx));
         });
         return toReturn;
     }
@@ -376,30 +374,30 @@ public class ProxyConstructionService {
         return new HashSet<>();
     }
 
-    private Set<PDataTable> convertDataTables(Set<DataTable> dataTables) {
+    private Set<PDataTable> convertDataTables(Set<DataTable> dataTables, Context ctx) {
         if (CollectionUtils.isEmpty(dataTables)) {
             return Collections.EMPTY_SET;
         }
         Set<PDataTable> toReturn = new HashSet<>();
         dataTables.forEach(dt_ -> {
-            PDataTable table = convertDataTable(dt_);
+            PDataTable table = convertDataTable(dt_, ctx);
             toReturn.add(table);
         });
         return toReturn;
     }
 
-    public PDataTable convertDataTable(DataTable dt_) {
+    public PDataTable convertDataTable(DataTable dt_, Context ctx) {
         PDataTable dt = new PDataTable();
         dt.setDescription(dt_.getDescription());
         dt.setDisplayName(dt_.getDisplayName());
         dt.setId(dt_.getId());
         dt.setName(dt_.getName());
         dt.setImportOrder(dt_.getImportOrder());
-        dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns())));
+        dt.setDataTableColumns(new ArrayList<>(convertDataTableColumns(dt_.getDataTableColumns(), ctx)));
         return dt;
     }
 
-    public <P extends PResource, R extends Resource> P createShellResource(R r, Class<P> class1) {
+    public <P extends PResource, R extends Resource> P createShellResource(R r, Class<P> class1, Context ctx) {
         try {
             if (r == null) {
                 if (PProject.class.isAssignableFrom(class1)) {
@@ -411,9 +409,13 @@ public class ProxyConstructionService {
             p.setId(r.getId());
             p.setTitle(r.getTitle());
             p.setDateCreated(r.getDateCreated());
+            p.setDateUpdated(r.getDateUpdated());
             p.setDescription(r.getDescription());
             p.setResourceType(r.getResourceType());
             p.setUrl(r.getUrl());
+            p.setSpaceInBytesUsed(r.getSpaceInBytesUsed());
+            p.setFilesUsed(r.getFilesUsed());
+            p.setSubmitter(createShellTdarUser(r.getSubmitter(), ctx));
             return p;
         } catch (InstantiationException | IllegalAccessException e) {
             // TODO Auto-generated catch block
@@ -624,11 +626,11 @@ public class ProxyConstructionService {
         rc.setParentIds(rc_.getParentIds());
         rc.setAlternateParentIds(rc_.getAlternateParentIds());
         rc.setProperties(convertCollectionProperties(rc_.getProperties(), ctx));
-        for (Resource r : rc_.getManagedResources())  {
-            rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass()));
+        for (Resource r : rc_.getManagedResources()) {
+            rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
         }
-        for (Resource r : rc_.getUnmanagedResources())  {
-            rc.getUnmanagedResources().add(createShellResource(r, r.getResourceType().getProxyClass()));
+        for (Resource r : rc_.getUnmanagedResources()) {
+            rc.getUnmanagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
         }
         rc.setUnmanagedResourceIds(rc_.getUnmanagedResourceIds());
         rc.setVerified(rc_.getVerified());
@@ -636,10 +638,10 @@ public class ProxyConstructionService {
     }
 
     private PCollectionDisplayProperties convertCollectionProperties(CollectionDisplayProperties properties, Context ctx) {
-        if (properties == null) {
-            return null;
-        }
         PCollectionDisplayProperties props = new PCollectionDisplayProperties();
+        if (properties == null) {
+            return props;
+        }
         props.setCss(properties.getCss());
         props.setInstitution(createInstitution(properties.getInstitution(), ctx));
         props.setFeaturedResources(convertResources(properties.getFeaturedResources(), ctx));
@@ -656,7 +658,7 @@ public class ProxyConstructionService {
         props.setWhitelabel(properties.getWhitelabel());
         props.setHideCollectionSidebar(properties.getHideCollectionSidebar());
 
-        return null;
+        return props;
     }
 
     private List<PResource> convertResources(List<Resource> featuredResources, Context ctx) {
@@ -746,7 +748,7 @@ public class ProxyConstructionService {
         if (!creator.isActive() && !creator.isDuplicate() || creator == null) {
             return null;
         }
-        PPerson cache = (PPerson)ctx.getFromCreatorCache(creator.getId());
+        PPerson cache = (PPerson) ctx.getFromCreatorCache(creator.getId());
         if (cache != null) {
             return cache;
         }
@@ -760,6 +762,10 @@ public class ProxyConstructionService {
     private void updateperson(Person creator, PPerson person, Context ctx) {
         person.setFirstName(creator.getFirstName());
         person.setLastName(creator.getLastName());
+
+        if (creator.getPhonePublic() || ctx.isAdmin() || ctx.getUserId() == person.getId()) {
+            person.setPhone(creator.getPhone());
+        }
         if (ctx.isPersonEmailObfuscated() == false && ctx.getUserId() != person.getId()) {
             person.setEmail(creator.getEmail());
         }
@@ -771,11 +777,11 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
-        PInstitution cache = (PInstitution)ctx.getFromCreatorCache(creator.getId());
+        PInstitution cache = (PInstitution) ctx.getFromCreatorCache(creator.getId());
         if (cache != null) {
             return cache;
         }
-        
+
         PInstitution institution = new PInstitution();
         ctx.addToCreatorCache(institution);
         updateCreator(institution, creator);
@@ -825,7 +831,7 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
-        PTdarUser cache = (PTdarUser)ctx.getFromCreatorCache(creator.getId());
+        PTdarUser cache = (PTdarUser) ctx.getFromCreatorCache(creator.getId());
         if (cache != null) {
             return cache;
         }
@@ -897,15 +903,15 @@ public class ProxyConstructionService {
 
     public <Q, P extends Persistable> Q proxy(P p, TdarUser user) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> cls = getSerializedClass(p.getClass());
-        
+
         Context ctx = new Context(user);
         if (PResource.class.isAssignableFrom(cls)) {
-            cls = ((Resource)p).getResourceType().getProxyClass();
+            cls = ((Resource) p).getResourceType().getProxyClass();
             PResource cache = ctx.getFromResourceCache(p.getId());
             if (cache != null) {
                 return (Q) cache;
             } else {
-                return (Q) constructResource((Resource)p, (PResource) cls.newInstance(), ctx);
+                return (Q) constructResource((Resource) p, (PResource) cls.newInstance(), ctx);
             }
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
@@ -924,21 +930,20 @@ public class ProxyConstructionService {
         return null;
     }
 
-
     public <I, J extends Persistable> I construct(J j, Class<J> class1, Context ctx)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // HACK
         Class<?> cls = getSerializedClass(class1);
         if (PResource.class.isAssignableFrom(cls)) {
-            cls = ((Resource)j).getResourceType().getProxyClass();
-            
+            cls = ((Resource) j).getResourceType().getProxyClass();
+
             PResource cache = ctx.getFromResourceCache(j.getId());
             if (cache != null) {
                 return (I) cache;
             } else {
                 return (I) constructResource((Resource) j, (PResource) cls.newInstance(), ctx);
             }
-            
+
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
             return (I) convertResourceCollection((ResourceCollection) j, 1, ctx);
@@ -950,7 +955,7 @@ public class ProxyConstructionService {
             return (I) constructKeyword((Keyword) j);
         }
         if (PBillingAccount.class.isAssignableFrom(cls)) {
-            return (I) createBillingAccount((BillingAccount)j,ctx);
+            return (I) createBillingAccount((BillingAccount) j, ctx);
         }
         if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
             return (I) createIntegration((DataIntegrationWorkflow) j, ctx);
@@ -1066,29 +1071,31 @@ public class ProxyConstructionService {
         if (id == null) {
             throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
         }
-        P r =  genericDao.find(class1, id);
-//        if (Resource.class.isAssignableFrom(class1)) {
-            if (r == null) {
-                return null;
-            }
-            
+        P r = genericDao.find(class1, id);
+        // if (Resource.class.isAssignableFrom(class1)) {
+        if (r == null) {
+            return null;
+        }
+
+        if (support != null) {
             if (r instanceof HasStatus) {
                 support.setStatus(((HasStatus) r).getStatus());
             }
-            
-            if (support != null && support.authorize((P)r, user) == false) {
+
+            if (support.authorize((P) r, user) == false) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
-//        }
-        return (Q)construct(r,  class1, ctx);
+        }
+        // }
+        return (Q) construct(r, class1, ctx);
     }
 
     public PDataTable loadDataTable(Long dataTableId) {
         DataTable dataTable = genericDao.find(DataTable.class, dataTableId);
-        return convertDataTable(dataTable);
+        return convertDataTable(dataTable, new Context(null));
     }
 
-    public PBillingAccount updateAccount(PResource item,Context ctx) {
+    public PBillingAccount updateAccount(PResource item, Context ctx) {
         BillingAccount findAccountForResource = billingAccountDao.findAccountForResource(item.getId());
         PBillingAccount act = constructShallowAccount(findAccountForResource, ctx);
         return act;
@@ -1113,11 +1120,11 @@ public class ProxyConstructionService {
         act.setSpaceUsedInBytes(act_.getSpaceUsedInBytes());
         act.setResourcesUsed(act_.getResourcesUsed());
         act.setExpires(act_.getExpires());
-         act.setInvoices(constructInvoices(act_.getInvoices(),ctx));
-         act.setResources(createShellResources(act_.getResources()));
+        act.setInvoices(constructInvoices(act_.getInvoices(), ctx));
+        act.setResources(createShellResources(act_.getResources(),ctx));
         act.setOwner(convertUser(act_.getOwner(), ctx));
         act.setModifiedBy(convertUser(act_.getModifiedBy(), ctx));
-         act.setCoupons(createCoupons(act_.getCoupons(), ctx));
+        act.setCoupons(createCoupons(act_.getCoupons(), ctx));
         // act.setUsageHistory(act_.getUsageHistory());
         act.setAuthorizedUsers(convertAuthorizedUsers(act_.getAuthorizedUsers(), ctx));
         act.setFullService(act_.getFullService());
@@ -1142,6 +1149,9 @@ public class ProxyConstructionService {
     }
 
     private PCoupon convertCoupon(Coupon coupon, Context ctx) {
+        if (coupon == null) {
+            return null;
+        }
         PCoupon c = new PCoupon();
         c.setNumberOfMb(coupon.getNumberOfMb());
         c.setNumberOfFiles(coupon.getNumberOfFiles());
@@ -1155,13 +1165,13 @@ public class ProxyConstructionService {
         return c;
     }
 
-    private Set<PResource> createShellResources(Set<Resource> resources) {
+    private Set<PResource> createShellResources(Set<Resource> resources, Context ctx) {
         if (CollectionUtils.isEmpty(resources)) {
             return Collections.EMPTY_SET;
         }
         Set<PResource> toReturn = new HashSet<>();
         for (Resource r : resources) {
-            toReturn.add(createShellResource(r, r.getResourceType().getProxyClass()));
+            toReturn.add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
         }
         return toReturn;
     }
@@ -1175,7 +1185,7 @@ public class ProxyConstructionService {
             PInvoice i = new PInvoice();
             i.setDateCreated(r.getDateCreated());
             i.setTransactionId(r.getTransactionId());
-//            i.setAddress(convAdd);
+            // i.setAddress(convAdd);
             i.setOwner(convertUser(r.getOwner(), ctx));
             for (BillingItem it : r.getItems()) {
                 PBillingItem item_ = new PBillingItem();
@@ -1196,7 +1206,7 @@ public class ProxyConstructionService {
                 a.setDisplayNumberOfResources(it.getActivity().getDisplayNumberOfResources());
                 a.setDisplayNumberOfMb(it.getActivity().getDisplayNumberOfMb());
                 a.setMinAllowedNumberOfFiles(it.getActivity().getMinAllowedNumberOfFiles());
-//                a.setModel(it.getActivity().getModel());
+                // a.setModel(it.getActivity().getModel());
                 a.setActivityType(it.getActivity().getActivityType());
                 a.setOrder(it.getActivity().getOrder());
 
@@ -1213,14 +1223,14 @@ public class ProxyConstructionService {
             i.setTransactionDate(r.getTransactionDate());
             i.setNumberOfFiles(r.getNumberOfFiles());
             i.setNumberOfMb(r.getNumberOfMb());
-//            i.setResponse(r.getResponse());
-            i.setCoupon(convertCoupon(r.getCoupon(),ctx));
+            // i.setResponse(r.getResponse());
+            i.setCoupon(convertCoupon(r.getCoupon(), ctx));
             i.setCouponValue(r.getCouponValue());
 
         }
         return toReturn;
     }
-    
+
     public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, TdarUser user) {
         if (CollectionUtils.isEmpty(findUserInvites)) {
             return Collections.EMPTY_LIST;
@@ -1234,10 +1244,11 @@ public class ProxyConstructionService {
             inv.setDateExpires(invite.getDateExpires());
             inv.setDateRedeemed(invite.getDateRedeemed());
             inv.setId(invite.getId());
+            inv.setPerson(createPerson(invite.getUser(), ctx));
             inv.setNote(invite.getNote());
             inv.setPermissions(invite.getPermissions());
             if (invite.getResource() != null) {
-                inv.setResource(createShellResource(invite.getResource(), invite.getResource().getResourceType().getProxyClass()));
+                inv.setResource(createShellResource(invite.getResource(), invite.getResource().getResourceType().getProxyClass(),ctx));
             }
             inv.setResourceCollection(createShellCollection(invite.getResourceCollection(), ctx));
             toReturn.add(inv);
@@ -1245,14 +1256,13 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    public  <K,R extends Persistable> K find(Class<R> cls, Long id)  {
+    public <K, R extends Persistable> K find(Class<R> cls, Long id) {
         try {
-        return load(cls, id, null, null);
+            return load(cls, id, null, null);
         } catch (Exception e) {
-            logger.error("{}",e,e);
+            logger.error("{}", e, e);
             return null;
         }
     }
-
 
 }
