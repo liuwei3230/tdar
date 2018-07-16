@@ -179,8 +179,8 @@ public class ProxyConstructionService {
         r.setResourceCreators(convertResourrceCreator(resource.getActiveResourceCreators(), ctx));
         r.setResourceAnnotations(convertResourceAnnotation(resource.getActiveResourceAnnotations()));
         r.setCoverageDates(convertCoverageDates(resource.getActiveCoverageDates()));
-        r.setUnmanagedResourceCollections(convertResourceCollections(resource.getUnmanagedResourceCollections(), 2, ctx));
-        r.setManagedResourceCollections(convertResourceCollections(resource.getManagedResourceCollections(), 2, ctx));
+        r.setUnmanagedResourceCollections(convertResourceCollections(resource.getUnmanagedResourceCollections(), false, ctx));
+        r.setManagedResourceCollections(convertResourceCollections(resource.getManagedResourceCollections(), false, ctx));
         r.setExternalId(resource.getExternalId());
         r.setTransientAccessCount(resource.getTransientAccessCount());
         r.setUploader(convertUser(resource.getUploader(), ctx));
@@ -573,13 +573,13 @@ public class ProxyConstructionService {
         return null;
     }
 
-    private Set<PResourceCollection> convertResourceCollections(Set<ResourceCollection> collections, int depth, Context ctx) {
+    private Set<PResourceCollection> convertResourceCollections(Set<ResourceCollection> collections, boolean includeResources, Context ctx) {
         if (CollectionUtils.isEmpty(collections)) {
             return Collections.EMPTY_SET;
         }
         Set<PResourceCollection> toReturn = new HashSet<>();
         collections.forEach(rc_ -> {
-            PResourceCollection rc = convertResourceCollection(rc_, depth, ctx);
+            PResourceCollection rc = convertResourceCollection(rc_, includeResources, ctx);
             if ((rc_.isActive() || rc_.isDraft()) && rc != null) {
                 toReturn.add(rc);
             }
@@ -587,11 +587,7 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
-    private PResourceCollection convertResourceCollection(ResourceCollection rc_, int depth_, Context ctx) {
-        int depth = depth_ - 1;
-        if (depth < 0 || rc_ == null) {
-            return null;
-        }
+    private PResourceCollection convertResourceCollection(ResourceCollection rc_, boolean includeResources, Context ctx) {
 
         PResourceCollection cache = ctx.getFromCollectionCache(rc_.getId());
         if (cache != null) {
@@ -606,10 +602,10 @@ public class ProxyConstructionService {
 
         PResourceCollection rc = createShellCollection(rc_, ctx);
         ctx.addToCollectionCache(rc);
-        rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), 2, ctx));
-        rc.setParent(convertResourceCollection(rc_.getParent(), 2, ctx));
+        rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), false, ctx));
+        rc.setParent(convertResourceCollection(rc_.getParent(), false, ctx));
         rc.setAuthorizedUsers(convertAuthorizedUsers(rc_.getAuthorizedUsers(), ctx));
-        if (depth > 1) {
+        if (includeResources) {
             for (Resource r : rc_.getManagedResources()) {
                 rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(), ctx));
             }
@@ -906,7 +902,7 @@ public class ProxyConstructionService {
             }
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
-            return (Q) convertResourceCollection((ResourceCollection) p, 3, ctx);
+            return (Q) convertResourceCollection((ResourceCollection) p, true, ctx);
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (Q) createCreator((Creator<?>) p, ctx);
@@ -937,7 +933,7 @@ public class ProxyConstructionService {
 
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
-            return (I) convertResourceCollection((ResourceCollection) j, 3, ctx);
+            return (I) convertResourceCollection((ResourceCollection) j, true, ctx);
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (I) createCreator((Creator<?>) j, ctx);
