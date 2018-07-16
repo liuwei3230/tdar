@@ -81,7 +81,7 @@ public class JSONLDTransformerITCase extends AbstractIntegrationTestCase {
 
         for (Creator<?> r : genericService.findAll(Creator.class)) {
             logger.debug("//  {} - {}", r.getId(), r.getCreatorType());
-            PCreator construct = proxyConstructionService.construct(r, Creator.class, new Context(null));
+            PCreator construct = proxyConstructionService.construct(r, Creator.class, new Context(null), true);
             String json = transformer.convert(serializationService, construct, null);
             logger.debug(json);
             if (r.getCreatorType() == CreatorType.PERSON) {

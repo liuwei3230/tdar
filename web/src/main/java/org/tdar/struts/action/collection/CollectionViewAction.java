@@ -47,6 +47,7 @@ import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.BookmarkedResourceService;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.FileSystemResourceService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.UserRightsProxyService;
@@ -170,6 +171,8 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     private String slug;
 
+    private Context ctx;
+
     /**
      * Returns a list of all resource collections that can act as candidate parents for the current resource collection.
      * 
@@ -197,12 +200,14 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         return SortOption.getOptionsForResourceCollectionPage();
     }
 
-    public void loadExtraViewMetadata() {
+    public void loadExtraViewMetadata() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (PersistableUtils.isNullOrTransient(getPersistable())) {
             return;
         }
+        getLogger().debug("######## PARENTS");
+
         ResourceCollection rc = getGenericService().find(ResourceCollection.class, id);
-        parents.addAll(webLoadingService.proxy(resourceCollectionService.findPotentialParentCollections(getAuthenticatedUser(), rc), getAuthenticatedUser()));
+        //parents.addAll(webLoadingService.proxy(resourceCollectionService.findPotentialParentCollections(getAuthenticatedUser(), rc), ctx));
         setParentId(getPersistable().getParentId());
         if (!isEditor()) {
             ResourceCollectionViewStatistic rcvs = new ResourceCollectionViewStatistic(new Date(), rc, isBot());
@@ -216,12 +221,12 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         TreeSet<PResourceCollection> findAllChildCollections = new TreeSet<>(new TitleSortComparator());
 
         if (isAuthenticated()) {
-            resourceCollectionService.buildCollectionTreeForController(rc, getAuthenticatedUser());
+            resourceCollectionService.buildCollectionTreeForController(collection, ctx);
             findAllChildCollections.addAll(getPersistable().getTransientChildren());
         } else {
-            findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findDirectChildCollections(getId(), false), getAuthenticatedUser()));
+            findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findDirectChildCollections(getId(), false), ctx));
         }
-        findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findAlternateChildren(Arrays.asList(getId()), getAuthenticatedUser()), getAuthenticatedUser()));
+        findAllChildCollections.addAll(webLoadingService.proxy(resourceCollectionService.findAlternateChildren(Arrays.asList(getId()), getAuthenticatedUser()), ctx));
         setCollections(new ArrayList<PResourceCollection>(findAllChildCollections));
         getLogger().trace("child collections: sort");
         // Collections.sort(collections);
@@ -232,6 +237,7 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         // if this collection is public, it will appear in a resource's public collection id list, otherwise it'll be in the shared collection id list
         // String collectionListFieldName = getPersistable().isVisible() ? QueryFieldNames.RESOURCE_COLLECTION_PUBLIC_IDS
         // : QueryFieldNames.RESOURCE_COLLECTION_SHARED_IDS;
+        getLogger().debug("######## DONE");
 
         getLogger().trace("lucene: end");
     }
@@ -242,6 +248,10 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
             @Action(value = "{id}")
     })
     public String view() throws TdarActionException {
+        if (isRedirectBadSlug()) {
+            return BAD_SLUG;
+        }
+
         if (collection== null) {
             return INPUT;
         }
@@ -488,9 +498,14 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
 
     @Override
     public void prepare() throws Exception {
-        collection = webLoadingService.load(ResourceCollection.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        ctx = new Context(getAuthenticatedUser());
+        getLogger().debug("######## LOAD ");
+        collection = webLoadingService.load(ResourceCollection.class, getId(), ctx, InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this, false);
         getLogger().debug("{}", collection);
         setPermissionsCache(new ThreadPermissionsCache(isEditor()));
+        handleSlug();
+        getLogger().debug("######## {}", isRedirectBadSlug());
+
         if (!isRedirectBadSlug() && PersistableUtils.isNotTransient(getPersistable())) {
 
             try {
@@ -509,7 +524,9 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
                 getFacetWrapper().facetBy(QueryFieldNames.ACTIVE_SITE_NAME_KEYWORDS, SiteNameKeyword.class);
             }
             try {
+                getLogger().debug("######## SEARCH");
                 buildLuceneSearch();
+                getLogger().debug("######## DONE");
             } catch (Exception e) {
                 if (e.getCause() instanceof SearchPaginationException) {
                     getLogger().warn("search pagination issue", e);
@@ -701,6 +718,13 @@ public class CollectionViewAction<C extends ResourceCollection> extends Abstract
         this.status = status;
         
     }
+    
+    protected void handleSlug() {
+        if (!handleSlugRedirect(collection, this)) {
+            setRedirectBadSlug(true);
+        }
+    }
+
 
     @Override
     public void setSlugSuffix(String slugSuffix) {

@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -484,6 +485,41 @@ public class ResourceCollectionServiceImpl extends ServiceInterface.TypedDaoBase
                 iter.remove();
             }
             if (child.getAlternateParent() != null) {
+                child.getAlternateParent().getTransientChildren().add(child);
+            }
+        }
+        ;
+
+        // second pass - sort all children lists (we add root into "allchildren" so we can sort the top level)
+        allChildren.add(collection);
+        return allChildren;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TreeSet<PResourceCollection> buildCollectionTreeForController(PResourceCollection collection, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        TreeSet<PResourceCollection> allChildren = new TreeSet<>(new TitleSortComparator());
+        ResourceCollection rc = getDao().find(collection.getId());
+        List<ResourceCollection> children = getAllChildCollections(rc);
+        allChildren.addAll(proxyConstructionService.proxyShallow(children, ctx));
+        allChildren.addAll(proxyConstructionService.proxyShallow(addAlternateChildrenTrees(children, rc),ctx));
+        Iterator<PResourceCollection> iter = allChildren.iterator();
+        logger.debug("{}", allChildren);
+        Map<Long, PResourceCollection> map = PersistableUtils.createIdMap(allChildren);
+        map.put(collection.getId(), collection);
+        // FIXME: unique ID issues  
+        while (iter.hasNext()) {
+            PResourceCollection child = iter.next();
+            PResourceCollection parent_ = child.getParent();
+            if (parent_ != null) {
+                PResourceCollection parent = map.get(parent_.getId());
+                child.setParent(parent);
+                parent.getTransientChildren().add(child);
+                iter.remove();
+            }
+            if (child.getAlternateParent() != null) {
+                PResourceCollection parent = map.get(child.getAlternateParent().getId());
+                child.setAlternateParent(parent);
                 child.getAlternateParent().getTransientChildren().add(child);
             }
         }

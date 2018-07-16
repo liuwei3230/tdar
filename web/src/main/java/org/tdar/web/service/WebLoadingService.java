@@ -45,16 +45,21 @@ public class WebLoadingService {
     
     @Autowired
     AuthorizationService authorizationService;
-    
-    public <T extends Persistable,R> R load(Class<T> hcls, Long id, TdarUser user, InternalTdarRights rights, RequestType requestType,
+
+    public <T extends Persistable,R> R load(Class<T> hcls, Long id, Context ctx, InternalTdarRights rights, RequestType requestType,
             Authorizable<T> support) throws Exception {
+        return load(hcls,id,ctx, rights, requestType, support, true);
+    }
+    
+    public <T extends Persistable,R> R load(Class<T> hcls, Long id, Context ctx, InternalTdarRights rights, RequestType requestType,
+            Authorizable<T> support, boolean deep) throws Exception {
         if (PersistableUtils.isNullOrTransient(id)) {
             abort(StatusCode.UNKNOWN_ERROR,
                     support.getText("abstractPersistableController.cannot_recognize_request", hcls.getSimpleName()));
         }
         R q = null;
         try {
-            q = proxyConstructionService.load(hcls, id, support, user);
+            q = proxyConstructionService.load(hcls, id, support, ctx, deep);
         } catch (TdarActionException tae) {
             throw tae;
         } catch (Throwable t) {
@@ -63,7 +68,7 @@ public class WebLoadingService {
                     support.getText("abstractPersistableController.cannot_recognize_request", hcls.getSimpleName()));
         }
         T r = genericDao.find(hcls, id);  
-        checkValidRequest(rights, user, support, (T)r);
+        checkValidRequest(rights, ctx, support, (T)r);
         return q;
     }
 
@@ -74,7 +79,7 @@ public class WebLoadingService {
      * @param pc
      * @throws Exception 
      */
-    protected <P extends Persistable> void checkValidRequest(InternalTdarRights adminRole, TdarUser user,
+    protected <P extends Persistable> void checkValidRequest(InternalTdarRights adminRole, Context ctx,
         Authorizable<P> support, P r) throws Exception {
         if (r == null) {
             logger.debug("Dealing with transient persistable {}", r);
@@ -83,12 +88,12 @@ public class WebLoadingService {
         }
 
         // the admin rights check -- on second thought should be the fastest way to execute as it pulls from cached values
-        if (authorizationService.can(adminRole, user)) {
+        if (authorizationService.can(adminRole, ctx.getUser())) {
             return;
         }
 
         // call the locally defined "authorize" method for more specific checks
-        if (support.authorize(r, user)) {
+        if (support.authorize(r, ctx.getUser())) {
             return;
         }
 
@@ -143,7 +148,7 @@ public class WebLoadingService {
         List<BillingAccount> acts = billingAccountService.listAvailableAccountsForUser(authenticatedUser, statuses);
         List<PBillingAccount> toReturn = new ArrayList<>();
         for (BillingAccount act : acts) {
-            toReturn.add(proxyConstructionService.constructShallowAccount(act, new Context(authenticatedUser)));
+            toReturn.add(proxyConstructionService.createShellAccount(act, new Context(authenticatedUser)));
         }
         return toReturn;
     }
@@ -152,11 +157,11 @@ public class WebLoadingService {
         return proxyConstructionService.find(class1, id);
     }
 
-    public <P extends Persistable,Q> List<Q> proxy(Collection<P> findAll, TdarUser user) {
+    public <P extends Persistable,Q> List<Q> proxy(Collection<P> findAll, Context ctx) {
         ArrayList<Q> toReturn = new ArrayList<>();
         for (P p : findAll) {
             try {
-                toReturn.add(proxyConstructionService.proxy(p, user));
+                toReturn.add(proxyConstructionService.proxy(p, ctx));
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 logger.error("{}",e,e);
             }
@@ -164,9 +169,9 @@ public class WebLoadingService {
         return toReturn;
     }
 
-    public <P extends Persistable,Q> Q  proxy(P  p, TdarUser user) {
+    public <P extends Persistable,Q> Q  proxy(P  p, Context ctx) {
             try {
-                return proxyConstructionService.proxy(p, user);
+                return proxyConstructionService.proxy(p, ctx);
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 logger.error("{}",e,e);
             }

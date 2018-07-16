@@ -16,6 +16,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.dao.external.auth.InternalTdarRights;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Authorizable;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.action.AbstractPersistableController.RequestType;
@@ -102,7 +103,7 @@ public class JAXBMetadataViewController extends AbstractAuthenticatableAction
     
     @Override
     public void prepare() throws Exception {
-        resource = webLoadingService.load(Resource.class, id, getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        resource = webLoadingService.load(Resource.class, id, new Context(getAuthenticatedUser()), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
     }
 
     public PResource getResource() {

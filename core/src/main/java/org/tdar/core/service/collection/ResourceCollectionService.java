@@ -19,6 +19,7 @@ import org.tdar.core.bean.resource.Status;
 import org.tdar.core.bean.resource.UserRightsProxy;
 import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.service.CollectionSaveObject;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.DeleteIssue;
 import org.tdar.core.service.resource.ErrorHandling;
 
@@ -134,6 +135,7 @@ public interface ResourceCollectionService {
      *         collection.
      */
     TreeSet<ResourceCollection> buildCollectionTreeForController(ResourceCollection collection, TdarUser authenticatedUser);
+    TreeSet<PResourceCollection> buildCollectionTreeForController(PResourceCollection collection, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
 
     /**
      * Recursively build the transient child collection fields of a specified resource collection, and return a list

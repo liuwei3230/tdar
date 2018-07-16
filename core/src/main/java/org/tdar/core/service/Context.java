@@ -185,11 +185,11 @@ public class Context {
         return getFronCache(resourceCache, id);
     }
 
-    private <T> T getFronCache(Map<Long, T> resourceCache2, Long id) {
+    private <T> T getFronCache(Map<Long, T> cache, Long id) {
         if (PersistableUtils.isNullOrTransient(id)) {
             return null;
         }
-        return resourceCache2.get(id);
+        return cache.get(id);
     }
 
     public PBillingAccount getFromAccountCache(Long id) {

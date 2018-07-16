@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.serialize.billing.PBillingAccount;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
@@ -55,7 +56,7 @@ public class ListBillingAccountAction extends AbstractAuthenticatableAction impl
 
     @Override
     public void prepare() throws Exception {
-        getAccounts().addAll(webLoadingService.proxy(accountService.findAll(), getAuthenticatedUser()));
+        getAccounts().addAll(webLoadingService.proxy(accountService.findAll(), new Context(getAuthenticatedUser())));
         
     }
 

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.serialize.collection.PResourceCollection;
+import org.tdar.core.service.Context;
 import org.tdar.struts.action.AbstractStatisticsAction;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.web.service.WebLoadingService;
@@ -29,7 +30,7 @@ public class CollectionStatisticsAction extends AbstractStatisticsAction impleme
     @Override
     public void prepare() throws Exception {
         ResourceCollection collection_ = getGenericService().find(ResourceCollection.class, getId());
-        collection = webLoadingService.proxy(collection_, getAuthenticatedUser());
+        collection = webLoadingService.proxy(collection_, new Context(getAuthenticatedUser()));
         if (collection == null) {
             addActionError("collectionStatisticsAction.no_collection");
         }

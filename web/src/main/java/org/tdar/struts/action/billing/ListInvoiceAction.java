@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.tdar.core.bean.TdarGroup;
 import org.tdar.core.bean.billing.Invoice;
 import org.tdar.core.serialize.billing.PInvoice;
+import org.tdar.core.service.Context;
 import org.tdar.struts.action.AbstractAuthenticatableAction;
 import org.tdar.struts.interceptor.annotation.HttpsOnly;
 import org.tdar.struts_base.interceptor.annotation.RequiresTdarUserGroup;
@@ -50,7 +51,7 @@ public class ListInvoiceAction extends AbstractAuthenticatableAction  implements
 
     @Override
     public void prepare() throws Exception {
-        getInvoices().addAll(webLoadingService.proxy(getGenericService().findAll(Invoice.class), getAuthenticatedUser()));
+        getInvoices().addAll(webLoadingService.proxy(getGenericService().findAll(Invoice.class), new Context(getAuthenticatedUser())));
         PersistableUtils.sortByCreatedDate(getInvoices());
         
     }

@@ -74,7 +74,7 @@ public class UserRightsProxyServiceImpl implements UserRightsProxyService {
     public List<PUserInvite> findUserInvitesForResource(Long id, TdarUser user) {
         Resource resource = genericDao.find(Resource.class, id);
         List<UserInvite> findUserInvites = resourceCollectionDao.findUserInvites((Resource) resource);
-        return proxyConstructionService.constructInvites(findUserInvites, user);
+        return proxyConstructionService.constructInvites(findUserInvites, new Context(user));
     }
 
     /*

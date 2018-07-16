@@ -57,6 +57,7 @@ import org.tdar.core.serialize.entity.PTdarUser;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Authorizable;
 import org.tdar.core.service.BookmarkedResourceService;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.EntityService;
 import org.tdar.core.service.ProxyConstructionService;
 import org.tdar.core.service.SerializationService;
@@ -169,7 +170,7 @@ public class BrowseCreatorController extends AbstractLookupController<PResource>
     @Override
     public void prepare() throws Exception {
         getLogger().trace("begin prepare");
-        creator = webLoadingService.load(Creator.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW,
+        creator = webLoadingService.load(Creator.class, getId(), new Context(getAuthenticatedUser()), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW,
                 this);
 
         if (!handleSlugRedirect(creator, this)) {

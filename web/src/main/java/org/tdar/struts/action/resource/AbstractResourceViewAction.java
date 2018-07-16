@@ -37,6 +37,7 @@ import org.tdar.core.serialize.resource.PResourceAnnotation;
 import org.tdar.core.serialize.resource.PResourceAnnotationKey;
 import org.tdar.core.serialize.resource.datatable.PDataTableColumn;
 import org.tdar.core.service.Authorizable;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.PResourceCreatorProxy;
 import org.tdar.core.service.UserRightsProxyService;
 import org.tdar.core.service.collection.ResourceCollectionService;
@@ -134,7 +135,7 @@ public abstract class AbstractResourceViewAction<R extends PResource> extends Ab
     @Override
     public void prepare() throws Exception {
         try {
-        resource = (R) webLoadingService.load(Resource.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
+        resource = (R) webLoadingService.load(Resource.class, getId(), new Context(getAuthenticatedUser()), InternalTdarRights.VIEW_ANYTHING, RequestType.VIEW, this);
         for (PResourceCollection rc : resource.getManagedResourceCollections()) {
             PResourceCollection r = rc;
             while (r != null) {

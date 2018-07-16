@@ -29,6 +29,7 @@ import org.tdar.core.serialize.billing.PInvoice;
 import org.tdar.core.serialize.entity.PTdarUser;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.Authorizable;
+import org.tdar.core.service.Context;
 import org.tdar.core.service.billing.BillingAccountService;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.struts.action.AbstractAuthenticatableAction;
@@ -102,7 +103,7 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
 
     @Override
     public void prepare() throws Exception {
-        setAccount(webLoadingService.load(BillingAccount.class, getId(), getAuthenticatedUser(), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this));
+        setAccount(webLoadingService.load(BillingAccount.class, getId(), new Context(getAuthenticatedUser()), InternalTdarRights.VIEW_BILLING_INFO, RequestType.VIEW , this));
         getLogger().debug("{}", account);
         if (PersistableUtils.isNullOrTransient(getAccount())) {
             addActionError(getText("error.object_does_not_exist"));

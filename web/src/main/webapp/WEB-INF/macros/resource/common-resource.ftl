@@ -224,7 +224,7 @@ Common macros used in multiple contexts
 
 <#-- emit html for single collection list item -->
     <#macro collectionListItem depth=0 collection=collection showOnlyVisible=false showBadge=false>
-        <#if !collection.hidden || collection.viewable || showOnlyVisible==false >
+        <#if !collection.hidden || showOnlyVisible==false >
             <#local clsHidden = "", clsClosed="" >
             <#if (depth < 1)><#local clsHidden = "hidden"></#if>
             <#if ((depth < 1) && (collection.transientChildren?size > 0))><#local clsClosed = "closed"></#if>

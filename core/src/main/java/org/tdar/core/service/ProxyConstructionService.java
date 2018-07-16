@@ -184,7 +184,7 @@ public class ProxyConstructionService {
         r.setExternalId(resource.getExternalId());
         r.setTransientAccessCount(resource.getTransientAccessCount());
         r.setUploader(convertUser(resource.getUploader(), ctx));
-        r.setAccount(constructShallowAccount(resource.getAccount(), ctx));
+        r.setAccount(createShellAccount(resource.getAccount(), ctx));
         r.setPreviousStatus(resource.getPreviousStatus());
         r.setSpaceInBytesUsed(resource.getSpaceInBytesUsed());
         r.setFilesUsed(resource.getFilesUsed());
@@ -288,7 +288,7 @@ public class ProxyConstructionService {
         return r;
     }
 
-    public PBillingAccount constructShallowAccount(BillingAccount account, Context ctx) {
+    public PBillingAccount createShellAccount(BillingAccount account, Context ctx) {
         if (account == null) {
             return null;
         }
@@ -596,13 +596,11 @@ public class ProxyConstructionService {
             return cache;
         }
 
-        boolean viewable = ctx.canView(authorizationService, rc_);
-        logger.debug("viewable: {} / {} / {}", viewable, ctx.getUser(), rc_);
-        if (!viewable) {
-            return null;
-        }
 
         PResourceCollection rc = createShellCollection(rc_, ctx);
+        if (rc == null) {
+            return null;
+        }
         ctx.addToCollectionCache(rc);
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), false, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), false, ctx));
@@ -887,11 +885,17 @@ public class ProxyConstructionService {
         return createKeyword(serializedClass, keyword, 1, ctx);
     }
 
-    public <Q, P extends Persistable> Q proxy(P p, TdarUser user) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public <Q, P extends Persistable> List<Q> proxy(Collection<P> pp, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        List<Q> toReturn = new ArrayList<>();
+        for (P p : pp) {
+            toReturn.add(proxy(p,ctx));
+        }
+        return toReturn;
+    }
+    public <Q, P extends Persistable> Q proxy(P p, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> cls = getSerializedClass(p.getClass());
 
-        Context ctx = new Context(user);
-        if (authorizationService.isEditor(user)) {
+        if (authorizationService.isEditor(ctx.getUser())) {
             ctx.setAdmin(true);
         }
         if (PResource.class.isAssignableFrom(cls)) {
@@ -918,8 +922,50 @@ public class ProxyConstructionService {
         logger.error("returning NULL for: {}", p);
         return null;
     }
+    
+    public <Q, P extends Persistable> List<Q> proxyShallow(Collection<P> pp, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        List<Q> toReturn = new ArrayList<>();
+        for (P p : pp) {
+            toReturn.add(proxyShallow(p,ctx));
+        }
+        return toReturn;
+    }
+    public <Q, P extends Persistable> Q proxyShallow(P p, Context ctx) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Class<?> cls = getSerializedClass(p.getClass());
 
-    public <I, J extends Persistable> I construct(J j, Class<J> class1, Context ctx)
+        if (authorizationService.isEditor(ctx.getUser())) {
+            ctx.setAdmin(true);
+        }
+        if (PResource.class.isAssignableFrom(cls)) {
+            cls = ((Resource) p).getResourceType().getProxyClass();
+            PResource cache = ctx.getFromResourceCache(p.getId());
+            if (cache != null) {
+                return (Q) cache;
+            } else {
+                return (Q) createShellResource((Resource)p, (Class<PResource>)cls, ctx);
+            }
+        }
+        if (PResourceCollection.class.isAssignableFrom(cls)) {
+            return (Q)  createShellCollection((ResourceCollection) p, ctx);
+        }
+        if (PCreator.class.isAssignableFrom(cls)) {
+            return (Q) createCreator((Creator<?>) p, ctx);
+        }
+        if (PKeyword.class.isAssignableFrom(cls)) {
+            return (Q) constructKeyword((Keyword) p);
+        }
+        if (PDataIntegrationWorkflow.class.isAssignableFrom(cls)) {
+            return (Q) createIntegration((DataIntegrationWorkflow) p, ctx);
+        }
+
+        if (PBillingAccount.class.isAssignableFrom(cls)) {
+            return (Q) createShellAccount((BillingAccount) p, ctx);
+        }
+        logger.error("returning NULL for: {}", p);
+        return null;
+    }
+
+    public <I, J extends Persistable> I construct(J j, Class<J> class1, Context ctx, boolean deep)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         // HACK
         Class<?> cls = getSerializedClass(class1);
@@ -935,7 +981,7 @@ public class ProxyConstructionService {
 
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
-            return (I) convertResourceCollection((ResourceCollection) j, true, ctx);
+            return (I) convertResourceCollection((ResourceCollection) j, deep, ctx);
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (I) createCreator((Creator<?>) j, ctx);
@@ -989,8 +1035,16 @@ public class ProxyConstructionService {
         if (rc_ == null) {
             return null;
         }
+        boolean viewable = ctx.canView(authorizationService, rc_);
+        logger.debug("viewable: {} / {} / {}", viewable, ctx.getUser(), rc_);
+        if (!viewable) {
+            return null;
+        }
+
         PResourceCollection rc = new PResourceCollection();
         rc.setHidden(rc_.isHidden());
+        rc.setAlternateParent(createShellCollection(rc_.getAlternateParent(), ctx));
+        rc.setParent(createShellCollection(rc_.getParent(), ctx));
         rc.setId(rc_.getId());
         rc.setName(rc_.getName());
         rc.setDescription(rc_.getDescription());
@@ -1054,33 +1108,36 @@ public class ProxyConstructionService {
      * @return
      * @throws Exception
      */
-    public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, TdarUser user)
-            throws Exception {
-        Context ctx = new Context(user);
-        if (authorizationService.isEditor(user)) {
-            ctx.setAdmin(true);
-        }
-
-        if (id == null) {
-            throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
-        }
-        P r = genericDao.find(class1, id);
-        // if (Resource.class.isAssignableFrom(class1)) {
-        if (r == null) {
-            return null;
-        }
-
-        if (support != null) {
-            if (r instanceof HasStatus) {
-                support.setStatus(((HasStatus) r).getStatus());
+        public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, Context ctx, boolean deep) throws Exception { 
+            if (authorizationService.isEditor(ctx.getUser())) {
+                ctx.setAdmin(true);
             }
 
-            if (support.authorize((P) r, user) == false) {
+            if (id == null) {
                 throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
             }
-        }
-        // }
-        return (Q) construct(r, class1, ctx);
+            P r = genericDao.find(class1, id);
+            // if (Resource.class.isAssignableFrom(class1)) {
+            if (r == null) {
+                return null;
+            }
+
+            if (support != null) {
+                if (r instanceof HasStatus) {
+                    support.setStatus(((HasStatus) r).getStatus());
+                }
+
+                if (support.authorize((P) r, ctx.getUser()) == false) {
+                    throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
+                }
+            }
+            // }
+            return (Q) construct(r, class1, ctx, deep);
+    }
+
+    public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, Context ctx)
+            throws Exception {
+        return load(class1, id, support, ctx, true);
     }
 
     public PDataTable loadDataTable(Long dataTableId) {
@@ -1090,7 +1147,7 @@ public class ProxyConstructionService {
 
     public PBillingAccount updateAccount(PResource item, Context ctx) {
         BillingAccount findAccountForResource = billingAccountDao.findAccountForResource(item.getId());
-        PBillingAccount act = constructShallowAccount(findAccountForResource, ctx);
+        PBillingAccount act = createShellAccount(findAccountForResource, ctx);
         return act;
     }
 
@@ -1100,7 +1157,7 @@ public class ProxyConstructionService {
             return cache;
         }
 
-        PBillingAccount act = constructShallowAccount(act_, ctx);
+        PBillingAccount act = createShellAccount(act_, ctx);
         if (act == null) {
             return null;
         }
@@ -1238,11 +1295,10 @@ public class ProxyConstructionService {
         return a;
     }
 
-    public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, TdarUser user) {
+    public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, Context ctx) {
         if (CollectionUtils.isEmpty(findUserInvites)) {
             return Collections.EMPTY_LIST;
         }
-        Context ctx = new Context(user);
         List<PUserInvite> toReturn = new ArrayList<>();
         for (UserInvite invite : findUserInvites) {
             PUserInvite inv = new PUserInvite();
@@ -1271,5 +1327,6 @@ public class ProxyConstructionService {
             return null;
         }
     }
+
 
 }

@@ -385,12 +385,13 @@ public class SearchDao<I extends Indexable> {
     private <J extends Persistable> List<I> processGroupSearch(SearchResultHandler<I> resultHandler, SolrSearchObject<I> results) {
         Map<String, List<Long>> coalesce = results.getSearchByMap();
         List<Long> idList = results.getIdList();
+        Context ctx = new Context( resultHandler.getAuthenticatedUser());
         Object[] elements = new Object[idList.size()];
         for (String cls : coalesce.keySet()) {
             try {
                 Class<J> cls_ = (Class<J>) Class.forName(cls);
                 for (J j : datasetDao.findAll(cls_, coalesce.get(cls))) {
-                    I i = proxyConstructionService.construct(j, cls_, new Context( resultHandler.getAuthenticatedUser()));
+                    I i = proxyConstructionService.construct(j, cls_, ctx, true);
                     Long id = j.getId();
 //                    obfuscateAndMarkViewable(resultHandler, i);
                     elements[idList.indexOf(id)] = i;
