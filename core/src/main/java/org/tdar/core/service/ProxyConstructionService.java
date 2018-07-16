@@ -588,7 +588,9 @@ public class ProxyConstructionService {
     }
 
     private PResourceCollection convertResourceCollection(ResourceCollection rc_, boolean includeResources, Context ctx) {
-
+        if (rc_ == null) {
+            return null;
+        }
         PResourceCollection cache = ctx.getFromCollectionCache(rc_.getId());
         if (cache != null) {
             return cache;
