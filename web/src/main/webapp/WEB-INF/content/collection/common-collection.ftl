@@ -146,6 +146,7 @@
     <#if editor>
     <div data-spy="affix" class="affix  screen adminbox rotate-90"><a href="<@s.url value="/collection/admin/${id?c}"/>">ADMIN</a></div>
     </#if>
+    ${resourceCollection.parent}
         <#if resourceCollection.parent?? || resourceCollection.description??  || resourceCollection.formattedDescription?? || collections??>
         <div>
             <#if resourceCollection.parent??><p><b>Part of:</b>

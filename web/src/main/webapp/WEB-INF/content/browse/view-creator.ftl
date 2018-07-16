@@ -205,7 +205,6 @@
 			</#if>
 </#if>
 </table>
-
             <#-- Institution addresses can be shown to anybody (but can only be edited by tdar-editor and above) -->
             <#if  (editorOrSelf || creator.creatorType.institution) && creator.addresses?has_content >
                 <h3>Addresses</h3>

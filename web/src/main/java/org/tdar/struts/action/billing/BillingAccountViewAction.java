@@ -247,6 +247,10 @@ public class BillingAccountViewAction<R extends PBillingAccount> extends Abstrac
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public PBillingAccount getPersistable() {
+        return account;
+    }
 
     public void setAccount(PBillingAccount account) {
         this.account = account;

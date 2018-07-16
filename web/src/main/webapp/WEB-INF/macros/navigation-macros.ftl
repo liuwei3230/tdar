@@ -84,27 +84,27 @@ navigation freemarker macros
 
 
     <#macro billingToolbar namespace current="view">
-        <#if persistable??>
+        <#if account??>
         <#if (sessionData.authenticated)!false>
         <div class="span12 resource-nav  screen " id="toolbars" parse="true">
             <ul>
 	        	<@makeLink namespace "view" "view" "view" current />
     		    <#if editable>
                     <@makeLink namespace "edit" "edit" "edit" current />
-                    <#local _deleteable = (persistable.status!"")?lower_case == "deleted">
-                    <@makeLink "billing" "delete?id=${persistable.id}" "delete" "delete" current true _deleteable />
-                    <@makeLink "export" "request?accountId=${persistable.id}" "export" "export" current true _deleteable />
+                    <#local _deleteable = (account.status!"")?lower_case == "deleted">
+                    <@makeLink "billing" "delete?id=${account.id}" "delete" "delete" current true _deleteable />
+                    <@makeLink "export" "request?accountId=${account.id}" "export" "export" current true _deleteable />
 		        </#if>
-	        	<@makeLink "cart" "add?accountId=${persistable.id?c}" "add invoice" "add" "" false false />
+	        	<@makeLink "cart" "add?accountId=${account.id?c}" "add invoice" "add" "" false false />
     	    	<#if administrator>
-    		        <@makeLink "billing" "updateQuotas?id=${persistable.id?c}" "Reset Totals" "add" "" false false />
+    		        <@makeLink "billing" "updateQuotas?id=${account.id?c}" "Reset Totals" "add" "" false false />
 		        </#if>
                 <#local edit = !(editable || administrator) />
     		    <#if !edit>
-                    <#local _large = (persistable.resources?size &gt; 50000) />
-	                <@makeLink namespace "usage/${persistable.id?c}" "usage" "stats" current true _large />
+                    <#local _large = (account.resources?size &gt; 50000) />
+	                <@makeLink namespace "usage/${account.id?c}" "usage" "stats" current true _large />
 		        </#if>
-                <@makeLink namespace "transfer/${persistable.id?c}" "transfer" "transfer" current true edit />
+                <@makeLink namespace "transfer/${account.id?c}" "transfer" "transfer" current true edit />
 			</ul>
 		</div>
 

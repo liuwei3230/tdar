@@ -28,6 +28,7 @@ import org.tdar.core.bean.collection.CollectionDisplayProperties;
 import org.tdar.core.bean.collection.ResourceCollection;
 import org.tdar.core.bean.coverage.CoverageDate;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.bean.entity.Address;
 import org.tdar.core.bean.entity.AuthorizedUser;
 import org.tdar.core.bean.entity.Creator;
 import org.tdar.core.bean.entity.Creator.CreatorType;
@@ -68,6 +69,7 @@ import org.tdar.core.serialize.collection.PCollectionDisplayProperties;
 import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.coverage.PCoverageDate;
 import org.tdar.core.serialize.coverage.PLatitudeLongitudeBox;
+import org.tdar.core.serialize.entity.PAddress;
 import org.tdar.core.serialize.entity.PAuthorizedUser;
 import org.tdar.core.serialize.entity.PCreator;
 import org.tdar.core.serialize.entity.PInstitution;
@@ -146,7 +148,6 @@ public class ProxyConstructionService {
         boolean viewConfidentialinfo = ctx.canView(authorizationService, resource);
         logger.debug("user: {}/ viewconf:{}", ctx.getUser(), viewConfidentialinfo);
         ctx.addToResourceCache(r);
-        ctx.setAdmin(false);
         ctx.setAbleToSeeConfidentialFiles(viewConfidentialinfo);
         ctx.setViewUnobfuscatedLat(viewConfidentialinfo);
         ctx.setPersonEmailObfuscated(true);
@@ -178,8 +179,8 @@ public class ProxyConstructionService {
         r.setResourceCreators(convertResourrceCreator(resource.getActiveResourceCreators(), ctx));
         r.setResourceAnnotations(convertResourceAnnotation(resource.getActiveResourceAnnotations()));
         r.setCoverageDates(convertCoverageDates(resource.getActiveCoverageDates()));
-        r.setUnmanagedResourceCollections(convertResourceCollections(resource.getUnmanagedResourceCollections(), 1, ctx));
-        r.setManagedResourceCollections(convertResourceCollections(resource.getManagedResourceCollections(), 1, ctx));
+        r.setUnmanagedResourceCollections(convertResourceCollections(resource.getUnmanagedResourceCollections(), 2, ctx));
+        r.setManagedResourceCollections(convertResourceCollections(resource.getManagedResourceCollections(), 2, ctx));
         r.setExternalId(resource.getExternalId());
         r.setTransientAccessCount(resource.getTransientAccessCount());
         r.setUploader(convertUser(resource.getUploader(), ctx));
@@ -239,7 +240,7 @@ public class ProxyConstructionService {
             if (ir instanceof PDataset) {
                 PDataset doc = (PDataset) ir;
                 Dataset doc_ = (Dataset) iresource;
-                doc.setDataTables(convertDataTables(doc_.getDataTables(),ctx));
+                doc.setDataTables(convertDataTables(doc_.getDataTables(), ctx));
                 doc.setRelationships(convertRelationships(doc_.getRelationships()));
             }
             if (ir instanceof PCodingSheet) {
@@ -603,37 +604,19 @@ public class ProxyConstructionService {
             return null;
         }
 
-        PResourceCollection rc = new PResourceCollection();
+        PResourceCollection rc = createShellCollection(rc_, ctx);
         ctx.addToCollectionCache(rc);
-        rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), depth, ctx));
-        rc.setParent(convertResourceCollection(rc_.getParent(), 9, ctx));
-        rc.setHidden(rc_.isHidden());
-        rc.setId(rc_.getId());
-        rc.setName(rc_.getName());
-        rc.setDescription(rc_.getDescription());
-        rc.setFormattedDescription(rc_.getFormattedDescription());
-        rc.setSortBy(rc_.getSortBy());
-        rc.setOrientation(rc_.getOrientation());
-        rc.setSecondarySortBy(rc_.getSecondarySortBy());
+        rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), 2, ctx));
+        rc.setParent(convertResourceCollection(rc_.getParent(), 2, ctx));
         rc.setAuthorizedUsers(convertAuthorizedUsers(rc_.getAuthorizedUsers(), ctx));
-        rc.setOwner(convertUser(rc_.getOwner(), ctx));
-        rc.setDateCreated(rc_.getDateCreated());
-        rc.setDateUpdated(rc_.getDateUpdated());
-        rc.setUpdater(convertUser(rc_.getUpdater(), ctx));
-        rc.setResourceIds(rc_.getResourceIds());
-        rc.setSystemManaged(rc_.isSystemManaged());
-        rc.setStatus(rc_.getStatus());
-        rc.setParentIds(rc_.getParentIds());
-        rc.setAlternateParentIds(rc_.getAlternateParentIds());
-        rc.setProperties(convertCollectionProperties(rc_.getProperties(), ctx));
-        for (Resource r : rc_.getManagedResources()) {
-            rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
+        if (depth > 1) {
+            for (Resource r : rc_.getManagedResources()) {
+                rc.getManagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(), ctx));
+            }
+            for (Resource r : rc_.getUnmanagedResources()) {
+                rc.getUnmanagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(), ctx));
+            }
         }
-        for (Resource r : rc_.getUnmanagedResources()) {
-            rc.getUnmanagedResources().add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
-        }
-        rc.setUnmanagedResourceIds(rc_.getUnmanagedResourceIds());
-        rc.setVerified(rc_.getVerified());
         return rc;
     }
 
@@ -799,6 +782,11 @@ public class ProxyConstructionService {
         institution.setDateCreated(creator.getDateCreated());
         institution.setDateUpdated(creator.getDateUpdated());
         institution.setStatus(creator.getStatus());
+        if (CollectionUtils.isNotEmpty(creator.getAddresses())) {
+            for (Address address : (Set<Address>) creator.getAddresses()) {
+                institution.getAddresses().add(createAddress(address));
+            }
+        }
     }
 
     private Set<PLatitudeLongitudeBox> convertLatLong(Collection<LatitudeLongitudeBox> latitudeLongitudeBoxes, Context ctx) {
@@ -905,6 +893,9 @@ public class ProxyConstructionService {
         Class<?> cls = getSerializedClass(p.getClass());
 
         Context ctx = new Context(user);
+        if (authorizationService.isEditor(user)) {
+            ctx.setAdmin(true);
+        }
         if (PResource.class.isAssignableFrom(cls)) {
             cls = ((Resource) p).getResourceType().getProxyClass();
             PResource cache = ctx.getFromResourceCache(p.getId());
@@ -915,7 +906,7 @@ public class ProxyConstructionService {
             }
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
-            return (Q) convertResourceCollection((ResourceCollection) p, 1, ctx);
+            return (Q) convertResourceCollection((ResourceCollection) p, 3, ctx);
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (Q) createCreator((Creator<?>) p, ctx);
@@ -946,7 +937,7 @@ public class ProxyConstructionService {
 
         }
         if (PResourceCollection.class.isAssignableFrom(cls)) {
-            return (I) convertResourceCollection((ResourceCollection) j, 1, ctx);
+            return (I) convertResourceCollection((ResourceCollection) j, 3, ctx);
         }
         if (PCreator.class.isAssignableFrom(cls)) {
             return (I) createCreator((Creator<?>) j, ctx);
@@ -1068,6 +1059,10 @@ public class ProxyConstructionService {
     public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, TdarUser user)
             throws Exception {
         Context ctx = new Context(user);
+        if (authorizationService.isEditor(user)) {
+            ctx.setAdmin(true);
+        }
+
         if (id == null) {
             throw new TdarAuthorizationException("error.file_not_found", Arrays.asList(id));
         }
@@ -1121,7 +1116,7 @@ public class ProxyConstructionService {
         act.setResourcesUsed(act_.getResourcesUsed());
         act.setExpires(act_.getExpires());
         act.setInvoices(constructInvoices(act_.getInvoices(), ctx));
-        act.setResources(createShellResources(act_.getResources(),ctx));
+        act.setResources(createShellResources(act_.getResources(), ctx));
         act.setOwner(convertUser(act_.getOwner(), ctx));
         act.setModifiedBy(convertUser(act_.getModifiedBy(), ctx));
         act.setCoupons(createCoupons(act_.getCoupons(), ctx));
@@ -1171,7 +1166,7 @@ public class ProxyConstructionService {
         }
         Set<PResource> toReturn = new HashSet<>();
         for (Resource r : resources) {
-            toReturn.add(createShellResource(r, r.getResourceType().getProxyClass(),ctx));
+            toReturn.add(createShellResource(r, r.getResourceType().getProxyClass(), ctx));
         }
         return toReturn;
     }
@@ -1185,7 +1180,7 @@ public class ProxyConstructionService {
             PInvoice i = new PInvoice();
             i.setDateCreated(r.getDateCreated());
             i.setTransactionId(r.getTransactionId());
-            // i.setAddress(convAdd);
+            i.setAddress(createAddress(r.getAddress()));
             i.setOwner(convertUser(r.getOwner(), ctx));
             for (BillingItem it : r.getItems()) {
                 PBillingItem item_ = new PBillingItem();
@@ -1231,6 +1226,20 @@ public class ProxyConstructionService {
         return toReturn;
     }
 
+    private PAddress createAddress(Address address) {
+        PAddress a = new PAddress();
+        a.setId(address.getId());
+        a.setStreet1(address.getStreet1());
+        a.setStreet2(address.getStreet2());
+        a.setCity(address.getCity());
+        a.setState(address.getState());
+        a.setPostal(address.getPostal());
+        a.setType(address.getType());
+        a.setCountry(address.getCountry());
+
+        return a;
+    }
+
     public List<PUserInvite> constructInvites(List<UserInvite> findUserInvites, TdarUser user) {
         if (CollectionUtils.isEmpty(findUserInvites)) {
             return Collections.EMPTY_LIST;
@@ -1248,7 +1257,7 @@ public class ProxyConstructionService {
             inv.setNote(invite.getNote());
             inv.setPermissions(invite.getPermissions());
             if (invite.getResource() != null) {
-                inv.setResource(createShellResource(invite.getResource(), invite.getResource().getResourceType().getProxyClass(),ctx));
+                inv.setResource(createShellResource(invite.getResource(), invite.getResource().getResourceType().getProxyClass(), ctx));
             }
             inv.setResourceCollection(createShellCollection(invite.getResourceCollection(), ctx));
             toReturn.add(inv);
