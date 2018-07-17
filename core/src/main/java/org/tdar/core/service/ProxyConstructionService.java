@@ -1109,7 +1109,7 @@ public class ProxyConstructionService {
      * @throws Exception
      */
         public <P extends Persistable, Q> Q load(Class<P> class1, Long id, Authorizable<P> support, Context ctx, boolean deep) throws Exception { 
-            if (authorizationService.isEditor(ctx.getUser())) {
+            if (ctx != null && authorizationService.isEditor(ctx.getUser())) {
                 ctx.setAdmin(true);
             }
 
@@ -1282,6 +1282,9 @@ public class ProxyConstructionService {
     }
 
     private PAddress createAddress(Address address) {
+        if (address == null) {
+            return null;
+        }
         PAddress a = new PAddress();
         a.setId(address.getId());
         a.setStreet1(address.getStreet1());
@@ -1321,7 +1324,7 @@ public class ProxyConstructionService {
 
     public <K, R extends Persistable> K find(Class<R> cls, Long id) {
         try {
-            return load(cls, id, null, null);
+            return load(cls, id, null, new Context(null));
         } catch (Exception e) {
             logger.error("{}", e, e);
             return null;
