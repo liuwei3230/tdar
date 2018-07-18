@@ -609,7 +609,6 @@ public class ProxyConstructionService {
             return null;
         }
         ctx.addToCollectionCache(rc);
-        aaa
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), false, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), false, ctx));
         rc.setAuthorizedUsers(convertAuthorizedUsers(rc_.getAuthorizedUsers(), ctx));
