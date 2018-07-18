@@ -12,6 +12,7 @@ import org.tdar.core.bean.resource.Resource;
 import org.tdar.core.serialize.billing.PBillingAccount;
 import org.tdar.core.serialize.collection.PResourceCollection;
 import org.tdar.core.serialize.entity.PCreator;
+import org.tdar.core.serialize.entity.PTdarUser;
 import org.tdar.core.serialize.resource.PResource;
 import org.tdar.core.service.external.AuthorizationService;
 import org.tdar.utils.PersistableUtils;
@@ -26,6 +27,9 @@ public class Context {
     private Map<Long, PBillingAccount> accountCache = new HashMap<>();
     private Map<Long, PCreator> creatorCache = new HashMap<>();
     private Map<Long, PResourceCollection> collectionCache = new HashMap<>();
+    private Map<Long, PBillingAccount> sparseAccountCache = new HashMap<>();
+    private Map<Long, PResource> sparseResourceCache = new HashMap<>();
+    private Map<Long, PResourceCollection> sparseCollectionCache = new HashMap<>();
     private boolean admin = false;
     private boolean ableToSeeConfidentialFiles = false;
     private boolean institutionEmailObfuscated = false;
@@ -157,32 +161,60 @@ public class Context {
     }
 
     public <R extends PResource> void addToResourceCache(R r) {
-        resourceCache.put(r.getId(), r);
+        addToCache(resourceCache, r);
+    }
+
+    private <T extends Persistable> void addToCache(Map<Long, T> map, T r) {
+        if (PersistableUtils.isNotNullOrTransient(r)) {
+            map.put(r.getId(), r);
+        }
     }
 
     public void addToCollectionCache(PResourceCollection r) {
-        collectionCache.put(r.getId(), r);
+        addToCache(collectionCache, r);
+    }
+
+    public <R extends PResource> void addToSparseResourceCache(R r) {
+        addToCache(sparseResourceCache, r);
+    }
+
+    public void addToSparseCollectionCache(PResourceCollection r) {
+        addToCache(sparseCollectionCache, r);
     }
 
     public <R extends PCreator> void addToCreatorCache(R r) {
-        creatorCache.put(r.getId(), r);
+        addToCache(creatorCache, r);
     }
 
     public void addToAccountCache(PBillingAccount r) {
-        accountCache.put(r.getId(), r);
+        addToCache(accountCache, r);
     }
 
-    public PCreator getFromCreatorCache(Long id) {
-        return creatorCache.get(id);
+    public PCreator getFromCreatorCache(Long id, Class<? extends PCreator> class1) {
+        PCreator pCreator = creatorCache.get(id);
+        if (pCreator == null) {
+            return null;
+        }
+        if (class1.isAssignableFrom(pCreator.getClass())) {
+            return pCreator;
+        }
+        return null;
     }
 
     public PResourceCollection getFromCollectionCache(Long id) {
         return getFronCache(collectionCache, id);
-
     }
 
     public PResource getFromResourceCache(Long id) {
         return getFronCache(resourceCache, id);
+    }
+
+    public PResourceCollection getFromSparseCollectionCache(Long id) {
+        return getFronCache(sparseCollectionCache, id);
+    }
+
+    public PResource getFromSparseResourceCache(Long id) {
+        return getFronCache(sparseResourceCache, id);
     }
 
     private <T> T getFronCache(Map<Long, T> cache, Long id) {

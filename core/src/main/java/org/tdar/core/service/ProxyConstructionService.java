@@ -146,7 +146,8 @@ public class ProxyConstructionService {
             Context ctx)
             throws InstantiationException, IllegalAccessException {
         boolean viewConfidentialinfo = ctx.canView(authorizationService, resource);
-        logger.debug("user: {}/ viewconf:{}", ctx.getUser(), viewConfidentialinfo);
+        logger.trace("user: {}/ viewconf:{}", ctx.getUser(), viewConfidentialinfo);
+        r.setId(resource.getId());
         ctx.addToResourceCache(r);
         ctx.setAbleToSeeConfidentialFiles(viewConfidentialinfo);
         ctx.setViewUnobfuscatedLat(viewConfidentialinfo);
@@ -165,7 +166,6 @@ public class ProxyConstructionService {
         r.setSourceCollections(convertSourceCollections(resource.getActiveSourceCollections(), ctx));
         r.setResourceNotes(convertResourceNotes(resource.getActiveResourceNotes(), ctx));
         r.setRelatedComparativeCollections(convertRelatedComparativeCollections(resource.getActiveRelatedComparativeCollections(), ctx));
-        r.setId(resource.getId());
         r.setTitle(resource.getTitle());
         r.setDescription(resource.getDescription());
         r.setDateCreated(resource.getDateCreated());
@@ -406,8 +406,15 @@ public class ProxyConstructionService {
                 }
                 return null;
             }
+            
+            PResource cache = ctx.getFromSparseResourceCache(r.getId()) ;
+            if (cache != null) {
+                return (P)cache;
+            }
+            
             P p = class1.newInstance();
             p.setId(r.getId());
+            ctx.addToSparseResourceCache(p);
             p.setTitle(r.getTitle());
             p.setDateCreated(r.getDateCreated());
             p.setDateUpdated(r.getDateUpdated());
@@ -727,14 +734,14 @@ public class ProxyConstructionService {
         if (!creator.isActive() && !creator.isDuplicate() || creator == null) {
             return null;
         }
-        PPerson cache = (PPerson) ctx.getFromCreatorCache(creator.getId());
+        PPerson cache = (PPerson) ctx.getFromCreatorCache(creator.getId(), PPerson.class);
         if (cache != null) {
             return cache;
         }
 
         PPerson person = new PPerson();
-        ctx.addToCreatorCache(person);
         updateperson(creator, person, ctx);
+        ctx.addToCreatorCache(person);
         return person;
     }
 
@@ -756,14 +763,14 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
-        PInstitution cache = (PInstitution) ctx.getFromCreatorCache(creator.getId());
+        PInstitution cache = (PInstitution) ctx.getFromCreatorCache(creator.getId(), PInstitution.class);
         if (cache != null) {
             return cache;
         }
 
         PInstitution institution = new PInstitution();
-        ctx.addToCreatorCache(institution);
         updateCreator(institution, creator);
+        ctx.addToCreatorCache(institution);
         institution.setName(creator.getName());
         if (ctx.isInstitutionEmailObfuscated() == true) {
             institution.setEmail(creator.getEmail());
@@ -789,7 +796,7 @@ public class ProxyConstructionService {
         if (CollectionUtils.isEmpty(latitudeLongitudeBoxes)) {
             return Collections.EMPTY_SET;
         }
-        logger.debug("obfuscate: {}", ctx.isViewUnobfuscatedLat());
+        logger.trace("obfuscate: {}", ctx.isViewUnobfuscatedLat());
         Set<PLatitudeLongitudeBox> toReturn = new HashSet<>();
         latitudeLongitudeBoxes.forEach(llb_ -> {
             PLatitudeLongitudeBox llb = new PLatitudeLongitudeBox();
@@ -815,13 +822,13 @@ public class ProxyConstructionService {
         if (creator == null || !creator.isActive() && !creator.isDuplicate()) {
             return null;
         }
-        PTdarUser cache = (PTdarUser) ctx.getFromCreatorCache(creator.getId());
+        PTdarUser cache = (PTdarUser) ctx.getFromCreatorCache(creator.getId(), PTdarUser.class);
         if (cache != null) {
             return cache;
         }
         PTdarUser user = new PTdarUser();
-        ctx.addToCreatorCache(user);
         updateperson(creator, user, ctx);
+        ctx.addToCreatorCache(user);
         user.setUsername(creator.getUsername());
         return user;
     }
@@ -1041,11 +1048,18 @@ public class ProxyConstructionService {
             return null;
         }
 
+        PResourceCollection cache = ctx.getFromSparseCollectionCache(rc_.getId()) ;
+        if (cache != null) {
+            return cache;
+        }
+
         PResourceCollection rc = new PResourceCollection();
+        rc.setId(rc_.getId());
+        ctx.addToSparseCollectionCache(rc);
+
         rc.setHidden(rc_.isHidden());
         rc.setAlternateParent(createShellCollection(rc_.getAlternateParent(), ctx));
         rc.setParent(createShellCollection(rc_.getParent(), ctx));
-        rc.setId(rc_.getId());
         rc.setName(rc_.getName());
         rc.setDescription(rc_.getDescription());
         rc.setFormattedDescription(rc_.getFormattedDescription());

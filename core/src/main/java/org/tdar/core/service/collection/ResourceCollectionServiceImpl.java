@@ -505,20 +505,20 @@ public class ResourceCollectionServiceImpl extends ServiceInterface.TypedDaoBase
         allChildren.addAll(proxyConstructionService.proxyShallow(addAlternateChildrenTrees(children, rc),ctx));
         Iterator<PResourceCollection> iter = allChildren.iterator();
         logger.debug("{}", allChildren);
-        Map<Long, PResourceCollection> map = PersistableUtils.createIdMap(allChildren);
-        map.put(collection.getId(), collection);
+//        Map<Long, PResourceCollection> map = PersistableUtils.createIdMap(allChildren);
+//        map.put(collection.getId(), collection);
         // FIXME: unique ID issues  
         while (iter.hasNext()) {
             PResourceCollection child = iter.next();
-            PResourceCollection parent_ = child.getParent();
-            if (parent_ != null) {
-                PResourceCollection parent = map.get(parent_.getId());
+            PResourceCollection parent = child.getParent();
+            if (parent != null) {
+//                PResourceCollection parent = map.get(parent_.getId());
                 child.setParent(parent);
                 parent.getTransientChildren().add(child);
                 iter.remove();
             }
             if (child.getAlternateParent() != null) {
-                PResourceCollection parent = map.get(child.getAlternateParent().getId());
+                parent = child.getAlternateParent();
                 child.setAlternateParent(parent);
                 child.getAlternateParent().getTransientChildren().add(child);
             }

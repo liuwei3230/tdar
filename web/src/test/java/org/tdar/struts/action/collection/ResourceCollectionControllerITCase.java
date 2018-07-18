@@ -1011,7 +1011,7 @@ public class ResourceCollectionControllerITCase extends AbstractControllerITCase
         vc.setSlug(slug);
         vc.prepare();
         vc.view();
-        logger.info("{}", ((PResourceCollection) vc.getResourceCollection()).getManagedResources().iterator().next().getStatus());
+//        logger.info("{}", ((PResourceCollection) vc.getResourceCollection()).getManagedResources().iterator().next().getStatus());
         assertTrue("collection should show the newly undeleted project", CollectionUtils.isNotEmpty(vc.getResults()));
 
         // we should also see the newly-undeleted resource on the edit page
