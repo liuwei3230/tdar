@@ -609,6 +609,7 @@ public class ProxyConstructionService {
             return null;
         }
         ctx.addToCollectionCache(rc);
+        aaa
         rc.setAlternateParent(convertResourceCollection(rc_.getAlternateParent(), false, ctx));
         rc.setParent(convertResourceCollection(rc_.getParent(), false, ctx));
         rc.setAuthorizedUsers(convertAuthorizedUsers(rc_.getAuthorizedUsers(), ctx));
@@ -654,7 +655,8 @@ public class ProxyConstructionService {
         List<PResource> toReturn = new ArrayList<>();
         for (Resource r : featuredResources) {
             try {
-                constructResource(r, r.getResourceType().getProxyClass(), ctx);
+                PResource r_ = constructResource(r, r.getResourceType().getProxyClass(), ctx);
+                toReturn.add(r_);
             } catch (InstantiationException | IllegalAccessException e) {
                 logger.error("{}", e, e);
             }
@@ -1273,7 +1275,6 @@ public class ProxyConstructionService {
                 // a.setModel(it.getActivity().getModel());
                 a.setActivityType(it.getActivity().getActivityType());
                 a.setOrder(it.getActivity().getOrder());
-
             }
             i.setId(r.getId());
             i.setPaymentMethod(r.getPaymentMethod());
@@ -1290,6 +1291,7 @@ public class ProxyConstructionService {
             // i.setResponse(r.getResponse());
             i.setCoupon(convertCoupon(r.getCoupon(), ctx));
             i.setCouponValue(r.getCouponValue());
+            toReturn.add(i);
 
         }
         return toReturn;
