@@ -3,6 +3,7 @@ package org.tdar.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
+import org.tdar.core.exception.TdarRecoverableRuntimeException;
 
 /**
  * This class is the basis of our Obfuscation Algorithm and is used to calculate a 1 mile bounding box (max) around the box
@@ -120,11 +121,23 @@ public class SpatialObfuscationUtil {
         // Math.min(maxShift, randomShift);
         double shift = randomShift;
 
+        if (shift == 0) {
+            throw new TdarRecoverableRuntimeException("shift should NEVER be zero");
+        }
+
         // If the delta is less than half the width of the box, then the initial position of the box won't be far enough down to cover the
         // southern boundry of the box. This ensures that coverage.
         // double minimumOffset = Math.max(boxHeightDelta, (absoluteLatLength / 2d) + shift);
         double minimumOffset = userBoxLatLength / 2d + shift;
 
+        if (minimumOffset == 0) {
+            throw new TdarRecoverableRuntimeException("shift should NEVER be zero");
+        }
+
+        if (Math.abs(shift) - Math.abs(minimumOffset) == 0) {
+            throw new TdarRecoverableRuntimeException("shift and minOffset should never be the same");
+        }
+        
         if (logger.isTraceEnabled()) {
             String o = "north";
             String o2 = "south";
