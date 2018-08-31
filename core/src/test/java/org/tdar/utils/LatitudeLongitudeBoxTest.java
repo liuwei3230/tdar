@@ -22,6 +22,7 @@ import org.tdar.core.bean.coverage.LatitudeLongitudeBox;
 @SuppressWarnings({ "static-method" })
 public class LatitudeLongitudeBoxTest {
 
+
     private static final double _36 = 36.08765565625065;
     private static final double _36_small = _36 + 0.01;
     private static final double _neg_107 = -107.78792202517137;
