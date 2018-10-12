@@ -4,6 +4,8 @@
 
 const core = require("./tdar.core");
 const common = require("./tdar.common");
+require("jquery-ui-dist/jquery-ui");
+
 
 // when a user creates a record manually instead of choosing a menu-item from the autocomplete dropdown, this module
 // stores the record in the object cache. If the user later fills out similar autocomplete fields, we add

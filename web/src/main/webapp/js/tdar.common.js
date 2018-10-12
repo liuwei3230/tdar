@@ -15,7 +15,7 @@ const inheritance = require("./tdar.inheritance");
 require("imports-loader?this=>window!./../includes/modernizr-custom-2.6.2.min.js");
 
 // Various jQuery plugins
-require('./../includes/jquery-ui-1.11.4.custom/jquery-ui');
+//require('./../includes/jquery-ui-1.11.4.custom/jquery-ui');
 require('./../includes/jquery.watermark.js');
 require('./../includes/jquery-treeview/jquery.treeview.js');
 require("../includes/jquery-treeview/jquery.treeview.css");
